@@ -707,12 +707,16 @@ export default function HomePage() {
                   )}
                 >
                   {message.role === "assistant" && (
-                    <div className={clsx(
-                      "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0",
-                      persona?.styles.bg
-                    )}>
-                      <span className={clsx("text-sm font-bold", persona?.styles.color)}>
-                        {persona?.nome[0]}
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                        <img 
+                          src={`/avatars/${activeSession.mode === 'consulta' ? 'urizen' : 'urthona'}.jpg`}
+                          alt={activeSession.mode === 'consulta' ? 'Urizen' : 'Urthona'}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <span className="text-xs text-text-light-tertiary dark:text-dark-tertiary">
+                        {activeSession.mode === 'consulta' ? 'Urizen' : 'Urthona'}
                       </span>
                     </div>
                   )}
@@ -750,13 +754,7 @@ export default function HomePage() {
                     )}
                   </div>
 
-                  {message.role === "user" && (
-                    <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
-                      <svg className="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                    </div>
-                  )}
+
                 </div>
               ))}
               

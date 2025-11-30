@@ -169,7 +169,7 @@ export const ptBR = {
       title: "O Fluxo (Criativo)",
       intro: "Eu sou Urthona, o Forjador. Minha forja está pronta para criar e expandir as narrativas. Qual a próxima história?",
     },
-    placeholder: "Digite sua mensagem...",
+    placeholder: "Mensagem...",
     send: "Enviar",
     history: "Histórico",
     noHistory: "Nenhuma conversa anterior",
