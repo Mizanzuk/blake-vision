@@ -1,0 +1,201 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import OpenAI from "openai";
+import pdfParse from "pdf-parse";
+import mammoth from "mammoth";
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+export async function POST(request: NextRequest) {
+  try {
+    const { file_path, universe_id, world_id } = await request.json();
+
+    if (!file_path || !universe_id || !world_id) {
+      return NextResponse.json(
+        { error: "Parâmetros faltando" },
+        { status: 400 }
+      );
+    }
+
+    // Get user from session
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    const authHeader = request.headers.get("authorization");
+    if (!authHeader) {
+      return NextResponse.json(
+        { error: "Não autorizado" },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: "Não autorizado" },
+        { status: 401 }
+      );
+    }
+
+    // Download file from Supabase Storage
+    const { data: fileData, error: downloadError } = await supabase.storage
+      .from("documents")
+      .download(file_path);
+
+    if (downloadError || !fileData) {
+      return NextResponse.json(
+        { error: "Erro ao baixar arquivo" },
+        { status: 500 }
+      );
+    }
+
+    // Extract text based on file type
+    let extractedText = "";
+    const fileExtension = file_path.split(".").pop()?.toLowerCase();
+
+    if (fileExtension === "pdf") {
+      const buffer = await fileData.arrayBuffer();
+      const pdfData = await pdfParse(Buffer.from(buffer));
+      extractedText = pdfData.text;
+    } else if (fileExtension === "docx") {
+      const buffer = await fileData.arrayBuffer();
+      const result = await mammoth.extractRawText({ buffer: Buffer.from(buffer) });
+      extractedText = result.value;
+    } else if (fileExtension === "txt") {
+      extractedText = await fileData.text();
+    } else {
+      return NextResponse.json(
+        { error: "Formato de arquivo não suportado" },
+        { status: 400 }
+      );
+    }
+
+    if (!extractedText || extractedText.trim().length === 0) {
+      return NextResponse.json(
+        { error: "Não foi possível extrair texto do documento" },
+        { status: 400 }
+      );
+    }
+
+    // Get categories for this universe
+    const { data: categories } = await supabase
+      .from("categories")
+      .select("*")
+      .eq("universe_id", universe_id);
+
+    const categoriesText = categories
+      ?.map(c => `- ${c.label} (${c.slug}): ${c.description || ""}`)
+      .join("\n") || "";
+
+    // Call OpenAI to extract entities
+    const prompt = `Você é um assistente especializado em extrair informações de textos narrativos.
+
+Analise o texto abaixo e extraia todas as entidades relevantes, organizando-as nas seguintes categorias:
+
+${categoriesText}
+
+Para cada entidade extraída, forneça:
+1. **tipo**: o slug da categoria (ex: personagem, local, evento, conceito, regra)
+2. **titulo**: nome da entidade
+3. **resumo**: breve resumo em 1-2 linhas
+4. **conteudo**: descrição detalhada
+5. **ano_diegese**: ano no universo ficcional (se mencionado)
+6. **tags**: palavras-chave separadas por vírgula
+
+Além das entidades, identifique RELAÇÕES entre elas:
+- Tipos de relação: amigo_de, inimigo_de, pai_de, filho_de, irmão_de, casado_com, trabalha_em, mora_em, nasceu_em, pertence_a, lider_de, membro_de, criador_de, aconteceu_em, participou_de, causou, foi_causado_por, relacionado_a
+
+Retorne APENAS um JSON válido no formato:
+{
+  "entities": [
+    {
+      "tipo": "personagem",
+      "titulo": "Nome do Personagem",
+      "resumo": "Breve descrição",
+      "conteudo": "Descrição detalhada",
+      "ano_diegese": 2024,
+      "tags": "tag1, tag2, tag3"
+    }
+  ],
+  "relations": [
+    {
+      "source": "Nome da Entidade Origem",
+      "target": "Nome da Entidade Destino",
+      "type": "tipo_de_relacao",
+      "description": "Descrição opcional da relação"
+    }
+  ]
+}
+
+TEXTO PARA ANÁLISE:
+---
+${extractedText.slice(0, 15000)}
+---
+
+Retorne APENAS o JSON, sem texto adicional.`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: "Você é um assistente que extrai entidades de textos narrativos e retorna JSON válido.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      temperature: 0.3,
+      max_tokens: 4000,
+    });
+
+    const responseText = completion.choices[0]?.message?.content || "";
+    
+    // Parse JSON response
+    let entities = [];
+    let relations = [];
+    try {
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        entities = parsed.entities || [];
+        relations = parsed.relations || [];
+      }
+    } catch (parseError) {
+      console.error("Error parsing OpenAI response:", parseError);
+      return NextResponse.json(
+        { error: "Erro ao processar resposta da IA" },
+        { status: 500 }
+      );
+    }
+
+    if (entities.length === 0) {
+      return NextResponse.json(
+        { error: "Nenhuma entidade foi extraída do documento" },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      extracted_text: extractedText.slice(0, 1000) + "...",
+      entities,
+      relations,
+      count: entities.length,
+    });
+
+  } catch (error) {
+    console.error("Error in extract:", error);
+    return NextResponse.json(
+      { error: "Erro interno do servidor" },
+      { status: 500 }
+    );
+  }
+}

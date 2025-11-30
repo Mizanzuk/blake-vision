@@ -1,0 +1,76 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/app/lib/supabase/server";
+
+export const dynamic = "force-dynamic";
+
+export async function GET(req: NextRequest) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const universeId = searchParams.get("universeId");
+
+    if (!universeId) {
+      return NextResponse.json({ error: "universeId é obrigatório" }, { status: 400 });
+    }
+
+    // Fetch worlds
+    const { data: worlds, error: worldsError } = await supabase
+      .from("worlds")
+      .select("*")
+      .eq("universe_id", universeId)
+      .order("ordem", { ascending: true });
+
+    if (worldsError) {
+      console.error("Erro ao buscar worlds:", worldsError);
+      return NextResponse.json({ error: "Erro ao buscar mundos" }, { status: 500 });
+    }
+
+    // Fetch categories
+    const { data: categories, error: categoriesError } = await supabase
+      .from("categories")
+      .select("slug, label")
+      .eq("universe_id", universeId)
+      .order("label", { ascending: true });
+
+    if (categoriesError) {
+      console.error("Erro ao buscar categorias:", categoriesError);
+    }
+
+    // Fetch fichas
+    const worldIds = worlds?.map(w => w.id) || [];
+    
+    let fichas: any[] = [];
+    if (worldIds.length > 0) {
+      const { data: fichasData, error: fichasError } = await supabase
+        .from("fichas")
+        .select("id, world_id, tipo, titulo, slug, codigo, resumo, ano_diegese, tags, episodio, imagem_capa")
+        .in("world_id", worldIds)
+        .order("created_at", { ascending: false });
+
+      if (fichasError) {
+        console.error("Erro ao buscar fichas:", fichasError);
+      } else {
+        fichas = fichasData || [];
+      }
+    }
+
+    return NextResponse.json({
+      worlds: worlds || [],
+      types: categories || [],
+      entities: fichas,
+    });
+
+  } catch (error: any) {
+    console.error("Erro na API de catalog:", error);
+    return NextResponse.json(
+      { error: error.message || "Erro interno" },
+      { status: 500 }
+    );
+  }
+}

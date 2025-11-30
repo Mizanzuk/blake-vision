@@ -1,0 +1,171 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light mode colors */
+    --color-surface-base: 250 250 249;      /* stone-50 */
+    --color-surface-raised: 255 255 255;    /* white */
+    --color-surface-overlay: 245 245 244;   /* stone-100 */
+    
+    --color-border-subtle: 231 229 228;     /* stone-200 */
+    --color-border-default: 214 211 209;    /* stone-300 */
+    --color-border-strong: 168 162 158;     /* stone-400 */
+    
+    --color-text-primary: 28 25 23;         /* stone-900 */
+    --color-text-secondary: 68 64 60;       /* stone-700 */
+    --color-text-tertiary: 120 113 108;     /* stone-500 */
+    --color-text-disabled: 168 162 158;     /* stone-400 */
+  }
+
+  .dark {
+    /* Dark mode colors */
+    --color-surface-base: 12 10 9;          /* stone-950 */
+    --color-surface-raised: 28 25 23;       /* stone-900 */
+    --color-surface-overlay: 41 37 36;      /* stone-800 */
+    
+    --color-border-subtle: 41 37 36;        /* stone-800 */
+    --color-border-default: 68 64 60;       /* stone-700 */
+    --color-border-strong: 87 83 78;        /* stone-600 */
+    
+    --color-text-primary: 250 250 249;      /* stone-50 */
+    --color-text-secondary: 231 229 228;    /* stone-200 */
+    --color-text-tertiary: 168 162 158;     /* stone-400 */
+    --color-text-disabled: 120 113 108;     /* stone-500 */
+  }
+
+  * {
+    @apply border-border-light-default dark:border-border-dark-default;
+  }
+
+  body {
+    @apply bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary;
+    @apply font-sans antialiased;
+    @apply transition-colors duration-200;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border-light-strong dark:bg-border-dark-strong rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-text-light-tertiary dark:bg-text-dark-tertiary;
+  }
+
+  /* Firefox scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--color-border-strong)) transparent;
+  }
+
+  /* Focus styles */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2 ring-offset-light-base dark:ring-offset-dark-base;
+  }
+
+  /* Selection */
+  ::selection {
+    @apply bg-primary-200 dark:bg-primary-800 text-text-light-primary dark:text-dark-primary;
+  }
+}
+
+@layer components {
+  /* Prose styles for long-form content */
+  .prose {
+    @apply max-w-prose;
+  }
+
+  .prose h1 {
+    @apply text-4xl font-bold mb-6 text-text-light-primary dark:text-dark-primary;
+  }
+
+  .prose h2 {
+    @apply text-3xl font-bold mb-5 mt-10 text-text-light-primary dark:text-dark-primary;
+  }
+
+  .prose h3 {
+    @apply text-2xl font-semibold mb-4 mt-8 text-text-light-primary dark:text-dark-primary;
+  }
+
+  .prose h4 {
+    @apply text-xl font-semibold mb-3 mt-6 text-text-light-primary dark:text-dark-primary;
+  }
+
+  .prose p {
+    @apply text-base leading-relaxed mb-4 text-text-light-secondary dark:text-dark-secondary font-serif;
+  }
+
+  .prose ul, .prose ol {
+    @apply mb-4 ml-6 space-y-2;
+  }
+
+  .prose li {
+    @apply text-base leading-relaxed text-text-light-secondary dark:text-dark-secondary;
+  }
+
+  .prose a {
+    @apply text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 underline decoration-1 underline-offset-2 transition-colors;
+  }
+
+  .prose blockquote {
+    @apply border-l-4 border-primary-500 pl-4 italic my-6 text-text-light-tertiary dark:text-dark-tertiary;
+  }
+
+  .prose code {
+    @apply bg-light-overlay dark:bg-dark-overlay px-1.5 py-0.5 rounded text-sm font-mono;
+  }
+
+  .prose pre {
+    @apply bg-light-overlay dark:bg-dark-overlay p-4 rounded-lg overflow-x-auto my-6;
+  }
+
+  .prose pre code {
+    @apply bg-transparent p-0;
+  }
+
+  .prose hr {
+    @apply my-8 border-border-light-default dark:border-border-dark-default;
+  }
+
+  .prose img {
+    @apply rounded-lg my-6;
+  }
+
+  .prose table {
+    @apply w-full my-6 border-collapse;
+  }
+
+  .prose th {
+    @apply bg-light-overlay dark:bg-dark-overlay px-4 py-2 text-left font-semibold border border-border-light-default dark:border-border-dark-default;
+  }
+
+  .prose td {
+    @apply px-4 py-2 border border-border-light-default dark:border-border-dark-default;
+  }
+}
+
+@layer utilities {
+  /* Custom utilities */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-in {
+    animation: fadeIn 0.2s ease-in-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+}

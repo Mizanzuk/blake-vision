@@ -1,0 +1,638 @@
+"use client";
+
+import { useState, useEffect, FormEvent } from "react";
+import { Modal, Input, Textarea, Select, Button, Badge, MentionTextarea } from "@/app/components/ui";
+import { useTranslation } from "@/app/lib/hooks/useTranslation";
+import { toast } from "sonner";
+import type { World, Category, Ficha } from "@/app/types";
+import RelationsTab from "./RelationsTab";
+
+interface FichaModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  ficha: Partial<Ficha> | null;
+  worlds: World[];
+  categories: Category[];
+  onSave: (ficha: any) => Promise<void>;
+  onDelete?: (fichaId: string) => Promise<void>;
+}
+
+type TabType = "basic" | "dates" | "relations" | "images";
+
+export default function FichaModal({
+  isOpen,
+  onClose,
+  ficha,
+  worlds,
+  categories,
+  onSave,
+  onDelete,
+}: FichaModalProps) {
+  const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState<TabType>("basic");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  
+  // Form state
+  const [formData, setFormData] = useState<any>({
+    world_id: "",
+    tipo: "",
+    titulo: "",
+    slug: "",
+    codigo: "",
+    resumo: "",
+    conteudo: "",
+    ano_diegese: "",
+    tags: "",
+    episodio: "",
+    imagem_capa: "",
+    descricao_data: "",
+    data_inicio: "",
+    data_fim: "",
+    granularidade_data: "dia",
+    camada_temporal: "",
+  });
+
+  // Episodes from selected world
+  const [episodes, setEpisodes] = useState<string[]>([]);
+  const [showNewEpisodeInput, setShowNewEpisodeInput] = useState(false);
+  const [newEpisode, setNewEpisode] = useState("");
+
+  useEffect(() => {
+    if (ficha) {
+      setFormData({
+        ...ficha,
+        tags: ficha.tags || "",
+        ano_diegese: ficha.ano_diegese || "",
+        episodio: ficha.episodio || "",
+      });
+    } else {
+      // Reset form for new ficha
+      setFormData({
+        world_id: worlds.length > 0 ? worlds[0].id : "",
+        tipo: categories.length > 0 ? categories[0].slug : "",
+        titulo: "",
+        slug: "",
+        codigo: "",
+        resumo: "",
+        conteudo: "",
+        ano_diegese: "",
+        tags: "",
+        episodio: "",
+        imagem_capa: "",
+        descricao_data: "",
+        data_inicio: "",
+        data_fim: "",
+        granularidade_data: "dia",
+        camada_temporal: "",
+      });
+    }
+    setActiveTab("basic");
+  }, [ficha, isOpen, worlds, categories]);
+
+  useEffect(() => {
+    // Load episodes for selected world
+    if (formData.world_id) {
+      const selectedWorld = worlds.find(w => w.id === formData.world_id);
+      if (selectedWorld?.has_episodes) {
+        // TODO: Fetch episodes from API
+        // For now, extract unique episodes from existing fichas
+        setEpisodes([]);
+      }
+    }
+  }, [formData.world_id, worlds]);
+
+  function handleChange(field: string, value: any) {
+    setFormData((prev: any) => ({ ...prev, [field]: value }));
+    
+    // Auto-generate slug from titulo
+    if (field === "titulo" && !ficha) {
+      const slug = value
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      setFormData((prev: any) => ({ ...prev, slug }));
+    }
+    
+    // Auto-generate codigo from tipo
+    if (field === "tipo" && !ficha) {
+      const category = categories.find(c => c.slug === value);
+      if (category?.prefix) {
+        // TODO: Get next number from API
+        const codigo = `${category.prefix}-001`;
+        setFormData((prev: any) => ({ ...prev, codigo }));
+      }
+    }
+  }
+
+  function handleAddEpisode() {
+    if (newEpisode.trim()) {
+      setEpisodes([...episodes, newEpisode.trim()]);
+      setFormData((prev: any) => ({ ...prev, episodio: newEpisode.trim() }));
+      setNewEpisode("");
+      setShowNewEpisodeInput(false);
+    }
+  }
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    
+    // Validations
+    if (!formData.world_id) {
+      toast.error("Selecione um mundo");
+      return;
+    }
+    if (!formData.tipo) {
+      toast.error("Selecione um tipo");
+      return;
+    }
+    if (!formData.titulo.trim()) {
+      toast.error("Digite um título");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      let imagemCapaUrl = formData.imagem_capa;
+
+      // Upload image if file is selected
+      if (imageFile) {
+        setIsUploadingImage(true);
+        const uploadFormData = new FormData();
+        uploadFormData.append("file", imageFile);
+        uploadFormData.append("fichaId", ficha?.id || "new");
+
+        const uploadResponse = await fetch("/api/images", {
+          method: "POST",
+          body: uploadFormData,
+        });
+
+        if (uploadResponse.ok) {
+          const uploadData = await uploadResponse.json();
+          imagemCapaUrl = uploadData.url;
+          toast.success("Imagem enviada com sucesso!");
+        } else {
+          const uploadError = await uploadResponse.json();
+          toast.error(uploadError.error || "Erro ao enviar imagem");
+        }
+        setIsUploadingImage(false);
+      }
+
+      // Clean data
+      const dataToSave = {
+        ...formData,
+        ano_diegese: formData.ano_diegese ? parseInt(formData.ano_diegese) : null,
+        tags: formData.tags || null,
+        episodio: formData.episodio || null,
+        imagem_capa: imagemCapaUrl || null,
+        descricao_data: formData.descricao_data || null,
+        data_inicio: formData.data_inicio || null,
+        data_fim: formData.data_fim || null,
+        camada_temporal: formData.camada_temporal || null,
+      };
+
+      await onSave(dataToSave);
+      onClose();
+    } catch (error) {
+      console.error("Error saving ficha:", error);
+    } finally {
+      setIsSubmitting(false);
+      setIsUploadingImage(false);
+    }
+  }
+
+  const selectedWorld = worlds.find(w => w.id === formData.world_id);
+  const selectedCategory = categories.find(c => c.slug === formData.tipo);
+
+  async function handleDelete() {
+    if (!ficha?.id || !onDelete) return;
+
+    const confirmed = window.confirm(
+      "Tem certeza que deseja excluir esta ficha? Esta ação não pode ser desfeita."
+    );
+
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+    try {
+      await onDelete(ficha.id);
+      toast.success("Ficha excluída com sucesso!");
+      onClose();
+    } catch (error) {
+      console.error("Error deleting ficha:", error);
+      toast.error("Erro ao excluir ficha");
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={ficha ? t.ficha.edit : t.ficha.create}
+      size="xl"
+      footer={
+        <>
+          <div className="flex-1">
+            {ficha?.id && onDelete && (
+              <Button
+                variant="danger"
+                onClick={handleDelete}
+                loading={isDeleting}
+              >
+                Excluir
+              </Button>
+            )}
+          </div>
+          <Button variant="ghost" onClick={onClose}>
+            {t.common.cancel}
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSubmit}
+            loading={isSubmitting || isUploadingImage}
+          >
+            {isUploadingImage ? "Enviando imagem..." : isSubmitting ? "Salvando..." : t.common.save}
+          </Button>
+        </>
+      }
+    >
+      {/* Tabs */}
+      <div className="flex gap-2 mb-6 border-b border-border-light-default dark:border-border-dark-default">
+        <button
+          onClick={() => setActiveTab("basic")}
+          className={`px-4 py-2 font-medium transition-colors ${
+            activeTab === "basic"
+              ? "text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400"
+              : "text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary"
+          }`}
+        >
+          Básico
+        </button>
+        <button
+          onClick={() => setActiveTab("dates")}
+          className={`px-4 py-2 font-medium transition-colors ${
+            activeTab === "dates"
+              ? "text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400"
+              : "text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary"
+          }`}
+        >
+          Datas
+        </button>
+        <button
+          onClick={() => setActiveTab("relations")}
+          className={`px-4 py-2 font-medium transition-colors ${
+            activeTab === "relations"
+              ? "text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400"
+              : "text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary"
+          }`}
+        >
+          Relações
+        </button>
+        <button
+          onClick={() => setActiveTab("images")}
+          className={`px-4 py-2 font-medium transition-colors ${
+            activeTab === "images"
+              ? "text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400"
+              : "text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary"
+          }`}
+        >
+          Imagens
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Tab: Basic */}
+        {activeTab === "basic" && (
+          <>
+            <div className="grid grid-cols-2 gap-4">
+              <Select
+                label={t.world.title}
+                options={worlds.map(w => ({ value: w.id, label: w.nome }))}
+                value={formData.world_id}
+                onChange={(e) => handleChange("world_id", e.target.value)}
+                required
+                fullWidth
+              />
+              
+              <Select
+                label={t.ficha.type}
+                options={categories.map(c => ({ value: c.slug, label: c.label }))}
+                value={formData.tipo}
+                onChange={(e) => handleChange("tipo", e.target.value)}
+                required
+                fullWidth
+              />
+            </div>
+
+            {selectedWorld?.has_episodes && (
+              <div>
+                <Select
+                  label="Episódio"
+                  options={[
+                    { value: "", label: "Nenhum episódio" },
+                    ...episodes.map(e => ({ value: e, label: e })),
+                    { value: "__new__", label: "+ Novo Episódio" },
+                  ]}
+                  value={formData.episodio}
+                  onChange={(e) => {
+                    if (e.target.value === "__new__") {
+                      setShowNewEpisodeInput(true);
+                    } else {
+                      handleChange("episodio", e.target.value);
+                    }
+                  }}
+                  fullWidth
+                />
+                
+                {showNewEpisodeInput && (
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      placeholder="Nome do episódio"
+                      value={newEpisode}
+                      onChange={(e) => setNewEpisode(e.target.value)}
+                      fullWidth
+                    />
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={handleAddEpisode}
+                    >
+                      Adicionar
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setShowNewEpisodeInput(false);
+                        setNewEpisode("");
+                      }}
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <Input
+              label={t.ficha.title}
+              value={formData.titulo}
+              onChange={(e) => handleChange("titulo", e.target.value)}
+              placeholder="Ex: João Silva"
+              required
+              fullWidth
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="Slug"
+                value={formData.slug}
+                onChange={(e) => handleChange("slug", e.target.value)}
+                placeholder="joao-silva"
+                fullWidth
+                helpText="URL amigável (gerado automaticamente)"
+              />
+              
+              <Input
+                label="Código"
+                value={formData.codigo}
+                onChange={(e) => handleChange("codigo", e.target.value)}
+                placeholder={selectedCategory?.prefix ? `${selectedCategory.prefix}-001` : "PER-001"}
+                fullWidth
+                helpText="Código único (gerado automaticamente)"
+              />
+            </div>
+
+            <Textarea
+              label={t.ficha.summary}
+              value={formData.resumo}
+              onChange={(e) => handleChange("resumo", e.target.value)}
+              placeholder="Breve resumo em 1-2 linhas..."
+              fullWidth
+            />
+
+            <MentionTextarea
+              label={t.ficha.content}
+              value={formData.conteudo}
+              onChange={(value) => handleChange("conteudo", value)}
+              placeholder="Conteúdo completo da ficha... (digite @ para mencionar outras fichas)"
+              rows={10}
+              fullWidth
+              helpText="Digite @ para mencionar outras fichas e criar referências"
+            />
+
+            <Input
+              label="Tags"
+              value={formData.tags}
+              onChange={(e) => handleChange("tags", e.target.value)}
+              placeholder="magia, dragão, profecia"
+              fullWidth
+              helpText="Separe tags por vírgula"
+            />
+          </>
+        )}
+
+        {/* Tab: Dates */}
+        {activeTab === "dates" && (
+          <>
+            <Input
+              label="Ano Diegético"
+              type="number"
+              value={formData.ano_diegese}
+              onChange={(e) => handleChange("ano_diegese", e.target.value)}
+              placeholder="2024"
+              fullWidth
+              helpText="Ano no universo ficcional"
+            />
+
+            <Input
+              label="Descrição da Data"
+              value={formData.descricao_data}
+              onChange={(e) => handleChange("descricao_data", e.target.value)}
+              placeholder="Ex: Primavera de 2024"
+              fullWidth
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="Data de Início"
+                type="date"
+                value={formData.data_inicio}
+                onChange={(e) => handleChange("data_inicio", e.target.value)}
+                fullWidth
+              />
+              
+              <Input
+                label="Data de Fim"
+                type="date"
+                value={formData.data_fim}
+                onChange={(e) => handleChange("data_fim", e.target.value)}
+                fullWidth
+              />
+            </div>
+
+            <Select
+              label="Granularidade"
+              options={[
+                { value: "dia", label: "Dia" },
+                { value: "mes", label: "Mês" },
+                { value: "ano", label: "Ano" },
+                { value: "decada", label: "Década" },
+                { value: "seculo", label: "Século" },
+              ]}
+              value={formData.granularidade_data}
+              onChange={(e) => handleChange("granularidade_data", e.target.value)}
+              fullWidth
+            />
+
+            <Input
+              label="Camada Temporal"
+              value={formData.camada_temporal}
+              onChange={(e) => handleChange("camada_temporal", e.target.value)}
+              placeholder="Ex: Linha principal, Flashback, Futuro alternativo"
+              fullWidth
+              helpText="Para narrativas com múltiplas linhas temporais"
+            />
+          </>
+        )}
+
+        {/* Tab: Relations */}
+        {activeTab === "relations" && (
+          <>
+            {!ficha?.id ? (
+              <div className="text-center py-8">
+                <svg
+                  className="w-16 h-16 mx-auto text-text-light-tertiary dark:text-dark-tertiary mb-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1}
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <p className="text-lg font-semibold text-text-light-primary dark:text-dark-primary mb-2">
+                  Salve a ficha primeiro
+                </p>
+                <p className="text-text-light-tertiary dark:text-dark-tertiary">
+                  Você precisa salvar esta ficha antes de adicionar relações
+                </p>
+              </div>
+            ) : (
+              <RelationsTab fichaId={ficha.id} />
+            )}
+          </>
+        )}
+
+        {/* Tab: Images */}
+        {activeTab === "images" && (
+          <>
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-3">
+                Upload de Imagem de Capa
+              </label>
+              
+              <div className="border-2 border-dashed border-border-light-default dark:border-border-dark-default rounded-xl p-8 text-center hover:border-primary-500 transition-colors">
+                <input
+                  type="file"
+                  id="image-upload"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setImageFile(file);
+                      // Preview
+                      const reader = new FileReader();
+                      reader.onload = (e) => {
+                        handleChange("imagem_capa", e.target?.result as string);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+                
+                <label
+                  htmlFor="image-upload"
+                  className="cursor-pointer flex flex-col items-center"
+                >
+                  <svg
+                    className="w-12 h-12 text-text-light-tertiary dark:text-dark-tertiary mb-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  
+                  {imageFile ? (
+                    <div>
+                      <p className="text-sm font-semibold text-text-light-primary dark:text-dark-primary mb-1">
+                        {imageFile.name}
+                      </p>
+                      <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary">
+                        Clique para alterar
+                      </p>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-sm font-semibold text-text-light-primary dark:text-dark-primary mb-1">
+                        Clique para selecionar uma imagem
+                      </p>
+                      <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary">
+                        PNG, JPG, GIF até 5MB
+                      </p>
+                    </div>
+                  )}
+                </label>
+              </div>
+            </div>
+
+            <div className="text-center text-text-light-tertiary dark:text-dark-tertiary my-4">
+              ou
+            </div>
+
+            <Input
+              label="URL da Imagem de Capa"
+              value={formData.imagem_capa}
+              onChange={(e) => handleChange("imagem_capa", e.target.value)}
+              placeholder="https://exemplo.com/imagem.jpg"
+              fullWidth
+            />
+
+            {formData.imagem_capa && (
+              <div className="mt-4">
+                <p className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
+                  Preview:
+                </p>
+                <img
+                  src={formData.imagem_capa}
+                  alt="Preview"
+                  className="w-full h-48 object-cover rounded-lg"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23ddd' width='400' height='300'/%3E%3Ctext fill='%23999' x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle'%3EImagem não encontrada%3C/text%3E%3C/svg%3E";
+                  }}
+                />
+              </div>
+            )}
+          </>
+        )}
+      </form>
+    </Modal>
+  );
+}
