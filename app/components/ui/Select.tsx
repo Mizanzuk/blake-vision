@@ -32,6 +32,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
       placeholder,
       className,
       required,
+      children,
       ...props
     },
     ref
