@@ -702,7 +702,7 @@ export default function HomePage() {
                 <div
                   key={message.id || index}
                   className={clsx(
-                    "flex gap-4",
+                    "group flex gap-4",
                     message.role === "user" ? "justify-end" : "justify-start"
                   )}
                 >
@@ -743,7 +743,7 @@ export default function HomePage() {
                       <div className="flex gap-2 mt-4 pt-3 border-t border-border-light-default dark:border-border-dark-default">
                         <button
                           onClick={() => handleCopyMessage(message.content)}
-                          className="text-xs text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary transition-colors flex items-center gap-1"
+                          className="opacity-0 group-hover:opacity-100 text-xs text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary transition-all flex items-center gap-1"
                         >
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
