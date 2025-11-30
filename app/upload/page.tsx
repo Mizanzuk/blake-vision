@@ -408,7 +408,7 @@ export default function UploadPage() {
                       id="file-input"
                     />
                     <label htmlFor="file-input">
-                      <Button variant="secondary" as="span">
+                      <Button variant="ghost">
                         Selecionar Arquivo
                       </Button>
                     </label>
