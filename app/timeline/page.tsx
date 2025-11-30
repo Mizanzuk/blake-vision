@@ -442,11 +442,11 @@ export default function TimelinePage() {
                                 <div className="flex items-center gap-2 mb-2">
                                   {category && (
                                     <Badge variant="primary" size="sm">
-                                      {category.nome}
+                                      {category.label}
                                     </Badge>
                                   )}
                                   {world && (
-                                    <Badge variant="secondary" size="sm">
+                                    <Badge variant="default" size="sm">
                                       {world.nome}
                                     </Badge>
                                   )}
