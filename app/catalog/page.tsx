@@ -156,7 +156,7 @@ export default function CatalogPage() {
           nome: newUniverseName.trim(),
           descricao: newUniverseDescription.trim() || null
         })
-        .select("id, nome")
+        .select("*")
         .single();
       
       if (insertError) throw insertError;
