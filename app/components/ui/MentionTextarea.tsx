@@ -10,7 +10,7 @@ interface Mention {
   slug: string;
 }
 
-interface MentionTextareaProps {
+export interface MentionTextareaProps {
   label?: string;
   value: string;
   onChange: (value: string) => void;
