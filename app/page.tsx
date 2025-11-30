@@ -653,45 +653,40 @@ export default function HomePage() {
           <>
             {/* Chat Header */}
             <header className={clsx(
-              "p-4 border-b border-border-light-default dark:border-border-dark-default",
+              "p-2 border-b border-border-light-default dark:border-border-dark-default",
               persona?.styles.header
             )}>
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Badge variant={persona?.styles.badge || "default"} size="lg">
+                <div className="flex items-center gap-2">
+                  <Badge variant={persona?.styles.badge || "default"} size="sm">
                     {persona?.nome}
                   </Badge>
                   <div>
-                    <h2 className="text-lg font-semibold text-white">
-                      {persona?.titulo}
-                    </h2>
-                    <p className="text-sm text-white/80">
+                    <p className="text-sm font-medium text-white">
                       {activeSession.title}
                     </p>
                   </div>
                 </div>
                 
-                {/* Action Buttons */}
-                <div className="flex items-center gap-2">
+                {/* Action Buttons - Icons Only */}
+                <div className="flex items-center gap-1">
                   <button
                     onClick={handleExportConversation}
-                    className="px-3 py-2 text-sm text-white/80 hover:text-white transition-colors flex items-center gap-2"
+                    className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded transition-colors"
                     title="Exportar conversa"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
-                    Exportar
                   </button>
                   <button
                     onClick={handleClearHistory}
-                    className="px-3 py-2 text-sm text-white/80 hover:text-white transition-colors flex items-center gap-2"
+                    className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded transition-colors"
                     title="Limpar histórico"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
-                    Limpar
                   </button>
                 </div>
               </div>
