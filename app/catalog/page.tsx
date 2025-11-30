@@ -162,7 +162,7 @@ export default function CatalogPage() {
       if (insertError) throw insertError;
       
       if (inserted) {
-        setUniverses(prev => [...prev, inserted]);
+        setUniverses(prev => [...prev, inserted as Universe]);
         setSelectedUniverseId(inserted.id);
         localStorage.setItem("selectedUniverseId", inserted.id);
         setShowNewUniverseModal(false);
