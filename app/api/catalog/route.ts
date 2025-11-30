@@ -3,6 +3,16 @@ import { createClient } from "@/app/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
+// Categorias padrão caso não existam no banco
+const DEFAULT_CATEGORIES = [
+  { slug: "personagem", label: "Personagem" },
+  { slug: "local", label: "Local" },
+  { slug: "evento", label: "Evento" },
+  { slug: "conceito", label: "Conceito" },
+  { slug: "regra", label: "Regra" },
+  { slug: "roteiro", label: "Roteiro" },
+];
+
 export async function GET(req: NextRequest) {
   try {
     const supabase = await createClient();
@@ -31,15 +41,29 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Erro ao buscar mundos" }, { status: 500 });
     }
 
-    // Fetch categories
-    const { data: categories, error: categoriesError } = await supabase
-      .from("categories")
-      .select("slug, label")
-      .eq("universe_id", universeId)
-      .order("label", { ascending: true });
+    // Fetch categories - com fallback para categorias padrão
+    let categories: { slug: string; label: string }[] = [];
+    
+    try {
+      const { data: categoriesData, error: categoriesError } = await supabase
+        .from("categories")
+        .select("slug, label")
+        .eq("universe_id", universeId)
+        .order("label", { ascending: true });
 
-    if (categoriesError) {
-      console.error("Erro ao buscar categorias:", categoriesError);
+      if (categoriesError) {
+        console.warn("Erro ao buscar categorias (usando padrão):", categoriesError);
+        categories = DEFAULT_CATEGORIES;
+      } else if (categoriesData && categoriesData.length > 0) {
+        categories = categoriesData;
+      } else {
+        // Se não há categorias para este universo, usar padrão
+        console.log("Nenhuma categoria encontrada para o universo, usando padrão");
+        categories = DEFAULT_CATEGORIES;
+      }
+    } catch (e) {
+      console.warn("Tabela categories não encontrada ou erro de acesso, usando padrão");
+      categories = DEFAULT_CATEGORIES;
     }
 
     // Fetch fichas
@@ -62,7 +86,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       worlds: worlds || [],
-      types: categories || [],
+      types: categories,
       entities: fichas,
     });
 

@@ -1,16 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
 import {
   Button,
-  Select,
   Card,
   Loading,
-  Badge,
-  Input,
-  Textarea,
 } from "@/app/components/ui";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
@@ -25,10 +21,16 @@ type ExtractedEntity = {
   tags?: string;
 };
 
+type Category = {
+  slug: string;
+  label: string;
+};
+
 export default function UploadPage() {
   const router = useRouter();
   const { t } = useTranslation();
   const supabase = getSupabaseClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
@@ -38,18 +40,35 @@ export default function UploadPage() {
   const [selectedUniverseId, setSelectedUniverseId] = useState<string>("");
   const [worlds, setWorlds] = useState<World[]>([]);
   const [selectedWorldId, setSelectedWorldId] = useState<string>("");
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  
+  // Upload fields
+  const [unitNumber, setUnitNumber] = useState<string>("");
+  const [documentName, setDocumentName] = useState<string>("");
+  const [text, setText] = useState<string>("");
+  const [existingEpisodes, setExistingEpisodes] = useState<string[]>([]);
+  const [showNewEpisodeInput, setShowNewEpisodeInput] = useState(false);
 
   // Upload state
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [isParsingFile, setIsParsingFile] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Extraction results
   const [extractedEntities, setExtractedEntities] = useState<ExtractedEntity[]>([]);
-  const [showReview, setShowReview] = useState(false);
 
-  // Saving state
-  const [isSaving, setIsSaving] = useState(false);
+  // Modals
+  const [showNewUniverseModal, setShowNewUniverseModal] = useState(false);
+  const [newUniverseName, setNewUniverseName] = useState("");
+  const [newUniverseDescription, setNewUniverseDescription] = useState("");
+  const [isCreatingUniverse, setIsCreatingUniverse] = useState(false);
+
+  const [showNewWorldModal, setShowNewWorldModal] = useState(false);
+  const [newWorldName, setNewWorldName] = useState("");
+  const [newWorldDescription, setNewWorldDescription] = useState("");
+  const [newWorldHasEpisodes, setNewWorldHasEpisodes] = useState(true);
+  const [isCreatingWorld, setIsCreatingWorld] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -58,21 +77,30 @@ export default function UploadPage() {
   useEffect(() => {
     if (userId) {
       loadUniverses();
+      
+      const saved = localStorage.getItem("selectedUniverseId");
+      if (saved) {
+        setSelectedUniverseId(saved);
+      }
     }
   }, [userId]);
 
   useEffect(() => {
     if (selectedUniverseId) {
-      loadWorlds();
+      loadCatalogData();
     }
   }, [selectedUniverseId]);
 
+  useEffect(() => {
+    if (selectedWorldId) {
+      fetchExistingEpisodes(selectedWorldId);
+    }
+  }, [selectedWorldId]);
+
   async function checkAuth() {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
+      const { data: { user } } = await supabase.auth.getUser();
+      
       if (!user) {
         router.push("/login");
         return;
@@ -91,7 +119,7 @@ export default function UploadPage() {
     try {
       const response = await fetch("/api/universes");
       const data = await response.json();
-
+      
       if (response.ok) {
         setUniverses(data.universes || []);
       }
@@ -100,471 +128,739 @@ export default function UploadPage() {
     }
   }
 
-  async function loadWorlds() {
+  async function loadCatalogData() {
     try {
       const response = await fetch(`/api/catalog?universeId=${selectedUniverseId}`);
       const data = await response.json();
-
+      
       if (response.ok) {
         setWorlds(data.worlds || []);
+        setCategories(data.types || []);
+        // Inicializar com todas as categorias selecionadas
+        setSelectedCategories((data.types || []).map((c: Category) => c.slug));
+      } else {
+        toast.error(data.error || t.errors.generic);
       }
     } catch (error) {
-      console.error("Error loading worlds:", error);
+      console.error("Error loading catalog:", error);
+      toast.error(t.errors.network);
     }
   }
 
-  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (file) {
-      const validTypes = [
-        "application/pdf",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "text/plain",
-      ];
-
-      if (!validTypes.includes(file.type)) {
-        toast.error("Formato não suportado. Use PDF, DOCX ou TXT");
-        return;
-      }
-
-      setSelectedFile(file);
-    }
-  }
-
-  function handleDrop(e: React.DragEvent) {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      const validTypes = [
-        "application/pdf",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "text/plain",
-      ];
-
-      if (!validTypes.includes(file.type)) {
-        toast.error("Formato não suportado. Use PDF, DOCX ou TXT");
-        return;
-      }
-
-      setSelectedFile(file);
-    }
-  }
-
-  async function handleUpload() {
-    if (!selectedFile) {
-      toast.error("Selecione um arquivo");
-      return;
-    }
-
-    if (!selectedUniverseId || !selectedWorldId) {
-      toast.error("Selecione universo e mundo");
-      return;
-    }
-
-    setIsUploading(true);
-
+  async function fetchExistingEpisodes(worldId: string) {
     try {
-      // Step 1: Upload file
+      const { data } = await supabase
+        .from("fichas")
+        .select("episodio")
+        .eq("world_id", worldId)
+        .not("episodio", "is", null)
+        .order("episodio", { ascending: true });
+      
+      if (data) {
+        const episodes = Array.from(new Set(data.map(f => f.episodio).filter(Boolean)));
+        setExistingEpisodes(episodes);
+      }
+    } catch (err) {
+      console.error("Erro ao carregar episódios:", err);
+    }
+  }
+
+  function handleUniverseChange(e: ChangeEvent<HTMLSelectElement>) {
+    const value = e.target.value;
+    if (value === "create_new_universe") {
+      setShowNewUniverseModal(true);
+      return;
+    }
+    setSelectedUniverseId(value);
+    localStorage.setItem("selectedUniverseId", value);
+    setSelectedWorldId("");
+    setUnitNumber("");
+  }
+
+  function handleWorldChange(e: ChangeEvent<HTMLSelectElement>) {
+    const value = e.target.value;
+    if (value === "create_new") {
+      setShowNewWorldModal(true);
+      return;
+    }
+    setSelectedWorldId(value);
+    setUnitNumber("");
+    setShowNewEpisodeInput(false);
+  }
+
+  function handleEpisodeChange(e: ChangeEvent<HTMLSelectElement>) {
+    const value = e.target.value;
+    if (value === "new_episode") {
+      setShowNewEpisodeInput(true);
+      setUnitNumber("");
+    } else {
+      setShowNewEpisodeInput(false);
+      setUnitNumber(value);
+    }
+  }
+
+  async function handleFileSelect(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setIsParsingFile(true);
+    if (!documentName) setDocumentName(file.name.replace(/\.[^/.]+$/, ""));
+    
+    try {
       const formData = new FormData();
-      formData.append("file", selectedFile);
-      formData.append("universe_id", selectedUniverseId);
-      formData.append("world_id", selectedWorldId);
+      formData.append("file", file);
+      const res = await fetch("/api/parse", { method: "POST", body: formData });
+      
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Erro ao ler arquivo");
+      }
+      
+      const data = await res.json();
+      if (data.text) {
+        setText(data.text);
+        toast.success("Arquivo lido com sucesso!");
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Erro ao processar arquivo.");
+    } finally {
+      setIsParsingFile(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+  async function handleCreateUniverse() {
+    if (!newUniverseName.trim()) {
+      toast.error("Dê um nome ao novo Universo.");
+      return;
+    }
+    if (!userId) {
+      toast.error("Usuário não autenticado.");
+      return;
+    }
+    
+    setIsCreatingUniverse(true);
+    
+    try {
+      const { data: inserted, error: insertError } = await supabase
+        .from("universes")
+        .insert({
+          nome: newUniverseName.trim(),
+          descricao: newUniverseDescription.trim() || null
+        })
+        .select("id, nome")
+        .single();
+      
+      if (insertError) throw insertError;
+      
+      if (inserted) {
+        setUniverses(prev => [...prev, inserted]);
+        setSelectedUniverseId(inserted.id);
+        localStorage.setItem("selectedUniverseId", inserted.id);
+        setShowNewUniverseModal(false);
+        setNewUniverseName("");
+        setNewUniverseDescription("");
+        toast.success("Novo Universo criado com sucesso.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao criar Universo.");
+    } finally {
+      setIsCreatingUniverse(false);
+    }
+  }
 
-      const uploadResponse = await fetch("/api/lore/upload", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${session?.access_token}`,
-        },
-        body: formData,
-      });
-
-      const uploadData = await uploadResponse.json();
-
-      if (!uploadResponse.ok) {
-        toast.error(uploadData.error || "Erro ao fazer upload");
-        setIsUploading(false);
+  async function handleCreateWorld() {
+    if (!newWorldName.trim()) {
+      toast.error("Dê um nome ao novo Mundo.");
+      return;
+    }
+    if (!selectedUniverseId) {
+      toast.error("Selecione um Universo primeiro.");
+      return;
+    }
+    
+    setIsCreatingWorld(true);
+    
+    try {
+      const baseId = newWorldName.trim()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "");
+      const newId = `${baseId}_${Date.now().toString().slice(-4)}`;
+      
+      const payload: any = {
+        id: newId,
+        nome: newWorldName.trim(),
+        descricao: newWorldDescription.trim() || null,
+        has_episodes: newWorldHasEpisodes,
+        tipo: "mundo_ficcional",
+        universe_id: selectedUniverseId
+      };
+      
+      const { data, error } = await supabase
+        .from("worlds")
+        .insert([payload])
+        .select("*");
+      
+      if (error) {
+        console.error(error);
+        toast.error("Erro ao criar novo Mundo.");
         return;
       }
+      
+      const inserted = (data?.[0] || null) as World | null;
+      if (inserted) {
+        loadCatalogData();
+        setSelectedWorldId(inserted.id);
+        setShowNewWorldModal(false);
+        setNewWorldName("");
+        setNewWorldDescription("");
+        setNewWorldHasEpisodes(true);
+        toast.success("Novo Mundo criado com sucesso.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro inesperado ao criar Mundo.");
+    } finally {
+      setIsCreatingWorld(false);
+    }
+  }
 
-      toast.success("Arquivo enviado! Extraindo informações...");
-      setIsUploading(false);
-      setIsExtracting(true);
-
-      // Step 2: Extract entities
-      const extractResponse = await fetch("/api/lore/extract", {
+  async function handleExtractFichas() {
+    if (!userId) {
+      toast.error("Usuário não autenticado.");
+      return;
+    }
+    if (!selectedUniverseId) {
+      toast.error("Selecione um Universo antes de extrair fichas.");
+      return;
+    }
+    if (!selectedWorldId) {
+      toast.error("Selecione um Mundo antes de extrair fichas.");
+      return;
+    }
+    
+    const world = worlds.find(w => w.id === selectedWorldId);
+    const worldHasEpisodes = world?.has_episodes !== false;
+    
+    if (worldHasEpisodes && !unitNumber.trim()) {
+      toast.error("Informe o número do episódio/capítulo.");
+      return;
+    }
+    if (!text.trim()) {
+      toast.error("Cole um texto ou faça upload de um arquivo para extrair fichas.");
+      return;
+    }
+    if (selectedCategories.length === 0) {
+      toast.error("Selecione pelo menos uma categoria para extrair.");
+      return;
+    }
+    
+    setIsExtracting(true);
+    
+    try {
+      const response = await fetch("/api/lore/extract", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          file_path: uploadData.file_path,
-          universe_id: selectedUniverseId,
-          world_id: selectedWorldId,
+          text,
+          worldId: selectedWorldId,
+          worldName: world?.nome || "Mundo Desconhecido",
+          documentName: documentName.trim() || null,
+          unitNumber,
+          universeId: selectedUniverseId,
+          categories: selectedCategories
         }),
       });
-
-      const extractData = await extractResponse.json();
-
-      if (!extractResponse.ok) {
-        toast.error(extractData.error || "Erro ao extrair informações");
-        setIsExtracting(false);
-        return;
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Erro na extração");
       }
-
-      setExtractedEntities(extractData.entities || []);
-      setShowReview(true);
-      setIsExtracting(false);
-      toast.success(`${extractData.count} entidades e ${extractData.relations?.length || 0} relações extraídas! Revise antes de salvar.`);
-    } catch (error) {
-      console.error("Error in upload:", error);
-      toast.error("Erro ao processar arquivo");
-      setIsUploading(false);
+      
+      const data = await response.json();
+      
+      if (data.entities && data.entities.length > 0) {
+        setExtractedEntities(data.entities);
+        toast.success(`${data.entities.length} fichas extraídas com sucesso!`);
+      } else {
+        toast.warning("Nenhuma ficha foi extraída.");
+      }
+    } catch (err: any) {
+      console.error("Erro de extração:", err);
+      toast.error(err.message || "Erro ao processar extração.");
+    } finally {
       setIsExtracting(false);
     }
   }
 
-  function handleEditEntity(index: number, field: string, value: any) {
-    setExtractedEntities((prev) => {
-      const updated = [...prev];
-      updated[index] = { ...updated[index], [field]: value };
-      return updated;
-    });
-  }
-
-  function handleRemoveEntity(index: number) {
-    setExtractedEntities((prev) => prev.filter((_, i) => i !== index));
-  }
-
-  async function handleSaveAll() {
+  async function handleSaveFichas() {
     if (extractedEntities.length === 0) {
-      toast.error("Nenhuma entidade para salvar");
+      toast.error("Nenhuma ficha para salvar.");
       return;
     }
-
+    
     setIsSaving(true);
-
+    
     try {
-      // Create fichas in batch
-      const promises = extractedEntities.map(async (entity) => {
-        const response = await fetch("/api/fichas", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            world_id: selectedWorldId,
-            tipo: entity.tipo,
-            titulo: entity.titulo,
-            resumo: entity.resumo,
-            conteudo: entity.conteudo,
-            ano_diegese: entity.ano_diegese || null,
-            tags: entity.tags || null,
-          }),
-        });
-
-        return response.json();
+      const response = await fetch("/api/lore/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fichas: extractedEntities,
+          worldId: selectedWorldId,
+          universeId: selectedUniverseId,
+        }),
       });
-
-      await Promise.all(promises);
-
-      toast.success(`${extractedEntities.length} fichas criadas com sucesso!`);
-
-      // Reset state
-      setSelectedFile(null);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Erro ao salvar fichas");
+      }
+      
+      const data = await response.json();
+      toast.success(`${data.count || extractedEntities.length} fichas salvas com sucesso!`);
+      
+      // Limpar formulário
       setExtractedEntities([]);
-      setShowReview(false);
-
-      // Redirect to catalog
-      router.push("/catalog");
-    } catch (error) {
-      console.error("Error saving entities:", error);
-      toast.error("Erro ao salvar fichas");
+      setText("");
+      setDocumentName("");
+      setUnitNumber("");
+    } catch (err: any) {
+      console.error("Erro ao salvar:", err);
+      toast.error(err.message || "Erro ao salvar fichas.");
     } finally {
       setIsSaving(false);
     }
   }
 
-  if (isLoading) {
-    return <Loading fullScreen text={t.common.loading} />;
+  function toggleCategory(slug: string) {
+    setSelectedCategories(prev =>
+      prev.includes(slug)
+        ? prev.filter(s => s !== slug)
+        : [...prev, slug]
+    );
   }
 
+  function toggleAllCategories() {
+    if (selectedCategories.length === categories.length) {
+      setSelectedCategories([]);
+    } else {
+      setSelectedCategories(categories.map(c => c.slug));
+    }
+  }
+
+  function handleRemoveFicha(index: number) {
+    setExtractedEntities(prev => prev.filter((_, i) => i !== index));
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-light-base dark:bg-dark-base">
+        <Loading size="lg" />
+      </div>
+    );
+  }
+
+  const selectedWorld = worlds.find(w => w.id === selectedWorldId);
+  const worldHasEpisodes = selectedWorld?.has_episodes !== false;
+
   return (
-    <div className="min-h-screen bg-light-base dark:bg-dark-base">
-      {/* Header */}
-      <header className="border-b border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push("/")}
-              className="flex items-center gap-2 text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
-              </svg>
-              <span className="font-medium">{t.common.back}</span>
-            </button>
-
-            <h1 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
-              {t.nav.upload}
-            </h1>
+    <div className="min-h-screen bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary">
+      <div className="max-w-4xl mx-auto p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Upload de Arquivo ou Texto</h1>
+            <p className="text-sm text-text-light-secondary dark:text-dark-secondary mt-1">
+              Envie um roteiro (PDF, DOCX, TXT) ou cole o texto. A Lore Machine extrairá fichas automaticamente.
+            </p>
           </div>
+          <Button variant="ghost" onClick={() => router.back()}>
+            Voltar
+          </Button>
         </div>
-      </header>
 
-      {/* Content */}
-      <div className="max-w-4xl mx-auto px-6 py-8">
-        {!showReview ? (
-          <>
-            {/* Universe and World Selectors */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <Select
-                options={[
-                  { value: "", label: "Selecione um universo" },
-                  ...universes.map((u) => ({ value: u.id, label: u.nome })),
-                ]}
+        <Card variant="elevated" padding="lg">
+          <div className="space-y-6">
+            {/* Universo */}
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wide text-text-light-tertiary dark:text-dark-tertiary mb-2">
+                Universo
+              </label>
+              <select
+                className="w-full rounded-md bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default px-3 py-2 text-sm"
                 value={selectedUniverseId}
-                onChange={(e) => setSelectedUniverseId(e.target.value)}
-                fullWidth
-              />
-
-              <Select
-                options={[
-                  { value: "", label: "Selecione um mundo" },
-                  ...worlds.map((w) => ({ value: w.id, label: w.nome })),
-                ]}
-                value={selectedWorldId}
-                onChange={(e) => setSelectedWorldId(e.target.value)}
-                disabled={!selectedUniverseId}
-                fullWidth
-              />
+                onChange={handleUniverseChange}
+              >
+                <option value="">Selecione um universo</option>
+                {universes.map(u => (
+                  <option key={u.id} value={u.id}>{u.nome}</option>
+                ))}
+                <option value="create_new_universe">+ Novo Universo</option>
+              </select>
             </div>
 
-            {/* Upload Area */}
-            <Card variant="elevated" padding="lg">
-              <div
-                onDrop={handleDrop}
-                onDragOver={(e) => e.preventDefault()}
-                className="border-2 border-dashed border-border-light-default dark:border-border-dark-default rounded-xl p-12 text-center hover:border-primary-500 transition-colors"
-              >
-                {selectedFile ? (
-                  <div>
-                    <svg
-                      className="w-16 h-16 mx-auto text-primary-600 dark:text-primary-400 mb-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                    <p className="text-lg font-semibold text-text-light-primary dark:text-dark-primary mb-2">
-                      {selectedFile.name}
-                    </p>
-                    <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary mb-4">
-                      {(selectedFile.size / 1024).toFixed(2)} KB
-                    </p>
-                    <Button variant="ghost" onClick={() => setSelectedFile(null)}>
-                      Remover arquivo
-                    </Button>
-                  </div>
+            {/* Mundo */}
+            {selectedUniverseId && (
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-text-light-tertiary dark:text-dark-tertiary mb-2">
+                  Mundo de Destino
+                </label>
+                <select
+                  className="w-full rounded-md bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default px-3 py-2 text-sm"
+                  value={selectedWorldId}
+                  onChange={handleWorldChange}
+                >
+                  <option value="">Selecione um mundo</option>
+                  {worlds.map(w => (
+                    <option key={w.id} value={w.id}>{w.nome}</option>
+                  ))}
+                  <option value="create_new">+ Novo Mundo</option>
+                </select>
+              </div>
+            )}
+
+            {/* Episódio */}
+            {selectedWorldId && worldHasEpisodes && (
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-text-light-tertiary dark:text-dark-tertiary mb-2">
+                  Episódio / Capítulo #
+                </label>
+                {showNewEpisodeInput ? (
+                  <input
+                    type="text"
+                    className="w-full rounded-md bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default px-3 py-2 text-sm"
+                    value={unitNumber}
+                    onChange={(e) => setUnitNumber(e.target.value)}
+                    placeholder="Ex: 01, 02, 03..."
+                  />
                 ) : (
-                  <div>
-                    <svg
-                      className="w-16 h-16 mx-auto text-text-light-tertiary dark:text-dark-tertiary mb-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1}
-                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                      />
-                    </svg>
-                    <p className="text-lg font-semibold text-text-light-primary dark:text-dark-primary mb-2">
-                      Arraste um arquivo ou clique para selecionar
-                    </p>
-                    <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary mb-4">
-                      Formatos suportados: PDF, DOCX, TXT
-                    </p>
-                    <input
-                      type="file"
-                      accept=".pdf,.docx,.txt"
-                      onChange={handleFileSelect}
-                      className="hidden"
-                      id="file-input"
-                    />
-                    <label htmlFor="file-input">
-                      <Button variant="ghost">
-                        Selecionar Arquivo
-                      </Button>
-                    </label>
-                  </div>
+                  <select
+                    className="w-full rounded-md bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default px-3 py-2 text-sm"
+                    value={unitNumber}
+                    onChange={handleEpisodeChange}
+                  >
+                    <option value="">Selecione ou crie novo</option>
+                    {existingEpisodes.map(ep => (
+                      <option key={ep} value={ep}>{ep}</option>
+                    ))}
+                    <option value="new_episode">+ Novo Episódio</option>
+                  </select>
                 )}
               </div>
+            )}
 
-              {selectedFile && (
-                <div className="mt-6">
-                  <Button
-                    variant="primary"
-                    fullWidth
-                    onClick={handleUpload}
-                    loading={isUploading || isExtracting}
-                    disabled={!selectedUniverseId || !selectedWorldId}
-                  >
-                    {isUploading
-                      ? "Enviando arquivo..."
-                      : isExtracting
-                      ? "Extraindo informações..."
-                      : "Fazer Upload e Extrair"}
-                  </Button>
-                </div>
-              )}
-            </Card>
+            {/* Nome do Documento */}
+            {selectedWorldId && (
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-text-light-tertiary dark:text-dark-tertiary mb-2">
+                  Nome do Documento (Opcional)
+                </label>
+                <input
+                  type="text"
+                  className="w-full rounded-md bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default px-3 py-2 text-sm"
+                  value={documentName}
+                  onChange={(e) => setDocumentName(e.target.value)}
+                  placeholder="Ex.: Episódio 6 — A Geladeira"
+                />
+              </div>
+            )}
 
-            {/* Instructions */}
-            <Card variant="default" padding="md" className="mt-6">
-              <h3 className="font-semibold text-text-light-primary dark:text-dark-primary mb-3">
-                Como funciona?
-              </h3>
-              <ol className="space-y-2 text-sm text-text-light-secondary dark:text-dark-secondary">
-                <li>1. Selecione o universo e mundo onde as fichas serão criadas</li>
-                <li>2. Faça upload de um documento (PDF, DOCX ou TXT)</li>
-                <li>3. A IA analisará o texto e extrairá automaticamente:</li>
-                <ul className="ml-6 mt-1 space-y-1">
-                  <li>• Personagens</li>
-                  <li>• Locais</li>
-                  <li>• Eventos</li>
-                  <li>• Conceitos</li>
-                  <li>• Regras</li>
-                </ul>
-                <li>4. Revise as entidades extraídas antes de salvar</li>
-                <li>5. As fichas serão criadas automaticamente no catálogo</li>
-              </ol>
-            </Card>
-          </>
-        ) : (
-          <>
-            {/* Review Entities */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h2 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
-                    Entidades Extraídas
-                  </h2>
-                  <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary">
-                    Revise e edite antes de salvar
+            {/* Upload de Arquivo */}
+            {selectedWorldId && (
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-text-light-tertiary dark:text-dark-tertiary mb-2">
+                  Arquivo
+                </label>
+                <div className="border-2 border-dashed border-border-light-default dark:border-border-dark-default rounded-lg p-6 text-center">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.docx,.txt"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                    id="file-input"
+                  />
+                  <label htmlFor="file-input">
+                    <Button variant="ghost" as="span" disabled={isParsingFile}>
+                      {isParsingFile ? "Processando..." : "Escolher Arquivo (PDF, DOCX, TXT)"}
+                    </Button>
+                  </label>
+                  <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary mt-2">
+                    Ou arraste um arquivo aqui
                   </p>
                 </div>
-                <Badge variant="primary" size="lg">
-                  {extractedEntities.length} entidades
-                </Badge>
+              </div>
+            )}
+
+            {/* Texto do Episódio */}
+            {selectedWorldId && (
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-text-light-tertiary dark:text-dark-tertiary mb-2">
+                  Texto do Episódio / Capítulo
+                </label>
+                <textarea
+                  className="w-full rounded-md bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default px-3 py-2 text-sm min-h-[200px] font-mono"
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  placeholder="O texto do arquivo aparecerá aqui, ou você pode colar manualmente..."
+                />
+              </div>
+            )}
+
+            {/* Categorias para Extrair */}
+            {selectedWorldId && categories.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-semibold uppercase tracking-wide text-text-light-tertiary dark:text-dark-tertiary">
+                    Categorias para Extrair
+                  </label>
+                  <button
+                    onClick={toggleAllCategories}
+                    className="text-xs text-primary-light dark:text-primary-dark hover:underline"
+                  >
+                    {selectedCategories.length === categories.length ? "Desmarcar Todos" : "Marcar Todos"}
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {categories.map(cat => (
+                    <label
+                      key={cat.slug}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedCategories.includes(cat.slug)}
+                        onChange={() => toggleCategory(cat.slug)}
+                        className="w-4 h-4 rounded border-border-light-default dark:border-border-dark-default"
+                      />
+                      <span className="text-sm">{cat.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Botão Extrair */}
+            {selectedWorldId && (
+              <div className="flex justify-center pt-4">
+                <Button
+                  variant="primary"
+                  onClick={handleExtractFichas}
+                  disabled={isExtracting || isParsingFile || !text.trim()}
+                  fullWidth
+                >
+                  {isExtracting ? "Extraindo fichas..." : "Extrair fichas"}
+                </Button>
+              </div>
+            )}
+          </div>
+        </Card>
+
+        {/* Fichas Sugeridas */}
+        {extractedEntities.length > 0 && (
+          <Card variant="default" padding="lg">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">
+                  Fichas Sugeridas ({extractedEntities.length})
+                </h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setExtractedEntities([])}
+                >
+                  Limpar todas
+                </Button>
               </div>
 
-              <div className="space-y-4">
-                {extractedEntities.map((entity, index) => (
-                  <Card key={index} variant="elevated" padding="md">
-                    <div className="flex items-start justify-between mb-4">
-                      <Badge variant="primary">{entity.tipo}</Badge>
+              <div className="space-y-3">
+                {extractedEntities.map((ficha, index) => (
+                  <div
+                    key={index}
+                    className="rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised p-4"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <div className="font-semibold text-base">
+                          {ficha.titulo || "(sem título)"}
+                        </div>
+                        <div className="text-xs uppercase tracking-wide text-text-light-tertiary dark:text-dark-tertiary mt-1">
+                          {ficha.tipo || "conceito"}
+                        </div>
+                        {ficha.resumo && (
+                          <p className="text-sm text-text-light-secondary dark:text-dark-secondary mt-2 line-clamp-2">
+                            {ficha.resumo}
+                          </p>
+                        )}
+                      </div>
                       <button
-                        onClick={() => handleRemoveEntity(index)}
-                        className="text-red-600 hover:text-red-700 transition-colors"
+                        onClick={() => handleRemoveFicha(index)}
+                        className="text-xs px-3 py-1.5 rounded-md border border-error-light text-error-light hover:bg-error-light/10"
                       >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
+                        Remover
                       </button>
                     </div>
-
-                    <Input
-                      label="Título"
-                      value={entity.titulo}
-                      onChange={(e) => handleEditEntity(index, "titulo", e.target.value)}
-                      fullWidth
-                      className="mb-3"
-                    />
-
-                    <Textarea
-                      label="Resumo"
-                      value={entity.resumo}
-                      onChange={(e) => handleEditEntity(index, "resumo", e.target.value)}
-                      fullWidth
-                      className="mb-3"
-                    />
-
-                    <Textarea
-                      label="Conteúdo"
-                      value={entity.conteudo}
-                      onChange={(e) => handleEditEntity(index, "conteudo", e.target.value)}
-                      fullWidth
-                      className="mb-3"
-                    />
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <Input
-                        label="Ano Diegético"
-                        type="number"
-                        value={entity.ano_diegese || ""}
-                        onChange={(e) =>
-                          handleEditEntity(index, "ano_diegese", parseInt(e.target.value) || null)
-                        }
-                        fullWidth
-                      />
-
-                      <Input
-                        label="Tags"
-                        value={entity.tags || ""}
-                        onChange={(e) => handleEditEntity(index, "tags", e.target.value)}
-                        fullWidth
-                      />
-                    </div>
-                  </Card>
+                  </div>
                 ))}
               </div>
 
-              <div className="flex gap-3 mt-6">
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setShowReview(false);
-                    setExtractedEntities([]);
-                    setSelectedFile(null);
-                  }}
-                >
-                  Cancelar
-                </Button>
+              <div className="flex justify-center pt-4">
                 <Button
                   variant="primary"
+                  onClick={handleSaveFichas}
+                  disabled={isSaving}
                   fullWidth
-                  onClick={handleSaveAll}
-                  loading={isSaving}
-                  disabled={extractedEntities.length === 0}
                 >
-                  Salvar Todas as Fichas ({extractedEntities.length})
+                  {isSaving ? "Salvando fichas..." : "CONFIRMAR E SALVAR FICHAS"}
                 </Button>
               </div>
             </div>
-          </>
+          </Card>
         )}
       </div>
+
+      {/* Modal Novo Universo */}
+      {showNewUniverseModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+          onClick={() => setShowNewUniverseModal(false)}
+        >
+          <form
+            onSubmit={e => {
+              e.preventDefault();
+              handleCreateUniverse();
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md border border-border-light-default dark:border-border-dark-default rounded-lg p-6 bg-light-base dark:bg-dark-base space-y-4 mx-4"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold">Novo Universo</h3>
+              <button
+                type="button"
+                onClick={() => setShowNewUniverseModal(false)}
+                className="text-2xl leading-none"
+              >
+                &times;
+              </button>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold mb-2">Nome do Universo</label>
+              <input
+                className="w-full rounded-md bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default px-3 py-2 text-sm"
+                value={newUniverseName}
+                onChange={(e) => setNewUniverseName(e.target.value)}
+                placeholder="Ex: Antiverso"
+                autoFocus
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold mb-2">Descrição</label>
+              <textarea
+                className="w-full rounded-md bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default px-3 py-2 text-sm min-h-[100px]"
+                value={newUniverseDescription}
+                onChange={(e) => setNewUniverseDescription(e.target.value)}
+                placeholder="Resumo do Universo…"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setShowNewUniverseModal(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={isCreatingUniverse}
+              >
+                {isCreatingUniverse ? "Criando..." : "Salvar"}
+              </Button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Modal Novo Mundo */}
+      {showNewWorldModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+          onClick={() => setShowNewWorldModal(false)}
+        >
+          <form
+            onSubmit={e => {
+              e.preventDefault();
+              handleCreateWorld();
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md max-h-[90vh] overflow-auto border border-border-light-default dark:border-border-dark-default rounded-lg p-6 bg-light-base dark:bg-dark-base space-y-4 mx-4"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold">Novo Mundo</h3>
+              <button
+                type="button"
+                onClick={() => setShowNewWorldModal(false)}
+                className="text-2xl leading-none"
+              >
+                &times;
+              </button>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold mb-2">Nome</label>
+              <input
+                className="w-full rounded-md bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default px-3 py-2 text-sm"
+                value={newWorldName}
+                onChange={(e) => setNewWorldName(e.target.value)}
+                placeholder="Ex: Arquivos Vermelhos"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold mb-2">Descrição</label>
+              <textarea
+                className="w-full rounded-md bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default px-3 py-2 text-sm min-h-[140px]"
+                value={newWorldDescription}
+                onChange={(e) => setNewWorldDescription(e.target.value)}
+                placeholder="Resumo do Mundo…"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="has-episodes"
+                checked={newWorldHasEpisodes}
+                onChange={(e) => setNewWorldHasEpisodes(e.target.checked)}
+                className="w-4 h-4 rounded"
+              />
+              <label htmlFor="has-episodes" className="text-sm">
+                Este mundo possui episódios
+              </label>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setShowNewWorldModal(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={isCreatingWorld}
+              >
+                {isCreatingWorld ? "Criando..." : "Salvar"}
+              </Button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
