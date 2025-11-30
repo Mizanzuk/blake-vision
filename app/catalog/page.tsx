@@ -45,6 +45,10 @@ export default function CatalogPage() {
   const [showWorldModal, setShowWorldModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showManageCategoriesModal, setShowManageCategoriesModal] = useState(false);
+  const [showNewUniverseModal, setShowNewUniverseModal] = useState(false);
+  const [newUniverseName, setNewUniverseName] = useState("");
+  const [newUniverseDescription, setNewUniverseDescription] = useState("");
+  const [isCreatingUniverse, setIsCreatingUniverse] = useState(false);
   
   // Selected items for editing
   const [selectedFicha, setSelectedFicha] = useState<Ficha | null>(null);
@@ -122,11 +126,56 @@ export default function CatalogPage() {
   }
 
   function handleUniverseChange(universeId: string) {
+    if (universeId === "create_new_universe") {
+      setShowNewUniverseModal(true);
+      return;
+    }
     setSelectedUniverseId(universeId);
     localStorage.setItem("selectedUniverseId", universeId);
     setSelectedWorldId("");
     setSelectedType("");
     setSelectedEpisode("");
+  }
+
+  async function handleCreateUniverse() {
+    if (!newUniverseName.trim()) {
+      toast.error("Dê um nome ao novo Universo.");
+      return;
+    }
+    if (!userId) {
+      toast.error("Usuário não autenticado.");
+      return;
+    }
+    
+    setIsCreatingUniverse(true);
+    
+    try {
+      const { data: inserted, error: insertError } = await supabase
+        .from("universes")
+        .insert({
+          nome: newUniverseName.trim(),
+          descricao: newUniverseDescription.trim() || null
+        })
+        .select("id, nome")
+        .single();
+      
+      if (insertError) throw insertError;
+      
+      if (inserted) {
+        setUniverses(prev => [...prev, inserted]);
+        setSelectedUniverseId(inserted.id);
+        localStorage.setItem("selectedUniverseId", inserted.id);
+        setShowNewUniverseModal(false);
+        setNewUniverseName("");
+        setNewUniverseDescription("");
+        toast.success("Novo Universo criado com sucesso.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao criar Universo.");
+    } finally {
+      setIsCreatingUniverse(false);
+    }
   }
 
   // Ficha functions
@@ -403,6 +452,7 @@ export default function CatalogPage() {
             options={[
               { value: "", label: "Selecione um universo" },
               ...universes.map(u => ({ value: u.id, label: u.nome })),
+              { value: "create_new_universe", label: "+ Novo Universo" },
             ]}
             value={selectedUniverseId}
             onChange={(e) => handleUniverseChange(e.target.value)}
@@ -674,6 +724,68 @@ export default function CatalogPage() {
               ))}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Modal Novo Universo */}
+      {showNewUniverseModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+          onClick={() => setShowNewUniverseModal(false)}
+        >
+          <form
+            onSubmit={e => {
+              e.preventDefault();
+              handleCreateUniverse();
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md border border-border-light-default dark:border-border-dark-default rounded-lg p-6 bg-light-base dark:bg-dark-base space-y-4 mx-4"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold">Novo Universo</h3>
+              <button
+                type="button"
+                onClick={() => setShowNewUniverseModal(false)}
+                className="text-2xl leading-none"
+              >
+                &times;
+              </button>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold mb-2">Nome do Universo</label>
+              <Input
+                value={newUniverseName}
+                onChange={(e) => setNewUniverseName(e.target.value)}
+                placeholder="Ex: Antiverso"
+                fullWidth
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold mb-2">Descrição</label>
+              <textarea
+                className="w-full rounded-md bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default px-3 py-2 text-sm min-h-[100px]"
+                value={newUniverseDescription}
+                onChange={(e) => setNewUniverseDescription(e.target.value)}
+                placeholder="Resumo do Universo…"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setShowNewUniverseModal(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={isCreatingUniverse}
+              >
+                {isCreatingUniverse ? "Criando..." : "Salvar"}
+              </Button>
+            </div>
+          </form>
         </div>
       )}
     </div>
