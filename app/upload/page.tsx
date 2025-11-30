@@ -586,10 +586,10 @@ export default function UploadPage() {
                     className="hidden"
                     id="file-input"
                   />
-                  <label htmlFor="file-input">
-                    <Button variant="ghost" as="span" disabled={isParsingFile}>
+                  <label htmlFor="file-input" className="cursor-pointer">
+                    <span className="inline-flex items-center justify-center px-4 py-2 rounded-md bg-transparent border border-border-light-default dark:border-border-dark-default hover:bg-light-raised dark:hover:bg-dark-raised transition-colors">
                       {isParsingFile ? "Processando..." : "Escolher Arquivo (PDF, DOCX, TXT)"}
-                    </Button>
+                    </span>
                   </label>
                   <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary mt-2">
                     Ou arraste um arquivo aqui
