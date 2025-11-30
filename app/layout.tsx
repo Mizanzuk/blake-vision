@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Inter, Merriweather } from "next/font/google";
-import { Geist, Geist_Mono } from "geist/font";
 import "./styles/globals.css";
 import { Toaster } from "./components/ui";
 
@@ -52,7 +51,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body
-        className={`${Geist.variable} ${Geist_Mono.variable} ${inter.variable} ${merriweather.variable} antialiased`}
+        className={`${inter.variable} ${merriweather.variable} antialiased`}
       >
         {children}
         <Toaster />

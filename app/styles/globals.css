@@ -156,7 +156,142 @@
 }
 
 @layer utilities {
-  /* Custom utilities */
+  /* Custom surface utilities - Light theme */
+  .bg-light-base {
+    background-color: rgb(var(--color-surface-base));
+  }
+
+  .bg-light-raised {
+    background-color: rgb(var(--color-surface-raised));
+  }
+
+  .bg-light-overlay {
+    background-color: rgb(var(--color-surface-overlay));
+  }
+
+  /* Custom surface utilities - Dark theme */
+  .dark .bg-dark-base {
+    background-color: rgb(var(--color-surface-base));
+  }
+
+  .dark .bg-dark-raised {
+    background-color: rgb(var(--color-surface-raised));
+  }
+
+  .dark .bg-dark-overlay {
+    background-color: rgb(var(--color-surface-overlay));
+  }
+
+  /* Custom text utilities - Light theme */
+  .text-text-light-primary {
+    color: rgb(var(--color-text-primary));
+  }
+
+  .text-text-light-secondary {
+    color: rgb(var(--color-text-secondary));
+  }
+
+  .text-text-light-tertiary {
+    color: rgb(var(--color-text-tertiary));
+  }
+
+  .text-text-light-disabled {
+    color: rgb(var(--color-text-disabled));
+  }
+
+  /* Custom text utilities - Dark theme */
+  .dark .text-dark-primary {
+    color: rgb(var(--color-text-primary));
+  }
+
+  .dark .text-dark-secondary {
+    color: rgb(var(--color-text-secondary));
+  }
+
+  .dark .text-dark-tertiary {
+    color: rgb(var(--color-text-tertiary));
+  }
+
+  .dark .text-dark-disabled {
+    color: rgb(var(--color-text-disabled));
+  }
+
+  .dark .text-text-dark-tertiary {
+    color: rgb(var(--color-text-tertiary));
+  }
+
+  /* Custom border utilities - Light theme */
+  .border-border-light-subtle {
+    border-color: rgb(var(--color-border-subtle));
+  }
+
+  .border-border-light-default {
+    border-color: rgb(var(--color-border-default));
+  }
+
+  .border-border-light-strong {
+    border-color: rgb(var(--color-border-strong));
+  }
+
+  /* Custom border utilities - Dark theme */
+  .dark .border-border-dark-subtle {
+    border-color: rgb(var(--color-border-subtle));
+  }
+
+  .dark .border-border-dark-default {
+    border-color: rgb(var(--color-border-default));
+  }
+
+  .dark .border-border-dark-strong {
+    border-color: rgb(var(--color-border-strong));
+  }
+
+  /* Hover states - Light theme */
+  .hover\:bg-light-overlay:hover {
+    background-color: rgb(var(--color-surface-overlay));
+  }
+
+  .hover\:text-text-light-primary:hover {
+    color: rgb(var(--color-text-primary));
+  }
+
+  /* Hover states - Dark theme */
+  .dark .hover\:bg-dark-overlay:hover {
+    background-color: rgb(var(--color-surface-overlay));
+  }
+
+  .dark .hover\:bg-dark-base:hover {
+    background-color: rgb(var(--color-surface-base));
+  }
+
+  .dark .hover\:bg-dark-raised:hover {
+    background-color: rgb(var(--color-surface-raised));
+  }
+
+  .dark .hover\:text-dark-primary:hover {
+    color: rgb(var(--color-text-primary));
+  }
+
+  /* Active states - Dark theme */
+  .dark .active\:bg-dark-raised:active {
+    background-color: rgb(var(--color-surface-raised));
+  }
+
+  .dark .active\:bg-border-dark-subtle:active {
+    background-color: rgb(var(--color-border-subtle));
+  }
+
+  /* Placeholder states - Dark theme */
+  .dark .placeholder\:text-dark-tertiary::placeholder {
+    color: rgb(var(--color-text-tertiary));
+  }
+
+  /* Ring offset - Dark theme */
+  .dark .ring-offset-dark-base {
+    --tw-ring-offset-color: rgb(var(--color-surface-base));
+  }
+
+  /* Other custom utilities */
   .text-balance {
     text-wrap: balance;
   }
@@ -167,5 +302,26 @@
 
   .animate-slide-up {
     animation: slideUp 0.3s ease-out;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
