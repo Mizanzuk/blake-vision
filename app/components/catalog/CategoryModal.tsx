@@ -201,7 +201,7 @@ export default function CategoryModal({
             required
             fullWidth
             disabled={!!category}
-            helpText={category ? "Slug não pode ser alterado" : "Identificador único (gerado automaticamente)"}
+            helperText={category ? "Slug não pode ser alterado" : "Identificador único (gerado automaticamente)"}
           />
           
           <Input
@@ -211,7 +211,7 @@ export default function CategoryModal({
             placeholder="PER"
             fullWidth
             maxLength={3}
-            helpText="3 letras para códigos (ex: PER-001)"
+            helperText="3 letras para códigos (ex: PER-001)"
           />
         </div>
 
@@ -240,7 +240,7 @@ export default function CategoryModal({
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             placeholder="Descrição para guiar a extração automática de lore..."
             fullWidth
-            helpText="Descreva o que define esta categoria para ajudar a IA a extrair fichas corretamente"
+            helperText="Descreva o que define esta categoria para ajudar a IA a extrair fichas corretamente"
           />
         </div>
       </form>

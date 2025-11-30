@@ -397,7 +397,7 @@ export default function FichaModal({
                 onChange={(e) => handleChange("slug", e.target.value)}
                 placeholder="joao-silva"
                 fullWidth
-                helpText="URL amigável (gerado automaticamente)"
+                helperText="URL amigável (gerado automaticamente)"
               />
               
               <Input
@@ -406,7 +406,7 @@ export default function FichaModal({
                 onChange={(e) => handleChange("codigo", e.target.value)}
                 placeholder={selectedCategory?.prefix ? `${selectedCategory.prefix}-001` : "PER-001"}
                 fullWidth
-                helpText="Código único (gerado automaticamente)"
+                helperText="Código único (gerado automaticamente)"
               />
             </div>
 
@@ -425,7 +425,7 @@ export default function FichaModal({
               placeholder="Conteúdo completo da ficha... (digite @ para mencionar outras fichas)"
               rows={10}
               fullWidth
-              helpText="Digite @ para mencionar outras fichas e criar referências"
+              helperText="Digite @ para mencionar outras fichas e criar referências"
             />
 
             <Input
@@ -434,7 +434,7 @@ export default function FichaModal({
               onChange={(e) => handleChange("tags", e.target.value)}
               placeholder="magia, dragão, profecia"
               fullWidth
-              helpText="Separe tags por vírgula"
+              helperText="Separe tags por vírgula"
             />
           </>
         )}
@@ -449,7 +449,7 @@ export default function FichaModal({
               onChange={(e) => handleChange("ano_diegese", e.target.value)}
               placeholder="2024"
               fullWidth
-              helpText="Ano no universo ficcional"
+              helperText="Ano no universo ficcional"
             />
 
             <Input
@@ -498,7 +498,7 @@ export default function FichaModal({
               onChange={(e) => handleChange("camada_temporal", e.target.value)}
               placeholder="Ex: Linha principal, Flashback, Futuro alternativo"
               fullWidth
-              helpText="Para narrativas com múltiplas linhas temporais"
+              helperText="Para narrativas com múltiplas linhas temporais"
             />
           </>
         )}

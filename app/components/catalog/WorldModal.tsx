@@ -176,7 +176,7 @@ export default function WorldModal({
           onChange={(e) => setFormData({ ...formData, ordem: parseInt(e.target.value) || 0 })}
           placeholder="0"
           fullWidth
-          helpText="Ordem de exibição (menor número aparece primeiro)"
+          helperText="Ordem de exibição (menor número aparece primeiro)"
         />
       </form>
     </Modal>
