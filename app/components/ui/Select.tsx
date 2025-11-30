@@ -17,6 +17,7 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
   fullWidth?: boolean;
   options?: SelectOption[];
   placeholder?: string;
+  hideArrow?: boolean;
 }
 
 const Select = forwardRef<HTMLSelectElement, SelectProps>(
@@ -30,6 +31,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
       fullWidth = false,
       options,
       placeholder,
+      hideArrow = false,
       className,
       required,
       children,
@@ -69,7 +71,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
               baseStyles,
               variants[actualVariant],
               sizes[selectSize],
-              "pr-10",
+              hideArrow ? "pr-4" : "pr-10",
               className
             )}
             required={required}
@@ -92,6 +94,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           </select>
           
           {/* Chevron icon */}
+          {!hideArrow && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-light-tertiary dark:text-dark-tertiary">
             <svg
               className="w-5 h-5"
@@ -107,6 +110,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
               />
             </svg>
           </div>
+          )}
         </div>
         
         {(error || helperText) && (

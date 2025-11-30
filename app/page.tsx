@@ -508,6 +508,7 @@ export default function HomePage() {
             }}
             fullWidth
             selectSize="sm"
+            hideArrow
           />
           {selectedUniverseId && universes.find(u => u.id === selectedUniverseId)?.descricao && (
             <p className="mt-3 text-sm text-text-light-tertiary dark:text-dark-tertiary">
