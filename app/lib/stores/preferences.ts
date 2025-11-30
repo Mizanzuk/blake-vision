@@ -13,7 +13,7 @@ interface PreferencesState {
 export const usePreferences = create<PreferencesState>()(
   persist(
     (set, get) => ({
-      theme: "dark",
+      theme: "light",
       locale: "pt-BR",
       
       setTheme: (theme) => {
