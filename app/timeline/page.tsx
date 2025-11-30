@@ -468,23 +468,26 @@ export default function TimelinePage() {
                                   </p>
                                 )}
 
-                                {event.tags && event.tags.length > 0 && (
-                                  <div className="flex flex-wrap gap-2">
-                                    {(typeof event.tags === 'string' ? event.tags.split(',').map(t => t.trim()) : event.tags).slice(0, 3).map((tag, i) => (
-                                      <span
-                                        key={i}
-                                        className="text-xs px-2 py-1 rounded-full bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default text-text-light-tertiary dark:text-dark-tertiary"
-                                      >
-                                        {tag}
-                                      </span>
-                                    ))}
-                                    {(typeof event.tags === 'string' ? event.tags.split(',').length : event.tags.length) > 3 && (
-                                      <span className="text-xs px-2 py-1 rounded-full bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default text-text-light-tertiary dark:text-dark-tertiary">
-                                        +{(typeof event.tags === 'string' ? event.tags.split(',').length : event.tags.length) - 3}
-                                      </span>
-                                    )}
-                                  </div>
-                                )}
+                                {event.tags && typeof event.tags === 'string' && event.tags.length > 0 && (() => {
+                                  const tagsArray = event.tags.split(',').map(t => t.trim()).filter(t => t);
+                                  return tagsArray.length > 0 && (
+                                    <div className="flex flex-wrap gap-2">
+                                      {tagsArray.slice(0, 3).map((tag, i) => (
+                                        <span
+                                          key={i}
+                                          className="text-xs px-2 py-1 rounded-full bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default text-text-light-tertiary dark:text-dark-tertiary"
+                                        >
+                                          {tag}
+                                        </span>
+                                      ))}
+                                      {tagsArray.length > 3 && (
+                                        <span className="text-xs px-2 py-1 rounded-full bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default text-text-light-tertiary dark:text-dark-tertiary">
+                                          +{tagsArray.length - 3}
+                                        </span>
+                                      )}
+                                    </div>
+                                  );
+                                })()}
                               </div>
 
                               <div className="text-sm text-text-light-tertiary dark:text-dark-tertiary">
