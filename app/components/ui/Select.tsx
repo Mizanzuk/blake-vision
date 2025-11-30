@@ -15,7 +15,7 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
   helperText?: string;
   error?: string;
   fullWidth?: boolean;
-  options: SelectOption[];
+  options?: SelectOption[];
   placeholder?: string;
 }
 
@@ -79,7 +79,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                 {placeholder}
               </option>
             )}
-            {options.map((option) => (
+            {options ? options.map((option) => (
               <option
                 key={option.value}
                 value={option.value}
@@ -87,7 +87,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
               >
                 {option.label}
               </option>
-            ))}
+            )) : children}
           </select>
           
           {/* Chevron icon */}
