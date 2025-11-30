@@ -154,7 +154,12 @@ export default function HomePage() {
       const data = await response.json();
       
       if (response.ok) {
-        setUniverses(data.universes || []);
+        const loadedUniverses = data.universes || [];
+        setUniverses(loadedUniverses);
+        // Item 4: Se não houver universos, mostrar modal obrigatório
+        if (loadedUniverses.length === 0) {
+          setShowCreateUniverseModal(true);
+        }
       } else {
         toast.error(t.errors.generic);
       }
@@ -572,6 +577,22 @@ export default function HomePage() {
               ))}
             </div>
           )}
+        </div>
+        
+        {/* Logout Button */}
+        <div className="p-4 border-t border-border-light-default dark:border-border-dark-default">
+          <button
+            onClick={async () => {
+              await supabase.auth.signOut();
+              router.push('/login');
+            }}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm text-text-light-secondary hover:text-error-light hover:bg-error-light/10 dark:text-dark-secondary dark:hover:text-error-light transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Sair
+          </button>
         </div>
       </aside>
 
