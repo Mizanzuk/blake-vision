@@ -265,7 +265,8 @@ export default function HomePage() {
       universeId: selectedUniverseId || undefined,
     };
 
-    setSessions([newSession, ...sessions].slice(0, MAX_SESSIONS));
+    // Use functional form to ensure we have the latest sessions state
+    setSessions(prevSessions => [newSession, ...prevSessions].slice(0, MAX_SESSIONS));
     setActiveSessionId(newSession.id);
     setShowModeSelector(false);
     inputRef.current?.focus();
@@ -293,7 +294,7 @@ export default function HomePage() {
       messages: [createIntroMessage(currentSession.mode)],
     };
 
-    setSessions(sessions.map(s => s.id === activeSessionId ? clearedSession : s));
+    setSessions(prevSessions => prevSessions.map(s => s.id === activeSessionId ? clearedSession : s));
     toast.success("Histórico limpo com sucesso");
   }
 
@@ -367,7 +368,7 @@ export default function HomePage() {
         : currentSession.title,
     };
 
-    setSessions(sessions.map(s => s.id === activeSessionId ? updatedSession : s));
+    setSessions(prevSessions => prevSessions.map(s => s.id === activeSessionId ? updatedSession : s));
     setInput("");
     setIsSending(true);
 
@@ -391,7 +392,7 @@ export default function HomePage() {
           content: data.message,
         };
 
-        setSessions(sessions.map(s => 
+        setSessions(prevSessions => prevSessions.map(s => 
           s.id === activeSessionId 
             ? { ...s, messages: [...updatedMessages, assistantMessage] }
             : s
@@ -416,7 +417,7 @@ export default function HomePage() {
   }
 
   function deleteSession(sessionId: string) {
-    setSessions(sessions.filter(s => s.id !== sessionId));
+    setSessions(prevSessions => prevSessions.filter(s => s.id !== sessionId));
     if (activeSessionId === sessionId) {
       setActiveSessionId(null);
     }
@@ -429,7 +430,7 @@ export default function HomePage() {
   
   function saveSessionTitle() {
     if (editingSessionId && editingSessionTitle.trim()) {
-      setSessions(sessions.map(s => 
+      setSessions(prevSessions => prevSessions.map(s => 
         s.id === editingSessionId 
           ? { ...s, title: editingSessionTitle.trim() }
           : s
