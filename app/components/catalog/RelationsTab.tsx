@@ -338,7 +338,7 @@ export default function RelationsTab({ fichaId }: RelationsTabProps) {
                       <Badge variant="primary" size="sm">
                         {relationType?.label || relation.relation_type}
                       </Badge>
-                      <Badge variant="secondary" size="sm">
+                      <Badge variant="default" size="sm">
                         {relation.target_ficha.tipo}
                       </Badge>
                     </div>
