@@ -54,6 +54,7 @@ const PERSONAS = {
 
 function createIntroMessage(mode: ChatMode): ChatMessage {
   const persona = PERSONAS[mode];
+  if (!persona) throw new Error(`Invalid mode: ${mode}`);
   return {
     id: "intro",
     role: "assistant",
@@ -296,6 +297,7 @@ export default function HomePage() {
     if (!currentSession) return;
 
     const persona = PERSONAS[currentSession.mode];
+    if (!persona) return;
     const date = new Date(currentSession.createdAt).toLocaleString('pt-BR');
     
     let markdown = `# ${currentSession.title}\n\n`;
@@ -580,12 +582,12 @@ export default function HomePage() {
             )}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Badge variant={persona.styles.badge} size="lg">
-                    {persona.nome}
+                  <Badge variant={persona?.styles.badge || "default"} size="lg">
+                    {persona?.nome}
                   </Badge>
                   <div>
                     <h2 className="text-lg font-semibold text-white">
-                      {persona.titulo}
+                      {persona?.titulo}
                     </h2>
                     <p className="text-sm text-white/80">
                       {activeSession.title}
