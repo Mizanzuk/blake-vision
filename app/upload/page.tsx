@@ -217,7 +217,6 @@ export default function UploadPage() {
       }
 
       setExtractedEntities(extractData.entities || []);
-      setExtractedRelations(extractData.relations || []);
       setShowReview(true);
       setIsExtracting(false);
       toast.success(`${extractData.count} entidades e ${extractData.relations?.length || 0} relações extraídas! Revise antes de salvar.`);
