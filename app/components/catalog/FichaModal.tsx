@@ -425,7 +425,7 @@ export default function FichaModal({
               placeholder="Conteúdo completo da ficha... (digite @ para mencionar outras fichas)"
               rows={10}
               fullWidth
-              helperText="Digite @ para mencionar outras fichas e criar referências"
+              helpText="Digite @ para mencionar outras fichas e criar referências"
             />
 
             <Input
