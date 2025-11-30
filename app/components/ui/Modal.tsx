@@ -11,7 +11,7 @@ export interface ModalProps {
   title?: string;
   description?: string;
   size?: ModalSize;
-  children: ReactNode;
+  children?: ReactNode;
   footer?: ReactNode;
   closeOnBackdrop?: boolean;
   closeOnEscape?: boolean;
