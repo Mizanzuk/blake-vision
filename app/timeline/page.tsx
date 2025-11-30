@@ -470,7 +470,7 @@ export default function TimelinePage() {
 
                                 {event.tags && event.tags.length > 0 && (
                                   <div className="flex flex-wrap gap-2">
-                                    {event.tags.slice(0, 3).map((tag, i) => (
+                                    {(typeof event.tags === 'string' ? event.tags.split(',').map(t => t.trim()) : event.tags).slice(0, 3).map((tag, i) => (
                                       <span
                                         key={i}
                                         className="text-xs px-2 py-1 rounded-full bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default text-text-light-tertiary dark:text-dark-tertiary"
@@ -478,9 +478,9 @@ export default function TimelinePage() {
                                         {tag}
                                       </span>
                                     ))}
-                                    {event.tags.length > 3 && (
+                                    {(typeof event.tags === 'string' ? event.tags.split(',').length : event.tags.length) > 3 && (
                                       <span className="text-xs px-2 py-1 rounded-full bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default text-text-light-tertiary dark:text-dark-tertiary">
-                                        +{event.tags.length - 3}
+                                        +{(typeof event.tags === 'string' ? event.tags.split(',').length : event.tags.length) - 3}
                                       </span>
                                     )}
                                   </div>
