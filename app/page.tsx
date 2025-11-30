@@ -464,9 +464,8 @@ export default function HomePage() {
         {/* Universe Selector */}
         <div className="p-4 border-b border-border-light-default dark:border-border-dark-default">
           <Select
-            label={t.universe.title}
+            label={t.universe.title.toUpperCase()}
             options={[
-              { value: "", label: "Selecione um universo" },
               ...universes.map(u => ({ value: u.id, label: u.nome })),
               { value: "__new__", label: "+ " + t.universe.create },
             ]}
@@ -481,6 +480,11 @@ export default function HomePage() {
             fullWidth
             selectSize="sm"
           />
+          {selectedUniverseId && universes.find(u => u.id === selectedUniverseId)?.descricao && (
+            <p className="mt-3 text-sm text-text-light-tertiary dark:text-dark-tertiary">
+              {universes.find(u => u.id === selectedUniverseId)?.descricao}
+            </p>
+          )}
         </div>
 
         {/* Navigation */}
@@ -550,7 +554,7 @@ export default function HomePage() {
                   onClick={() => setActiveSessionId(session.id)}
                 >
                   <Badge variant={PERSONAS[session.mode].styles.badge} size="sm">
-                    {PERSONAS[session.mode].nome}
+                    {session.mode === 'consulta' ? 'Consulta' : 'Criativo'}
                   </Badge>
                   <span className="flex-1 text-sm truncate">{session.title}</span>
                   <button
