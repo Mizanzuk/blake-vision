@@ -94,6 +94,8 @@ export default function HomePage() {
   // UI state
   const [showHistory, setShowHistory] = useState(false);
   const [showModeSelector, setShowModeSelector] = useState(false);
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+  const [editingSessionTitle, setEditingSessionTitle] = useState("");
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -419,6 +421,28 @@ export default function HomePage() {
       setActiveSessionId(null);
     }
   }
+  
+  function startEditingSession(sessionId: string, currentTitle: string) {
+    setEditingSessionId(sessionId);
+    setEditingSessionTitle(currentTitle);
+  }
+  
+  function saveSessionTitle() {
+    if (editingSessionId && editingSessionTitle.trim()) {
+      setSessions(sessions.map(s => 
+        s.id === editingSessionId 
+          ? { ...s, title: editingSessionTitle.trim() }
+          : s
+      ));
+      setEditingSessionId(null);
+      setEditingSessionTitle("");
+    }
+  }
+  
+  function cancelEditingSession() {
+    setEditingSessionId(null);
+    setEditingSessionTitle("");
+  }
 
   const activeSession = sessions.find(s => s.id === activeSessionId);
   const persona = activeSession ? PERSONAS[activeSession.mode] : null;
@@ -561,7 +585,33 @@ export default function HomePage() {
                   <Badge variant={PERSONAS[session.mode].styles.badge} size="sm">
                     {session.mode === 'consulta' ? 'Consulta' : 'Criativo'}
                   </Badge>
-                  <span className="flex-1 text-sm truncate">{session.title}</span>
+                  {editingSessionId === session.id ? (
+                    <input
+                      type="text"
+                      value={editingSessionTitle}
+                      onChange={(e) => setEditingSessionTitle(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') saveSessionTitle();
+                        if (e.key === 'Escape') cancelEditingSession();
+                      }}
+                      onBlur={saveSessionTitle}
+                      autoFocus
+                      className="flex-1 text-sm px-2 py-1 rounded bg-light-overlay dark:bg-dark-overlay border border-border-light-default dark:border-border-dark-default"
+                    />
+                  ) : (
+                    <span className="flex-1 text-sm truncate">{session.title}</span>
+                  )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      startEditingSession(session.id, session.title);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-primary-light/10 text-primary-light transition-opacity"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
