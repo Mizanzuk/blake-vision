@@ -9,59 +9,59 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Light mode surfaces
+        // Light mode surfaces (Scrivener-inspired)
         light: {
-          base: "#fafaf9",       // stone-50
-          raised: "#ffffff",     // white
-          overlay: "#f5f5f4",    // stone-100
+          base: "#F5F1E8",       // warm beige cream
+          raised: "#FFFFFF",     // pure white
+          overlay: "#FAFAF8",    // very light warm
         },
-        // Dark mode surfaces
+        // Dark mode surfaces (warm browns)
         dark: {
-          base: "#0c0a09",       // stone-950
-          raised: "#1c1917",     // stone-900
-          overlay: "#292524",    // stone-800
+          base: "#1A1614",       // very dark brown
+          raised: "#2B2420",     // dark brown
+          overlay: "#3D342D",    // medium dark brown
         },
-        // Borders
+        // Borders (warm tones)
         border: {
           light: {
-            subtle: "#e7e5e4",   // stone-200
-            default: "#d6d3d1",  // stone-300
-            strong: "#a8a29e",   // stone-400
+            subtle: "#E8E4DB",   // light warm beige
+            default: "#D4C4B0",  // medium beige
+            strong: "#B8A894",   // darker beige
           },
           dark: {
-            subtle: "#292524",   // stone-800
-            default: "#44403c",  // stone-700
-            strong: "#57534e",   // stone-600
+            subtle: "#3D342D",   // medium dark brown
+            default: "#4D443D",  // lighter dark brown
+            strong: "#5D544D",   // medium brown
           },
         },
-        // Text colors
+        // Text colors (warm browns and beiges)
         text: {
           light: {
-            primary: "#1c1917",    // stone-900
-            secondary: "#44403c",  // stone-700
-            tertiary: "#78716c",   // stone-500
-            disabled: "#a8a29e",   // stone-400
+            primary: "#2B1810",    // dark brown
+            secondary: "#6B5D54",  // medium brown
+            tertiary: "#8B7D74",   // light brown
+            disabled: "#B8A894",   // beige
           },
           dark: {
-            primary: "#fafaf9",    // stone-50
-            secondary: "#e7e5e4",  // stone-200
-            tertiary: "#a8a29e",   // stone-400
-            disabled: "#78716c",   // stone-500
+            primary: "#F5F1E8",    // cream beige
+            secondary: "#C4B8A8",  // medium beige
+            tertiary: "#9B8F7F",   // darker beige
+            disabled: "#6B5D54",   // brown
           },
         },
-        // Primary action color (emerald for consistency)
+        // Primary action color (coral/rose - Scrivener style)
         primary: {
-          50: "#ecfdf5",
-          100: "#d1fae5",
-          200: "#a7f3d0",
-          300: "#6ee7b7",
-          400: "#34d399",
-          500: "#10b981",
-          600: "#059669",
-          700: "#047857",
-          800: "#065f46",
-          900: "#064e3b",
-          950: "#022c22",
+          50: "#FEF2F4",
+          100: "#FCE4E9",
+          200: "#F9CAD3",
+          300: "#F5A0B0",
+          400: "#F06D85",
+          500: "#E85D75",  // main coral
+          600: "#D14D65",
+          700: "#B03D55",
+          800: "#8F3245",
+          900: "#6E2735",
+          950: "#4D1A25",
         },
         // Urizen (consultation) - emerald/cyan/blue
         urizen: {
