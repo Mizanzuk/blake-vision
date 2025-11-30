@@ -255,6 +255,30 @@ export default function HomePage() {
     }
   }
 
+  async function handleDeleteUniverse(universeId: string) {
+    try {
+      const response = await fetch(`/api/universes?id=${universeId}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Universo deletado com sucesso");
+        setUniverses(universes.filter(u => u.id !== universeId));
+        if (selectedUniverseId === universeId) {
+          setSelectedUniverseId("");
+          localStorage.removeItem("selectedUniverseId");
+        }
+      } else {
+        toast.error(data.error || t.errors.generic);
+      }
+    } catch (error) {
+      console.error("Error deleting universe:", error);
+      toast.error(t.errors.network);
+    }
+  }
+
   function startNewSession(mode: ChatMode) {
     const newSession: ChatSession = {
       id: Date.now().toString(),
@@ -491,31 +515,81 @@ export default function HomePage() {
           </Button>
         </div>
 
-        {/* Universe Selector */}
+        {/* Universe List */}
         <div className="p-4 border-b border-border-light-default dark:border-border-dark-default">
-          <Select
-            label={t.universe.title.toUpperCase()}
-            options={[
-              ...universes.map(u => ({ value: u.id, label: u.nome })),
-              { value: "__new__", label: "+ " + t.universe.create },
-            ]}
-            value={selectedUniverseId}
-            onChange={(e) => {
-              if (e.target.value === "__new__") {
-                setShowCreateUniverseModal(true);
-              } else {
-                handleUniverseChange(e.target.value);
-              }
-            }}
-            fullWidth
-            selectSize="sm"
-            hideArrow
-          />
-          {selectedUniverseId && universes.find(u => u.id === selectedUniverseId)?.descricao && (
-            <p className="mt-3 text-sm text-text-light-tertiary dark:text-dark-tertiary">
-              {universes.find(u => u.id === selectedUniverseId)?.descricao}
-            </p>
-          )}
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide">
+              {t.universe.title}
+            </h3>
+            <button
+              onClick={() => setShowCreateUniverseModal(true)}
+              className="text-xs text-primary-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium"
+              title={t.universe.create}
+            >
+              + Novo
+            </button>
+          </div>
+          
+          <div className="space-y-1 max-h-64 overflow-y-auto">
+            {universes.map(universe => (
+              <div
+                key={universe.id}
+                className={clsx(
+                  "group relative flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors",
+                  selectedUniverseId === universe.id
+                    ? "bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300"
+                    : "hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-primary dark:text-dark-primary"
+                )}
+                onClick={() => handleUniverseChange(universe.id)}
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{universe.nome}</p>
+                  {universe.descricao && (
+                    <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary truncate mt-0.5">
+                      {universe.descricao}
+                    </p>
+                  )}
+                </div>
+                
+                {/* Hover buttons */}
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setUniverseForm({ id: universe.id, nome: universe.nome, descricao: universe.descricao || "" });
+                      setShowEditUniverseModal(true);
+                    }}
+                    className="p-1.5 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary transition-colors"
+                    title="Editar universo"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm(`Tem certeza que deseja deletar o universo "${universe.nome}"? Esta ação não pode ser desfeita.`)) {
+                        handleDeleteUniverse(universe.id);
+                      }
+                    }}
+                    className="p-1.5 rounded hover:bg-error-light/10 dark:hover:bg-error-dark/10 text-text-light-secondary dark:text-dark-secondary hover:text-error-light dark:hover:text-error-dark transition-colors"
+                    title="Deletar universo"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            ))}
+            
+            {universes.length === 0 && (
+              <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary text-center py-4">
+                Nenhum universo criado ainda
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Navigation */}
