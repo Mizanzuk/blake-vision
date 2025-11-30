@@ -346,8 +346,8 @@ export default function TimelinePage() {
               >
                 <option value="">Todos os tipos</option>
                 {categories.map(cat => (
-                  <option key={cat.id} value={cat.slug}>
-                    {cat.nome}
+                  <option key={cat.slug} value={cat.slug}>
+                    {cat.label}
                   </option>
                 ))}
               </Select>
