@@ -24,8 +24,8 @@ export function Badge({
     success: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
     warning: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
     error: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
-    urizen: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300",
-    urthona: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
+    urizen: "bg-[#5B7C8D]/15 text-[#5B7C8D] dark:bg-[#5B7C8D]/25 dark:text-[#7B9CAD]",
+    urthona: "bg-[#C85A54]/15 text-[#C85A54] dark:bg-[#C85A54]/25 dark:text-[#D87A74]",
   };
 
   const sizes = {
@@ -40,8 +40,8 @@ export function Badge({
     success: "bg-emerald-600 dark:bg-emerald-400",
     warning: "bg-amber-600 dark:bg-amber-400",
     error: "bg-red-600 dark:bg-red-400",
-    urizen: "bg-cyan-600 dark:bg-cyan-400",
-    urthona: "bg-purple-600 dark:bg-purple-400",
+    urizen: "bg-[#5B7C8D] dark:bg-[#7B9CAD]",
+    urthona: "bg-[#C85A54] dark:bg-[#D87A74]",
   };
 
   return (
