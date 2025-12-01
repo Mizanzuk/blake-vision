@@ -547,8 +547,8 @@ export default function HomePage() {
     <div className="flex h-screen bg-light-base dark:bg-dark-base">
       {/* Sidebar */}
       <aside className={clsx(
-        "w-80 border-r border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised flex flex-col transition-transform duration-300",
-        !isSidebarOpen && "-translate-x-full"
+        "border-r border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised flex flex-col transition-all duration-300",
+        isSidebarOpen ? "w-80" : "w-0 border-r-0"
       )}>
         {/* Header */}
         <div className="p-4 border-b border-border-light-default dark:border-border-dark-default">
@@ -670,10 +670,10 @@ export default function HomePage() {
                 <div
                   key={session.id}
                   className={clsx(
-                    "group flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors",
+                    "group flex items-start gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors",
                     activeSessionId === session.id
                       ? "bg-primary-100 dark:bg-primary-900/30 text-text-light-primary dark:text-dark-primary"
-                      : "text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay"
+                      : "bg-white/50 dark:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary hover:bg-white dark:hover:bg-dark-raised"
                   )}
                   onClick={() => setActiveSessionId(session.id)}
                 >
@@ -694,7 +694,7 @@ export default function HomePage() {
                       className="flex-1 text-sm px-2 py-1 rounded bg-light-overlay dark:bg-dark-overlay border border-border-light-default dark:border-border-dark-default"
                     />
                   ) : (
-                    <span className="flex-1 text-sm truncate">{session.title}</span>
+                    <span className="flex-1 text-sm line-clamp-2">{session.title}</span>
                   )}
                   <button
                     onClick={(e) => {

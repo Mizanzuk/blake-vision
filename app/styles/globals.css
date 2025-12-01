@@ -6,7 +6,7 @@
   :root {
     /* Light mode colors - Scrivener inspired */
     --color-surface-base: 245 241 232;      /* #F5F1E8 - beige/cream */
-    --color-surface-raised: 255 255 255;    /* white */
+    --color-surface-raised: 245 241 232;    /* #F5F1E8 - same beige as base */
     --color-surface-overlay: 250 247 240;   /* lighter beige */
     
     --color-border-subtle: 230 223 210;     /* beige border */
@@ -104,7 +104,7 @@
   }
 
   .prose p {
-    @apply text-base leading-relaxed mb-4 text-text-light-secondary dark:text-dark-secondary font-serif;
+    @apply text-base leading-relaxed mb-4 text-text-light-secondary dark:text-dark-secondary;
   }
 
   .prose ul, .prose ol {
