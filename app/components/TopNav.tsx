@@ -6,7 +6,7 @@ import { getSupabaseClient } from "@/app/lib/supabase/client";
 import { clsx } from "clsx";
 
 interface TopNavProps {
-  currentPage?: "home" | "catalog" | "timeline" | "upload" | "faq";
+  currentPage?: "home" | "catalog" | "timeline" | "upload" | "biblioteca" | "faq";
 }
 
 export function TopNav({ currentPage }: TopNavProps) {
@@ -19,6 +19,7 @@ export function TopNav({ currentPage }: TopNavProps) {
     { id: "home", label: "Home", href: "/" },
     { id: "catalog", label: "Catálogo", href: "/catalog" },
     { id: "timeline", label: "Timeline", href: "/timeline" },
+    { id: "biblioteca", label: "Biblioteca", href: "/biblioteca" },
     { id: "upload", label: "Upload", href: "/upload" },
   ];
 

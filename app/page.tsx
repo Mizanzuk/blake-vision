@@ -336,6 +336,33 @@ export default function HomePage() {
     });
   }
 
+  async function handleSendToEditor(content: string) {
+    try {
+      const response = await fetch("/api/textos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          titulo: "Texto do Chat - " + new Date().toLocaleDateString("pt-BR"),
+          conteudo: content,
+          universe_id: selectedUniverseId || null,
+          status: "rascunho",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.texto) {
+        toast.success("Texto enviado para o Editor!");
+        router.push(`/editor/${data.texto.id}`);
+      } else {
+        toast.error("Erro ao enviar para o Editor");
+      }
+    } catch (error) {
+      console.error("Erro ao enviar para editor:", error);
+      toast.error("Erro ao enviar para o Editor");
+    }
+  }
+
   function handleClearHistory() {
     if (!activeSessionId) return;
     
@@ -834,17 +861,28 @@ export default function HomePage() {
                       )}
                     </div>
                     
-                    {/* Copy Button (only for assistant messages, on hover) */}
+                    {/* Action Buttons (only for assistant messages, on hover) */}
                     {message.role === "assistant" && message.id !== "intro" && (
-                      <button
-                        onClick={() => handleCopyMessage(message.content)}
-                        className="opacity-0 group-hover:opacity-100 absolute top-2 right-2 p-1.5 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary transition-all"
-                        title="Copiar"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
-                      </button>
+                      <div className="opacity-0 group-hover:opacity-100 absolute top-2 right-2 flex gap-1">
+                        <button
+                          onClick={() => handleCopyMessage(message.content)}
+                          className="p-1.5 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary transition-all"
+                          title="Copiar"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleSendToEditor(message.content)}
+                          className="p-1.5 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary transition-all"
+                          title="Enviar para Editor"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                      </div>
                     )}
                   </div>
 

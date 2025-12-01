@@ -98,6 +98,36 @@ export default function UploadPage() {
     }
   }, [selectedWorldId]);
 
+  // Preencher dados vindos do Editor via URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const textoParam = params.get("texto");
+    const universeParam = params.get("universe_id");
+    const worldParam = params.get("world_id");
+    const episodioParam = params.get("episodio");
+    const autoExtract = params.get("auto_extract");
+
+    if (textoParam) {
+      setText(textoParam);
+    }
+    if (universeParam) {
+      setSelectedUniverseId(universeParam);
+    }
+    if (worldParam) {
+      setSelectedWorldId(worldParam);
+    }
+    if (episodioParam) {
+      setUnitNumber(episodioParam);
+    }
+
+    // Auto-extrair se solicitado
+    if (autoExtract === "true" && textoParam) {
+      setTimeout(() => {
+        handleExtractFichas();
+      }, 1000);
+    }
+  }, []);
+
   async function checkAuth() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
