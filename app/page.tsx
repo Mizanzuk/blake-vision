@@ -774,7 +774,7 @@ export default function HomePage() {
       )}
 
       {/* Main Chat Area */}
-      <main className={clsx("flex-1 flex flex-col", isSidebarOpen && "md:ml-80")}>
+      <main className={clsx("flex-1 flex flex-col transition-all duration-300", isSidebarOpen && "md:ml-80")}>
         {activeSession ? (
           <>
             {/* Messages */}
