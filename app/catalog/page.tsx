@@ -1,6 +1,23 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
 import {
@@ -21,6 +38,35 @@ import CategoryModal from "@/app/components/catalog/CategoryModal";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
 import type { Universe, World, Ficha, Category } from "@/app/types";
+
+// Sortable Card Component
+interface SortableCardProps {
+  id: string;
+  children: React.ReactNode;
+  isDragging?: boolean;
+}
+
+function SortableCard({ id, children, isDragging }: SortableCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      {children}
+    </div>
+  );
+}
 
 export default function CatalogPage() {
   const router = useRouter();
@@ -47,6 +93,17 @@ export default function CatalogPage() {
   // Multiple selection
   const [selectedFichaIds, setSelectedFichaIds] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
+  
+  // Drag and drop
+  const [customOrder, setCustomOrder] = useState<Record<string, number>>({});
+  const [isDragging, setIsDragging] = useState(false);
+  
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
   
   // Modals
   const [showFichaModal, setShowFichaModal] = useState(false);
@@ -82,6 +139,7 @@ export default function CatalogPage() {
   useEffect(() => {
     if (selectedUniverseId) {
       loadCatalogData();
+      loadCustomOrder();
     }
   }, [selectedUniverseId]);
 
@@ -371,6 +429,93 @@ export default function CatalogPage() {
     }
   }
 
+  // Drag and drop functions
+  async function loadCustomOrder() {
+    if (!selectedUniverseId) return;
+    
+    try {
+      const response = await fetch(`/api/card-order?universe_id=${selectedUniverseId}`);
+      if (response.ok) {
+        const data = await response.json();
+        const orderMap: Record<string, number> = {};
+        data.orders.forEach((item: { ficha_id: string; custom_order: number }) => {
+          orderMap[item.ficha_id] = item.custom_order;
+        });
+        setCustomOrder(orderMap);
+      }
+    } catch (error) {
+      console.error("Error loading custom order:", error);
+    }
+  }
+
+  async function saveCustomOrder(fichaIds: string[]) {
+    if (!selectedUniverseId) return;
+    
+    try {
+      const response = await fetch("/api/card-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          universe_id: selectedUniverseId,
+          ficha_orders: fichaIds,
+        }),
+      });
+      
+      if (response.ok) {
+        toast.success("Ordem salva com sucesso!");
+      }
+    } catch (error) {
+      console.error("Error saving custom order:", error);
+      toast.error("Erro ao salvar ordem.");
+    }
+  }
+
+  async function resetCustomOrder() {
+    if (!selectedUniverseId) return;
+    
+    if (!confirm("Tem certeza que deseja resetar a ordem das fichas?")) {
+      return;
+    }
+    
+    try {
+      const response = await fetch(`/api/card-order?universe_id=${selectedUniverseId}`, {
+        method: "DELETE",
+      });
+      
+      if (response.ok) {
+        setCustomOrder({});
+        toast.success("Ordem resetada com sucesso!");
+      }
+    } catch (error) {
+      console.error("Error resetting custom order:", error);
+      toast.error("Erro ao resetar ordem.");
+    }
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    setIsDragging(false);
+    
+    if (!over || active.id === over.id) {
+      return;
+    }
+    
+    const oldIndex = sortedFichas.findIndex(f => f.id === active.id);
+    const newIndex = sortedFichas.findIndex(f => f.id === over.id);
+    
+    if (oldIndex !== -1 && newIndex !== -1) {
+      const newOrder = arrayMove(sortedFichas, oldIndex, newIndex);
+      const newCustomOrder: Record<string, number> = {};
+      newOrder.forEach((ficha, index) => {
+        newCustomOrder[ficha.id] = index;
+      });
+      setCustomOrder(newCustomOrder);
+      
+      // Save order to backend
+      saveCustomOrder(newOrder.map(f => f.id));
+    }
+  }
+
   // Category functions
   function openNewCategoryModal() {
     setSelectedCategory(null);
@@ -449,6 +594,26 @@ export default function CatalogPage() {
     return true;
   });
 
+  // Sort fichas by custom order
+  const sortedFichas = [...filteredFichas].sort((a, b) => {
+    const orderA = customOrder[a.id];
+    const orderB = customOrder[b.id];
+    
+    // If both have custom order, sort by order
+    if (orderA !== undefined && orderB !== undefined) {
+      return orderA - orderB;
+    }
+    
+    // If only A has custom order, A comes first
+    if (orderA !== undefined) return -1;
+    
+    // If only B has custom order, B comes first
+    if (orderB !== undefined) return 1;
+    
+    // If neither has custom order, maintain original order
+    return 0;
+  });
+
   // Toggle world selection
   const toggleWorldSelection = (worldId: string) => {
     setSelectedWorldIds(prev => 
@@ -499,6 +664,21 @@ export default function CatalogPage() {
             >
               {t.ficha.create}
             </Button>
+            
+            {Object.keys(customOrder).length > 0 && (
+              <Button
+                variant="ghost"
+                onClick={resetCustomOrder}
+                disabled={!selectedUniverseId}
+                icon={
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                }
+              >
+                Resetar Ordem
+              </Button>
+            )}
             
             <Button
               variant={isSelectionMode ? "secondary" : "ghost"}
@@ -680,8 +860,19 @@ export default function CatalogPage() {
                 }
               />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredFichas.map(ficha => (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+                onDragStart={() => setIsDragging(true)}
+              >
+                <SortableContext
+                  items={sortedFichas.map(f => f.id)}
+                  strategy={rectSortingStrategy}
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {sortedFichas.map(ficha => (
+                      <SortableCard key={ficha.id} id={ficha.id} isDragging={isDragging}>
                   <Card
                     key={ficha.id}
                     variant="elevated"
@@ -778,8 +969,11 @@ export default function CatalogPage() {
                       )}
                     </div>
                   </Card>
-                ))}
-              </div>
+                      </SortableCard>
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
             )}
           </>
         ) : (
