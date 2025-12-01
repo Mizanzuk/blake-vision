@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
-import { TopNav } from "@/app/components/TopNav";
+import { Header } from "@/app/components/layout/Header";
 import { Button, Input, Select, Loading } from "@/app/components/ui";
 import { toast } from "sonner";
 
@@ -294,30 +294,9 @@ export default function EditorPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F1E8]">
-      <TopNav />
+      <Header title="Editor" showNav={true} />
       
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Editor</h1>
-          <div className="flex gap-3">
-            <Button variant="secondary" onClick={() => router.push("/biblioteca")}>
-              Voltar
-            </Button>
-            <Button variant="secondary" onClick={() => handleSave()} disabled={isSaving}>
-              {isSaving ? "Salvando..." : "Salvar"}
-            </Button>
-            {status === "rascunho" && (
-              <Button onClick={handlePublish}>
-                Publicar
-              </Button>
-            )}
-            {status === "publicado" && (
-              <Button onClick={handleSendToUpload}>
-                Enviar para Upload
-              </Button>
-            )}
-          </div>
-        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Editor principal */}
@@ -378,6 +357,72 @@ export default function EditorPage() {
                 placeholder="Escreva seu texto aqui..."
                 className="w-full h-[500px] px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C1666B] focus:border-transparent resize-none font-mono text-sm"
               />
+            </div>
+            
+            {/* Avatares e Botões */}
+            <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+              {/* Avatares dos Agentes */}
+              <div className="flex items-center gap-3">
+                <div className="relative group">
+                  <button
+                    onClick={() => setShowUrthona(!showUrthona)}
+                    className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-300 hover:border-[#C1666B] transition-colors"
+                  >
+                    <img
+                      src="/urthona-avatar.png"
+                      alt="Urthona"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="48" height="48"%3E%3Crect fill="%23C1666B" width="48" height="48"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="20" font-weight="bold"%3EU%3C/text%3E%3C/svg%3E';
+                      }}
+                    />
+                  </button>
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                    Urthona (Criativo)
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                  </div>
+                </div>
+                
+                <div className="relative group">
+                  <button
+                    onClick={() => setShowUrizen(!showUrizen)}
+                    className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-300 hover:border-[#C1666B] transition-colors"
+                  >
+                    <img
+                      src="/urizen-avatar.png"
+                      alt="Urizen"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="48" height="48"%3E%3Crect fill="%234A5568" width="48" height="48"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="20" font-weight="bold"%3EU%3C/text%3E%3C/svg%3E';
+                      }}
+                    />
+                  </button>
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                    Urizen (Analítico)
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Botões de Ação */}
+              <div className="flex gap-3">
+                <Button variant="secondary" onClick={() => router.push("/biblioteca")}>
+                  Voltar
+                </Button>
+                <Button variant="secondary" onClick={() => handleSave()} disabled={isSaving}>
+                  {isSaving ? "Salvando..." : "Salvar"}
+                </Button>
+                {status === "rascunho" && (
+                  <Button onClick={handlePublish}>
+                    Publicar
+                  </Button>
+                )}
+                {status === "publicado" && (
+                  <Button onClick={handleSendToUpload}>
+                    Enviar para Upload
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
 
