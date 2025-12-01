@@ -32,6 +32,7 @@ import {
 import { Header } from "@/app/components/layout/Header";
 import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
 import { WorldsDropdown } from "@/app/components/ui/WorldsDropdown";
+import { TypesDropdown } from "@/app/components/ui/TypesDropdown";
 import FichaModal from "@/app/components/catalog/FichaModal";
 import WorldModal from "@/app/components/catalog/WorldModal";
 import CategoryModal from "@/app/components/catalog/CategoryModal";
@@ -799,13 +800,12 @@ export default function CatalogPage() {
                   }
                 />
                 
-                <Select
-                  options={[
-                    { value: "", label: "Todos os tipos" },
-                    ...categories.map(c => ({ value: c.slug, label: c.label })),
-                  ]}
-                  value={selectedType}
-                  onChange={(e) => setSelectedType(e.target.value)}
+                <TypesDropdown
+                  types={categories}
+                  selectedSlug={selectedType}
+                  onSelect={setSelectedType}
+                  showAllOption={true}
+                  allOptionLabel="Todos os tipos"
                 />
                 
                 <Select

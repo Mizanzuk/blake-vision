@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
 import { Header } from "@/app/components/layout/Header";
-import { Button, Input, Select, Loading } from "@/app/components/ui";
+import { Button, Input, Select, Loading, UniverseDropdown, WorldsDropdown } from "@/app/components/ui";
 import { toast } from "sonner";
 
 interface Universe {
@@ -351,35 +351,24 @@ export default function EditorPage() {
             />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Select
+              <UniverseDropdown
                 label="Universo"
-                value={universeId}
-                onChange={(e) => {
-                  setUniverseId(e.target.value);
+                universes={universes}
+                selectedId={universeId}
+                onSelect={(id) => {
+                  setUniverseId(id);
                   setWorldId("");
                 }}
-              >
-                <option value="">Selecione...</option>
-                {universes.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.nome}
-                  </option>
-                ))}
-              </Select>
+              />
 
-              <Select
+              <WorldsDropdown
                 label="Mundo"
-                value={worldId}
-                onChange={(e) => setWorldId(e.target.value)}
+                worlds={filteredWorlds}
+                selectedId={worldId}
+                onSelect={setWorldId}
                 disabled={!universeId}
-              >
-                <option value="">Selecione...</option>
-                {filteredWorlds.map((w) => (
-                  <option key={w.id} value={w.id}>
-                    {w.nome}
-                  </option>
-                ))}
-              </Select>
+                placeholder={!universeId ? "Selecione um universo primeiro" : "Selecione um mundo"}
+              />
 
               <Input
                 label="Episódio"
