@@ -8,6 +8,7 @@ import {
   Card,
   Loading,
 } from "@/app/components/ui";
+import { TopNav } from "@/app/components/TopNav";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
 import type { Universe, World } from "@/app/types";
@@ -471,18 +472,15 @@ export default function UploadPage() {
 
   return (
     <div className="min-h-screen bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary">
+      <TopNav currentPage="upload" />
+      
       <div className="max-w-4xl mx-auto p-6 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Upload de Arquivo ou Texto</h1>
-            <p className="text-sm text-text-light-secondary dark:text-dark-secondary mt-1">
-              Envie um roteiro (PDF, DOCX, TXT) ou cole o texto. A Lore Machine extrairá fichas automaticamente.
-            </p>
-          </div>
-          <Button variant="ghost" onClick={() => router.back()}>
-            Voltar
-          </Button>
+        <div>
+          <h1 className="text-2xl font-bold">Upload de Arquivo ou Texto</h1>
+          <p className="text-sm text-text-light-secondary dark:text-dark-secondary mt-1">
+            Envie um roteiro (PDF, DOCX, TXT) ou cole o texto. A Lore Machine extrairá fichas automaticamente.
+          </p>
         </div>
 
         <Card variant="elevated" padding="lg">

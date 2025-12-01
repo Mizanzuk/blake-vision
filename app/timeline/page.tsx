@@ -12,6 +12,7 @@ import {
   EmptyState,
   Loading,
 } from "@/app/components/ui";
+import { TopNav } from "@/app/components/TopNav";
 import FichaModal from "@/app/components/catalog/FichaModal";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
@@ -293,38 +294,12 @@ export default function TimelinePage() {
 
   return (
     <div className="min-h-screen bg-light-base dark:bg-dark-base">
+      <TopNav currentPage="timeline" />
+      
       {/* Header */}
       <header className="border-b border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => router.push("/")}
-                icon={
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                  </svg>
-                }
-              >
-                Home
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => router.push("/catalog")}
-              >
-                Catálogo
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => router.push("/upload")}
-              >
-                Upload
-              </Button>
-            </div>
             <h1 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
               Timeline
             </h1>

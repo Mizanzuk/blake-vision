@@ -12,6 +12,7 @@ import {
   EmptyState,
   Loading,
 } from "@/app/components/ui";
+import { TopNav } from "@/app/components/TopNav";
 import FichaModal from "@/app/components/catalog/FichaModal";
 import WorldModal from "@/app/components/catalog/WorldModal";
 import CategoryModal from "@/app/components/catalog/CategoryModal";
@@ -387,24 +388,14 @@ export default function CatalogPage() {
 
   return (
     <div className="min-h-screen bg-light-base dark:bg-dark-base">
+      <TopNav currentPage="catalog" />
+      
       {/* Header */}
       <header className="border-b border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push("/")}
-              className="flex items-center gap-2 text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              <span className="font-medium">{t.common.back}</span>
-            </button>
-            
-            <h1 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
-              {t.nav.catalog}
-            </h1>
-          </div>
+          <h1 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
+            {t.nav.catalog}
+          </h1>
 
           <div className="flex items-center gap-3">
             <Button

@@ -548,6 +548,7 @@ export default function HomePage() {
       {/* Sidebar */}
       <aside className={clsx(
         "border-r border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised flex flex-col transition-all duration-300 overflow-hidden",
+        "fixed md:relative inset-y-0 left-0 z-50",
         isSidebarOpen ? "w-80" : "w-0 border-r-0"
       )}>
         {/* Header */}
@@ -670,7 +671,7 @@ export default function HomePage() {
                 <div
                   key={session.id}
                   className={clsx(
-                    "group flex items-start gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors",
+                    "group flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors",
                     activeSessionId === session.id
                       ? "bg-primary-100 dark:bg-primary-900/30 text-text-light-primary dark:text-dark-primary"
                       : "bg-white/50 dark:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary hover:bg-white dark:hover:bg-dark-raised"
@@ -760,6 +761,14 @@ export default function HomePage() {
         </div>
       </aside>
 
+      {/* Backdrop for mobile */}
+      {isSidebarOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Toggle Sidebar Button (when closed) */}
       {!isSidebarOpen && (
         <button
@@ -774,7 +783,7 @@ export default function HomePage() {
       )}
 
       {/* Main Chat Area */}
-      <main className={clsx("flex-1 flex flex-col transition-all duration-300", isSidebarOpen && "md:ml-80")}>
+      <main className="flex-1 flex flex-col">
         {activeSession ? (
           <>
             {/* Messages */}
