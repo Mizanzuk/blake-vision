@@ -6,7 +6,7 @@ import { clsx } from "clsx";
 export interface Universe {
   id: string;
   nome: string;
-  descricao?: string;
+  descricao?: string | null;
 }
 
 interface UniverseDropdownProps {

@@ -1061,7 +1061,7 @@ export default function HomePage() {
 
           <div className="flex gap-2 justify-end">
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={() => {
                 setShowDeleteUniverseModal(false);
                 setUniverseToDelete(null);
@@ -1071,9 +1071,8 @@ export default function HomePage() {
               Cancelar
             </Button>
             <Button
-              variant="primary"
+              variant="danger"
               onClick={confirmDeleteUniverse}
-              className="bg-error-light hover:bg-error-light/90 dark:bg-error-dark dark:hover:bg-error-dark/90"
             >
               Deletar Universo
             </Button>
