@@ -37,9 +37,10 @@ export default function CatalogPage() {
   
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedWorldId, setSelectedWorldId] = useState<string>("");
+  const [selectedWorldIds, setSelectedWorldIds] = useState<string[]>([]);
   const [selectedType, setSelectedType] = useState<string>("");
   const [selectedEpisode, setSelectedEpisode] = useState<string>("");
+  const [showWorldFilter, setShowWorldFilter] = useState(false);
   
   // Modals
   const [showFichaModal, setShowFichaModal] = useState(false);
@@ -367,7 +368,7 @@ export default function CatalogPage() {
     if (searchTerm && !ficha.titulo.toLowerCase().includes(searchTerm.toLowerCase())) {
       return false;
     }
-    if (selectedWorldId && ficha.world_id !== selectedWorldId) {
+    if (selectedWorldIds.length > 0 && !selectedWorldIds.includes(ficha.world_id)) {
       return false;
     }
     if (selectedType && ficha.tipo !== selectedType) {
@@ -378,6 +379,15 @@ export default function CatalogPage() {
     }
     return true;
   });
+
+  // Toggle world selection
+  const toggleWorldSelection = (worldId: string) => {
+    setSelectedWorldIds(prev => 
+      prev.includes(worldId) 
+        ? prev.filter(id => id !== worldId)
+        : [...prev, worldId]
+    );
+  };
 
   // Get unique episodes
   const episodes = Array.from(new Set(fichas.filter(f => f.episodio).map(f => f.episodio)));
@@ -455,28 +465,67 @@ export default function CatalogPage() {
           <>
             {/* Worlds List */}
             {worlds.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-sm font-semibold text-text-light-tertiary dark:text-dark-tertiary uppercase tracking-wide mb-3">
-                  Mundos
-                </h3>
-                <div className="flex flex-wrap gap-2">
+              <Card variant="elevated" padding="md" className="mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold text-text-light-tertiary dark:text-dark-tertiary uppercase tracking-wide">
+                    Mundos ({worlds.length})
+                  </h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowWorldModal(true)}
+                    icon={
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                    }
+                  >
+                    Novo Mundo
+                  </Button>
+                </div>
+                <div className="space-y-2 max-h-64 overflow-y-auto">
                   {worlds.map(world => (
-                    <button
+                    <div
                       key={world.id}
-                      onClick={() => openEditWorldModal(world)}
-                      className="px-4 py-2 rounded-lg bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default hover:border-primary-500 transition-colors text-sm"
+                      className="flex items-start gap-3 p-3 rounded-lg bg-light-base dark:bg-dark-base hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
                     >
-                      {world.nome}
-                      {world.is_root && <Badge variant="default" size="sm" className="ml-2">Raiz</Badge>}
-                    </button>
+                      <input
+                        type="checkbox"
+                        checked={selectedWorldIds.includes(world.id)}
+                        onChange={() => toggleWorldSelection(world.id)}
+                        className="mt-1 w-4 h-4 rounded border-border-light-default dark:border-border-dark-default text-primary-500 focus:ring-primary-500"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-sm font-medium text-text-light-primary dark:text-dark-primary">
+                            {world.nome}
+                          </h4>
+                          {world.is_root && <Badge variant="default" size="sm">Raiz</Badge>}
+                        </div>
+                        {world.descricao && (
+                          <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary mt-1 line-clamp-2">
+                            {world.descricao}
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => openEditWorldModal(world)}
+                        className="p-1 rounded hover:bg-light-raised dark:hover:bg-dark-raised text-text-light-secondary dark:text-dark-secondary hover:text-primary-500 transition-colors"
+                        title="Editar mundo"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                    </div>
                   ))}
                 </div>
-              </div>
+              </Card>
             )}
 
             {/* Filters */}
             <Card variant="elevated" padding="md" className="mb-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Input
                   placeholder={t.common.search}
                   value={searchTerm}
@@ -486,15 +535,6 @@ export default function CatalogPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                   }
-                />
-                
-                <Select
-                  options={[
-                    { value: "", label: "Todos os mundos" },
-                    ...worlds.map(w => ({ value: w.id, label: w.nome })),
-                  ]}
-                  value={selectedWorldId}
-                  onChange={(e) => setSelectedWorldId(e.target.value)}
                 />
                 
                 <Select
@@ -519,6 +559,11 @@ export default function CatalogPage() {
               <div className="mt-4 flex items-center justify-between">
                 <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary">
                   {filteredFichas.length} {filteredFichas.length === 1 ? "ficha encontrada" : "fichas encontradas"}
+                  {selectedWorldIds.length > 0 && (
+                    <span className="ml-2 text-primary-500">
+                      ({selectedWorldIds.length} {selectedWorldIds.length === 1 ? "mundo selecionado" : "mundos selecionados"})
+                    </span>
+                  )}
                 </p>
                 
                 <Button
@@ -526,7 +571,7 @@ export default function CatalogPage() {
                   size="sm"
                   onClick={() => {
                     setSearchTerm("");
-                    setSelectedWorldId("");
+                    setSelectedWorldIds([]);
                     setSelectedType("");
                     setSelectedEpisode("");
                   }}
