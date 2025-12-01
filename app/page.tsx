@@ -32,10 +32,10 @@ const PERSONAS = {
     titulo: "A Lei (Consulta)",
     intro: "Eu sou Urizen, a Lei deste universo. Minha função é garantir a coerência dos Registros. O que você quer analisar hoje?",
     styles: {
-      color: "text-cyan-700 dark:text-cyan-300",
-      bg: "bg-cyan-500/10 dark:bg-cyan-500/20",
-      header: "bg-cyan-600/90 dark:bg-cyan-700/90",
-      button: "bg-cyan-500/20 border-cyan-400 text-cyan-700 dark:text-cyan-200 hover:bg-cyan-500/30",
+      color: "text-[#5B7C8D] dark:text-[#7B9CAD]",
+      bg: "bg-[#5B7C8D]/15 dark:bg-[#5B7C8D]/25",
+      header: "bg-[#5B7C8D]/90 dark:bg-[#5B7C8D]/90",
+      button: "bg-[#5B7C8D]/20 border-[#5B7C8D] text-[#5B7C8D] dark:text-[#7B9CAD] hover:bg-[#5B7C8D]/30",
       badge: "urizen" as const,
     }
   },
@@ -44,10 +44,10 @@ const PERSONAS = {
     titulo: "O Fluxo (Criativo)",
     intro: "Eu sou Urthona, o Forjador. Minha forja está pronta para criar e expandir as narrativas. Qual a próxima história?",
     styles: {
-      color: "text-purple-700 dark:text-purple-300",
-      bg: "bg-purple-500/10 dark:bg-purple-500/20",
-      header: "bg-purple-600/90 dark:bg-purple-700/90",
-      button: "bg-purple-600/20 border-purple-400 text-purple-700 dark:text-purple-100 hover:bg-purple-600/30",
+      color: "text-[#C85A54] dark:text-[#D87A74]",
+      bg: "bg-[#C85A54]/15 dark:bg-[#C85A54]/25",
+      header: "bg-[#C85A54]/90 dark:bg-[#C85A54]/90",
+      button: "bg-[#C85A54]/20 border-[#C85A54] text-[#C85A54] dark:text-[#D87A74] hover:bg-[#C85A54]/30",
       badge: "urthona" as const,
     }
   }
@@ -656,6 +656,7 @@ export default function HomePage() {
                       startEditingSession(session.id, session.title);
                     }}
                     className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-primary-light/10 text-primary-light transition-opacity"
+                    title="Editar"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -664,9 +665,27 @@ export default function HomePage() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
+                      const prevSessionId = activeSessionId;
+                      setActiveSessionId(session.id);
+                      setTimeout(() => {
+                        handleExportConversation();
+                        setActiveSessionId(prevSessionId);
+                      }, 0);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-primary-light/10 text-primary-light transition-opacity"
+                    title="Exportar"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
                       deleteSession(session.id);
                     }}
                     className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-error-light/10 text-error-light transition-opacity"
+                    title="Apagar"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -699,36 +718,6 @@ export default function HomePage() {
       <main className="flex-1 flex flex-col">
         {activeSession ? (
           <>
-            {/* Chat Header */}
-            <header className={clsx(
-              "p-2 border-b border-border-light-default dark:border-border-dark-default",
-              persona?.styles.header
-            )}>
-              <div className="flex items-center justify-end">
-                {/* Action Buttons - Icons Only */}
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={handleExportConversation}
-                    className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded transition-colors"
-                    title="Exportar conversa"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={handleClearHistory}
-                    className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded transition-colors"
-                    title="Limpar histórico"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </header>
-
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               {activeSession.messages.map((message, index) => (

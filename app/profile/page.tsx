@@ -286,9 +286,6 @@ export default function ProfilePage() {
                 </label>
                 <div className="flex items-center gap-4">
                   <LocaleToggle showLabel />
-                  <span className="text-sm text-text-light-tertiary dark:text-dark-tertiary">
-                    {t.locale[locale]}
-                  </span>
                 </div>
               </div>
             </div>

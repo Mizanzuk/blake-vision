@@ -4,32 +4,32 @@
 
 @layer base {
   :root {
-    /* Light mode colors */
-    --color-surface-base: 250 250 249;      /* stone-50 */
+    /* Light mode colors - Scrivener inspired */
+    --color-surface-base: 245 241 232;      /* #F5F1E8 - beige/cream */
     --color-surface-raised: 255 255 255;    /* white */
-    --color-surface-overlay: 245 245 244;   /* stone-100 */
+    --color-surface-overlay: 250 247 240;   /* lighter beige */
     
-    --color-border-subtle: 231 229 228;     /* stone-200 */
-    --color-border-default: 214 211 209;    /* stone-300 */
+    --color-border-subtle: 230 223 210;     /* beige border */
+    --color-border-default: 214 205 188;    /* medium beige */
     --color-border-strong: 168 162 158;     /* stone-400 */
     
-    --color-text-primary: 28 25 23;         /* stone-900 */
+    --color-text-primary: 43 24 16;         /* #2B1810 - dark brown */
     --color-text-secondary: 68 64 60;       /* stone-700 */
     --color-text-tertiary: 120 113 108;     /* stone-500 */
     --color-text-disabled: 168 162 158;     /* stone-400 */
   }
 
   .dark {
-    /* Dark mode colors */
-    --color-surface-base: 12 10 9;          /* stone-950 */
-    --color-surface-raised: 28 25 23;       /* stone-900 */
-    --color-surface-overlay: 41 37 36;      /* stone-800 */
+    /* Dark mode colors - Scrivener inspired */
+    --color-surface-base: 26 22 20;         /* #1A1614 - very dark brown */
+    --color-surface-raised: 43 24 16;       /* #2B1810 - dark brown */
+    --color-surface-overlay: 51 35 25;      /* medium dark brown */
     
-    --color-border-subtle: 41 37 36;        /* stone-800 */
+    --color-border-subtle: 51 35 25;        /* dark brown border */
     --color-border-default: 68 64 60;       /* stone-700 */
     --color-border-strong: 87 83 78;        /* stone-600 */
     
-    --color-text-primary: 250 250 249;      /* stone-50 */
+    --color-text-primary: 245 241 232;      /* #F5F1E8 - beige/cream */
     --color-text-secondary: 231 229 228;    /* stone-200 */
     --color-text-tertiary: 168 162 158;     /* stone-400 */
     --color-text-disabled: 120 113 108;     /* stone-500 */
@@ -41,8 +41,9 @@
 
   body {
     @apply bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary;
-    @apply font-sans antialiased;
+    @apply antialiased;
     @apply transition-colors duration-200;
+    font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
 
   /* Scrollbar styling */
