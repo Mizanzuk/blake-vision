@@ -547,7 +547,7 @@ export default function HomePage() {
     <div className="flex h-screen bg-light-base dark:bg-dark-base">
       {/* Sidebar */}
       <aside className={clsx(
-        "border-r border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised flex flex-col transition-all duration-300",
+        "border-r border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised flex flex-col transition-all duration-300 overflow-hidden",
         isSidebarOpen ? "w-80" : "w-0 border-r-0"
       )}>
         {/* Header */}
