@@ -37,21 +37,39 @@ export async function POST(request: NextRequest) {
       }
 
       // Save fichas to database
-      const entitiesToInsert = fichas.map((ficha: any) => ({
-        name: ficha.name || ficha.title,
-        type: ficha.type,
-        description: ficha.description || ficha.content,
-        world_id: worldId,
-        universe_id: universeId,
+      // Helper function to slugify
+      function slugify(text: string): string {
+        return text
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+      }
+
+      const fichasToInsert = fichas.map((ficha: any) => ({
         user_id: user.id,
-        metadata: ficha.metadata || {},
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        world_id: worldId,
+        tipo: ficha.type || ficha.tipo || "conceito",
+        titulo: ficha.name || ficha.title || ficha.titulo,
+        slug: slugify(ficha.name || ficha.title || ficha.titulo),
+        resumo: ficha.summary || ficha.resumo || null,
+        conteudo: ficha.description || ficha.content || ficha.conteudo || null,
+        tags: Array.isArray(ficha.tags) ? ficha.tags.join(", ") : (ficha.tags || null),
+        episodio: null,
+        aparece_em: null,
+        codigo: null,
+        ano_diegese: null,
+        descricao_data: null,
+        data_inicio: null,
+        data_fim: null,
+        granularidade_data: "vago",
+        camada_temporal: "linha_principal",
       }));
 
       const { data: insertedData, error: insertError } = await supabase
-        .from("entities")
-        .insert(entitiesToInsert)
+        .from("fichas")
+        .insert(fichasToInsert)
         .select();
 
       if (insertError) {
