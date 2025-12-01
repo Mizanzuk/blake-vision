@@ -246,6 +246,22 @@ export default function EditorPage() {
     router.push(`/upload?${params.toString()}`);
   }
 
+  function handleTextToSpeech(text: string) {
+    if ('speechSynthesis' in window) {
+      // Cancel any ongoing speech
+      window.speechSynthesis.cancel();
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'pt-BR';
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+      
+      window.speechSynthesis.speak(utterance);
+    } else {
+      toast.error("Seu navegador não suporta leitura de texto");
+    }
+  }
+
   async function handleAssistantMessage(mode: "urthona" | "urizen") {
     if (!assistantInput.trim()) return;
 
@@ -480,13 +496,24 @@ export default function EditorPage() {
                   {(showUrthona ? urthonaMessages : urizenMessages).map((msg, idx) => (
                     <div
                       key={idx}
-                      className={`p-3 rounded-lg ${
+                      className={`relative group p-3 rounded-lg ${
                         msg.role === "user"
                           ? "bg-gray-100 ml-4"
                           : "bg-[#C1666B] text-white mr-4"
                       }`}
                     >
                       {msg.content}
+                      {msg.role === "assistant" && (
+                        <button
+                          onClick={() => handleTextToSpeech(msg.content)}
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded hover:bg-white/20"
+                          title="Ler em voz alta"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                          </svg>
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>

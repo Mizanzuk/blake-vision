@@ -120,7 +120,12 @@ export function WorldsDropdown({
           </div>
 
           {/* World Options */}
-          {worlds.map((world) => (
+          {/* Sort: root worlds first, then others */}
+          {[...worlds].sort((a, b) => {
+            if (a.is_root && !b.is_root) return -1;
+            if (!a.is_root && b.is_root) return 1;
+            return (a.ordem || 0) - (b.ordem || 0);
+          }).map((world) => (
             <div
               key={world.id}
               className={clsx(
@@ -135,6 +140,13 @@ export function WorldsDropdown({
                 onChange={() => {}}
                 className="mr-3 h-4 w-4 rounded border-border-light-default dark:border-border-dark-default text-primary-600 focus:ring-primary-500"
               />
+              
+              {/* Indent non-root worlds */}
+              {!world.is_root && (
+                <svg className="w-3 h-3 mr-1 text-text-light-tertiary dark:text-dark-tertiary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              )}
               
               <div className="flex-1 min-w-0 pr-2">
                 <p className={clsx(

@@ -342,6 +342,22 @@ export default function HomePage() {
     });
   }
 
+  function handleTextToSpeech(text: string) {
+    if ('speechSynthesis' in window) {
+      // Cancel any ongoing speech
+      window.speechSynthesis.cancel();
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'pt-BR';
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+      
+      window.speechSynthesis.speak(utterance);
+    } else {
+      toast.error("Seu navegador não suporta leitura de texto");
+    }
+  }
+
   async function handleSendToEditor(content: string) {
     try {
       const response = await fetch("/api/textos", {
@@ -913,6 +929,15 @@ export default function HomePage() {
                     {/* Action Buttons (only for assistant messages, on hover) */}
                     {message.role === "assistant" && message.id !== "intro" && (
                       <div className="opacity-0 group-hover:opacity-100 absolute top-2 right-2 flex gap-1">
+                        <button
+                          onClick={() => handleTextToSpeech(message.content)}
+                          className="p-1.5 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary transition-all"
+                          title="Ler em voz alta"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                          </svg>
+                        </button>
                         <button
                           onClick={() => handleCopyMessage(message.content)}
                           className="p-1.5 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary transition-all"

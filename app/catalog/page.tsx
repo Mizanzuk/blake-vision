@@ -882,7 +882,7 @@ export default function CatalogPage() {
                   >
                     {/* Checkbox for selection mode */}
                     {isSelectionMode && (
-                      <div className="absolute top-2 left-2 z-10">
+                      <div className="absolute top-2 left-2 z-50">
                         <input
                           type="checkbox"
                           checked={selectedFichaIds.includes(ficha.id)}
@@ -901,7 +901,7 @@ export default function CatalogPage() {
                     
                     {/* Action buttons - visible on hover (hidden in selection mode) */}
                     {!isSelectionMode && (
-                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-50">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
