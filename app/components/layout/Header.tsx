@@ -28,8 +28,8 @@ export function Header({ title, showNav = true }: HeaderProps) {
       
       if (!user) return;
 
-      // Usar nome do user_metadata ou email como fallback
-      const nome = user.user_metadata?.nome || user.user_metadata?.name || user.email?.split('@')[0] || 'Usuário';
+      // Usar nome completo do user_metadata ou email como fallback
+      const nome = user.user_metadata?.full_name || user.user_metadata?.nome || user.user_metadata?.name || user.email?.split('@')[0] || 'Usuário';
       setUserName(nome);
     } catch (error) {
       console.error("Erro ao carregar nome do usuário:", error);
