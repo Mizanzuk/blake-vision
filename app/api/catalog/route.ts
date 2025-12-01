@@ -87,7 +87,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       worlds: worlds || [],
       types: categories,
-      entities: fichas,
+      fichas: fichas,
     });
 
   } catch (error: any) {

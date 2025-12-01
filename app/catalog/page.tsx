@@ -116,7 +116,7 @@ export default function CatalogPage() {
       if (response.ok) {
         setWorlds(data.worlds || []);
         setCategories(data.types || []);
-        setFichas(data.entities || []);
+        setFichas(data.fichas || []);
       } else {
         toast.error(data.error || t.errors.generic);
       }

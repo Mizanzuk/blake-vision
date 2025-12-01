@@ -106,7 +106,7 @@ export default function TimelinePage() {
       
       if (response.ok) {
         // Filter only events with dates
-        const eventsWithDates = (data.entities || []).filter((f: Ficha) => 
+        const eventsWithDates = (data.fichas || []).filter((f: Ficha) => 
           f.ano_diegese || f.data_inicio
         );
         
