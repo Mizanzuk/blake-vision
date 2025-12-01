@@ -13,28 +13,28 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const universe_id = searchParams.get("universe_id");
+    const world_id = searchParams.get("world_id");
 
     let query = supabase
-      .from("worlds")
+      .from("episodes")
       .select("*")
       .eq("user_id", user.id);
 
-    if (universe_id) {
-      query = query.eq("universe_id", universe_id);
+    if (world_id) {
+      query = query.eq("world_id", world_id);
     }
 
-    const { data: worlds, error } = await query.order("ordem", { ascending: true });
+    const { data: episodes, error } = await query.order("ordem", { ascending: true });
 
     if (error) {
-      console.error("Erro ao buscar mundos:", error);
-      return NextResponse.json({ error: "Erro ao buscar mundos" }, { status: 500 });
+      console.error("Erro ao buscar episódios:", error);
+      return NextResponse.json({ error: "Erro ao buscar episódios" }, { status: 500 });
     }
 
-    return NextResponse.json({ worlds: worlds || [] });
+    return NextResponse.json({ episodes: episodes || [] });
 
   } catch (error: any) {
-    console.error("Erro na API de worlds:", error);
+    console.error("Erro na API de episodes:", error);
     return NextResponse.json(
       { error: error.message || "Erro interno" },
       { status: 500 }
@@ -52,38 +52,36 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { universe_id, nome, descricao, is_root, has_episodes, ordem } = body;
+    const { world_id, nome, descricao, ordem } = body;
 
-    if (!universe_id || !nome) {
+    if (!world_id || !nome) {
       return NextResponse.json(
-        { error: "universe_id e nome são obrigatórios" },
+        { error: "world_id e nome são obrigatórios" },
         { status: 400 }
       );
     }
 
-    const { data: world, error } = await supabase
-      .from("worlds")
+    const { data: episode, error } = await supabase
+      .from("episodes")
       .insert({
         user_id: user.id,
-        universe_id,
+        world_id,
         nome,
         descricao: descricao || null,
-        is_root: is_root || false,
-        has_episodes: has_episodes || false,
         ordem: ordem || null,
       })
       .select()
       .single();
 
     if (error) {
-      console.error("Erro ao criar mundo:", error);
-      return NextResponse.json({ error: "Erro ao criar mundo" }, { status: 500 });
+      console.error("Erro ao criar episódio:", error);
+      return NextResponse.json({ error: "Erro ao criar episódio" }, { status: 500 });
     }
 
-    return NextResponse.json({ world });
+    return NextResponse.json({ episode });
 
   } catch (error: any) {
-    console.error("Erro na API de worlds:", error);
+    console.error("Erro na API de episodes:", error);
     return NextResponse.json(
       { error: error.message || "Erro interno" },
       { status: 500 }
@@ -101,7 +99,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { id, nome, descricao, is_root, has_episodes, ordem } = body;
+    const { id, nome, descricao, ordem } = body;
 
     if (!id || !nome) {
       return NextResponse.json(
@@ -110,13 +108,11 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    const { data: world, error } = await supabase
-      .from("worlds")
+    const { data: episode, error } = await supabase
+      .from("episodes")
       .update({
         nome,
         descricao: descricao || null,
-        is_root: is_root || false,
-        has_episodes: has_episodes || false,
         ordem: ordem || null,
         updated_at: new Date().toISOString(),
       })
@@ -126,14 +122,14 @@ export async function PUT(req: NextRequest) {
       .single();
 
     if (error) {
-      console.error("Erro ao atualizar mundo:", error);
-      return NextResponse.json({ error: "Erro ao atualizar mundo" }, { status: 500 });
+      console.error("Erro ao atualizar episódio:", error);
+      return NextResponse.json({ error: "Erro ao atualizar episódio" }, { status: 500 });
     }
 
-    return NextResponse.json({ world });
+    return NextResponse.json({ episode });
 
   } catch (error: any) {
-    console.error("Erro na API de worlds:", error);
+    console.error("Erro na API de episodes:", error);
     return NextResponse.json(
       { error: error.message || "Erro interno" },
       { status: 500 }
@@ -157,36 +153,21 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "ID é obrigatório" }, { status: 400 });
     }
 
-    // Verificar se é mundo raiz
-    const { data: world } = await supabase
-      .from("worlds")
-      .select("is_root")
-      .eq("id", id)
-      .eq("user_id", user.id)
-      .single();
-
-    if (world?.is_root) {
-      return NextResponse.json(
-        { error: "Não é possível deletar o Mundo Raiz. Delete o universo inteiro se necessário." },
-        { status: 400 }
-      );
-    }
-
     const { error } = await supabase
-      .from("worlds")
+      .from("episodes")
       .delete()
       .eq("id", id)
       .eq("user_id", user.id);
 
     if (error) {
-      console.error("Erro ao deletar mundo:", error);
-      return NextResponse.json({ error: "Erro ao deletar mundo" }, { status: 500 });
+      console.error("Erro ao deletar episódio:", error);
+      return NextResponse.json({ error: "Erro ao deletar episódio" }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
 
   } catch (error: any) {
-    console.error("Erro na API de worlds:", error);
+    console.error("Erro na API de episodes:", error);
     return NextResponse.json(
       { error: error.message || "Erro interno" },
       { status: 500 }
