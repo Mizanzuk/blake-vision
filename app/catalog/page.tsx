@@ -138,7 +138,7 @@ export default function CatalogPage() {
     }
     setSelectedUniverseId(universeId);
     localStorage.setItem("selectedUniverseId", universeId);
-    setSelectedWorldId("");
+    setSelectedWorldIds([]);
     setSelectedType("");
     setSelectedEpisode("");
   }
