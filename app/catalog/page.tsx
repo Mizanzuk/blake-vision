@@ -605,27 +605,57 @@ export default function CatalogPage() {
                     variant="elevated"
                     padding="md"
                     hoverable
-                    onClick={() => openEditFichaModal(ficha)}
-                    className="cursor-pointer"
+                    className="cursor-pointer group relative"
                   >
-                    {ficha.imagem_capa && (
-                      <img
-                        src={ficha.imagem_capa}
-                        alt={ficha.titulo}
-                        className="w-full h-48 object-cover rounded-lg mb-4"
-                      />
-                    )}
-                    
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary flex-1">
-                        {ficha.titulo}
-                      </h3>
-                      {ficha.codigo && (
-                        <Badge variant="default" size="sm">
-                          {ficha.codigo}
-                        </Badge>
-                      )}
+                    {/* Action buttons - visible on hover */}
+                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEditFichaModal(ficha);
+                        }}
+                        className="p-2 rounded-lg bg-white dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default hover:border-primary-500 hover:text-primary-500 transition-colors shadow-soft"
+                        title="Editar ficha"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm(`Tem certeza que deseja apagar a ficha "${ficha.titulo}"?`)) {
+                            handleDeleteFicha(ficha.id);
+                          }
+                        }}
+                        className="p-2 rounded-lg bg-white dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default hover:border-error-light hover:text-error-light transition-colors shadow-soft"
+                        title="Apagar ficha"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
                     </div>
+
+                    <div onClick={() => openEditFichaModal(ficha)}>
+                      {ficha.imagem_capa && (
+                        <img
+                          src={ficha.imagem_capa}
+                          alt={ficha.titulo}
+                          className="w-full h-48 object-cover rounded-lg mb-4"
+                        />
+                      )}
+                      
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary flex-1">
+                          {ficha.titulo}
+                        </h3>
+                        {ficha.codigo && (
+                          <Badge variant="default" size="sm">
+                            {ficha.codigo}
+                          </Badge>
+                        )}
+                      </div>
                     
                     <div className="flex items-center gap-2 mb-3">
                       <Badge variant="primary" size="sm">
@@ -638,11 +668,12 @@ export default function CatalogPage() {
                       )}
                     </div>
                     
-                    {ficha.resumo && (
-                      <p className="text-sm text-text-light-secondary dark:text-dark-secondary line-clamp-3">
-                        {ficha.resumo}
-                      </p>
-                    )}
+                      {ficha.resumo && (
+                        <p className="text-sm text-text-light-secondary dark:text-dark-secondary line-clamp-3">
+                          {ficha.resumo}
+                        </p>
+                      )}
+                    </div>
                   </Card>
                 ))}
               </div>
