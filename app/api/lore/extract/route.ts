@@ -10,11 +10,32 @@ const openai = new OpenAI({
 
 export async function POST(request: NextRequest) {
   try {
-    const { file_path, universe_id, world_id } = await request.json();
+    const body = await request.json();
+    
+    // Aceitar AMBOS os formatos:
+    // 1. Extração de arquivo: { file_path, universe_id, world_id }
+    // 2. Extração de texto: { text, worldId, universeId, worldName, documentName, unitNumber, categories }
+    
+    const file_path = body.file_path;
+    const text = body.text;
+    const universeId = body.universeId || body.universe_id;
+    const worldId = body.worldId || body.world_id;
+    const worldName = body.worldName;
+    const documentName = body.documentName;
+    const unitNumber = body.unitNumber;
+    const categories = body.categories || [];
 
-    if (!file_path || !universe_id || !world_id) {
+    // Validação: precisa ter OU file_path OU text
+    if (!file_path && !text) {
       return NextResponse.json(
-        { error: "Parâmetros faltando" },
+        { error: "É necessário fornecer 'file_path' (arquivo) ou 'text' (texto direto)" },
+        { status: 400 }
+      );
+    }
+
+    if (!universeId || !worldId) {
+      return NextResponse.json(
+        { error: "Parâmetros 'universeId' e 'worldId' são obrigatórios" },
         { status: 400 }
       );
     }
@@ -43,37 +64,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Download file from Supabase Storage
-    const { data: fileData, error: downloadError } = await supabase.storage
-      .from("documents")
-      .download(file_path);
-
-    if (downloadError || !fileData) {
-      return NextResponse.json(
-        { error: "Erro ao baixar arquivo" },
-        { status: 500 }
-      );
-    }
-
-    // Extract text based on file type
+    // Extrair texto (de arquivo OU usar texto direto)
     let extractedText = "";
-    const fileExtension = file_path.split(".").pop()?.toLowerCase();
+    
+    if (file_path) {
+      // CENÁRIO 1: Extração de arquivo
+      const { data: fileData, error: downloadError } = await supabase.storage
+        .from("documents")
+        .download(file_path);
 
-    if (fileExtension === "pdf") {
-      const buffer = await fileData.arrayBuffer();
-      const pdfData = await pdfParse(Buffer.from(buffer));
-      extractedText = pdfData.text;
-    } else if (fileExtension === "docx") {
-      const buffer = await fileData.arrayBuffer();
-      const result = await mammoth.extractRawText({ buffer: Buffer.from(buffer) });
-      extractedText = result.value;
-    } else if (fileExtension === "txt") {
-      extractedText = await fileData.text();
+      if (downloadError || !fileData) {
+        return NextResponse.json(
+          { error: "Erro ao baixar arquivo" },
+          { status: 500 }
+        );
+      }
+
+      const fileExtension = file_path.split(".").pop()?.toLowerCase();
+
+      if (fileExtension === "pdf") {
+        const buffer = await fileData.arrayBuffer();
+        const pdfData = await pdfParse(Buffer.from(buffer));
+        extractedText = pdfData.text;
+      } else if (fileExtension === "docx") {
+        const buffer = await fileData.arrayBuffer();
+        const result = await mammoth.extractRawText({ buffer: Buffer.from(buffer) });
+        extractedText = result.value;
+      } else if (fileExtension === "txt") {
+        extractedText = await fileData.text();
+      } else {
+        return NextResponse.json(
+          { error: "Formato de arquivo não suportado" },
+          { status: 400 }
+        );
+      }
     } else {
-      return NextResponse.json(
-        { error: "Formato de arquivo não suportado" },
-        { status: 400 }
-      );
+      // CENÁRIO 2: Texto direto
+      extractedText = text;
     }
 
     if (!extractedText || extractedText.trim().length === 0) {
@@ -84,12 +111,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Get categories for this universe
-    const { data: categories } = await supabase
+    const { data: categoriesData } = await supabase
       .from("categories")
       .select("*")
-      .eq("universe_id", universe_id);
+      .eq("universe_id", universeId);
 
-    const categoriesText = categories
+    const categoriesText = categoriesData
       ?.map(c => `- ${c.label} (${c.slug}): ${c.description || ""}`)
       .join("\n") || "";
 
