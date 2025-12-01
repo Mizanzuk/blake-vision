@@ -28,15 +28,9 @@ export function Header({ title, showNav = true }: HeaderProps) {
       
       if (!user) return;
 
-      const { data: profile } = await supabase
-        .from('users')
-        .select('nome')
-        .eq('id', user.id)
-        .single();
-      
-      if (profile?.nome) {
-        setUserName(profile.nome);
-      }
+      // Usar nome do user_metadata ou email como fallback
+      const nome = user.user_metadata?.nome || user.user_metadata?.name || user.email?.split('@')[0] || 'Usuário';
+      setUserName(nome);
     } catch (error) {
       console.error("Erro ao carregar nome do usuário:", error);
     }

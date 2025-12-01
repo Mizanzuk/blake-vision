@@ -190,10 +190,50 @@ export default function EditorPage() {
   }
 
   async function handlePublish() {
-    setStatus("publicado");
-    await handleSave();
-    toast.success("Texto publicado com sucesso!");
-    router.push("/biblioteca");
+    // Salvar com status publicado
+    setIsSaving(true);
+    try {
+      const method = textoId ? "PUT" : "POST";
+      const body: any = {
+        titulo,
+        conteudo,
+        universe_id: universeId || null,
+        world_id: worldId || null,
+        episodio: episodio || null,
+        status: "publicado", // Forçar status publicado
+      };
+
+      if (textoId) {
+        body.id = textoId;
+      }
+
+      const response = await fetch("/api/textos", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        toast.error(error.error || "Erro ao publicar texto");
+        return;
+      }
+
+      const data = await response.json();
+      
+      if (!textoId && data.texto?.id) {
+        setTextoId(data.texto.id);
+      }
+      
+      setStatus("publicado");
+      toast.success("Texto publicado com sucesso!");
+      router.push("/biblioteca");
+    } catch (error) {
+      console.error("Erro ao publicar:", error);
+      toast.error("Erro ao publicar texto");
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   async function handleSendToUpload() {

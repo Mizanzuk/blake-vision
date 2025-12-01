@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabaseClient } from "@/app/lib/supabase/client";
+import { createClient } from "@/app/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 // GET: Fetch custom order for a universe
 export async function GET(req: NextRequest) {
   try {
-    const supabase = getSupabaseClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
 // POST: Save custom order for cards
 export async function POST(req: NextRequest) {
   try {
-    const supabase = getSupabaseClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
 // DELETE: Reset custom order (delete all custom orders for a universe)
 export async function DELETE(req: NextRequest) {
   try {
-    const supabase = getSupabaseClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {

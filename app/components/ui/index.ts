@@ -35,3 +35,8 @@ export type { LocaleToggleProps } from "./LocaleToggle";
 
 export { MentionTextarea } from "./MentionTextarea";
 export type { MentionTextareaProps } from "./MentionTextarea";
+
+export { UniverseDropdown } from "./UniverseDropdown";
+export { WorldsDropdown } from "./WorldsDropdown";
+export { EpisodeDropdown } from "./EpisodeDropdown";
+export { TypesDropdown } from "./TypesDropdown";
