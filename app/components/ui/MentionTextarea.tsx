@@ -190,7 +190,7 @@ export function MentionTextarea({
             focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
             transition-all duration-200
             resize-y
-            font-serif
+            font-sans
           `}
         />
 

@@ -235,29 +235,54 @@ export default function EditorPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: [...messages, newUserMessage],
-          mode,
-          context: {
-            titulo,
-            conteudo,
-            universe_id: universeId,
-            world_id: worldId,
-          },
+          mode: mode === "urthona" ? "criativo" : "consulta",
+          universeId: universeId,
         }),
       });
 
-      const data = await response.json();
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Erro desconhecido" }));
+        toast.error(errorData.error || "Erro ao conversar com assistente");
+        setIsAssistantLoading(false);
+        return;
+      }
 
-      if (response.ok && data.message) {
+      // Ler stream de resposta
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let assistantMessage = "";
+
+      if (!reader) {
+        toast.error("Erro ao ler resposta do assistente");
+        setIsAssistantLoading(false);
+        return;
+      }
+
+      // Adicionar mensagem do assistente vazia (será preenchida progressivamente)
+      const assistantMessageObj = {
+        role: "assistant" as const,
+        content: "",
+      };
+      setMessages([...messages, newUserMessage, assistantMessageObj]);
+
+      // Ler chunks do stream
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        assistantMessage += chunk;
+
+        // Atualizar mensagem progressivamente
         setMessages([...messages, newUserMessage, {
           role: "assistant",
-          content: data.message,
+          content: assistantMessage,
         }]);
-      } else {
-        toast.error("Erro ao conversar com assistente");
       }
-    } catch (error) {
-      console.error("Erro:", error);
-      toast.error("Erro ao conversar com assistente");
+
+    } catch (error: any) {
+      console.error("Erro ao conversar com assistente:", error);
+      toast.error(error.message || "Erro ao conversar com assistente");
     } finally {
       setIsAssistantLoading(false);
     }

@@ -68,7 +68,7 @@ export default function LoginPage() {
         <h1 className="text-5xl font-bold text-text-light-primary dark:text-dark-primary mb-3 tracking-tight">
           Blake Vision
         </h1>
-        <p className="text-lg text-text-light-tertiary dark:text-dark-tertiary font-serif italic">
+        <p className="text-lg text-text-light-tertiary dark:text-dark-tertiary font-sans italic">
           Inspired by William Blake
         </p>
       </div>

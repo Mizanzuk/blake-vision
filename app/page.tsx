@@ -77,6 +77,7 @@ export default function HomePage() {
   
   const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>("");
   
   // Universes
   const [universes, setUniverses] = useState<Universe[]>([]);
@@ -151,6 +152,17 @@ export default function HomePage() {
       }
 
       setUserId(user.id);
+      
+      // Buscar nome do usuário
+      const { data: profile } = await supabase
+        .from('users')
+        .select('nome')
+        .eq('id', user.id)
+        .single();
+      
+      if (profile?.nome) {
+        setUserName(profile.nome);
+      }
     } catch (error) {
       console.error("Error checking auth:", error);
       router.push("/login");
@@ -779,55 +791,55 @@ export default function HomePage() {
           )}
         </div>
         
-        {/* Footer with Theme + Profile + Logout */}
+        {/* Footer with Profile Dropdown */}
         <div className="p-4 border-t border-border-light-default dark:border-border-dark-default">
-          <div className="flex items-center justify-between gap-2">
-            {/* Theme Toggle */}
-            <ThemeToggle />
-            
-            {/* Profile Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                className="p-2 rounded-lg text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
-                title="Perfil"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </button>
-              
-              {showProfileDropdown && (
-                <div className="absolute bottom-full left-0 mb-2 w-48 bg-white dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg overflow-hidden z-50">
-                  <button
-                    onClick={() => {
-                      setShowProfileDropdown(false);
-                      router.push('/profile');
-                    }}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    Editar Perfil
-                  </button>
-                </div>
-              )}
-            </div>
-            
-            {/* Logout Button */}
+          <div className="relative">
             <button
-              onClick={async () => {
-                await supabase.auth.signOut();
-                router.push('/login');
-              }}
-              className="p-2 rounded-lg text-text-light-secondary hover:text-error-light hover:bg-error-light/10 dark:text-dark-secondary dark:hover:text-error-light transition-colors"
-              title="Sair"
+              onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <span className="text-sm font-medium truncate">{userName || "Usuário"}</span>
+              <svg className="w-4 h-4 ml-auto flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
+            
+            {showProfileDropdown && (
+              <div className="absolute bottom-full left-0 mb-2 w-full bg-white dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg overflow-hidden z-50">
+                <button
+                  onClick={() => {
+                    setShowProfileDropdown(false);
+                    router.push('/profile');
+                  }}
+                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Editar Perfil
+                </button>
+                
+                <ThemeToggle variant="dropdown" />
+                
+                <div className="border-t border-border-light-default dark:border-border-dark-default" />
+                
+                <button
+                  onClick={async () => {
+                    await supabase.auth.signOut();
+                    router.push('/login');
+                  }}
+                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-error-light hover:bg-error-light/10 dark:text-error-light transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  Sair da conta
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </aside>
