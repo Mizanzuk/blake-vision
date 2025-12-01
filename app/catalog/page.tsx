@@ -523,7 +523,7 @@ export default function CatalogPage() {
             </div>
           </div>
         )}
-      </header>
+      </div>
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
