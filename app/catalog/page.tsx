@@ -14,6 +14,7 @@ import {
 } from "@/app/components/ui";
 import { Header } from "@/app/components/layout/Header";
 import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
+import { WorldsDropdown } from "@/app/components/ui/WorldsDropdown";
 import FichaModal from "@/app/components/catalog/FichaModal";
 import WorldModal from "@/app/components/catalog/WorldModal";
 import CategoryModal from "@/app/components/catalog/CategoryModal";
@@ -53,6 +54,7 @@ export default function CatalogPage() {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showManageCategoriesModal, setShowManageCategoriesModal] = useState(false);
   const [showNewUniverseModal, setShowNewUniverseModal] = useState(false);
+  const [editingUniverse, setEditingUniverse] = useState<Universe | null>(null);
   const [newUniverseName, setNewUniverseName] = useState("");
   const [newUniverseDescription, setNewUniverseDescription] = useState("");
   const [isCreatingUniverse, setIsCreatingUniverse] = useState(false);
@@ -146,7 +148,7 @@ export default function CatalogPage() {
 
   async function handleCreateUniverse() {
     if (!newUniverseName.trim()) {
-      toast.error("Dê um nome ao novo Universo.");
+      toast.error("Dê um nome ao universo.");
       return;
     }
     if (!userId) {
@@ -157,31 +159,93 @@ export default function CatalogPage() {
     setIsCreatingUniverse(true);
     
     try {
-      const { data: inserted, error: insertError } = await supabase
-        .from("universes")
-        .insert({
-          nome: newUniverseName.trim(),
-          descricao: newUniverseDescription.trim() || null
-        })
-        .select("*")
-        .single();
-      
-      if (insertError) throw insertError;
-      
-      if (inserted) {
-        setUniverses(prev => [...prev, inserted as Universe]);
-        setSelectedUniverseId(inserted.id);
-        localStorage.setItem("selectedUniverseId", inserted.id);
-        setShowNewUniverseModal(false);
-        setNewUniverseName("");
-        setNewUniverseDescription("");
-        toast.success("Novo Universo criado com sucesso.");
+      if (editingUniverse) {
+        // Update existing universe
+        const { data: updated, error: updateError } = await supabase
+          .from("universes")
+          .update({
+            nome: newUniverseName.trim(),
+            descricao: newUniverseDescription.trim() || null
+          })
+          .eq("id", editingUniverse.id)
+          .select("*")
+          .single();
+        
+        if (updateError) throw updateError;
+        
+        if (updated) {
+          setUniverses(prev => prev.map(u => u.id === editingUniverse.id ? updated as Universe : u));
+          toast.success("Universo atualizado com sucesso.");
+        }
+      } else {
+        // Create new universe
+        const { data: inserted, error: insertError } = await supabase
+          .from("universes")
+          .insert({
+            nome: newUniverseName.trim(),
+            descricao: newUniverseDescription.trim() || null
+          })
+          .select("*")
+          .single();
+        
+        if (insertError) throw insertError;
+        
+        if (inserted) {
+          setUniverses(prev => [...prev, inserted as Universe]);
+          setSelectedUniverseId(inserted.id);
+          localStorage.setItem("selectedUniverseId", inserted.id);
+          toast.success("Novo Universo criado com sucesso.");
+        }
       }
+      
+      setShowNewUniverseModal(false);
+      setEditingUniverse(null);
+      setNewUniverseName("");
+      setNewUniverseDescription("");
     } catch (err) {
       console.error(err);
-      toast.error("Erro ao criar Universo.");
+      toast.error(editingUniverse ? "Erro ao atualizar universo." : "Erro ao criar universo.");
     } finally {
       setIsCreatingUniverse(false);
+    }
+  }
+
+  function openCreateUniverseModal() {
+    setEditingUniverse(null);
+    setNewUniverseName("");
+    setNewUniverseDescription("");
+    setShowNewUniverseModal(true);
+  }
+
+  function openEditUniverseModal(universe: Universe) {
+    setEditingUniverse(universe);
+    setNewUniverseName(universe.nome);
+    setNewUniverseDescription(universe.descricao || "");
+    setShowNewUniverseModal(true);
+  }
+
+  async function handleDeleteUniverse(universeId: string, universeName: string) {
+    if (!confirm(`Tem certeza que deseja deletar o universo "${universeName}"? Todos os mundos e fichas associados serão deletados também.`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("universes")
+        .delete()
+        .eq("id", universeId);
+
+      if (error) throw error;
+
+      setUniverses(prev => prev.filter(u => u.id !== universeId));
+      if (selectedUniverseId === universeId) {
+        setSelectedUniverseId("");
+        localStorage.removeItem("selectedUniverseId");
+      }
+      toast.success("Universo deletado com sucesso.");
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao deletar universo.");
     }
   }
 
@@ -424,19 +488,6 @@ export default function CatalogPage() {
             </Button>
             
             <Button
-              variant="secondary"
-              onClick={openNewWorldModal}
-              disabled={!selectedUniverseId}
-              icon={
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-              }
-            >
-              {t.world.create}
-            </Button>
-            
-            <Button
               variant="primary"
               onClick={openNewFichaModal}
               disabled={!selectedUniverseId}
@@ -527,81 +578,32 @@ export default function CatalogPage() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Universe Selector */}
-        <div className="mb-6">
-          <Select
-            options={[
-              { value: "", label: "Selecione um universo" },
-              ...universes.map(u => ({ value: u.id, label: u.nome })),
-              { value: "create_new_universe", label: "+ Novo Universo" },
-            ]}
-            value={selectedUniverseId}
-            onChange={(e) => handleUniverseChange(e.target.value)}
-            fullWidth
+        {/* Universe and Worlds Selectors */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <UniverseDropdown
+            label="Universo"
+            universes={universes}
+            selectedId={selectedUniverseId}
+            onSelect={setSelectedUniverseId}
+            onEdit={openEditUniverseModal}
+            onDelete={handleDeleteUniverse}
+            onCreate={openCreateUniverseModal}
+          />
+          
+          <WorldsDropdown
+            label="Mundos"
+            worlds={worlds}
+            selectedIds={selectedWorldIds}
+            onToggle={toggleWorldSelection}
+            onEdit={openEditWorldModal}
+            onDelete={handleDeleteWorld}
+            onCreate={openNewWorldModal}
+            disabled={!selectedUniverseId}
           />
         </div>
 
         {selectedUniverseId ? (
           <>
-            {/* Worlds List */}
-            {worlds.length > 0 && (
-              <Card variant="elevated" padding="md" className="mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-semibold text-text-light-tertiary dark:text-dark-tertiary uppercase tracking-wide">
-                    Mundos ({worlds.length})
-                  </h3>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowWorldModal(true)}
-                    icon={
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                      </svg>
-                    }
-                  >
-                    Novo Mundo
-                  </Button>
-                </div>
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {worlds.map(world => (
-                    <div
-                      key={world.id}
-                      className="flex items-start gap-3 p-3 rounded-lg bg-light-base dark:bg-dark-base hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedWorldIds.includes(world.id)}
-                        onChange={() => toggleWorldSelection(world.id)}
-                        className="mt-1 w-4 h-4 rounded border-border-light-default dark:border-border-dark-default text-primary-500 focus:ring-primary-500"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-sm font-medium text-text-light-primary dark:text-dark-primary">
-                            {world.nome}
-                          </h4>
-                          {world.is_root && <Badge variant="default" size="sm">Raiz</Badge>}
-                        </div>
-                        {world.descricao && (
-                          <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary mt-1 line-clamp-2">
-                            {world.descricao}
-                          </p>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => openEditWorldModal(world)}
-                        className="p-1 rounded hover:bg-light-raised dark:hover:bg-dark-raised text-text-light-secondary dark:text-dark-secondary hover:text-primary-500 transition-colors"
-                        title="Editar mundo"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            )}
 
             {/* Filters */}
             <Card variant="elevated" padding="md" className="mb-6">
@@ -910,7 +912,7 @@ export default function CatalogPage() {
             className="w-full max-w-md border border-border-light-default dark:border-border-dark-default rounded-lg p-6 bg-light-base dark:bg-dark-base space-y-4 mx-4"
           >
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold">Novo Universo</h3>
+              <h3 className="text-lg font-bold">{editingUniverse ? "Editar Universo" : "Novo Universo"}</h3>
               <button
                 type="button"
                 onClick={() => setShowNewUniverseModal(false)}
@@ -950,7 +952,7 @@ export default function CatalogPage() {
                 variant="primary"
                 disabled={isCreatingUniverse}
               >
-                {isCreatingUniverse ? "Criando..." : "Salvar"}
+                {isCreatingUniverse ? (editingUniverse ? "Salvando..." : "Criando...") : "Salvar"}
               </Button>
             </div>
           </form>
