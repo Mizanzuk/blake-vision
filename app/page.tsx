@@ -20,6 +20,8 @@ import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
 import { clsx } from "clsx";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import type { ChatMessage, ChatMode, ChatSession, Universe } from "@/app/types";
 
 const SESSION_STORAGE_KEY = "blake-vision-sessions-v1";
@@ -98,6 +100,7 @@ export default function HomePage() {
   
   // UI state
   const [showHistory, setShowHistory] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [showModeSelector, setShowModeSelector] = useState(false);
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [editingSessionTitle, setEditingSessionTitle] = useState("");
@@ -512,7 +515,10 @@ export default function HomePage() {
   return (
     <div className="flex h-screen bg-light-base dark:bg-dark-base">
       {/* Sidebar */}
-      <aside className="w-80 border-r border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised flex flex-col">
+      <aside className={clsx(
+        "w-80 border-r border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised flex flex-col transition-transform duration-300",
+        !isSidebarOpen && "-translate-x-full"
+      )}>
         {/* Header */}
         <div className="p-4 border-b border-border-light-default dark:border-border-dark-default">
           <div className="flex items-center justify-between mb-4">
@@ -520,6 +526,15 @@ export default function HomePage() {
               Blake Vision
             </h1>
             <div className="flex items-center gap-1">
+              <button
+                onClick={() => setIsSidebarOpen(false)}
+                className="p-2 rounded-lg text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
+                title="Fechar barra lateral"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                </svg>
+              </button>
               <ThemeToggle />
               <LocaleToggle />
               <button
@@ -714,6 +729,19 @@ export default function HomePage() {
         </div>
       </aside>
 
+      {/* Toggle Sidebar Button (when closed) */}
+      {!isSidebarOpen && (
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-primary-500 text-white shadow-lg hover:bg-primary-600 transition-colors"
+          title="Abrir barra lateral"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+          </svg>
+        </button>
+      )}
+
       {/* Main Chat Area */}
       <main className="flex-1 flex flex-col">
         {activeSession ? (
@@ -757,7 +785,13 @@ export default function HomePage() {
                         ? "prose-invert" 
                         : "prose-stone dark:prose-invert"
                     )}>
-                      {message.content}
+                      {message.role === "assistant" ? (
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {message.content}
+                        </ReactMarkdown>
+                      ) : (
+                        message.content
+                      )}
                     </div>
                     
                     {/* Copy Button (only for assistant messages, on hover) */}
@@ -780,13 +814,12 @@ export default function HomePage() {
               
               {isSending && (
                 <div className="flex gap-4 justify-start">
-                  <div className={clsx(
-                    "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0",
-                    persona?.styles.bg
-                  )}>
-                    <span className={clsx("text-sm font-bold", persona?.styles.color)}>
-                      {persona?.nome[0]}
-                    </span>
+                  <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                    <img 
+                      src={activeSession?.mode === 'consulta' ? '/urizen-avatar.png' : '/urthona-avatar.png'}
+                      alt={persona?.nome || 'Avatar'}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <div className="bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-2xl px-6 py-4">
                     <Loading size="sm" />
