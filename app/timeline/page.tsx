@@ -12,7 +12,7 @@ import {
   EmptyState,
   Loading,
 } from "@/app/components/ui";
-import { TopNav } from "@/app/components/TopNav";
+import { Header } from "@/app/components/layout/Header";
 import FichaModal from "@/app/components/catalog/FichaModal";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
@@ -294,7 +294,7 @@ export default function TimelinePage() {
 
   return (
     <div className="min-h-screen bg-light-base dark:bg-dark-base">
-      <TopNav currentPage="timeline" />
+      <Header title="Timeline" showNav={true} />
       
       {/* Header */}
       <header className="border-b border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised">

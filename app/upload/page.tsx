@@ -8,7 +8,7 @@ import {
   Card,
   Loading,
 } from "@/app/components/ui";
-import { TopNav } from "@/app/components/TopNav";
+import { Header } from "@/app/components/layout/Header";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
 import type { Universe, World } from "@/app/types";
@@ -502,7 +502,7 @@ export default function UploadPage() {
 
   return (
     <div className="min-h-screen bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary">
-      <TopNav currentPage="upload" />
+      <Header title="Upload" showNav={true} />
       
       <div className="max-w-4xl mx-auto p-6 space-y-6">
         {/* Header */}

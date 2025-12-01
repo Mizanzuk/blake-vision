@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
-import { TopNav } from "@/app/components/TopNav";
+import { Header } from "@/app/components/layout/Header";
 import { Button, Card, Badge, EmptyState, Loading } from "@/app/components/ui";
 import { toast } from "sonner";
 
@@ -122,7 +122,7 @@ export default function BibliotecaPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F1E8]">
-      <TopNav />
+      <Header title="Biblioteca" showNav={true} />
       
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
