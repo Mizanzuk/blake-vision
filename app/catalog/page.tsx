@@ -42,6 +42,10 @@ export default function CatalogPage() {
   const [selectedEpisode, setSelectedEpisode] = useState<string>("");
   const [showWorldFilter, setShowWorldFilter] = useState(false);
   
+  // Multiple selection
+  const [selectedFichaIds, setSelectedFichaIds] = useState<string[]>([]);
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  
   // Modals
   const [showFichaModal, setShowFichaModal] = useState(false);
   const [showWorldModal, setShowWorldModal] = useState(false);
@@ -441,8 +445,81 @@ export default function CatalogPage() {
             >
               {t.ficha.create}
             </Button>
+            
+            <Button
+              variant={isSelectionMode ? "secondary" : "ghost"}
+              onClick={() => {
+                setIsSelectionMode(!isSelectionMode);
+                setSelectedFichaIds([]);
+              }}
+              disabled={!selectedUniverseId || fichas.length === 0}
+              icon={
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+              }
+            >
+              {isSelectionMode ? "Cancelar Seleção" : "Selecionar Múltiplas"}
+            </Button>
           </div>
         </div>
+        
+        {/* Selection Actions Bar */}
+        {isSelectionMode && selectedFichaIds.length > 0 && (
+          <div className="bg-primary-50 dark:bg-primary-900/20 border-b border-primary-200 dark:border-primary-800 px-6 py-3">
+            <div className="max-w-7xl mx-auto flex items-center justify-between">
+              <p className="text-sm font-medium text-primary-700 dark:text-primary-300">
+                {selectedFichaIds.length} {selectedFichaIds.length === 1 ? "ficha selecionada" : "fichas selecionadas"}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    // Export selected fichas
+                    const selectedFichas = fichas.filter(f => selectedFichaIds.includes(f.id));
+                    const dataStr = JSON.stringify(selectedFichas, null, 2);
+                    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(dataBlob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `fichas_${new Date().toISOString().split('T')[0]}.json`;
+                    link.click();
+                    toast.success(`${selectedFichaIds.length} fichas exportadas`);
+                  }}
+                  icon={
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                  }
+                >
+                  Exportar
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={async () => {
+                    if (confirm(`Tem certeza que deseja apagar ${selectedFichaIds.length} fichas?`)) {
+                      for (const id of selectedFichaIds) {
+                        await handleDeleteFicha(id);
+                      }
+                      setSelectedFichaIds([]);
+                      setIsSelectionMode(false);
+                      toast.success(`${selectedFichaIds.length} fichas apagadas`);
+                    }
+                  }}
+                  icon={
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  }
+                >
+                  Apagar
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Content */}
@@ -605,10 +682,30 @@ export default function CatalogPage() {
                     variant="elevated"
                     padding="md"
                     hoverable
-                    className="cursor-pointer group relative"
+                    className={`cursor-pointer group relative ${isSelectionMode && selectedFichaIds.includes(ficha.id) ? 'ring-2 ring-primary-500' : ''}`}
                   >
-                    {/* Action buttons - visible on hover */}
-                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                    {/* Checkbox for selection mode */}
+                    {isSelectionMode && (
+                      <div className="absolute top-2 left-2 z-10">
+                        <input
+                          type="checkbox"
+                          checked={selectedFichaIds.includes(ficha.id)}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            if (selectedFichaIds.includes(ficha.id)) {
+                              setSelectedFichaIds(selectedFichaIds.filter(id => id !== ficha.id));
+                            } else {
+                              setSelectedFichaIds([...selectedFichaIds, ficha.id]);
+                            }
+                          }}
+                          className="w-5 h-5 rounded border-border-light-default dark:border-border-dark-default text-primary-500 focus:ring-primary-500 cursor-pointer"
+                        />
+                      </div>
+                    )}
+                    
+                    {/* Action buttons - visible on hover (hidden in selection mode) */}
+                    {!isSelectionMode && (
+                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -635,9 +732,10 @@ export default function CatalogPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
                       </button>
-                    </div>
+                      </div>
+                    )}
 
-                    <div onClick={() => openEditFichaModal(ficha)}>
+                    <div onClick={() => !isSelectionMode && openEditFichaModal(ficha)}>
                       {ficha.imagem_capa && (
                         <img
                           src={ficha.imagem_capa}
