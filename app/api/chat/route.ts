@@ -157,19 +157,39 @@ Responda de forma clara, organizada e em português brasileiro.`;
       }))
     ];
 
-    // Call OpenAI
-    const completion = await openai.chat.completions.create({
+    // Call OpenAI with streaming
+    const stream = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: openaiMessages,
       temperature: mode === "consulta" ? 0.3 : 0.7,
       max_tokens: 2000,
+      stream: true,
     });
 
-    const assistantMessage = completion.choices[0]?.message?.content || "Desculpe, não consegui gerar uma resposta.";
+    // Create a ReadableStream to send chunks to the client
+    const encoder = new TextEncoder();
+    const readableStream = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of stream) {
+            const content = chunk.choices[0]?.delta?.content || "";
+            if (content) {
+              controller.enqueue(encoder.encode(content));
+            }
+          }
+          controller.close();
+        } catch (error) {
+          controller.error(error);
+        }
+      },
+    });
 
-    return NextResponse.json({
-      message: assistantMessage,
-      usage: completion.usage,
+    return new Response(readableStream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
     });
 
   } catch (error: any) {

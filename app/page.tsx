@@ -439,22 +439,53 @@ export default function HomePage() {
         }),
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        const assistantMessage: ChatMessage = {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: data.message,
-        };
-
-        setSessions(prevSessions => prevSessions.map(s => 
-          s.id === activeSessionId 
-            ? { ...s, messages: [...updatedMessages, assistantMessage] }
-            : s
-        ));
-      } else {
+      if (!response.ok) {
+        const data = await response.json();
         toast.error(data.error || t.errors.generic);
+        return;
+      }
+
+      // Process stream
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedContent = "";
+
+      // Create assistant message placeholder
+      const assistantMessageId = (Date.now() + 1).toString();
+      const assistantMessage: ChatMessage = {
+        id: assistantMessageId,
+        role: "assistant",
+        content: "",
+      };
+
+      // Add empty assistant message
+      setSessions(prevSessions => prevSessions.map(s => 
+        s.id === activeSessionId 
+          ? { ...s, messages: [...updatedMessages, assistantMessage] }
+          : s
+      ));
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          accumulatedContent += chunk;
+
+          // Update message with accumulated content
+          setSessions(prevSessions => prevSessions.map(s => {
+            if (s.id !== activeSessionId) return s;
+            return {
+              ...s,
+              messages: s.messages.map(m => 
+                m.id === assistantMessageId 
+                  ? { ...m, content: accumulatedContent }
+                  : m
+              )
+            };
+          }));
+        }
       }
     } catch (error) {
       console.error("Error sending message:", error);
