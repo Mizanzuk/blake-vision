@@ -192,7 +192,7 @@ export default function CategoryModal({
           fullWidth
         />
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-[2fr_1fr] gap-4">
           <Input
             label="Slug"
             value={formData.slug}

@@ -4,19 +4,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
 import { Header } from "@/app/components/layout/Header";
-import { Button, Input, Select, Loading, UniverseDropdown, WorldsDropdown } from "@/app/components/ui";
+import { Button, Input, Select, Loading, UniverseDropdown } from "@/app/components/ui";
 import { toast } from "sonner";
-
-interface Universe {
-  id: string;
-  nome: string;
-}
-
-interface World {
-  id: string;
-  nome: string;
-  universe_id: string;
-}
+import type { Universe, World } from "@/app/types";
 
 export default function EditorPage() {
   const router = useRouter();
@@ -361,14 +351,19 @@ export default function EditorPage() {
                 }}
               />
 
-              <WorldsDropdown
+              <Select
                 label="Mundo"
-                worlds={filteredWorlds}
-                selectedId={worldId}
-                onSelect={setWorldId}
+                value={worldId}
+                onChange={(e) => setWorldId(e.target.value)}
                 disabled={!universeId}
-                placeholder={!universeId ? "Selecione um universo primeiro" : "Selecione um mundo"}
-              />
+              >
+                <option value="">{!universeId ? "Selecione um universo primeiro" : "Selecione um mundo"}</option>
+                {filteredWorlds.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.nome}
+                  </option>
+                ))}
+              </Select>
 
               <Input
                 label="Episódio"

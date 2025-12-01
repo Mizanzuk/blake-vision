@@ -133,51 +133,22 @@ export default function WorldModal({
           fullWidth
         />
 
-        <div className="space-y-3">
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.is_root}
-              onChange={(e) => setFormData({ ...formData, is_root: e.target.checked })}
-              className="w-4 h-4 text-primary-600 border-border-light-default dark:border-border-dark-default rounded focus:ring-primary-500"
-            />
-            <div>
-              <span className="font-medium text-text-light-primary dark:text-dark-primary">
-                Mundo Raiz
-              </span>
-              <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary">
-                Mundo para regras e conceitos globais do universo
-              </p>
-            </div>
-          </label>
-
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.has_episodes}
-              onChange={(e) => setFormData({ ...formData, has_episodes: e.target.checked })}
-              className="w-4 h-4 text-primary-600 border-border-light-default dark:border-border-dark-default rounded focus:ring-primary-500"
-            />
-            <div>
-              <span className="font-medium text-text-light-primary dark:text-dark-primary">
-                Tem Episódios
-              </span>
-              <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary">
-                Permite organizar fichas por episódios/capítulos
-              </p>
-            </div>
-          </label>
-        </div>
-
-        <Input
-          label="Ordem"
-          type="number"
-          value={formData.ordem}
-          onChange={(e) => setFormData({ ...formData, ordem: parseInt(e.target.value) || 0 })}
-          placeholder="0"
-          fullWidth
-          helperText="Ordem de exibição (menor número aparece primeiro)"
-        />
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={formData.has_episodes}
+            onChange={(e) => setFormData({ ...formData, has_episodes: e.target.checked })}
+            className="w-4 h-4 text-primary-600 border-border-light-default dark:border-border-dark-default rounded focus:ring-primary-500"
+          />
+          <div>
+            <span className="font-medium text-text-light-primary dark:text-dark-primary">
+              Tem Episódios
+            </span>
+            <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary">
+              Permite organizar fichas por episódios/capítulos
+            </p>
+          </div>
+        </label>
       </form>
     </Modal>
   );
