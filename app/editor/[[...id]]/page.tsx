@@ -221,13 +221,15 @@ export default function EditorPage() {
 
       const data = await response.json();
       
-      if (!textoId && data.texto?.id) {
-        setTextoId(data.texto.id);
-      }
-      
       setStatus("publicado");
       toast.success("Texto publicado com sucesso!");
-      router.push("/biblioteca");
+      
+      // Se for novo texto, redirecionar para URL com ID
+      if (!textoId && data.texto?.id) {
+        router.push(`/editor/${data.texto.id}`);
+      } else {
+        router.push("/biblioteca");
+      }
     } catch (error) {
       console.error("Erro ao publicar:", error);
       toast.error("Erro ao publicar texto");

@@ -63,7 +63,7 @@ export function TypesDropdown({
         <span className="text-sm truncate">
           {selectedSlug === "" || selectedSlug === "all"
             ? allOptionLabel
-            : selectedType?.nome || "Selecione um tipo"}
+            : selectedType?.label || "Selecione um tipo"}
         </span>
         <svg
           className={clsx(
@@ -79,9 +79,9 @@ export function TypesDropdown({
       </button>
 
       {/* Description */}
-      {selectedType?.descricao && !isOpen && (
+      {selectedType?.description && !isOpen && (
         <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary">
-          {selectedType.descricao}
+          {selectedType.description}
         </p>
       )}
 
@@ -134,11 +134,11 @@ export function TypesDropdown({
                     ? "text-primary-700 dark:text-primary-300" 
                     : "text-text-light-primary dark:text-dark-primary"
                 )}>
-                  {type.nome}
+                  {type.label}
                 </p>
-                {type.descricao && (
+                {type.description && (
                   <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary truncate mt-0.5">
-                    {type.descricao}
+                    {type.description}
                   </p>
                 )}
               </div>
@@ -165,7 +165,7 @@ export function TypesDropdown({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        onDelete(type.slug, type.nome);
+                        onDelete(type.slug, type.label);
                         setIsOpen(false);
                       }}
                       className="p-1.5 rounded hover:bg-error-light/10 dark:hover:bg-error-dark/10 text-text-light-secondary dark:text-dark-secondary hover:text-error-light dark:hover:text-error-dark transition-colors"
