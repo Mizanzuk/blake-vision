@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
     if (worldIds.length > 0) {
       const { data: fichasData, error: fichasError } = await supabase
         .from("fichas")
-        .select("id, world_id, tipo, titulo, slug, codigo, resumo, ano_diegese, tags, episodio, imagem_capa")
+        .select("id, world_id, tipo, titulo, slug, codigo, resumo, ano_diegese, tags, episodio, imagem_url")
         .in("world_id", worldIds)
         .order("created_at", { ascending: false });
 
