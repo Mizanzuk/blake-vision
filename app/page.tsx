@@ -16,6 +16,7 @@ import {
   ThemeToggle,
   LocaleToggle,
 } from "@/app/components/ui";
+import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
 import { clsx } from "clsx";
@@ -31,10 +32,10 @@ const PERSONAS = {
     titulo: "A Lei (Consulta)",
     intro: "Eu sou Urizen, a Lei deste universo. Minha função é garantir a coerência dos Registros. O que você quer analisar hoje?",
     styles: {
-      color: "text-cyan-200",
-      bg: "bg-cyan-900/20",
-      header: "bg-gradient-to-tr from-cyan-600 via-emerald-500 to-blue-500",
-      button: "bg-cyan-500/20 border-cyan-400 text-cyan-200 hover:bg-cyan-500/30",
+      color: "text-cyan-700 dark:text-cyan-300",
+      bg: "bg-cyan-500/10 dark:bg-cyan-500/20",
+      header: "bg-cyan-600/90 dark:bg-cyan-700/90",
+      button: "bg-cyan-500/20 border-cyan-400 text-cyan-700 dark:text-cyan-200 hover:bg-cyan-500/30",
       badge: "urizen" as const,
     }
   },
@@ -43,10 +44,10 @@ const PERSONAS = {
     titulo: "O Fluxo (Criativo)",
     intro: "Eu sou Urthona, o Forjador. Minha forja está pronta para criar e expandir as narrativas. Qual a próxima história?",
     styles: {
-      color: "text-purple-100",
-      bg: "bg-purple-900/30",
-      header: "bg-gradient-to-tr from-fuchsia-600 via-purple-500 to-pink-500",
-      button: "bg-purple-600/30 border-purple-400 text-purple-100 hover:bg-purple-600/40",
+      color: "text-purple-700 dark:text-purple-300",
+      bg: "bg-purple-500/10 dark:bg-purple-500/20",
+      header: "bg-purple-600/90 dark:bg-purple-700/90",
+      button: "bg-purple-600/20 border-purple-400 text-purple-700 dark:text-purple-100 hover:bg-purple-600/30",
       badge: "urthona" as const,
     }
   }
@@ -469,6 +470,10 @@ export default function HomePage() {
   }
 
   function deleteSession(sessionId: string) {
+    const session = sessions.find(s => s.id === sessionId);
+    const confirmed = confirm(`Tem certeza que deseja deletar a conversa "${session?.title || 'Nova Conversa'}"? Esta ação não pode ser desfeita.`);
+    if (!confirmed) return;
+    
     setSessions(prevSessions => prevSessions.filter(s => s.id !== sessionId));
     if (activeSessionId === sessionId) {
       setActiveSessionId(null);
@@ -530,29 +535,18 @@ export default function HomePage() {
           </div>
 
           {/* Universe Dropdown - Moved to top */}
-          <Select
+          <UniverseDropdown
             label={t.universe.title.toUpperCase()}
-            options={[
-              ...universes.map(u => ({ value: u.id, label: u.nome })),
-              { value: "__new__", label: "+ " + t.universe.create },
-            ]}
-            value={selectedUniverseId}
-            onChange={(e) => {
-              if (e.target.value === "__new__") {
-                setShowCreateUniverseModal(true);
-              } else {
-                handleUniverseChange(e.target.value);
-              }
+            universes={universes}
+            selectedId={selectedUniverseId}
+            onSelect={handleUniverseChange}
+            onEdit={(universe) => {
+              setUniverseForm({ id: universe.id, nome: universe.nome, descricao: universe.descricao || "" });
+              setShowEditUniverseModal(true);
             }}
-            fullWidth
-            selectSize="sm"
-            hideArrow
+            onDelete={promptDeleteUniverse}
+            onCreate={() => setShowCreateUniverseModal(true)}
           />
-          {selectedUniverseId && universes.find(u => u.id === selectedUniverseId)?.descricao && (
-            <p className="mt-2 text-xs text-text-light-tertiary dark:text-dark-tertiary">
-              {universes.find(u => u.id === selectedUniverseId)?.descricao}
-            </p>
-          )}
         </div>
 
         {/* New Chat Button - Moved below Universe */}
@@ -710,18 +704,7 @@ export default function HomePage() {
               "p-2 border-b border-border-light-default dark:border-border-dark-default",
               persona?.styles.header
             )}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Badge variant={persona?.styles.badge || "default"} size="sm">
-                    {persona?.nome}
-                  </Badge>
-                  <div>
-                    <p className="text-sm font-medium text-white">
-                      {activeSession.title}
-                    </p>
-                  </div>
-                </div>
-                
+              <div className="flex items-center justify-end">
                 {/* Action Buttons - Icons Only */}
                 <div className="flex items-center gap-1">
                   <button
@@ -760,7 +743,7 @@ export default function HomePage() {
                     <div className="flex flex-col items-center gap-1">
                       <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
                         <img 
-                          src={`/avatars/${activeSession.mode === 'consulta' ? 'urizen' : 'urthona'}.jpg`}
+                          src={`/${activeSession.mode === 'consulta' ? 'urizen' : 'urthona'}-avatar.png`}
                           alt={activeSession.mode === 'consulta' ? 'Urizen' : 'Urthona'}
                           className="w-full h-full object-cover"
                         />
@@ -773,7 +756,7 @@ export default function HomePage() {
                   
                   <div
                     className={clsx(
-                      "max-w-3xl rounded-2xl px-6 py-4",
+                      "relative max-w-3xl rounded-2xl px-6 py-4",
                       message.role === "user"
                         ? "bg-primary-600 dark:bg-primary-500 text-white"
                         : "bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default"
@@ -788,19 +771,17 @@ export default function HomePage() {
                       {message.content}
                     </div>
                     
-                    {/* Action Buttons (only for assistant messages) */}
+                    {/* Copy Button (only for assistant messages, on hover) */}
                     {message.role === "assistant" && message.id !== "intro" && (
-                      <div className="flex gap-2 mt-4 pt-3 border-t border-border-light-default dark:border-border-dark-default">
-                        <button
-                          onClick={() => handleCopyMessage(message.content)}
-                          className="opacity-0 group-hover:opacity-100 text-xs text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary transition-all flex items-center gap-1"
-                        >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                          </svg>
-                          Copiar
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => handleCopyMessage(message.content)}
+                        className="opacity-0 group-hover:opacity-100 absolute top-2 right-2 p-1.5 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary transition-all"
+                        title="Copiar"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                      </button>
                     )}
                   </div>
 
@@ -830,32 +811,42 @@ export default function HomePage() {
             {/* Input */}
             <div className="p-6 border-t border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised">
               <form onSubmit={handleSendMessage} className="max-w-4xl mx-auto">
-                <div className="flex gap-3">
-                  <Textarea
+                <div className="flex gap-3 items-end">
+                  <textarea
                     ref={inputRef}
                     value={input}
-                    onChange={(e) => setInput(e.target.value)}
+                    onChange={(e) => {
+                      setInput(e.target.value);
+                      // Auto-resize
+                      e.target.style.height = 'auto';
+                      const lineHeight = 24; // ~1.5rem
+                      const maxLines = 10;
+                      const newHeight = Math.min(e.target.scrollHeight, lineHeight * maxLines);
+                      e.target.style.height = newHeight + 'px';
+                    }}
                     onKeyDown={handleKeyDown}
                     placeholder={t.chat.placeholder}
-                    resize="none"
-                    className="min-h-[60px] max-h-[200px]"
-                    fullWidth
+                    rows={1}
                     disabled={isSending}
+                    className="flex-1 px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary placeholder:text-text-light-tertiary dark:placeholder:text-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none overflow-y-auto"
+                    style={{ minHeight: '40px', maxHeight: '240px', lineHeight: '24px' }}
                   />
-                  <Button
+                  <button
                     type="submit"
-                    variant="primary"
-                    size="lg"
-                    loading={isSending}
-                    disabled={!input.trim()}
-                    icon={
+                    disabled={!input.trim() || isSending}
+                    className="px-4 h-10 bg-primary-500 hover:bg-primary-600 disabled:bg-primary-300 dark:disabled:bg-primary-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2 flex-shrink-0"
+                  >
+                    {isSending ? (
+                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    ) : (
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                       </svg>
-                    }
-                  >
-                    {t.chat.send}
-                  </Button>
+                    )}
+                  </button>
                 </div>
                 <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary mt-2">
                   Pressione Enter para enviar, Shift+Enter para nova linha
@@ -900,8 +891,8 @@ export default function HomePage() {
             onClick={() => startNewSession("consulta")}
             className="cursor-pointer"
           >
-            <div className={clsx("w-16 h-16 rounded-full mb-4 flex items-center justify-center", PERSONAS.consulta.styles.bg)}>
-              <span className={clsx("text-2xl font-bold", PERSONAS.consulta.styles.color)}>U</span>
+            <div className="w-16 h-16 rounded-full mb-4 overflow-hidden border-2 border-primary-300">
+              <img src="/urizen-avatar.png" alt="Urizen" className="w-full h-full object-cover" />
             </div>
             <h3 className="text-xl font-bold text-text-light-primary dark:text-dark-primary mb-2">
               {PERSONAS.consulta.nome}
@@ -921,8 +912,8 @@ export default function HomePage() {
             onClick={() => startNewSession("criativo")}
             className="cursor-pointer"
           >
-            <div className={clsx("w-16 h-16 rounded-full mb-4 flex items-center justify-center", PERSONAS.criativo.styles.bg)}>
-              <span className={clsx("text-2xl font-bold", PERSONAS.criativo.styles.color)}>U</span>
+            <div className="w-16 h-16 rounded-full mb-4 overflow-hidden border-2 border-primary-300">
+              <img src="/urthona-avatar.png" alt="Urthona" className="w-full h-full object-cover" />
             </div>
             <h3 className="text-xl font-bold text-text-light-primary dark:text-dark-primary mb-2">
               {PERSONAS.criativo.nome}
@@ -1029,6 +1020,65 @@ export default function HomePage() {
             fullWidth
           />
         </form>
+      </Modal>
+
+      {/* Delete Universe Modal with Captcha */}
+      <Modal
+        isOpen={showDeleteUniverseModal}
+        onClose={() => {
+          setShowDeleteUniverseModal(false);
+          setUniverseToDelete(null);
+          setCaptchaAnswer("");
+        }}
+        title="Confirmar Exclusão"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-text-light-secondary dark:text-dark-secondary">
+            Tem certeza que deseja deletar o universo <strong>"{universeToDelete?.nome}"</strong>?
+          </p>
+          <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary">
+            Esta ação não pode ser desfeita.
+          </p>
+          
+          {/* Captcha */}
+          <div className="p-4 bg-light-overlay dark:bg-dark-overlay rounded-lg border border-border-light-default dark:border-border-dark-default">
+            <p className="text-sm font-medium text-text-light-primary dark:text-dark-primary mb-2">
+              Para confirmar, resolva esta operação:
+            </p>
+            <p className="text-lg font-bold text-primary-600 dark:text-primary-400 mb-3">
+              {captchaQuestion.num1} + {captchaQuestion.num2} = ?
+            </p>
+            <Input
+              type="number"
+              value={captchaAnswer}
+              onChange={(e) => setCaptchaAnswer(e.target.value)}
+              placeholder="Digite a resposta"
+              fullWidth
+              autoFocus
+            />
+          </div>
+
+          <div className="flex gap-2 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowDeleteUniverseModal(false);
+                setUniverseToDelete(null);
+                setCaptchaAnswer("");
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="primary"
+              onClick={confirmDeleteUniverse}
+              className="bg-error-light hover:bg-error-light/90 dark:bg-error-dark dark:hover:bg-error-dark/90"
+            >
+              Deletar Universo
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );
