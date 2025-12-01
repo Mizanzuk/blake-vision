@@ -502,7 +502,7 @@ export default function UploadPage() {
 
   return (
     <div className="min-h-screen bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary">
-      <Header title="Upload" showNav={true} />
+      <Header showNav={true} />
       
       <div className="max-w-4xl mx-auto p-6 space-y-6">
         {/* Header */}

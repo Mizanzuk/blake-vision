@@ -147,7 +147,7 @@ export default function FAQPage() {
 
   return (
     <div className="min-h-screen bg-light-base dark:bg-dark-base">
-      <Header title="FAQ" showNav={true} />
+      <Header showNav={true} />
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-6 py-12">

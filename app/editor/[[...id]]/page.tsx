@@ -334,7 +334,7 @@ export default function EditorPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F1E8]">
-      <Header title="Editor" showNav={true} />
+      <Header showNav={true} />
       
       <div className="max-w-7xl mx-auto px-4 py-8">
 
