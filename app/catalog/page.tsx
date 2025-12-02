@@ -758,6 +758,7 @@ export default function CatalogPage() {
             <div className="flex items-center justify-end gap-3 mb-6">
               {Object.keys(customOrder).length > 0 && (
                 <Button
+                  size="sm"
                   variant="ghost"
                   onClick={resetCustomOrder}
                   disabled={!selectedUniverseId}
@@ -772,6 +773,7 @@ export default function CatalogPage() {
               )}
               
               <Button
+                size="sm"
                 variant="ghost"
                 onClick={() => setShowManageCategoriesModal(true)}
                 disabled={!selectedUniverseId}
@@ -786,6 +788,7 @@ export default function CatalogPage() {
               </Button>
               
               <Button
+                size="sm"
                 variant={isSelectionMode ? "secondary" : "ghost"}
                 onClick={() => {
                   setIsSelectionMode(!isSelectionMode);
@@ -802,6 +805,7 @@ export default function CatalogPage() {
               </Button>
               
               <Button
+                size="sm"
                 variant="primary"
                 onClick={openNewFichaModal}
                 disabled={!selectedUniverseId}

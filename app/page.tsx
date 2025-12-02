@@ -1133,6 +1133,7 @@ export default function HomePage() {
         footer={
           <>
             <Button
+              size="sm"
               variant="ghost"
               onClick={() => {
                 setShowCreateUniverseModal(false);
@@ -1142,6 +1143,7 @@ export default function HomePage() {
               {t.common.cancel}
             </Button>
             <Button
+              size="sm"
               variant="primary"
               onClick={handleCreateUniverse}
               loading={isSubmittingUniverse}
@@ -1181,6 +1183,7 @@ export default function HomePage() {
         footer={
           <>
             <Button
+              size="sm"
               variant="ghost"
               onClick={() => {
                 setShowEditUniverseModal(false);
@@ -1190,6 +1193,7 @@ export default function HomePage() {
               {t.common.cancel}
             </Button>
             <Button
+              size="sm"
               variant="primary"
               onClick={handleEditUniverse}
               loading={isSubmittingUniverse}
@@ -1255,6 +1259,7 @@ export default function HomePage() {
 
           <div className="flex gap-2 justify-end">
             <Button
+              size="sm"
               variant="secondary"
               onClick={() => {
                 setShowDeleteUniverseModal(false);
@@ -1265,6 +1270,7 @@ export default function HomePage() {
               Cancelar
             </Button>
             <Button
+              size="sm"
               variant="danger"
               onClick={confirmDeleteUniverse}
             >
