@@ -647,74 +647,11 @@ export default function CatalogPage() {
     <div className="min-h-screen bg-light-base dark:bg-dark-base">
       <Header showNav={true} />
       
-      {/* Actions Bar */}
-      <div className="border-b border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-end gap-3">
-            <Button
-              variant="ghost"
-              onClick={() => setShowManageCategoriesModal(true)}
-              disabled={!selectedUniverseId}
-              icon={
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              }
-            >
-              Categorias
-            </Button>
-            
-            <Button
-              variant="primary"
-              onClick={openNewFichaModal}
-              disabled={!selectedUniverseId}
-              icon={
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-              }
-            >
-              {t.ficha.create}
-            </Button>
-            
-            {Object.keys(customOrder).length > 0 && (
-              <Button
-                variant="ghost"
-                onClick={resetCustomOrder}
-                disabled={!selectedUniverseId}
-                icon={
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                }
-              >
-                Resetar Ordem
-              </Button>
-            )}
-            
-            <Button
-              variant={isSelectionMode ? "secondary" : "ghost"}
-              onClick={() => {
-                setIsSelectionMode(!isSelectionMode);
-                setSelectedFichaIds([]);
-              }}
-              disabled={!selectedUniverseId || fichas.length === 0}
-              icon={
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-              }
-            >
-              {isSelectionMode ? "Cancelar Seleção" : "Selecionar Múltiplas"}
-            </Button>
-          </div>
-        </div>
-        
-        {/* Selection Actions Bar */}
-        {isSelectionMode && selectedFichaIds.length > 0 && (
-          <div className="bg-primary-50 dark:bg-primary-900/20 border-b border-primary-200 dark:border-primary-800 px-6 py-3">
-            <div className="max-w-7xl mx-auto flex items-center justify-between">
+      {/* Selection Actions Bar - Moved to top when active */}
+      {isSelectionMode && selectedFichaIds.length > 0 && (
+        <div className="border-b border-border-light-default dark:border-border-dark-default bg-primary-50 dark:bg-primary-900/20">
+          <div className="max-w-7xl mx-auto px-6 py-3">
+            <div className="flex items-center justify-between">
               <p className="text-sm font-medium text-primary-700 dark:text-primary-300">
                 {selectedFichaIds.length} {selectedFichaIds.length === 1 ? "ficha selecionada" : "fichas selecionadas"}
               </p>
@@ -766,8 +703,8 @@ export default function CatalogPage() {
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
@@ -793,6 +730,67 @@ export default function CatalogPage() {
             onCreate={openNewWorldModal}
             disabled={!selectedUniverseId}
           />
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center justify-end gap-3 mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => setShowManageCategoriesModal(true)}
+            disabled={!selectedUniverseId}
+            icon={
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            }
+          >
+            Categorias
+          </Button>
+          
+          <Button
+            variant="primary"
+            onClick={openNewFichaModal}
+            disabled={!selectedUniverseId}
+            icon={
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            }
+          >
+            {t.ficha.create}
+          </Button>
+          
+          {Object.keys(customOrder).length > 0 && (
+            <Button
+              variant="ghost"
+              onClick={resetCustomOrder}
+              disabled={!selectedUniverseId}
+              icon={
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              }
+            >
+              Resetar Ordem
+            </Button>
+          )}
+          
+          <Button
+            variant={isSelectionMode ? "secondary" : "ghost"}
+            onClick={() => {
+              setIsSelectionMode(!isSelectionMode);
+              setSelectedFichaIds([]);
+            }}
+            disabled={!selectedUniverseId || fichas.length === 0}
+            icon={
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+            }
+          >
+            {isSelectionMode ? "Cancelar Seleção" : "Selecionar Múltiplas"}
+          </Button>
         </div>
 
         {selectedUniverseId ? (
