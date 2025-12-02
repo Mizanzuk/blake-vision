@@ -776,6 +776,13 @@ export default function CatalogPage() {
                         : [...prev, episode]
                     );
                   }}
+                  onCreate={() => {
+                    const episodeName = prompt("Nome do novo episódio:");
+                    if (episodeName) {
+                      // TODO: Implementar criação de episódio no banco
+                      alert("Funcionalidade em desenvolvimento");
+                    }
+                  }}
                 />
               </div>
             </Card>
