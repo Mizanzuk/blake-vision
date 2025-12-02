@@ -38,5 +38,6 @@ export type { MentionTextareaProps } from "./MentionTextarea";
 
 export { UniverseDropdown } from "./UniverseDropdown";
 export { WorldsDropdown } from "./WorldsDropdown";
+export { WorldsDropdownSingle } from "./WorldsDropdownSingle";
 export { EpisodeDropdown } from "./EpisodeDropdown";
 export { TypesDropdown } from "./TypesDropdown";

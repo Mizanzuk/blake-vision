@@ -6,11 +6,15 @@ import { getSupabaseClient } from "@/app/lib/supabase/client";
 import { Header } from "@/app/components/layout/Header";
 import { Button, Loading, EmptyState } from "@/app/components/ui";
 import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
-import { WorldsDropdown } from "@/app/components/ui/WorldsDropdown";
+import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import EpisodeModal from "@/app/components/projetos/EpisodeModal";
-import EpisodeCard from "@/app/components/projetos/EpisodeCard";
+import ConceptRuleModal from "@/app/components/projetos/ConceptRuleModal";
+import WorldModal from "@/app/components/projetos/WorldModal";
+import FichaCard from "@/app/components/projetos/FichaCard";
 import type { Universe, World, Ficha } from "@/app/types";
 import { toast } from "sonner";
+
+type TipoFicha = "todos" | "episodio" | "conceito" | "regra";
 
 export default function ProjetosPage() {
   const router = useRouter();
@@ -19,13 +23,19 @@ export default function ProjetosPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [universes, setUniverses] = useState<Universe[]>([]);
   const [worlds, setWorlds] = useState<World[]>([]);
+  const [allWorlds, setAllWorlds] = useState<World[]>([]);
   const [selectedUniverseId, setSelectedUniverseId] = useState<string>("");
   const [selectedWorldId, setSelectedWorldId] = useState<string>("");
-  const [episodes, setEpisodes] = useState<Ficha[]>([]);
+  const [selectedTipo, setSelectedTipo] = useState<TipoFicha>("todos");
+  const [fichas, setFichas] = useState<Ficha[]>([]);
   
-  // Modal
+  // Modals
   const [showEpisodeModal, setShowEpisodeModal] = useState(false);
-  const [selectedEpisode, setSelectedEpisode] = useState<Ficha | null>(null);
+  const [showConceptRuleModal, setShowConceptRuleModal] = useState(false);
+  const [conceptRuleType, setConceptRuleType] = useState<"conceito" | "regra">("conceito");
+  const [selectedFicha, setSelectedFicha] = useState<Ficha | null>(null);
+  const [showWorldModal, setShowWorldModal] = useState(false);
+  const [selectedWorld, setSelectedWorld] = useState<World | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -33,6 +43,7 @@ export default function ProjetosPage() {
 
   useEffect(() => {
     loadUniverses();
+    loadAllWorlds();
     
     const saved = localStorage.getItem("selectedUniverseId");
     if (saved) {
@@ -46,17 +57,17 @@ export default function ProjetosPage() {
     } else {
       setWorlds([]);
       setSelectedWorldId("");
-      setEpisodes([]);
+      setFichas([]);
     }
   }, [selectedUniverseId]);
 
   useEffect(() => {
-    if (selectedWorldId) {
-      loadEpisodes();
+    if (selectedUniverseId) {
+      loadFichas();
     } else {
-      setEpisodes([]);
+      setFichas([]);
     }
-  }, [selectedWorldId]);
+  }, [selectedUniverseId, selectedWorldId, selectedTipo]);
 
   async function checkAuth() {
     try {
@@ -86,6 +97,19 @@ export default function ProjetosPage() {
     }
   }
 
+  async function loadAllWorlds() {
+    try {
+      const response = await fetch("/api/worlds");
+      const data = await response.json();
+      
+      if (response.ok) {
+        setAllWorlds(data.worlds || []);
+      }
+    } catch (error) {
+      console.error("Error loading all worlds:", error);
+    }
+  }
+
   async function loadWorlds() {
     try {
       const response = await fetch(`/api/worlds?universeId=${selectedUniverseId}`);
@@ -99,24 +123,50 @@ export default function ProjetosPage() {
     }
   }
 
-  async function loadEpisodes() {
+  async function loadFichas() {
     try {
-      const response = await fetch(
-        `/api/catalog?universeId=${selectedUniverseId}&worldId=${selectedWorldId}&tipo=episodio`
-      );
+      let url = `/api/catalog?universeId=${selectedUniverseId}`;
+      
+      if (selectedWorldId) {
+        url += `&worldId=${selectedWorldId}`;
+      }
+      
+      if (selectedTipo !== "todos") {
+        url += `&tipo=${selectedTipo}`;
+      } else {
+        // Load episodios, conceitos, and regras
+        url += `&tipo=episodio,conceito,regra`;
+      }
+      
+      const response = await fetch(url);
       const data = await response.json();
       
       if (response.ok) {
-        // Sort by episode number
-        const sortedEpisodes = (data.fichas || []).sort((a: Ficha, b: Ficha) => {
-          const numA = a.numero_episodio || 0;
-          const numB = b.numero_episodio || 0;
-          return numA - numB;
+        // Sort by type and then by episode number or title
+        const sortedFichas = (data.fichas || []).sort((a: Ficha, b: Ficha) => {
+          // First sort by type
+          const typeOrder = { episodio: 1, conceito: 2, regra: 3 };
+          const typeA = typeOrder[a.tipo as keyof typeof typeOrder] || 999;
+          const typeB = typeOrder[b.tipo as keyof typeof typeOrder] || 999;
+          
+          if (typeA !== typeB) {
+            return typeA - typeB;
+          }
+          
+          // Then by episode number for episodes
+          if (a.tipo === "episodio" && b.tipo === "episodio") {
+            const numA = a.numero_episodio || 0;
+            const numB = b.numero_episodio || 0;
+            return numA - numB;
+          }
+          
+          // Otherwise by title
+          return (a.titulo || "").localeCompare(b.titulo || "");
         });
-        setEpisodes(sortedEpisodes);
+        setFichas(sortedFichas);
       }
     } catch (error) {
-      console.error("Error loading episodes:", error);
+      console.error("Error loading fichas:", error);
     }
   }
 
@@ -130,73 +180,166 @@ export default function ProjetosPage() {
     setSelectedWorldId(worldId);
   }
 
+  function handleTipoChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    setSelectedTipo(e.target.value as TipoFicha);
+  }
+
   function handleNewEpisode() {
     if (!selectedUniverseId || !selectedWorldId) {
       toast.error("Selecione um universo e um mundo antes de criar um episódio");
       return;
     }
     
-    setSelectedEpisode(null);
+    // Check if world has episodes enabled
+    const world = worlds.find(w => w.id === selectedWorldId);
+    if (world && !world.tem_episodios) {
+      toast.error("Este mundo não permite episódios. Edite o mundo para habilitar.");
+      return;
+    }
+    
+    setSelectedFicha(null);
     setShowEpisodeModal(true);
   }
 
-  function handleEditEpisode(episode: Ficha) {
-    setSelectedEpisode(episode);
-    setShowEpisodeModal(true);
+  function handleNewConceptRule(tipo: "conceito" | "regra") {
+    if (!selectedUniverseId) {
+      toast.error("Selecione um universo antes de criar");
+      return;
+    }
+    
+    setConceptRuleType(tipo);
+    setSelectedFicha(null);
+    setShowConceptRuleModal(true);
   }
 
-  async function handleSaveEpisode(episodeData: any) {
+  function handleEditFicha(ficha: Ficha) {
+    if (ficha.tipo === "episodio") {
+      setSelectedFicha(ficha);
+      setShowEpisodeModal(true);
+    } else if (ficha.tipo === "conceito" || ficha.tipo === "regra") {
+      setConceptRuleType(ficha.tipo);
+      setSelectedFicha(ficha);
+      setShowConceptRuleModal(true);
+    }
+  }
+
+  async function handleSaveFicha(fichaData: any) {
     try {
-      const method = episodeData.id ? "PUT" : "POST";
+      const method = fichaData.id ? "PUT" : "POST";
       const response = await fetch("/api/fichas", {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...episodeData,
-          universe_id: selectedUniverseId,
-          world_id: selectedWorldId,
-          tipo: "episodio",
-        }),
+        body: JSON.stringify(fichaData),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        toast.success(episodeData.id ? "Episódio atualizado" : "Episódio criado");
-        await loadEpisodes();
+        const action = fichaData.id ? "atualizado" : "criado";
+        const tipoLabel = fichaData.tipo === "episodio" ? "Episódio" : fichaData.tipo === "conceito" ? "Conceito" : "Regra";
+        toast.success(`${tipoLabel} ${action}`);
+        await loadFichas();
         setShowEpisodeModal(false);
-        setSelectedEpisode(null);
+        setShowConceptRuleModal(false);
+        setSelectedFicha(null);
       } else {
-        toast.error(data.error || "Erro ao salvar episódio");
+        toast.error(data.error || "Erro ao salvar");
       }
     } catch (error) {
-      console.error("Error saving episode:", error);
-      toast.error("Erro de rede ao salvar episódio");
+      console.error("Error saving ficha:", error);
+      toast.error("Erro de rede ao salvar");
     }
   }
 
-  async function handleDeleteEpisode(id: string) {
+  async function handleDeleteFicha(id: string) {
     try {
       const response = await fetch(`/api/fichas?id=${id}`, {
         method: "DELETE",
       });
 
       if (response.ok) {
-        toast.success("Episódio deletado");
-        await loadEpisodes();
+        toast.success("Item deletado");
+        await loadFichas();
         setShowEpisodeModal(false);
-        setSelectedEpisode(null);
+        setShowConceptRuleModal(false);
+        setSelectedFicha(null);
       } else {
         const data = await response.json();
-        toast.error(data.error || "Erro ao deletar episódio");
+        toast.error(data.error || "Erro ao deletar");
       }
     } catch (error) {
-      console.error("Error deleting episode:", error);
-      toast.error("Erro de rede ao deletar episódio");
+      console.error("Error deleting ficha:", error);
+      toast.error("Erro de rede ao deletar");
     }
   }
 
-  const canCreateEpisode = selectedUniverseId && selectedWorldId;
+  function handleNewWorld() {
+    if (!selectedUniverseId) {
+      toast.error("Selecione um universo antes de criar um mundo");
+      return;
+    }
+    setSelectedWorld(null);
+    setShowWorldModal(true);
+  }
+
+  function handleEditWorld(world: World) {
+    setSelectedWorld(world);
+    setShowWorldModal(true);
+  }
+
+  async function handleSaveWorld(worldData: any) {
+    try {
+      const method = worldData.id ? "PUT" : "POST";
+      const response = await fetch("/api/worlds", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(worldData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success(worldData.id ? "Mundo atualizado" : "Mundo criado");
+        await loadWorlds();
+        await loadAllWorlds();
+        setShowWorldModal(false);
+        setSelectedWorld(null);
+      } else {
+        toast.error(data.error || "Erro ao salvar mundo");
+      }
+    } catch (error) {
+      console.error("Error saving world:", error);
+      toast.error("Erro de rede ao salvar mundo");
+    }
+  }
+
+  async function handleDeleteWorld(id: string) {
+    try {
+      const response = await fetch(`/api/worlds?id=${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        toast.success("Mundo deletado");
+        if (selectedWorldId === id) {
+          setSelectedWorldId("");
+        }
+        await loadWorlds();
+        await loadAllWorlds();
+        setShowWorldModal(false);
+        setSelectedWorld(null);
+      } else {
+        const data = await response.json();
+        toast.error(data.error || "Erro ao deletar mundo");
+      }
+    } catch (error) {
+      console.error("Error deleting world:", error);
+      toast.error("Erro de rede ao deletar mundo");
+    }
+  }
+
+  const selectedWorldData = worlds.find(w => w.id === selectedWorldId);
+  const canCreateEpisode = selectedUniverseId && selectedWorldId && selectedWorldData?.tem_episodios;
 
   if (isLoading) {
     return (
@@ -214,7 +357,7 @@ export default function ProjetosPage() {
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Projetos</h1>
 
         {/* Filters Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <UniverseDropdown
             label="UNIVERSO"
             universes={universes}
@@ -223,29 +366,77 @@ export default function ProjetosPage() {
             onCreate={loadUniverses}
           />
 
-          <WorldsDropdown
+          <WorldsDropdownSingle
             label="MUNDOS"
             worlds={worlds}
-            selectedIds={selectedWorldId ? [selectedWorldId] : []}
-            onToggle={handleWorldChange}
-            onEdit={() => {}}
-            onDelete={() => {}}
-            onCreate={loadWorlds}
+            selectedId={selectedWorldId}
+            onSelect={handleWorldChange}
+            onEdit={handleEditWorld}
+            onDelete={handleDeleteWorld}
+            onCreate={handleNewWorld}
             disabled={!selectedUniverseId}
           />
 
-          <div className="flex items-end">
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleNewEpisode}
-              disabled={!canCreateEpisode}
-              title={!canCreateEpisode ? "Selecione um universo e um mundo primeiro" : ""}
-              fullWidth
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide">
+              TIPO
+            </label>
+            <select
+              value={selectedTipo}
+              onChange={handleTipoChange}
+              disabled={!selectedUniverseId}
+              className="w-full px-4 py-2 text-sm border border-border-light-default dark:border-border-dark-default rounded-lg bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              + Novo Episódio
-            </Button>
+              <option value="todos">Todos</option>
+              <option value="episodio">Episódios</option>
+              <option value="conceito">Conceitos</option>
+              <option value="regra">Regras</option>
+            </select>
           </div>
+        </div>
+
+        {/* Action Buttons Row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleNewEpisode}
+            disabled={!canCreateEpisode}
+            title={
+              !selectedUniverseId
+                ? "Selecione um universo primeiro"
+                : !selectedWorldId
+                ? "Selecione um mundo primeiro"
+                : !selectedWorldData?.tem_episodios
+                ? "Este mundo não permite episódios"
+                : ""
+            }
+            fullWidth
+          >
+            + Novo Episódio
+          </Button>
+
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => handleNewConceptRule("conceito")}
+            disabled={!selectedUniverseId}
+            title={!selectedUniverseId ? "Selecione um universo primeiro" : ""}
+            fullWidth
+          >
+            + Novo Conceito
+          </Button>
+
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => handleNewConceptRule("regra")}
+            disabled={!selectedUniverseId}
+            title={!selectedUniverseId ? "Selecione um universo primeiro" : ""}
+            fullWidth
+          >
+            + Nova Regra
+          </Button>
         </div>
 
         {/* Content */}
@@ -257,35 +448,25 @@ export default function ProjetosPage() {
               </svg>
             }
             title="Selecione um Universo"
-            description="Escolha um universo para visualizar seus projetos de episódios"
+            description="Escolha um universo para visualizar e gerenciar seus projetos"
           />
-        ) : !selectedWorldId ? (
-          <EmptyState
-            icon={
-              <svg className="w-24 h-24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            }
-            title="Selecione um Mundo"
-            description="Escolha um mundo para visualizar e gerenciar seus episódios"
-          />
-        ) : episodes.length === 0 ? (
+        ) : fichas.length === 0 ? (
           <EmptyState
             icon={
               <svg className="w-24 h-24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
               </svg>
             }
-            title="Nenhum Episódio Cadastrado"
-            description="Clique em '+ Novo Episódio' para começar a planejar sua história"
+            title="Nenhum Item Cadastrado"
+            description="Crie episódios, conceitos ou regras para começar a planejar seu projeto"
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {episodes.map((episode) => (
-              <EpisodeCard
-                key={episode.id}
-                episode={episode}
-                onClick={() => handleEditEpisode(episode)}
+            {fichas.map((ficha) => (
+              <FichaCard
+                key={ficha.id}
+                ficha={ficha}
+                onClick={() => handleEditFicha(ficha)}
               />
             ))}
           </div>
@@ -295,13 +476,45 @@ export default function ProjetosPage() {
       {/* Episode Modal */}
       {showEpisodeModal && (
         <EpisodeModal
-          episode={selectedEpisode}
+          episode={selectedFicha}
           worldId={selectedWorldId}
-          onSave={handleSaveEpisode}
-          onDelete={handleDeleteEpisode}
+          onSave={handleSaveFicha}
+          onDelete={handleDeleteFicha}
           onClose={() => {
             setShowEpisodeModal(false);
-            setSelectedEpisode(null);
+            setSelectedFicha(null);
+          }}
+        />
+      )}
+
+      {/* Concept/Rule Modal */}
+      {showConceptRuleModal && (
+        <ConceptRuleModal
+          item={selectedFicha}
+          tipo={conceptRuleType}
+          universes={universes}
+          worlds={allWorlds}
+          preSelectedUniverseId={selectedUniverseId}
+          preSelectedWorldId={selectedWorldId}
+          onSave={handleSaveFicha}
+          onDelete={handleDeleteFicha}
+          onClose={() => {
+            setShowConceptRuleModal(false);
+            setSelectedFicha(null);
+          }}
+        />
+      )}
+
+      {/* World Modal */}
+      {showWorldModal && (
+        <WorldModal
+          world={selectedWorld}
+          universeId={selectedUniverseId}
+          onSave={handleSaveWorld}
+          onDelete={handleDeleteWorld}
+          onClose={() => {
+            setShowWorldModal(false);
+            setSelectedWorld(null);
           }}
         />
       )}

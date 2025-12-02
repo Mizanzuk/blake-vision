@@ -16,6 +16,7 @@ export type World = {
   descricao?: string | null;
   is_root?: boolean;
   has_episodes?: boolean;
+  tem_episodios?: boolean;
   ordem?: number | null;
   created_at: string;
   updated_at: string;
@@ -34,12 +35,14 @@ export type Category = {
 export type Ficha = {
   id: string;
   world_id: string;
+  universe_id?: string;
   user_id: string;
   tipo: string;
   titulo: string;
   slug?: string | null;
   codigo?: string | null;
   resumo?: string | null;
+  descricao?: string | null;
   conteudo?: string | null;
   ano_diegese?: number | null;
   tags?: string | null;

@@ -25,11 +25,6 @@ export default function EpisodeModal({
   const [titulo, setTitulo] = useState("");
   const [logline, setLogline] = useState("");
   const [sinopse, setSinopse] = useState("");
-  const [worldHasEpisodes, setWorldHasEpisodes] = useState(false);
-
-  useEffect(() => {
-    checkIfWorldHasEpisodes();
-  }, [worldId]);
 
   useEffect(() => {
     if (episode) {
@@ -46,19 +41,6 @@ export default function EpisodeModal({
     setHasChanges(false);
   }, [episode]);
 
-  async function checkIfWorldHasEpisodes() {
-    try {
-      const response = await fetch(`/api/worlds?id=${worldId}`);
-      const data = await response.json();
-      
-      if (response.ok && data.world) {
-        setWorldHasEpisodes(data.world.tem_episodios || false);
-      }
-    } catch (error) {
-      console.error("Error checking world episodes:", error);
-    }
-  }
-
   function handleChange() {
     setHasChanges(true);
   }
@@ -74,7 +56,12 @@ export default function EpisodeModal({
   }
 
   function handleSave() {
-    // Validation
+    // Validation - All fields are required
+    if (!numeroEpisodio.trim()) {
+      toast.error("Número do episódio é obrigatório");
+      return;
+    }
+
     if (!titulo.trim()) {
       toast.error("Título é obrigatório");
       return;
@@ -85,17 +72,17 @@ export default function EpisodeModal({
       return;
     }
 
-    if (worldHasEpisodes && !numeroEpisodio.trim()) {
-      toast.error("Número do episódio é obrigatório para mundos com episódios");
+    if (!sinopse.trim()) {
+      toast.error("Sinopse é obrigatória");
       return;
     }
 
     const episodeData = {
       id: episode?.id,
+      numero_episodio: parseInt(numeroEpisodio),
       titulo: titulo.trim(),
       logline: logline.trim(),
-      resumo: sinopse.trim() || null,
-      numero_episodio: worldHasEpisodes && numeroEpisodio ? parseInt(numeroEpisodio) : null,
+      resumo: sinopse.trim(),
     };
 
     onSave(episodeData);
@@ -123,20 +110,18 @@ export default function EpisodeModal({
     >
       <div className="space-y-4">
         {/* Número do Episódio */}
-        {worldHasEpisodes && (
-          <Input
-            label="Número do Episódio"
-            type="number"
-            value={numeroEpisodio}
-            onChange={(e) => {
-              setNumeroEpisodio(e.target.value);
-              handleChange();
-            }}
-            placeholder="1"
-            required
-            fullWidth
-          />
-        )}
+        <Input
+          label="Número do Episódio"
+          type="text"
+          value={numeroEpisodio}
+          onChange={(e) => {
+            setNumeroEpisodio(e.target.value);
+            handleChange();
+          }}
+          placeholder="Ex: 1, 01, 1A"
+          required
+          fullWidth
+        />
 
         {/* Título */}
         <Input
@@ -173,7 +158,7 @@ export default function EpisodeModal({
         {/* Sinopse */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Sinopse
+            Sinopse <span className="text-red-500">*</span>
           </label>
           <textarea
             value={sinopse}
@@ -183,6 +168,7 @@ export default function EpisodeModal({
             }}
             placeholder="Um resumo curto da história, apresentando o protagonista, o conflito, o contexto e o gancho da trama."
             rows={6}
+            required
             className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
