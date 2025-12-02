@@ -33,6 +33,18 @@ export function Header({ title, showNav = true }: HeaderProps) {
     };
   }, []);
 
+  // Close dropdown on Esc key
+  useEffect(() => {
+    function handleEscape(e: globalThis.KeyboardEvent) {
+      if (e.key === 'Escape' && showProfileDropdown) {
+        setShowProfileDropdown(false);
+      }
+    }
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [showProfileDropdown]);
+
   async function loadUserName() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -96,14 +108,10 @@ export function Header({ title, showNav = true }: HeaderProps) {
             <div className="relative">
               <button
                 onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
+                className="flex items-center gap-2 p-2 rounded-lg text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                <span className="hidden sm:inline text-sm font-medium">{userName || "Usuário"}</span>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
               
