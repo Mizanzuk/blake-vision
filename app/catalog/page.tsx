@@ -931,17 +931,21 @@ export default function CatalogPage() {
                       </div>
                     )}
 
-                    <div onClick={() => !isSelectionMode && openEditFichaModal(ficha)} className="relative pointer-events-auto cursor-pointer">
+                    <div className="relative pointer-events-auto">
                       {ficha.imagem_capa && (
                         <img
                           src={ficha.imagem_capa}
                           alt={ficha.titulo}
-                          className="w-full h-48 object-cover rounded-lg mb-4"
+                          className="w-full h-48 object-cover rounded-lg mb-4 cursor-pointer"
+                          onClick={() => !isSelectionMode && openEditFichaModal(ficha)}
                         />
                       )}
                       
                       <div className="flex items-start justify-between mb-2">
-                        <h3 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary flex-1">
+                        <h3 
+                          className="text-lg font-semibold text-text-light-primary dark:text-dark-primary flex-1 cursor-pointer"
+                          onClick={() => !isSelectionMode && openEditFichaModal(ficha)}
+                        >
                           {ficha.titulo}
                         </h3>
                         {ficha.codigo && (
@@ -963,7 +967,10 @@ export default function CatalogPage() {
                     </div>
                     
                       {ficha.resumo && (
-                        <p className="text-sm text-text-light-secondary dark:text-dark-secondary line-clamp-3">
+                        <p 
+                          className="text-sm text-text-light-secondary dark:text-dark-secondary line-clamp-3 cursor-pointer"
+                          onClick={() => !isSelectionMode && openEditFichaModal(ficha)}
+                        >
                           {ficha.resumo}
                         </p>
                       )}
