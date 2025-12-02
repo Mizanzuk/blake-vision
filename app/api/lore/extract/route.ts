@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
 
     // Get categories for this universe
     const { data: categoriesData } = await supabase
-      .from("categories")
+      .from("lore_categories")
       .select("*")
       .eq("universe_id", universeId);
 

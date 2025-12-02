@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
     }));
 
     const { error: categoriesError } = await supabase
-      .from("categories")
+      .from("lore_categories")
       .insert(categoriesToInsert);
 
     if (categoriesError) {

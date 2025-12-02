@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
 
     // Buscar categorias com TODOS os campos
     const { data: categories, error } = await supabase
-      .from("categories")
+      .from("lore_categories")
       .select("*")
       .eq("universe_id", universeId)
       .order("label", { ascending: true });

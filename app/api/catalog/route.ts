@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
     
     try {
       const { data: categoriesData, error: categoriesError } = await supabase
-        .from("categories")
+        .from("lore_categories")
         .select("slug, label, description, prefix")
         .eq("universe_id", universeId)
         .order("label", { ascending: true });

@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { data: category, error } = await supabase
-      .from("categories")
+      .from("lore_categories")
       .insert({
         user_id: user.id,
         universe_id,
@@ -71,7 +71,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const { data: category, error } = await supabase
-      .from("categories")
+      .from("lore_categories")
       .update({
         label,
         description: description || null,
@@ -120,7 +120,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     const { error } = await supabase
-      .from("categories")
+      .from("lore_categories")
       .delete()
       .eq("universe_id", universe_id)
       .eq("slug", slug)
