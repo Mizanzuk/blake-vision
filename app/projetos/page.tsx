@@ -474,6 +474,7 @@ export default function ProjetosPage() {
         <EpisodeModal
           episode={selectedFicha}
           worldId={selectedWorldId}
+          universeId={selectedUniverseId}
           onSave={handleSaveFicha}
           onDelete={handleDeleteFicha}
           onClose={() => {

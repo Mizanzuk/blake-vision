@@ -8,6 +8,7 @@ import { toast } from "sonner";
 interface EpisodeModalProps {
   episode: Ficha | null;
   worldId: string;
+  universeId: string;
   onSave: (data: any) => void;
   onDelete: (id: string) => void;
   onClose: () => void;
@@ -16,6 +17,7 @@ interface EpisodeModalProps {
 export default function EpisodeModal({
   episode,
   worldId,
+  universeId,
   onSave,
   onDelete,
   onClose,
@@ -80,11 +82,12 @@ export default function EpisodeModal({
     const episodeData = {
       id: episode?.id,
       world_id: worldId,
+      universe_id: universeId,
       tipo: "episodio",
-      numero_episodio: parseInt(numeroEpisodio),
+      episodio: parseInt(numeroEpisodio),
       titulo: titulo.trim(),
-      logline: logline.trim(),
       resumo: sinopse.trim(),
+      conteudo: logline.trim(),
     };
 
     onSave(episodeData);
