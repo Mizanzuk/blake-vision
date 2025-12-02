@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
 import { ThemeToggle } from "@/app/components/ui";
@@ -17,6 +18,11 @@ export function Header({ title, showNav = true }: HeaderProps) {
   
   const [userName, setUserName] = useState<string>("");
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     loadUserName();
@@ -117,11 +123,14 @@ export function Header({ title, showNav = true }: HeaderProps) {
               
               {showProfileDropdown && (
                 <>
-                  {/* Backdrop */}
-                  <div
-                    className="fixed inset-0 z-[9998]"
-                    onClick={() => setShowProfileDropdown(false)}
-                  />
+                  {/* Backdrop - renderizado via Portal no body */}
+                  {mounted && createPortal(
+                    <div
+                      className="fixed inset-0 z-[9998]"
+                      onClick={() => setShowProfileDropdown(false)}
+                    />,
+                    document.body
+                  )}
                   
                   {/* Dropdown */}
                   <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg overflow-hidden z-[9999]">
