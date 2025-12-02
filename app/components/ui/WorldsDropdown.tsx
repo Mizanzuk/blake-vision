@@ -2,6 +2,21 @@
 
 import { useState, useRef, useEffect } from "react";
 import { clsx } from "clsx";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import type { World } from "@/app/types";
 
 interface WorldsDropdownProps {
@@ -13,6 +28,122 @@ interface WorldsDropdownProps {
   onDelete: (id: string, name: string) => void;
   onCreate: () => void;
   disabled?: boolean;
+  onReorder?: (worlds: World[]) => void;
+}
+
+// Sortable Item Component
+interface SortableWorldItemProps {
+  world: World;
+  selectedIds: string[];
+  onToggle: (id: string) => void;
+  onEdit: (world: World) => void;
+  onDelete: (id: string, name: string) => void;
+  setIsOpen: (open: boolean) => void;
+}
+
+function SortableWorldItem({
+  world,
+  selectedIds,
+  onToggle,
+  onEdit,
+  onDelete,
+  setIsOpen,
+}: SortableWorldItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: world.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={clsx(
+        "group relative flex items-center px-3 py-2 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors cursor-move border-b border-border-light-default dark:border-border-dark-default last:border-b-0",
+        selectedIds.includes(world.id) && "bg-primary-50 dark:bg-primary-900/20"
+      )}
+      {...attributes}
+      {...listeners}
+    >
+      <div
+        className="flex items-center flex-1 min-w-0 cursor-pointer"
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggle(world.id);
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={selectedIds.includes(world.id)}
+          onChange={() => {}}
+          className="mr-3 h-4 w-4 rounded border-border-light-default dark:border-border-dark-default text-primary-600 focus:ring-primary-500"
+        />
+        
+        {/* Indent non-root worlds */}
+        {!world.is_root && (
+          <svg className="w-3 h-3 mr-1 text-text-light-tertiary dark:text-dark-tertiary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        )}
+        
+        <div className="flex-1 min-w-0 pr-2">
+          <p className={clsx(
+            "text-sm font-medium truncate",
+            selectedIds.includes(world.id)
+              ? "text-primary-700 dark:text-primary-300"
+              : "text-text-light-primary dark:text-dark-primary"
+          )}>
+            {world.nome}
+          </p>
+          {world.descricao && (
+            <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary truncate mt-0.5">
+              {world.descricao}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Hover Buttons */}
+      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(world);
+            setIsOpen(false);
+          }}
+          className="p-1.5 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary transition-colors"
+          title="Editar mundo"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(world.id, world.nome);
+            setIsOpen(false);
+          }}
+          className="p-1.5 rounded hover:bg-error-light/10 dark:hover:bg-error-dark/10 text-text-light-secondary dark:text-dark-secondary hover:text-error-light dark:hover:text-error-dark transition-colors"
+          title="Deletar mundo"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export function WorldsDropdown({
@@ -24,9 +155,46 @@ export function WorldsDropdown({
   onDelete,
   onCreate,
   disabled = false,
+  onReorder,
 }: WorldsDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [localWorlds, setLocalWorlds] = useState<World[]>(worlds);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        delay: 150,
+        tolerance: 5,
+      },
+    })
+  );
+
+  // Update local worlds when prop changes
+  useEffect(() => {
+    setLocalWorlds(worlds);
+  }, [worlds]);
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    
+    if (!over || active.id === over.id) {
+      return;
+    }
+    
+    setLocalWorlds((items) => {
+      const oldIndex = items.findIndex(w => w.id === active.id);
+      const newIndex = items.findIndex(w => w.id === over.id);
+      
+      const newOrder = arrayMove(items, oldIndex, newIndex);
+      
+      if (onReorder) {
+        onReorder(newOrder);
+      }
+      
+      return newOrder;
+    });
+  }
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -119,81 +287,31 @@ export function WorldsDropdown({
             </p>
           </div>
 
-          {/* World Options */}
-          {/* Filter out root worlds and sort by ordem */}
-          {[...worlds]
-            .filter(world => !world.is_root)
-            .sort((a, b) => (a.ordem || 0) - (b.ordem || 0))
-            .map((world) => (
-            <div
-              key={world.id}
-              className={clsx(
-                "group relative flex items-center px-3 py-2 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors cursor-pointer border-b border-border-light-default dark:border-border-dark-default last:border-b-0",
-                selectedIds.includes(world.id) && "bg-primary-50 dark:bg-primary-900/20"
-              )}
-              onClick={() => onToggle(world.id)}
+          {/* World Options with Drag and Drop */}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={localWorlds.filter(w => !w.is_root).map(w => w.id)}
+              strategy={verticalListSortingStrategy}
             >
-              <input
-                type="checkbox"
-                checked={selectedIds.includes(world.id)}
-                onChange={() => {}}
-                className="mr-3 h-4 w-4 rounded border-border-light-default dark:border-border-dark-default text-primary-600 focus:ring-primary-500"
-              />
-              
-              {/* Indent non-root worlds */}
-              {!world.is_root && (
-                <svg className="w-3 h-3 mr-1 text-text-light-tertiary dark:text-dark-tertiary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              )}
-              
-              <div className="flex-1 min-w-0 pr-2">
-                <p className={clsx(
-                  "text-sm font-medium truncate",
-                  selectedIds.includes(world.id)
-                    ? "text-primary-700 dark:text-primary-300"
-                    : "text-text-light-primary dark:text-dark-primary"
-                )}>
-                  {world.nome}
-                </p>
-                {world.descricao && (
-                  <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary truncate mt-0.5">
-                    {world.descricao}
-                  </p>
-                )}
-              </div>
-
-              {/* Hover Buttons */}
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit(world);
-                    setIsOpen(false);
-                  }}
-                  className="p-1.5 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary transition-colors"
-                  title="Editar mundo"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete(world.id, world.nome);
-                    setIsOpen(false);
-                  }}
-                  className="p-1.5 rounded hover:bg-error-light/10 dark:hover:bg-error-dark/10 text-text-light-secondary dark:text-dark-secondary hover:text-error-light dark:hover:text-error-dark transition-colors"
-                  title="Deletar mundo"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          ))}
+              {localWorlds
+                .filter(world => !world.is_root)
+                .map((world) => (
+                  <SortableWorldItem
+                    key={world.id}
+                    world={world}
+                    selectedIds={selectedIds}
+                    onToggle={onToggle}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    setIsOpen={setIsOpen}
+                  />
+                ))}
+            </SortableContext>
+          </DndContext>
 
           {/* Create New World Option */}
           <button
