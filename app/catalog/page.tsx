@@ -33,6 +33,7 @@ import { Header } from "@/app/components/layout/Header";
 import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
 import { WorldsDropdown } from "@/app/components/ui/WorldsDropdown";
 import { TypesDropdown } from "@/app/components/ui/TypesDropdown";
+import { EpisodeDropdown } from "@/app/components/ui/EpisodeDropdown";
 import FichaModal from "@/app/components/catalog/FichaModal";
 import WorldModal from "@/app/components/catalog/WorldModal";
 import CategoryModal from "@/app/components/catalog/CategoryModal";
@@ -63,17 +64,7 @@ function SortableCard({ id, children, isDragging }: SortableCardProps) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} className="relative">
-      {/* Drag Handle */}
-      <div 
-        {...listeners}
-        className="absolute top-2 left-2 z-50 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-md cursor-move hover:bg-gray-100 dark:hover:bg-gray-700"
-        title="Arrastar para reordenar"
-      >
-        <svg className="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
-        </svg>
-      </div>
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="relative cursor-move">
       {children}
     </div>
   );
@@ -754,6 +745,16 @@ export default function CatalogPage() {
                   onSelect={setSelectedType}
                   showAllOption={true}
                   allOptionLabel="Todos os tipos"
+                  onEdit={(category) => {
+                    setSelectedCategory(category);
+                    setShowCategoryModal(true);
+                  }}
+                  onDelete={(slug, nome) => {
+                    if (confirm(`Tem certeza que deseja apagar a categoria "${nome}"?`)) {
+                      handleDeleteCategory(slug);
+                    }
+                  }}
+                  onCreate={() => setShowManageCategoriesModal(true)}
                 />
                 
                 <Select
@@ -764,6 +765,33 @@ export default function CatalogPage() {
                   value={selectedEpisode}
                   onChange={(e) => setSelectedEpisode(e.target.value)}
                 />
+              </div>
+            </Card>
+
+            {/* Results Info and Clear Filters */}
+            <Card variant="elevated" padding="md" className="mb-6">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary">
+                  {filteredFichas.length} {filteredFichas.length === 1 ? "ficha encontrada" : "fichas encontradas"}
+                  {selectedWorldIds.length > 0 && (
+                    <span className="ml-2 text-primary-500">
+                      ({selectedWorldIds.length} {selectedWorldIds.length === 1 ? "mundo selecionado" : "mundos selecionados"})
+                    </span>
+                  )}
+                </p>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearchTerm("");
+                    setSelectedWorldIds([]);
+                    setSelectedType("");
+                    setSelectedEpisode("");
+                  }}
+                >
+                  Limpar filtros
+                </Button>
               </div>
             </Card>
 
@@ -828,34 +856,6 @@ export default function CatalogPage() {
           </Button>
             </div>
 
-            {/* Results Info and Clear Filters */}
-            <Card variant="elevated" padding="md" className="mb-6">
-              
-              <div className="mt-4 flex items-center justify-between">
-                <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary">
-                  {filteredFichas.length} {filteredFichas.length === 1 ? "ficha encontrada" : "fichas encontradas"}
-                  {selectedWorldIds.length > 0 && (
-                    <span className="ml-2 text-primary-500">
-                      ({selectedWorldIds.length} {selectedWorldIds.length === 1 ? "mundo selecionado" : "mundos selecionados"})
-                    </span>
-                  )}
-                </p>
-                
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSearchTerm("");
-                    setSelectedWorldIds([]);
-                    setSelectedType("");
-                    setSelectedEpisode("");
-                  }}
-                >
-                  Limpar filtros
-                </Button>
-              </div>
-            </Card>
-
             {/* Fichas Grid */}
             {filteredFichas.length === 0 ? (
               <EmptyState
@@ -912,35 +912,7 @@ export default function CatalogPage() {
                       </div>
                     )}
                     
-                    {/* Action buttons */}
-                    {!isSelectionMode && (
-                      <div className="absolute top-2 right-2 flex gap-2 z-50">
-                        <button
-                          type="button"
-                          onClick={() => openEditFichaModal(ficha)}
-                          className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:bg-gray-100 dark:hover:bg-gray-700"
-                          aria-label="Editar ficha"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (confirm(`Tem certeza que deseja apagar a ficha "${ficha.titulo}"?`)) {
-                              handleDeleteFicha(ficha.id);
-                            }
-                          }}
-                          className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:bg-red-100 dark:hover:bg-red-900"
-                          aria-label="Apagar ficha"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-                    )}
+
 
                     <div className="relative pointer-events-auto">
                       {ficha.imagem_capa && (
@@ -984,6 +956,40 @@ export default function CatalogPage() {
                         >
                           {ficha.resumo}
                         </p>
+                      )}
+                      
+                      {/* Action buttons - Below code, visible on hover */}
+                      {!isSelectionMode && (
+                        <div className="flex gap-2 mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEditFichaModal(ficha);
+                            }}
+                            className="flex-1 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:bg-gray-100 dark:hover:bg-gray-700 pointer-events-auto"
+                            aria-label="Editar ficha"
+                          >
+                            <svg className="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (confirm(`Tem certeza que deseja apagar a ficha "${ficha.titulo}"?`)) {
+                                handleDeleteFicha(ficha.id);
+                              }
+                            }}
+                            className="flex-1 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:bg-red-100 dark:hover:bg-red-900 pointer-events-auto"
+                            aria-label="Apagar ficha"
+                          >
+                            <svg className="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
                       )}
                     </div>
                   </Card>

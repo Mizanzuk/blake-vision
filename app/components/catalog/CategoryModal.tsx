@@ -192,7 +192,8 @@ export default function CategoryModal({
           fullWidth
         />
 
-        <div className="grid grid-cols-[2fr_1fr] gap-4">
+        {/* Slug field - only show when creating new category */}
+        {!category && (
           <Input
             label="Slug"
             value={formData.slug}
@@ -200,20 +201,19 @@ export default function CategoryModal({
             placeholder="personagem"
             required
             fullWidth
-            disabled={!!category}
-            helperText={category ? "Slug não pode ser alterado" : "Identificador único (gerado automaticamente)"}
+            helperText="Identificador único (gerado automaticamente)"
           />
-          
-          <Input
-            label="Prefixo"
-            value={formData.prefix}
-            onChange={(e) => setFormData({ ...formData, prefix: e.target.value.toUpperCase() })}
-            placeholder="PER"
-            fullWidth
-            maxLength={3}
-            helperText="3 letras para códigos (ex: PER-001)"
-          />
-        </div>
+        )}
+
+        <Input
+          label="Prefixo"
+          value={formData.prefix}
+          onChange={(e) => setFormData({ ...formData, prefix: e.target.value.toUpperCase() })}
+          placeholder="PER"
+          fullWidth
+          maxLength={3}
+          helperText="3 letras para códigos (ex: PER-001)"
+        />
 
         <div>
           <div className="flex items-center justify-between mb-2">
