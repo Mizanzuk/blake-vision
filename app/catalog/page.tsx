@@ -88,7 +88,7 @@ export default function CatalogPage() {
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedWorldIds, setSelectedWorldIds] = useState<string[]>([]);
-  const [selectedType, setSelectedType] = useState<string>("");
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedEpisode, setSelectedEpisode] = useState<string>("");
   const [showWorldFilter, setShowWorldFilter] = useState(false);
   
@@ -207,7 +207,7 @@ export default function CatalogPage() {
     setSelectedUniverseId(universeId);
     localStorage.setItem("selectedUniverseId", universeId);
     setSelectedWorldIds([]);
-    setSelectedType("");
+    setSelectedTypes([]);
     setSelectedEpisode("");
   }
 
@@ -594,7 +594,7 @@ export default function CatalogPage() {
     if (selectedWorldIds.length > 0 && !selectedWorldIds.includes(ficha.world_id)) {
       return false;
     }
-    if (selectedType && ficha.tipo !== selectedType) {
+    if (selectedTypes.length > 0 && !selectedTypes.includes(ficha.tipo)) {
       return false;
     }
     if (selectedEpisode && ficha.episodio !== selectedEpisode) {
@@ -746,10 +746,14 @@ export default function CatalogPage() {
                 
                 <TypesDropdown
                   types={categories}
-                  selectedSlug={selectedType}
-                  onSelect={setSelectedType}
-                  showAllOption={true}
-                  allOptionLabel="Todos os tipos"
+                  selectedSlugs={selectedTypes}
+                  onToggle={(slug) => {
+                    setSelectedTypes(prev => 
+                      prev.includes(slug) 
+                        ? prev.filter(s => s !== slug)
+                        : [...prev, slug]
+                    );
+                  }}
                   onEdit={(category) => {
                     setSelectedCategory(category);
                     setShowCategoryModal(true);
@@ -791,7 +795,7 @@ export default function CatalogPage() {
                   onClick={() => {
                     setSearchTerm("");
                     setSelectedWorldIds([]);
-                    setSelectedType("");
+                    setSelectedTypes([]);
                     setSelectedEpisode("");
                   }}
                 >
