@@ -70,6 +70,12 @@ export async function GET(req: NextRequest) {
     }
 
     // Fetch fichas with filters
+    console.log('[DEBUG] Buscando fichas...');
+    console.log('[DEBUG] universeId:', universeId);
+    console.log('[DEBUG] worldId:', worldId);
+    console.log('[DEBUG] tipoParam:', tipoParam);
+    console.log('[DEBUG] worlds encontrados:', worlds?.length);
+    
     let worldIds: string[] = [];
     
     if (worldId) {
@@ -95,12 +101,16 @@ export async function GET(req: NextRequest) {
 
       query = query.order("created_at", { ascending: false });
 
+      console.log('[DEBUG] Executando query com worldIds:', worldIds);
+      console.log('[DEBUG] Filtro de tipos:', tipoParam);
+      
       const { data: fichasData, error: fichasError } = await query;
 
       if (fichasError) {
         console.error("Erro ao buscar fichas:", fichasError);
       } else {
         fichas = fichasData || [];
+        console.log('[DEBUG] Fichas encontradas:', fichas.length);
       }
     }
 
