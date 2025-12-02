@@ -34,6 +34,13 @@ export function Modal({
   const [isResizing, setIsResizing] = useState(false);
   const [modalSize, setModalSize] = useState({ width: 0, height: 0 });
 
+  // Reset modal size when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setModalSize({ width: 0, height: 0 });
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -57,6 +64,8 @@ export function Modal({
     if (!isOpen || !isResizing) return;
 
     const handleMouseMove = (e: MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
       if (!modalRef.current) return;
       const rect = modalRef.current.getBoundingClientRect();
       const newWidth = Math.max(400, e.clientX - rect.left);
@@ -64,16 +73,18 @@ export function Modal({
       setModalSize({ width: newWidth, height: newHeight });
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (e: MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
       setIsResizing(false);
     };
 
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener("mousemove", handleMouseMove, { capture: true });
+    document.addEventListener("mouseup", handleMouseUp, { capture: true });
 
     return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMove, { capture: true });
+      document.removeEventListener("mouseup", handleMouseUp, { capture: true });
     };
   }, [isOpen, isResizing]);
 
