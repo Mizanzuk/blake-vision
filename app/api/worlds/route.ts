@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const universe_id = searchParams.get("universe_id");
+    const universe_id = searchParams.get("universeId") || searchParams.get("universe_id");
 
     let query = supabase
       .from("worlds")
