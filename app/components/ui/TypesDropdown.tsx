@@ -136,11 +136,6 @@ export function TypesDropdown({
                 )}>
                   {type.label}
                 </p>
-                {type.description && (
-                  <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary truncate mt-0.5">
-                    {type.description}
-                  </p>
-                )}
               </div>
 
               {/* Hover Buttons */}
