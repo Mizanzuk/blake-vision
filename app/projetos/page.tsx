@@ -11,10 +11,11 @@ import EpisodeModal from "@/app/components/projetos/EpisodeModal";
 import ConceptRuleModal from "@/app/components/projetos/ConceptRuleModal";
 import WorldModal from "@/app/components/projetos/WorldModal";
 import FichaCard from "@/app/components/projetos/FichaCard";
+import TipoDropdown from "@/app/components/projetos/TipoDropdown";
 import type { Universe, World, Ficha } from "@/app/types";
 import { toast } from "sonner";
 
-type TipoFicha = "todos" | "episodio" | "conceito" | "regra";
+
 
 export default function ProjetosPage() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function ProjetosPage() {
   const [allWorlds, setAllWorlds] = useState<World[]>([]);
   const [selectedUniverseId, setSelectedUniverseId] = useState<string>("");
   const [selectedWorldId, setSelectedWorldId] = useState<string>("");
-  const [selectedTipo, setSelectedTipo] = useState<TipoFicha>("todos");
+  const [selectedTipos, setSelectedTipos] = useState<string[]>([]);
   const [fichas, setFichas] = useState<Ficha[]>([]);
   
   // Modals
@@ -67,7 +68,7 @@ export default function ProjetosPage() {
     } else {
       setFichas([]);
     }
-  }, [selectedUniverseId, selectedWorldId, selectedTipo]);
+  }, [selectedUniverseId, selectedWorldId, selectedTipos]);
 
   async function checkAuth() {
     try {
@@ -131,8 +132,8 @@ export default function ProjetosPage() {
         url += `&worldId=${selectedWorldId}`;
       }
       
-      if (selectedTipo !== "todos") {
-        url += `&tipo=${selectedTipo}`;
+      if (selectedTipos.length > 0) {
+        url += `&tipo=${selectedTipos.join(',')}`;
       } else {
         // Load episodios, conceitos, and regras
         url += `&tipo=episodio,conceito,regra`;
@@ -180,8 +181,14 @@ export default function ProjetosPage() {
     setSelectedWorldId(worldId);
   }
 
-  function handleTipoChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    setSelectedTipo(e.target.value as TipoFicha);
+  function handleTipoToggle(tipo: string) {
+    setSelectedTipos(prev => {
+      if (prev.includes(tipo)) {
+        return prev.filter(t => t !== tipo);
+      } else {
+        return [...prev, tipo];
+      }
+    });
   }
 
   function handleNewEpisode() {
@@ -192,7 +199,7 @@ export default function ProjetosPage() {
     
     // Check if world has episodes enabled
     const world = worlds.find(w => w.id === selectedWorldId);
-    if (world && !world.tem_episodios) {
+    if (world && !world.has_episodes && !world.tem_episodios) {
       toast.error("Este mundo não permite episódios. Edite o mundo para habilitar.");
       return;
     }
@@ -339,7 +346,7 @@ export default function ProjetosPage() {
   }
 
   const selectedWorldData = worlds.find(w => w.id === selectedWorldId);
-  const canCreateEpisode = selectedUniverseId && selectedWorldId && selectedWorldData?.tem_episodios;
+  const canCreateEpisode = selectedUniverseId && selectedWorldId && (selectedWorldData?.has_episodes || selectedWorldData?.tem_episodios);
 
   if (isLoading) {
     return (
@@ -377,22 +384,11 @@ export default function ProjetosPage() {
             disabled={!selectedUniverseId}
           />
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide">
-              TIPO
-            </label>
-            <select
-              value={selectedTipo}
-              onChange={handleTipoChange}
-              disabled={!selectedUniverseId}
-              className="w-full px-4 py-2 text-sm border border-border-light-default dark:border-border-dark-default rounded-lg bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <option value="todos">Todos</option>
-              <option value="episodio">Episódios</option>
-              <option value="conceito">Conceitos</option>
-              <option value="regra">Regras</option>
-            </select>
-          </div>
+          <TipoDropdown
+            label="TIPO"
+            selectedTipos={selectedTipos}
+            onToggle={handleTipoToggle}
+          />
         </div>
 
         {/* Action Buttons Row */}

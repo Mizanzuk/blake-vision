@@ -24,6 +24,8 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const universeId = searchParams.get("universeId");
+    const worldId = searchParams.get("worldId");
+    const tipoParam = searchParams.get("tipo");
 
     if (!universeId) {
       return NextResponse.json({ error: "universeId é obrigatório" }, { status: 400 });
@@ -67,16 +69,33 @@ export async function GET(req: NextRequest) {
       categories = DEFAULT_CATEGORIES;
     }
 
-    // Fetch fichas
-    const worldIds = worlds?.map(w => w.id) || [];
+    // Fetch fichas with filters
+    let worldIds: string[] = [];
+    
+    if (worldId) {
+      // Filter by specific world
+      worldIds = [worldId];
+    } else {
+      // All worlds from universe
+      worldIds = worlds?.map(w => w.id) || [];
+    }
     
     let fichas: any[] = [];
     if (worldIds.length > 0) {
-      const { data: fichasData, error: fichasError } = await supabase
+      let query = supabase
         .from("fichas")
-        .select("id, world_id, tipo, titulo, slug, codigo, resumo, ano_diegese, tags, episodio, imagem_url")
-        .in("world_id", worldIds)
-        .order("created_at", { ascending: false });
+        .select("id, world_id, universe_id, tipo, titulo, slug, codigo, resumo, descricao, logline, numero_episodio, ano_diegese, tags, episodio, imagem_url")
+        .in("world_id", worldIds);
+
+      // Filter by tipo if provided
+      if (tipoParam) {
+        const tipos = tipoParam.split(",").map(t => t.trim());
+        query = query.in("tipo", tipos);
+      }
+
+      query = query.order("created_at", { ascending: false });
+
+      const { data: fichasData, error: fichasError } = await query;
 
       if (fichasError) {
         console.error("Erro ao buscar fichas:", fichasError);

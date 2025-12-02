@@ -23,17 +23,17 @@ export default function WorldModal({
   const [hasChanges, setHasChanges] = useState(false);
   const [nome, setNome] = useState("");
   const [descricao, setDescricao] = useState("");
-  const [temEpisodios, setTemEpisodios] = useState(false);
+  const [hasEpisodes, setHasEpisodes] = useState(false);
 
   useEffect(() => {
     if (world) {
       setNome(world.nome || "");
       setDescricao(world.descricao || "");
-      setTemEpisodios(world.tem_episodios || false);
+      setHasEpisodes(world.has_episodes || world.tem_episodios || false);
     } else {
       setNome("");
       setDescricao("");
-      setTemEpisodios(false);
+      setHasEpisodes(false);
     }
     setHasChanges(false);
   }, [world]);
@@ -63,7 +63,7 @@ export default function WorldModal({
       id: world?.id,
       nome: nome.trim(),
       descricao: descricao.trim() || null,
-      tem_episodios: temEpisodios,
+      has_episodes: hasEpisodes,
       universe_id: universeId,
     };
 
@@ -127,9 +127,9 @@ export default function WorldModal({
           <input
             type="checkbox"
             id="tem_episodios"
-            checked={temEpisodios}
+            checked={hasEpisodes}
             onChange={(e) => {
-              setTemEpisodios(e.target.checked);
+              setHasEpisodes(e.target.checked);
               handleChange();
             }}
             className="mt-1 h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500"
