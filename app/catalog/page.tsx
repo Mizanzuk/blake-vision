@@ -1179,6 +1179,7 @@ export default function CatalogPage() {
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button
+                size="sm"
                 type="button"
                 variant="ghost"
                 onClick={() => setShowNewUniverseModal(false)}
@@ -1186,6 +1187,7 @@ export default function CatalogPage() {
                 Cancelar
               </Button>
               <Button
+                size="sm"
                 type="submit"
                 variant="primary"
                 disabled={isCreatingUniverse}
