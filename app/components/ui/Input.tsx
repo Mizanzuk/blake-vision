@@ -30,7 +30,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     },
     ref
   ) => {
-    const baseStyles = "rounded-lg border bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder:text-text-light-tertiary dark:placeholder:text-dark-tertiary transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+    const baseStyles = "rounded-lg border bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder:text-text-light-tertiary dark:placeholder:text-dark-tertiary transition-colors focus:outline-none focus:ring-0 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-light-overlay dark:hover:bg-dark-overlay";
 
     const variants = {
       default: "border-border-light-default dark:border-border-dark-default focus:border-primary-500 focus:ring-primary-500",
