@@ -63,7 +63,17 @@ function SortableCard({ id, children, isDragging }: SortableCardProps) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div ref={setNodeRef} style={style} {...attributes} className="relative">
+      {/* Drag Handle */}
+      <div 
+        {...listeners}
+        className="absolute top-2 left-2 z-50 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-md cursor-move hover:bg-gray-100 dark:hover:bg-gray-700"
+        title="Arrastar para reordenar"
+      >
+        <svg className="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+        </svg>
+      </div>
       {children}
     </div>
   );
