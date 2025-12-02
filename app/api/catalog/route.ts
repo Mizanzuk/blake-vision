@@ -55,6 +55,7 @@ export async function GET(req: NextRequest) {
         console.warn("Erro ao buscar categorias (usando padrão):", categoriesError);
         categories = DEFAULT_CATEGORIES;
       } else if (categoriesData && categoriesData.length > 0) {
+        console.log("[DEBUG] Categorias do banco:", JSON.stringify(categoriesData, null, 2));
         categories = categoriesData;
       } else {
         // Se não há categorias para este universo, usar padrão
