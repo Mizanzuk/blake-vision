@@ -46,9 +46,14 @@ export default function ProjetosPage() {
     loadUniverses();
     loadAllWorlds();
     
-    const saved = localStorage.getItem("selectedUniverseId");
-    if (saved) {
-      setSelectedUniverseId(saved);
+    const savedUniverse = localStorage.getItem("selectedUniverseId");
+    if (savedUniverse) {
+      setSelectedUniverseId(savedUniverse);
+    }
+    
+    const savedWorld = localStorage.getItem("selectedWorldId");
+    if (savedWorld) {
+      setSelectedWorldId(savedWorld);
     }
   }, []);
 
@@ -175,10 +180,16 @@ export default function ProjetosPage() {
     setSelectedUniverseId(universeId);
     localStorage.setItem("selectedUniverseId", universeId);
     setSelectedWorldId("");
+    localStorage.removeItem("selectedWorldId");
   }
 
   function handleWorldChange(worldId: string) {
     setSelectedWorldId(worldId);
+    if (worldId) {
+      localStorage.setItem("selectedWorldId", worldId);
+    } else {
+      localStorage.removeItem("selectedWorldId");
+    }
   }
 
   function handleTipoToggle(tipo: string) {
