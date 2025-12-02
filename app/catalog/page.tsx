@@ -643,64 +643,7 @@ export default function CatalogPage() {
     <div className="min-h-screen bg-light-base dark:bg-dark-base">
       <Header showNav={true} />
       
-      {/* Selection Actions Bar - Moved to top when active */}
-      {isSelectionMode && selectedFichaIds.length > 0 && (
-        <div className="border-b border-border-light-default dark:border-border-dark-default bg-primary-50 dark:bg-primary-900/20">
-          <div className="max-w-7xl mx-auto px-6 py-3">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-primary-700 dark:text-primary-300">
-                {selectedFichaIds.length} {selectedFichaIds.length === 1 ? "ficha selecionada" : "fichas selecionadas"}
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    // Export selected fichas
-                    const selectedFichas = fichas.filter(f => selectedFichaIds.includes(f.id));
-                    const dataStr = JSON.stringify(selectedFichas, null, 2);
-                    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-                    const url = URL.createObjectURL(dataBlob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = `fichas_${new Date().toISOString().split('T')[0]}.json`;
-                    link.click();
-                    toast.success(`${selectedFichaIds.length} fichas exportadas`);
-                  }}
-                  icon={
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                  }
-                >
-                  Exportar
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={async () => {
-                    if (confirm(`Tem certeza que deseja apagar ${selectedFichaIds.length} fichas?`)) {
-                      for (const id of selectedFichaIds) {
-                        await handleDeleteFicha(id);
-                      }
-                      setSelectedFichaIds([]);
-                      setIsSelectionMode(false);
-                      toast.success(`${selectedFichaIds.length} fichas apagadas`);
-                    }
-                  }}
-                  icon={
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  }
-                >
-                  Apagar
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
@@ -773,9 +716,10 @@ export default function CatalogPage() {
 
         {selectedUniverseId ? (
           <>
-            {/* Search and Results Info */}
-            <Card variant="elevated" padding="md" className="mb-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+            {/* Search, Counter and Action Buttons */}
+            <div className="flex items-center gap-4 mb-6">
+              {/* Search Input */}
+              <div className="flex-1">
                 <Input
                   placeholder={t.common.search}
                   value={searchTerm}
@@ -786,27 +730,29 @@ export default function CatalogPage() {
                     </svg>
                   }
                 />
-                
-                <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary text-center">
+              </div>
+              
+              {/* Results Counter Box */}
+              <div className="px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised">
+                <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary whitespace-nowrap">
                   {filteredFichas.length} {filteredFichas.length === 1 ? "ficha encontrada" : "fichas encontradas"}
                 </p>
-                
-                <div className="flex justify-end">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setSearchTerm("");
-                      setSelectedWorldIds([]);
-                      setSelectedTypes([]);
-                      setSelectedEpisodes([]);
-                    }}
-                  >
-                    Limpar filtros
-                  </Button>
-                </div>
               </div>
-            </Card>
+              
+              {/* Clear Filters Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearchTerm("");
+                  setSelectedWorldIds([]);
+                  setSelectedTypes([]);
+                  setSelectedEpisodes([]);
+                }}
+              >
+                Limpar filtros
+              </Button>
+            </div>
 
             {/* Action Buttons */}
             <div className="flex items-center justify-end gap-3 mb-6">
@@ -868,6 +814,63 @@ export default function CatalogPage() {
                 {t.ficha.create}
               </Button>
             </div>
+
+            {/* Selection Actions Bar - Above fichas grid */}
+            {isSelectionMode && selectedFichaIds.length > 0 && (
+              <div className="mb-6 px-6 py-4 rounded-lg border border-border-light-default dark:border-border-dark-default bg-primary-50 dark:bg-primary-900/20">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-primary-700 dark:text-primary-300">
+                    {selectedFichaIds.length} {selectedFichaIds.length === 1 ? "ficha selecionada" : "fichas selecionadas"}
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        // Export selected fichas
+                        const selectedFichas = fichas.filter(f => selectedFichaIds.includes(f.id));
+                        const dataStr = JSON.stringify(selectedFichas, null, 2);
+                        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                        const url = URL.createObjectURL(dataBlob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = `fichas_${new Date().toISOString().split('T')[0]}.json`;
+                        link.click();
+                        toast.success(`${selectedFichaIds.length} fichas exportadas`);
+                      }}
+                      icon={
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                      }
+                    >
+                      Exportar
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={async () => {
+                        if (confirm(`Tem certeza que deseja apagar ${selectedFichaIds.length} fichas?`)) {
+                          for (const id of selectedFichaIds) {
+                            await handleDeleteFicha(id);
+                          }
+                          setSelectedFichaIds([]);
+                          setIsSelectionMode(false);
+                          toast.success(`${selectedFichaIds.length} fichas apagadas`);
+                        }
+                      }}
+                      icon={
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      }
+                    >
+                      Apagar
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Fichas Grid */}
             {filteredFichas.length === 0 ? (
