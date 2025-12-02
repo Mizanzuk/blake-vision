@@ -94,6 +94,7 @@ export default function WorldModal({
         <>
           {world && onDelete && (
             <Button
+              size="sm"
               variant="danger"
               onClick={handleDelete}
               loading={isDeleting}
@@ -102,10 +103,11 @@ export default function WorldModal({
               {t.common.delete}
             </Button>
           )}
-          <Button variant="ghost" onClick={onClose}>
+          <Button size="sm" variant="ghost" onClick={onClose}>
             {t.common.cancel}
           </Button>
           <Button
+            size="sm"
             variant="primary"
             onClick={handleSubmit}
             loading={isSubmitting}

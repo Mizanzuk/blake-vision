@@ -242,6 +242,7 @@ export default function FichaModal({
           <div className="flex-1">
             {ficha?.id && onDelete && (
               <Button
+                size="sm"
                 variant="danger"
                 onClick={handleDelete}
                 loading={isDeleting}
@@ -250,10 +251,11 @@ export default function FichaModal({
               </Button>
             )}
           </div>
-          <Button variant="ghost" onClick={onClose}>
+          <Button size="sm" variant="ghost" onClick={onClose}>
             {t.common.cancel}
           </Button>
           <Button
+            size="sm"
             variant="primary"
             onClick={handleSubmit}
             loading={isSubmitting || isUploadingImage}
