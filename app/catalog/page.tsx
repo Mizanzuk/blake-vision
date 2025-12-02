@@ -878,11 +878,11 @@ export default function CatalogPage() {
                     variant="elevated"
                     padding="md"
                     hoverable
-                    className={`cursor-pointer group relative ${isSelectionMode && selectedFichaIds.includes(ficha.id) ? 'ring-2 ring-primary-500' : ''}`}
+                    className={`cursor-pointer group relative pointer-events-none ${isSelectionMode && selectedFichaIds.includes(ficha.id) ? 'ring-2 ring-primary-500' : ''}`}
                   >
                     {/* Checkbox for selection mode */}
                     {isSelectionMode && (
-                      <div className="absolute top-2 left-2 z-50">
+                      <div className="absolute top-2 left-2 z-50 pointer-events-auto">
                         <input
                           type="checkbox"
                           checked={selectedFichaIds.includes(ficha.id)}
@@ -931,7 +931,7 @@ export default function CatalogPage() {
                       </div>
                     )}
 
-                    <div onClick={() => !isSelectionMode && openEditFichaModal(ficha)} className="relative">
+                    <div onClick={() => !isSelectionMode && openEditFichaModal(ficha)} className="relative pointer-events-auto">
                       {ficha.imagem_capa && (
                         <img
                           src={ficha.imagem_capa}
