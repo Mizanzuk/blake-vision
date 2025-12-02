@@ -641,7 +641,7 @@ export default function CatalogPage() {
 
   return (
     <div className="min-h-screen bg-light-base dark:bg-dark-base">
-      <Header showNav={true} />
+      <Header showNav={true} currentPage="catalog" />
       
 
 

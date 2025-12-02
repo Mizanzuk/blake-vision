@@ -10,9 +10,10 @@ import Link from "next/link";
 interface HeaderProps {
   title?: string;
   showNav?: boolean;
+  currentPage?: "home" | "catalog" | "timeline" | "biblioteca" | "editor" | "upload" | "faq";
 }
 
-export function Header({ title, showNav = true }: HeaderProps) {
+export function Header({ title, showNav = true, currentPage }: HeaderProps) {
   const router = useRouter();
   const supabase = getSupabaseClient();
   
@@ -65,14 +66,17 @@ export function Header({ title, showNav = true }: HeaderProps) {
     }
   }
 
-  const navItems = [
-    { href: "/", label: "Home" },
-    { href: "/catalog", label: "Catálogo" },
-    { href: "/timeline", label: "Timeline" },
-    { href: "/biblioteca", label: "Biblioteca" },
-    { href: "/editor", label: "Editor" },
-    { href: "/upload", label: "Upload" },
+  const allNavItems = [
+    { id: "home", href: "/", label: "Home" },
+    { id: "catalog", href: "/catalog", label: "Catálogo" },
+    { id: "timeline", href: "/timeline", label: "Timeline" },
+    { id: "biblioteca", href: "/biblioteca", label: "Biblioteca" },
+    { id: "editor", href: "/editor", label: "Editor" },
+    { id: "upload", href: "/upload", label: "Upload" },
   ];
+  
+  // Filter out current page from navigation
+  const navItems = allNavItems.filter(item => item.id !== currentPage);
 
   return (
     <header className="sticky top-0 z-40 bg-white/80 dark:bg-dark-raised/80 backdrop-blur-lg border-b border-border-light-default dark:border-border-dark-default">

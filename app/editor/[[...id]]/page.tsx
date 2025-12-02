@@ -342,7 +342,7 @@ export default function EditorPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F1E8]">
-      <Header showNav={true} />
+      <Header showNav={true} currentPage="editor" />
       
       <div className="max-w-7xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Editor</h1>

@@ -294,7 +294,7 @@ export default function TimelinePage() {
 
   return (
     <div className="min-h-screen bg-light-base dark:bg-dark-base">
-      <Header showNav={true} />
+      <Header showNav={true} currentPage="timeline" />
       
       {/* Header */}
       <header className="border-b border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised">

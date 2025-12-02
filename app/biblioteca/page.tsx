@@ -122,7 +122,7 @@ export default function BibliotecaPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F1E8]">
-      <Header showNav={true} />
+      <Header showNav={true} currentPage="biblioteca" />
       
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
