@@ -704,8 +704,8 @@ export default function CatalogPage() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Universe and Worlds Selectors */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        {/* All Dropdowns in one row */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <UniverseDropdown
             label="Universo"
             universes={universes}
@@ -726,13 +726,56 @@ export default function CatalogPage() {
             onCreate={openNewWorldModal}
             disabled={!selectedUniverseId}
           />
+          
+          <TypesDropdown
+            label="Categorias"
+            types={categories}
+            selectedSlugs={selectedTypes}
+            onToggle={(slug) => {
+              setSelectedTypes(prev => 
+                prev.includes(slug) 
+                  ? prev.filter(s => s !== slug)
+                  : [...prev, slug]
+              );
+            }}
+            onEdit={(category) => {
+              setSelectedCategory(category);
+              setShowCategoryModal(true);
+            }}
+            onDelete={(slug, nome) => {
+              if (confirm(`Tem certeza que deseja apagar a categoria "${nome}"?`)) {
+                handleDeleteCategory(slug);
+              }
+            }}
+            onCreate={() => setShowManageCategoriesModal(true)}
+          />
+          
+          <EpisodesDropdown
+            label="Episódios"
+            episodes={episodes.filter(e => e) as string[]}
+            selectedEpisodes={selectedEpisodes}
+            onToggle={(episode) => {
+              setSelectedEpisodes(prev => 
+                prev.includes(episode) 
+                  ? prev.filter(e => e !== episode)
+                  : [...prev, episode]
+              );
+            }}
+            onCreate={() => {
+              const episodeName = prompt("Nome do novo episódio:");
+              if (episodeName) {
+                // TODO: Implementar criação de episódio no banco
+                alert("Funcionalidade em desenvolvimento");
+              }
+            }}
+          />
         </div>
 
         {selectedUniverseId ? (
           <>
-            {/* Filters */}
+            {/* Search and Results Info */}
             <Card variant="elevated" padding="md" className="mb-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
                 <Input
                   placeholder={t.common.search}
                   value={searchTerm}
@@ -744,135 +787,86 @@ export default function CatalogPage() {
                   }
                 />
                 
-                <TypesDropdown
-                  types={categories}
-                  selectedSlugs={selectedTypes}
-                  onToggle={(slug) => {
-                    setSelectedTypes(prev => 
-                      prev.includes(slug) 
-                        ? prev.filter(s => s !== slug)
-                        : [...prev, slug]
-                    );
-                  }}
-                  onEdit={(category) => {
-                    setSelectedCategory(category);
-                    setShowCategoryModal(true);
-                  }}
-                  onDelete={(slug, nome) => {
-                    if (confirm(`Tem certeza que deseja apagar a categoria "${nome}"?`)) {
-                      handleDeleteCategory(slug);
-                    }
-                  }}
-                  onCreate={() => setShowManageCategoriesModal(true)}
-                />
-                
-                <EpisodesDropdown
-                  episodes={episodes.filter(e => e) as string[]}
-                  selectedEpisodes={selectedEpisodes}
-                  onToggle={(episode) => {
-                    setSelectedEpisodes(prev => 
-                      prev.includes(episode) 
-                        ? prev.filter(e => e !== episode)
-                        : [...prev, episode]
-                    );
-                  }}
-                  onCreate={() => {
-                    const episodeName = prompt("Nome do novo episódio:");
-                    if (episodeName) {
-                      // TODO: Implementar criação de episódio no banco
-                      alert("Funcionalidade em desenvolvimento");
-                    }
-                  }}
-                />
-              </div>
-            </Card>
-
-            {/* Results Info and Clear Filters */}
-            <Card variant="elevated" padding="md" className="mb-6">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary">
+                <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary text-center">
                   {filteredFichas.length} {filteredFichas.length === 1 ? "ficha encontrada" : "fichas encontradas"}
-                  {selectedWorldIds.length > 0 && (
-                    <span className="ml-2 text-primary-500">
-                      ({selectedWorldIds.length} {selectedWorldIds.length === 1 ? "mundo selecionado" : "mundos selecionados"})
-                    </span>
-                  )}
                 </p>
                 
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSearchTerm("");
-                    setSelectedWorldIds([]);
-                    setSelectedTypes([]);
-                    setSelectedEpisodes([]);
-                  }}
-                >
-                  Limpar filtros
-                </Button>
+                <div className="flex justify-end">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSearchTerm("");
+                      setSelectedWorldIds([]);
+                      setSelectedTypes([]);
+                      setSelectedEpisodes([]);
+                    }}
+                  >
+                    Limpar filtros
+                  </Button>
+                </div>
               </div>
             </Card>
 
             {/* Action Buttons */}
             <div className="flex items-center justify-end gap-3 mb-6">
-          <Button
-            variant="ghost"
-            onClick={() => setShowManageCategoriesModal(true)}
-            disabled={!selectedUniverseId}
-            icon={
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            }
-          >
-            Categorias
-          </Button>
-          
-          {Object.keys(customOrder).length > 0 && (
-            <Button
-              variant="ghost"
-              onClick={resetCustomOrder}
-              disabled={!selectedUniverseId}
-              icon={
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-              }
-            >
-              Resetar Ordem
-            </Button>
-          )}
-          
-          <Button
-            variant={isSelectionMode ? "secondary" : "ghost"}
-            onClick={() => {
-              setIsSelectionMode(!isSelectionMode);
-              setSelectedFichaIds([]);
-            }}
-            disabled={!selectedUniverseId || fichas.length === 0}
-            icon={
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-            }
-          >
-            {isSelectionMode ? "Cancelar Seleção" : "Selecionar"}
-          </Button>
-          
-          <Button
-            variant="primary"
-            onClick={openNewFichaModal}
-            disabled={!selectedUniverseId}
-            icon={
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            }
-          >
-            {t.ficha.create}
-          </Button>
+              {Object.keys(customOrder).length > 0 && (
+                <Button
+                  variant="ghost"
+                  onClick={resetCustomOrder}
+                  disabled={!selectedUniverseId}
+                  icon={
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  }
+                >
+                  Resetar Ordem
+                </Button>
+              )}
+              
+              <Button
+                variant="ghost"
+                onClick={() => setShowManageCategoriesModal(true)}
+                disabled={!selectedUniverseId}
+                icon={
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                }
+              >
+                Categorias
+              </Button>
+              
+              <Button
+                variant={isSelectionMode ? "secondary" : "ghost"}
+                onClick={() => {
+                  setIsSelectionMode(!isSelectionMode);
+                  setSelectedFichaIds([]);
+                }}
+                disabled={!selectedUniverseId || fichas.length === 0}
+                icon={
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                }
+              >
+                {isSelectionMode ? "Cancelar Seleção" : "Selecionar"}
+              </Button>
+              
+              <Button
+                variant="primary"
+                onClick={openNewFichaModal}
+                disabled={!selectedUniverseId}
+                icon={
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                }
+              >
+                {t.ficha.create}
+              </Button>
             </div>
 
             {/* Fichas Grid */}
