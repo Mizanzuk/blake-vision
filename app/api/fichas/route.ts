@@ -69,7 +69,6 @@ export async function POST(req: NextRequest) {
       ano_diegese,
       tags,
       episodio,
-      imagem_capa,
       album_imagens,
       descricao_data,
       data_inicio,
@@ -85,17 +84,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Generate embedding
-    const textForEmbedding = `${titulo} ${resumo || ""} ${conteudo || ""}`.trim();
-    let embedding: number[] | null = null;
-    
-    if (textForEmbedding) {
-      try {
-        embedding = await generateEmbedding(textForEmbedding);
-      } catch (error) {
-        console.error("Error generating embedding:", error);
-      }
-    }
+    // Generate embedding - DESABILITADO (coluna não existe na tabela)
+    // const textForEmbedding = `${titulo} ${resumo || ""} ${conteudo || ""}`.trim();
+    // let embedding: number[] | null = null;
+    // 
+    // if (textForEmbedding) {
+    //   try {
+    //     embedding = await generateEmbedding(textForEmbedding);
+    //   } catch (error) {
+    //     console.error("Error generating embedding:", error);
+    //   }
+    // }
 
     const { data: ficha, error } = await supabase
       .from("fichas")
@@ -111,14 +110,12 @@ export async function POST(req: NextRequest) {
         ano_diegese: ano_diegese || null,
         tags: tags || null,
         episodio: episodio || null,
-        imagem_capa: imagem_capa || null,
         album_imagens: album_imagens || null,
         descricao_data: descricao_data || null,
         data_inicio: data_inicio || null,
         data_fim: data_fim || null,
         granularidade_data: granularidade_data || null,
         camada_temporal: camada_temporal || null,
-        embedding,
       })
       .select()
       .single();
