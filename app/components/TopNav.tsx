@@ -35,7 +35,7 @@ export function TopNav({ currentPage }: TopNavProps) {
       <nav className="hidden md:flex items-center justify-between px-6 py-4 bg-light-raised dark:bg-dark-raised border-b border-border-light-default dark:border-border-dark-default">
         {/* Left: Navigation Links */}
         <div className="flex items-center gap-6">
-          {navLinks.map((link) => (
+          {navLinks.filter(link => link.id !== currentPage).map((link) => (
             <button
               key={link.id}
               onClick={() => router.push(link.href)}
@@ -194,7 +194,7 @@ export function TopNav({ currentPage }: TopNavProps) {
           />
           <div className="md:hidden fixed inset-y-0 left-0 w-64 bg-white dark:bg-dark-raised border-r border-border-light-default dark:border-border-dark-default z-50 p-4">
             <div className="space-y-2">
-              {navLinks.map((link) => (
+              {navLinks.filter(link => link.id !== currentPage).map((link) => (
                 <button
                   key={link.id}
                   onClick={() => {
