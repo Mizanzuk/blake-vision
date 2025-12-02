@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
 import { ThemeToggle } from "@/app/components/ui";
@@ -14,7 +14,6 @@ interface HeaderProps {
 export function Header({ title, showNav = true }: HeaderProps) {
   const router = useRouter();
   const supabase = getSupabaseClient();
-  const dropdownRef = useRef<HTMLDivElement>(null);
   
   const [userName, setUserName] = useState<string>("");
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -22,35 +21,17 @@ export function Header({ title, showNav = true }: HeaderProps) {
   useEffect(() => {
     loadUserName();
 
-    // Listen for auth state changes
+    // Listen for auth state changes to update user name
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'USER_UPDATED' || event === 'SIGNED_IN') {
         loadUserName();
       }
     });
 
-    // Poll user data every 10 seconds to catch updates
-    const interval = setInterval(() => {
-      loadUserName();
-    }, 10000);
-
     return () => {
       subscription.unsubscribe();
-      clearInterval(interval);
     };
   }, []);
-
-  // Close dropdown on Esc key
-  useEffect(() => {
-    function handleEscape(e: KeyboardEvent) {
-      if (e.key === 'Escape' && showProfileDropdown) {
-        setShowProfileDropdown(false);
-      }
-    }
-
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [showProfileDropdown]);
 
   async function loadUserName() {
     try {
@@ -58,14 +39,8 @@ export function Header({ title, showNav = true }: HeaderProps) {
       
       if (!user) return;
 
-      // Priorizar full_name do user_metadata
-      const nome = 
-        user.user_metadata?.full_name || 
-        user.user_metadata?.nome || 
-        user.user_metadata?.name || 
-        user.email?.split('@')[0] || 
-        'Usuário';
-      
+      // Usar nome completo do user_metadata ou email como fallback
+      const nome = user.user_metadata?.full_name || user.user_metadata?.nome || user.user_metadata?.name || user.email?.split('@')[0] || 'Usuário';
       setUserName(nome);
     } catch (error) {
       console.error("Erro ao carregar nome do usuário:", error);
@@ -118,7 +93,7 @@ export function Header({ title, showNav = true }: HeaderProps) {
             </Link>
 
             {/* Profile Dropdown */}
-            <div className="relative" ref={dropdownRef}>
+            <div className="relative">
               <button
                 onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
@@ -127,22 +102,21 @@ export function Header({ title, showNav = true }: HeaderProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
                 <span className="hidden sm:inline text-sm font-medium">{userName || "Usuário"}</span>
-                {/* Seta para cima (dropup) */}
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
               
               {showProfileDropdown && (
                 <>
-                  {/* Backdrop - fecha ao clicar fora */}
+                  {/* Backdrop */}
                   <div
                     className="fixed inset-0 z-40"
                     onClick={() => setShowProfileDropdown(false)}
                   />
                   
-                  {/* Dropup - abre para cima */}
-                  <div className="absolute right-0 bottom-full mb-2 w-56 bg-white dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg overflow-hidden z-50">
+                  {/* Dropdown */}
+                  <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg overflow-hidden z-50">
                     <button
                       onClick={() => {
                         setShowProfileDropdown(false);

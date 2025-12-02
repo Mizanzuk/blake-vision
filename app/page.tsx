@@ -142,6 +142,18 @@ export default function HomePage() {
     }
   }, [sessions]);
 
+  // Close profile dropdown on Esc key
+  useEffect(() => {
+    function handleEscape(e: globalThis.KeyboardEvent) {
+      if (e.key === 'Escape' && showProfileDropdown) {
+        setShowProfileDropdown(false);
+      }
+    }
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [showProfileDropdown]);
+
   async function checkAuth() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -153,8 +165,8 @@ export default function HomePage() {
 
       setUserId(user.id);
       
-      // Usar nome do user_metadata ou email como fallback
-      const nome = user.user_metadata?.nome || user.user_metadata?.name || user.email?.split('@')[0] || 'Usuário';
+      // Usar nome completo do user_metadata ou email como fallback
+      const nome = user.user_metadata?.full_name || user.user_metadata?.nome || user.user_metadata?.name || user.email?.split('@')[0] || 'Usuário';
       setUserName(nome);
     } catch (error) {
       console.error("Error checking auth:", error);
@@ -812,12 +824,19 @@ export default function HomePage() {
               </svg>
               <span className="text-sm font-medium truncate">{userName || "Usuário"}</span>
               <svg className="w-4 h-4 ml-auto flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
               </svg>
             </button>
             
             {showProfileDropdown && (
-              <div className="absolute bottom-full left-0 mb-2 w-full bg-white dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg overflow-hidden z-50">
+              <>
+                {/* Backdrop - fecha ao clicar fora */}
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowProfileDropdown(false)}
+                />
+                
+                <div className="absolute bottom-full left-0 mb-2 w-full bg-white dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg overflow-hidden z-50">
                 <button
                   onClick={() => {
                     setShowProfileDropdown(false);
@@ -848,6 +867,7 @@ export default function HomePage() {
                   Sair da conta
                 </button>
               </div>
+              </>
             )}
           </div>
         </div>
