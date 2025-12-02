@@ -82,7 +82,6 @@ export default function EpisodeModal({
     const episodeData = {
       id: episode?.id,
       world_id: worldId,
-      universe_id: universeId,
       tipo: "episodio",
       episodio: parseInt(numeroEpisodio),
       titulo: titulo.trim(),

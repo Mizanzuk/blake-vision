@@ -60,7 +60,6 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       world_id,
-      universe_id,
       tipo,
       titulo,
       slug,
@@ -103,7 +102,6 @@ export async function POST(req: NextRequest) {
       .insert({
         user_id: user.id,
         world_id,
-        universe_id: universe_id || null,
         tipo,
         titulo,
         slug: slug || null,
