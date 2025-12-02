@@ -119,12 +119,12 @@ export function Header({ title, showNav = true }: HeaderProps) {
                 <>
                   {/* Backdrop */}
                   <div
-                    className="fixed inset-0 z-40"
+                    className="fixed inset-0 z-[60]"
                     onClick={() => setShowProfileDropdown(false)}
                   />
                   
                   {/* Dropdown */}
-                  <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg overflow-hidden z-50">
+                  <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg overflow-hidden z-[70]">
                     <button
                       onClick={() => {
                         setShowProfileDropdown(false);
