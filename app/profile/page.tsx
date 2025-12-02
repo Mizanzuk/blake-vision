@@ -60,13 +60,20 @@ export default function ProfilePage() {
     setIsSaving(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        data: { full_name: fullName }
+      // Call API route to update user_metadata on server
+      const response = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ full_name: fullName }),
       });
 
-      if (error) {
+      const data = await response.json();
+
+      if (!response.ok) {
         toast.error(t.errors.generic, {
-          description: error.message,
+          description: data.error || 'Failed to update profile',
         });
         return;
       }
