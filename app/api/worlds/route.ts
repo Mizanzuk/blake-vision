@@ -80,6 +80,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Erro ao criar mundo" }, { status: 500 });
     }
 
+    // Criar categoria base "episódios" automaticamente
+    try {
+      await supabase
+        .from("categories")
+        .insert({
+          user_id: user.id,
+          universe_id,
+          world_id: world.id,
+          slug: "episodio",
+          label: "Episódio",
+          descricao: "Episódios planejados para este mundo",
+          ordem: 0,
+        });
+    } catch (catError) {
+      console.error("Erro ao criar categoria episódios:", catError);
+      // Não falhar a criação do mundo se a categoria falhar
+    }
+
     return NextResponse.json({ world });
 
   } catch (error: any) {

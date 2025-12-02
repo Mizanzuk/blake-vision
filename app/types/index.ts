@@ -44,6 +44,8 @@ export type Ficha = {
   ano_diegese?: number | null;
   tags?: string | null;
   episodio?: string | null;
+  numero_episodio?: number | null;
+  logline?: string | null;
   imagem_capa?: string | null;
   album_imagens?: string[] | null;
   descricao_data?: string | null;

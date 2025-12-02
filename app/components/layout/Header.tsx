@@ -10,7 +10,7 @@ import Link from "next/link";
 interface HeaderProps {
   title?: string;
   showNav?: boolean;
-  currentPage?: "home" | "catalog" | "timeline" | "biblioteca" | "editor" | "upload" | "faq";
+  currentPage?: "home" | "catalog" | "timeline" | "biblioteca" | "editor" | "upload" | "projetos" | "faq";
 }
 
 export function Header({ title, showNav = true, currentPage }: HeaderProps) {
@@ -71,6 +71,7 @@ export function Header({ title, showNav = true, currentPage }: HeaderProps) {
     { id: "catalog", href: "/catalog", label: "Catálogo" },
     { id: "timeline", href: "/timeline", label: "Timeline" },
     { id: "biblioteca", href: "/biblioteca", label: "Biblioteca" },
+    { id: "projetos", href: "/projetos", label: "Projetos" },
     { id: "editor", href: "/editor", label: "Editor" },
     { id: "upload", href: "/upload", label: "Upload" },
   ];
