@@ -315,8 +315,10 @@ export default function CatalogPage() {
   }
 
   function openEditFichaModal(ficha: Ficha) {
+    console.log('openEditFichaModal called with:', ficha.titulo);
     setSelectedFicha(ficha);
     setShowFichaModal(true);
+    console.log('showFichaModal set to true');
   }
 
   async function handleSaveFicha(fichaData: any) {
