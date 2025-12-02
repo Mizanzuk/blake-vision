@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, ReactNode } from "react";
+import { useEffect, useRef, ReactNode, useState } from "react";
 import { clsx } from "clsx";
 import type { ModalSize } from "@/app/types";
 import { Button } from "./Button";
@@ -31,6 +31,8 @@ export function Modal({
   showCloseButton = true,
 }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const [isResizing, setIsResizing] = useState(false);
+  const [modalSize, setModalSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
     if (!isOpen) return;
@@ -49,6 +51,31 @@ export function Modal({
       document.body.style.overflow = "unset";
     };
   }, [isOpen, closeOnEscape, onClose]);
+
+  // Resize functionality
+  useEffect(() => {
+    if (!isOpen || !isResizing) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!modalRef.current) return;
+      const rect = modalRef.current.getBoundingClientRect();
+      const newWidth = Math.max(400, e.clientX - rect.left);
+      const newHeight = Math.max(300, e.clientY - rect.top);
+      setModalSize({ width: newWidth, height: newHeight });
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isOpen, isResizing]);
 
   if (!isOpen) return null;
 
@@ -82,6 +109,7 @@ export function Modal({
           "border border-border-light-default dark:border-border-dark-default",
           sizes[size]
         )}
+        style={modalSize.width > 0 ? { width: `${modalSize.width}px`, height: `${modalSize.height}px`, maxWidth: "90vw", maxHeight: "90vh" } : undefined}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -141,6 +169,29 @@ export function Modal({
             {footer}
           </div>
         )}
+
+        {/* Resize Handle */}
+        <div
+          className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize group z-10"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsResizing(true);
+          }}
+        >
+          <svg
+            className="absolute bottom-1 right-1 w-3 h-3 text-gray-400 group-hover:text-gray-600 transition-colors pointer-events-none"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            <line x1="14" y1="14" x2="14" y2="10" />
+            <line x1="14" y1="14" x2="10" y2="14" />
+            <line x1="14" y1="8" x2="8" y2="14" />
+          </svg>
+        </div>
       </div>
     </div>
   );
