@@ -20,6 +20,17 @@ export function Header({ title, showNav = true }: HeaderProps) {
 
   useEffect(() => {
     loadUserName();
+
+    // Listen for auth state changes to update user name
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'USER_UPDATED' || event === 'SIGNED_IN') {
+        loadUserName();
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   async function loadUserName() {
@@ -28,8 +39,12 @@ export function Header({ title, showNav = true }: HeaderProps) {
       
       if (!user) return;
 
+      // Debug: Log user_metadata
+      console.log('[Header] user_metadata:', user.user_metadata);
+
       // Usar nome completo do user_metadata ou email como fallback
       const nome = user.user_metadata?.full_name || user.user_metadata?.nome || user.user_metadata?.name || user.email?.split('@')[0] || 'Usuário';
+      console.log('[Header] Nome exibido:', nome);
       setUserName(nome);
     } catch (error) {
       console.error("Erro ao carregar nome do usuário:", error);

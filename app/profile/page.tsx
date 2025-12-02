@@ -74,6 +74,9 @@ export default function ProfilePage() {
       toast.success(t.success.updated, {
         description: t.profile.profileUpdated,
       });
+
+      // Force reload to update Header
+      window.location.reload();
     } catch (error: any) {
       toast.error(t.errors.generic, {
         description: error.message,
