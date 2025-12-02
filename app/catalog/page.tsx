@@ -901,7 +901,7 @@ export default function CatalogPage() {
                     
                     {/* Action buttons - visible on hover (hidden in selection mode) */}
                     {!isSelectionMode && (
-                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-auto">
+                      <div className="absolute top-2 right-2 flex gap-1 scale-0 group-hover:scale-100 transition-transform origin-top-right z-50">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
