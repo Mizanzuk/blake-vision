@@ -901,7 +901,7 @@ export default function CatalogPage() {
                     
                     {/* Action buttons - visible on hover (hidden in selection mode) */}
                     {!isSelectionMode && (
-                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-auto">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -931,7 +931,7 @@ export default function CatalogPage() {
                       </div>
                     )}
 
-                    <div onClick={() => !isSelectionMode && openEditFichaModal(ficha)}>
+                    <div onClick={() => !isSelectionMode && openEditFichaModal(ficha)} className="relative">
                       {ficha.imagem_capa && (
                         <img
                           src={ficha.imagem_capa}
