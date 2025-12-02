@@ -101,7 +101,12 @@ export default function CatalogPage() {
   const [isDragging, setIsDragging] = useState(false);
   
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -811,19 +816,6 @@ export default function CatalogPage() {
             Categorias
           </Button>
           
-          <Button
-            variant="primary"
-            onClick={openNewFichaModal}
-            disabled={!selectedUniverseId}
-            icon={
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            }
-          >
-            {t.ficha.create}
-          </Button>
-          
           {Object.keys(customOrder).length > 0 && (
             <Button
               variant="ghost"
@@ -852,7 +844,20 @@ export default function CatalogPage() {
               </svg>
             }
           >
-            {isSelectionMode ? "Cancelar Seleção" : "Selecionar Múltiplas"}
+            {isSelectionMode ? "Cancelar Seleção" : "Selecionar"}
+          </Button>
+          
+          <Button
+            variant="primary"
+            onClick={openNewFichaModal}
+            disabled={!selectedUniverseId}
+            icon={
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            }
+          >
+            {t.ficha.create}
           </Button>
             </div>
 

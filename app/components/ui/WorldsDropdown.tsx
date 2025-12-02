@@ -120,12 +120,11 @@ export function WorldsDropdown({
           </div>
 
           {/* World Options */}
-          {/* Sort: root worlds first, then others */}
-          {[...worlds].sort((a, b) => {
-            if (a.is_root && !b.is_root) return -1;
-            if (!a.is_root && b.is_root) return 1;
-            return (a.ordem || 0) - (b.ordem || 0);
-          }).map((world) => (
+          {/* Filter out root worlds and sort by ordem */}
+          {[...worlds]
+            .filter(world => !world.is_root)
+            .sort((a, b) => (a.ordem || 0) - (b.ordem || 0))
+            .map((world) => (
             <div
               key={world.id}
               className={clsx(

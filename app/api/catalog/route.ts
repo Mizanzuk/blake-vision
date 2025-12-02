@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Fetch categories - com fallback para categorias padrão
-    let categories: { slug: string; label: string }[] = [];
+    let categories: { slug: string; label: string; description?: string | null; prefix?: string | null }[] = [];
     
     try {
       const { data: categoriesData, error: categoriesError } = await supabase
