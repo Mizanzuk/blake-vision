@@ -33,7 +33,7 @@ import { Header } from "@/app/components/layout/Header";
 import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
 import { WorldsDropdown } from "@/app/components/ui/WorldsDropdown";
 import { TypesDropdown } from "@/app/components/ui/TypesDropdown";
-import { EpisodeDropdown } from "@/app/components/ui/EpisodeDropdown";
+import { EpisodesDropdown } from "@/app/components/ui/EpisodesDropdown";
 import FichaModal from "@/app/components/catalog/FichaModal";
 import WorldModal from "@/app/components/catalog/WorldModal";
 import CategoryModal from "@/app/components/catalog/CategoryModal";
@@ -89,7 +89,7 @@ export default function CatalogPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedWorldIds, setSelectedWorldIds] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-  const [selectedEpisode, setSelectedEpisode] = useState<string>("");
+  const [selectedEpisodes, setSelectedEpisodes] = useState<string[]>([]);
   const [showWorldFilter, setShowWorldFilter] = useState(false);
   
   // Multiple selection
@@ -208,7 +208,7 @@ export default function CatalogPage() {
     localStorage.setItem("selectedUniverseId", universeId);
     setSelectedWorldIds([]);
     setSelectedTypes([]);
-    setSelectedEpisode("");
+    setSelectedEpisodes([]);
   }
 
   async function handleCreateUniverse() {
@@ -597,7 +597,7 @@ export default function CatalogPage() {
     if (selectedTypes.length > 0 && !selectedTypes.includes(ficha.tipo)) {
       return false;
     }
-    if (selectedEpisode && ficha.episodio !== selectedEpisode) {
+    if (selectedEpisodes.length > 0 && ficha.episodio && !selectedEpisodes.includes(ficha.episodio)) {
       return false;
     }
     return true;
@@ -766,13 +766,16 @@ export default function CatalogPage() {
                   onCreate={() => setShowManageCategoriesModal(true)}
                 />
                 
-                <Select
-                  options={[
-                    { value: "", label: "Todos os episódios" },
-                    ...episodes.map(e => ({ value: e!, label: e! })),
-                  ]}
-                  value={selectedEpisode}
-                  onChange={(e) => setSelectedEpisode(e.target.value)}
+                <EpisodesDropdown
+                  episodes={episodes.filter(e => e) as string[]}
+                  selectedEpisodes={selectedEpisodes}
+                  onToggle={(episode) => {
+                    setSelectedEpisodes(prev => 
+                      prev.includes(episode) 
+                        ? prev.filter(e => e !== episode)
+                        : [...prev, episode]
+                    );
+                  }}
                 />
               </div>
             </Card>
@@ -796,7 +799,7 @@ export default function CatalogPage() {
                     setSearchTerm("");
                     setSelectedWorldIds([]);
                     setSelectedTypes([]);
-                    setSelectedEpisode("");
+                    setSelectedEpisodes([]);
                   }}
                 >
                   Limpar filtros
