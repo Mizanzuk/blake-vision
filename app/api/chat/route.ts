@@ -189,16 +189,16 @@ Quando o usuário pedir para modificar o texto em edição (ex: "apague o primei
 1. Aplicar a modificação solicitada no texto
 2. Retornar o texto COMPLETO modificado dentro de um bloco especial:
 
-```EDIT_CONTENT
+\`\`\`EDIT_CONTENT
 [TEXTO COMPLETO MODIFICADO AQUI]
-```
+\`\`\`
 
 Exemplo de resposta:
 "Claro! Vou trocar João por Miguel no texto.
 
-```EDIT_CONTENT
+\`\`\`EDIT_CONTENT
 [Texto completo com a modificação aplicada]
-```
+\`\`\`
 
 Modifiquei todas as ocorrências de João para Miguel."
 
