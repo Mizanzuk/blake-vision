@@ -975,6 +975,7 @@ export default function HomePage() {
                       {message.role === "assistant" ? (
                         <ReactMarkdown 
                           remarkPlugins={[remarkGfm]}
+                          urlTransform={(url) => url} // Permitir todos os protocolos, incluindo ficha:
                           components={{
                             a: ({ node, href, children, ...props }) => {
                               // Detectar links de fichas (formato: ficha:ID)
