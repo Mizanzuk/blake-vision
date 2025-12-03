@@ -132,10 +132,13 @@ ${textContent}
 As seguintes fichas foram encontradas e são relevantes para a conversa:
 
 ${results.map((r, i) => `
-${i + 1}. **${r.titulo}** (${r.tipo})
+${i + 1}. **${r.titulo}** (${r.tipo}) [ID: ${r.id}]
    ${r.resumo || ""}
    ${r.conteudo ? `\n   Conteúdo: ${r.conteudo.slice(0, 300)}...` : ""}
 `).join("\n")}
+
+IMPORTANTE: Ao citar fichas na sua resposta, use o formato: [Nome da Ficha](ficha:ID) para criar links clicáveis.
+Exemplo: [Incidente do sapo de plástico](ficha:${results[0].id})
 `;
       } else {
         console.log('[RAG] No results found');

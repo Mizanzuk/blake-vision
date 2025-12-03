@@ -22,7 +22,8 @@ import { toast } from "sonner";
 import { clsx } from "clsx";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import type { ChatMessage, ChatMode, ChatSession, Universe } from "@/app/types";
+import FichaViewModal from "@/app/components/shared/FichaViewModal";
+import type { ChatMessage, ChatMode, ChatSession, Universe, Ficha } from "@/app/types";
 
 const SESSION_STORAGE_KEY = "blake-vision-sessions-v1";
 const MAX_MESSAGES_PER_SESSION = 32;
@@ -106,6 +107,10 @@ export default function HomePage() {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [editingSessionTitle, setEditingSessionTitle] = useState("");
+  
+  // Ficha modal state
+  const [viewingFicha, setViewingFicha] = useState<Ficha | null>(null);
+  const [showFichaModal, setShowFichaModal] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -211,6 +216,26 @@ export default function HomePage() {
 
   function scrollToBottom() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }
+
+  async function handleOpenFicha(fichaId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('fichas')
+        .select('*')
+        .eq('id', fichaId)
+        .single();
+      
+      if (error) throw error;
+      
+      if (data) {
+        setViewingFicha(data as Ficha);
+        setShowFichaModal(true);
+      }
+    } catch (error) {
+      console.error('Error loading ficha:', error);
+      toast.error('Erro ao carregar ficha');
+    }
   }
 
   function handleUniverseChange(universeId: string) {
@@ -948,7 +973,32 @@ export default function HomePage() {
                         : "prose-stone dark:prose-invert"
                     )}>
                       {message.role === "assistant" ? (
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        <ReactMarkdown 
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            a: ({ node, href, children, ...props }) => {
+                              // Detectar links de fichas (formato: ficha:ID)
+                              if (href?.startsWith('ficha:')) {
+                                const fichaId = href.replace('ficha:', '');
+                                return (
+                                  <button
+                                    onClick={() => handleOpenFicha(fichaId)}
+                                    className="text-primary-light dark:text-primary-dark hover:underline cursor-pointer font-medium"
+                                    {...props}
+                                  >
+                                    {children}
+                                  </button>
+                                );
+                              }
+                              // Links normais
+                              return (
+                                <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
+                                  {children}
+                                </a>
+                              );
+                            }
+                          }}
+                        >
                           {message.content}
                         </ReactMarkdown>
                       ) : (
@@ -1289,6 +1339,16 @@ export default function HomePage() {
           </div>
         </div>
       </Modal>
+
+      {/* Ficha View Modal */}
+      <FichaViewModal
+        isOpen={showFichaModal}
+        onClose={() => {
+          setShowFichaModal(false);
+          setViewingFicha(null);
+        }}
+        ficha={viewingFicha}
+      />
     </div>
   );
 }
