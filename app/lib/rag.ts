@@ -1,4 +1,4 @@
-import { getSupabaseClient } from "./supabase/client";
+import { createAdminClient } from "./supabase/server";
 import OpenAI from "openai";
 
 const openai = new OpenAI({
@@ -35,7 +35,7 @@ export async function searchLore(
 
     // Search for similar fichas
     console.log('[searchLore] Calling match_fichas...');
-    const supabase = getSupabaseClient();
+    const supabase = await createAdminClient();
     const { data, error } = await supabase.rpc("match_fichas", {
       query_embedding: queryEmbedding,
       match_threshold: matchThreshold,
