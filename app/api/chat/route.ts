@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
+  baseURL: 'https://api.openai.com/v1',
 });
 
 type Message = { role: "user" | "assistant" | "system"; content: string };
