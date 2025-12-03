@@ -445,6 +445,9 @@ export default function UploadPage() {
           fichas: extractedEntities,
           worldId: selectedWorldId,
           universeId: selectedUniverseId,
+          unitNumber: unitNumber.trim() || null,
+          documentName: documentName.trim() || null,
+          text: text.trim() || null,
         }),
       });
       

@@ -98,6 +98,42 @@ export default function BibliotecaPage() {
     }
   }
 
+  async function handleEditar(texto: Texto) {
+    try {
+      // Volta para rascunho
+      const response = await fetch("/api/textos", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: texto.id,
+          status: "rascunho",
+        }),
+      });
+
+      if (response.ok) {
+        toast.success("Texto movido para rascunhos");
+        router.push(`/editor/${texto.id}`);
+      } else {
+        toast.error("Erro ao editar texto");
+      }
+    } catch (error) {
+      console.error("Erro ao editar texto:", error);
+      toast.error("Erro ao editar texto");
+    }
+  }
+
+  function handleEnviarParaUpload(texto: Texto) {
+    const params = new URLSearchParams({
+      texto: texto.conteudo,
+      universe_id: texto.universe_id || "",
+      world_id: texto.world_id || "",
+      episodio: texto.episodio || "",
+      auto_extract: "true",
+    });
+
+    router.push(`/upload?${params.toString()}`);
+  }
+
   function formatDate(dateString: string) {
     const date = new Date(dateString);
     return date.toLocaleDateString("pt-BR", {
@@ -171,7 +207,13 @@ export default function BibliotecaPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {textos.map((texto) => (
               <Card key={texto.id} className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
-                <div onClick={() => router.push(`/editor/${texto.id}`)}>
+                <div onClick={() => {
+                  if (activeTab === "publicados") {
+                    setSelectedTexto(texto);
+                  } else {
+                    router.push(`/editor/${texto.id}`);
+                  }
+                }}>
                   <div className="flex items-start justify-between mb-3">
                     <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
                       {texto.titulo}
@@ -211,6 +253,53 @@ export default function BibliotecaPage() {
                 </div>
               </Card>
             ))}
+          </div>
+        )}
+
+        {/* Modal de Visualização de Texto Publicado */}
+        {selectedTexto && (
+          <div 
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={() => setSelectedTexto(null)}
+          >
+            <div 
+              className="bg-white rounded-lg p-8 max-w-4xl w-full max-h-[80vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">{selectedTexto.titulo}</h2>
+                <button
+                  onClick={() => setSelectedTexto(null)}
+                  className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div className="prose max-w-none mb-6 whitespace-pre-wrap">
+                {selectedTexto.conteudo}
+              </div>
+              
+              <div className="flex gap-3 justify-end pt-4 border-t border-gray-200">
+                <Button 
+                  variant="secondary" 
+                  onClick={() => setSelectedTexto(null)}
+                >
+                  Fechar
+                </Button>
+                <Button 
+                  variant="secondary" 
+                  onClick={() => handleEditar(selectedTexto)}
+                >
+                  Editar
+                </Button>
+                <Button 
+                  onClick={() => handleEnviarParaUpload(selectedTexto)}
+                >
+                  Enviar para Upload
+                </Button>
+              </div>
+            </div>
           </div>
         )}
       </div>

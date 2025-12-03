@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     // Handle JSON request (saving extracted fichas)
     if (contentType.includes("application/json")) {
-      const { fichas, worldId, universeId } = await request.json();
+      const { fichas, worldId, universeId, unitNumber, documentName, text } = await request.json();
 
       if (!fichas || !Array.isArray(fichas) || fichas.length === 0) {
         return NextResponse.json(
@@ -47,6 +47,42 @@ export async function POST(request: NextRequest) {
           .replace(/^-+|-+$/g, "");
       }
 
+      // Create or find roteiro (episode) if unitNumber is provided
+      let roteiroId: string | null = null;
+      
+      if (unitNumber && worldId) {
+        // Check if roteiro already exists
+        const { data: existingRoteiro } = await supabase
+          .from("roteiros")
+          .select("*")
+          .eq("world_id", worldId)
+          .eq("episodio", unitNumber)
+          .eq("user_id", user.id)
+          .single();
+        
+        if (existingRoteiro) {
+          // Roteiro exists, use its ID
+          roteiroId = existingRoteiro.id;
+        } else {
+          // Create new roteiro
+          const { data: newRoteiro, error: roteiroError } = await supabase
+            .from("roteiros")
+            .insert({
+              world_id: worldId,
+              episodio: unitNumber,
+              titulo: documentName || `Episódio ${unitNumber}`,
+              conteudo: text || "",
+              user_id: user.id,
+            })
+            .select()
+            .single();
+          
+          if (!roteiroError && newRoteiro) {
+            roteiroId = newRoteiro.id;
+          }
+        }
+      }
+
       const fichasToInsert = fichas.map((ficha: any) => ({
         user_id: user.id,
         world_id: worldId,
@@ -56,7 +92,8 @@ export async function POST(request: NextRequest) {
         resumo: ficha.summary || ficha.resumo || null,
         conteudo: ficha.description || ficha.content || ficha.conteudo || null,
         tags: Array.isArray(ficha.tags) ? ficha.tags.join(", ") : (ficha.tags || null),
-        episodio: null,
+        episodio: unitNumber || null,
+        episode_id: roteiroId || null, // Vinculação ao roteiro
         aparece_em: null,
         codigo: null,
         ano_diegese: null,
