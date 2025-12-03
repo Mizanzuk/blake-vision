@@ -960,7 +960,7 @@ export default function HomePage() {
                   
                   <div
                     className={clsx(
-                      "relative max-w-3xl rounded-2xl px-6 py-4",
+                      "max-w-3xl rounded-2xl px-6 py-4",
                       message.role === "user"
                         ? "bg-primary-600 dark:bg-primary-500 text-white"
                         : "bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default"
@@ -984,7 +984,7 @@ export default function HomePage() {
                                 return (
                                   <button
                                     onClick={() => handleOpenFicha(fichaId)}
-                                    className="text-primary-light dark:text-primary-dark hover:underline cursor-pointer font-medium"
+                                    className="text-primary-600 dark:text-primary-400 hover:underline cursor-pointer font-medium"
                                   >
                                     {children}
                                   </button>
@@ -1008,7 +1008,7 @@ export default function HomePage() {
                     
                     {/* Action Buttons (only for assistant messages, on hover) */}
                     {message.role === "assistant" && message.id !== "intro" && (
-                      <div className="opacity-0 group-hover:opacity-100 absolute top-2 right-2 flex gap-1">
+                      <div className="opacity-0 group-hover:opacity-100 mt-3 pt-3 border-t border-border-light-default dark:border-border-dark-default flex gap-1 justify-end">
                         <button
                           onClick={() => handleTextToSpeech(message.content)}
                           className="p-1.5 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary transition-all"
