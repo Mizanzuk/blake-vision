@@ -661,15 +661,18 @@ export default function EditorPage() {
       </div>
       
       {/* Modal de Ficha */}
-      {showFichaModal && selectedFicha && (
-        <FichaViewModal
-          ficha={selectedFicha}
-          onClose={() => {
-            setShowFichaModal(false);
-            setSelectedFicha(null);
-          }}
-        />
-      )}
+      <FichaViewModal
+        isOpen={showFichaModal}
+        ficha={selectedFicha}
+        onClose={() => {
+          setShowFichaModal(false);
+          setSelectedFicha(null);
+        }}
+        onEdit={() => {
+          // Não implementado no editor
+          setShowFichaModal(false);
+        }}
+      />
     </div>
   );
 }
