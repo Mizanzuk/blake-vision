@@ -54,7 +54,7 @@ export function EpisodeDropdown({
   return (
     <div className="flex flex-col gap-1.5 w-full" ref={dropdownRef}>
       {label && (
-        <label className="text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide">
+        <label className="text-xs font-medium text-text-light-secondary dark:text-dark-secondary">
           {label}
         </label>
       )}

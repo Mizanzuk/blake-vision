@@ -303,7 +303,7 @@ export default function EpisodeModal({
 
         {/* Logline */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             Logline <span className="text-red-500">*</span>
           </label>
           <textarea
@@ -321,7 +321,7 @@ export default function EpisodeModal({
 
         {/* Sinopse */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             Sinopse <span className="text-red-500">*</span>
           </label>
           <textarea

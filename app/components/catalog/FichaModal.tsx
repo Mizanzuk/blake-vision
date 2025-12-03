@@ -540,7 +540,7 @@ export default function FichaModal({
         {activeTab === "images" && (
           <>
             <div className="mb-6">
-              <label className="block text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-3">
+              <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-3">
                 Upload de Imagem de Capa
               </label>
               

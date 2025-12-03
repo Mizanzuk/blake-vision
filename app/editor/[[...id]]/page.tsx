@@ -467,7 +467,7 @@ export default function EditorPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
                 CONTEÚDO
               </label>
               <textarea

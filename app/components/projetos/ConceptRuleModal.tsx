@@ -147,7 +147,7 @@ export default function ConceptRuleModal({
       <div className="space-y-4">
         {/* Universo */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             Universo <span className="text-red-500">*</span>
           </label>
           <select
@@ -171,7 +171,7 @@ export default function ConceptRuleModal({
 
         {/* Mundo */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             Mundo
           </label>
           <select
@@ -219,7 +219,7 @@ export default function ConceptRuleModal({
 
         {/* Descrição */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             Descrição <span className="text-red-500">*</span>
           </label>
           <textarea

@@ -219,7 +219,7 @@ export default function CategoryModal({
 
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="block text-sm font-medium text-text-light-secondary dark:text-dark-secondary">
+            <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary">
               Descrição
             </label>
             <Button

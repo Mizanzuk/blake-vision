@@ -58,7 +58,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className={clsx("flex flex-col gap-1.5", fullWidth && "w-full")}>
         {label && (
-          <label className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary">
+          <label className="text-xs font-medium text-text-light-secondary dark:text-dark-secondary">
             {label}
             {required && <span className="text-error-light dark:text-error-dark ml-1">*</span>}
           </label>

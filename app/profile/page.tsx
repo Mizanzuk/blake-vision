@@ -279,7 +279,7 @@ export default function ProfilePage() {
             
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-3">
+                <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-3">
                   {t.profile.theme}
                 </label>
                 <div className="flex items-center gap-4">
@@ -291,7 +291,7 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-3">
+                <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-3">
                   {t.profile.language}
                 </label>
                 <div className="flex items-center gap-4">

@@ -163,7 +163,7 @@ export function MentionTextarea({
   return (
     <div className={`relative ${fullWidth ? "w-full" : ""}`}>
       {label && (
-        <label className="block text-sm font-medium text-text-light-primary dark:text-dark-primary mb-2">
+        <label className="block text-xs font-medium text-text-light-primary dark:text-dark-primary mb-2">
           {label}
           {required && <span className="text-danger-500 ml-1">*</span>}
         </label>
