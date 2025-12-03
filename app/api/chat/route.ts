@@ -119,6 +119,7 @@ ${textContent}
 
     // RAG: Search for relevant lore
     let contextText = "";
+    let exampleFichaId = "ID_DA_FICHA_AQUI";
     console.log('[RAG] Starting search...', { universeId, query: lastMessage.content });
     if (universeId && isValidUUID(universeId)) {
       console.log('[RAG] Valid UUID, calling searchLore...');
@@ -127,6 +128,7 @@ ${textContent}
       
       if (results.length > 0) {
         console.log('[RAG] Adding context to prompt');
+        exampleFichaId = results[0].id;
         contextText = `
 ### CONTEXTO RELEVANTE DO UNIVERSO
 As seguintes fichas foram encontradas e são relevantes para a conversa:
@@ -160,7 +162,7 @@ INSTRUÇÕES PARA MODO CONSULTA:
 - Responda APENAS com base nos fatos estabelecidos no contexto fornecido
 - Se não houver informação suficiente, diga claramente "Não há informação estabelecida sobre isso"
 - OBRIGATÓRIO: Ao mencionar fichas, SEMPRE use o formato [Nome da Ficha](ficha:ID_DA_FICHA)
-- Exemplo correto: [Incidente do sapo de plástico](ficha:${results.length > 0 ? results[0].id : 'ID_AQUI'})
+- Exemplo correto: [Incidente do sapo de plástico](ficha:${exampleFichaId})
 - NUNCA use links normais como [Texto](https://...), use APENAS o formato ficha:ID
 - Seja preciso e factual
 - Identifique inconsistências se houver
@@ -172,7 +174,7 @@ INSTRUÇÕES PARA MODO CRIATIVO:
 - Seja criativo mas consistente
 - Sugira novas possibilidades que enriqueçam o universo
 - OBRIGATÓRIO: Ao mencionar fichas existentes, SEMPRE use o formato [Nome da Ficha](ficha:ID_DA_FICHA)
-- Exemplo correto: [Incidente do sapo de plástico](ficha:${results.length > 0 ? results[0].id : 'ID_AQUI'})
+- Exemplo correto: [Incidente do sapo de plástico](ficha:${exampleFichaId})
 - NUNCA use links normais como [Texto](https://...), use APENAS o formato ficha:ID
 `}
 
