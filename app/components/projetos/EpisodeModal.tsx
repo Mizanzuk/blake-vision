@@ -114,6 +114,10 @@ export default function EpisodeModal({
         const world = data.worlds.find((w: World) => w.id === worldId);
         if (world) {
           setSelectedUniverseId(world.universe_id);
+          // Carregar mundos do universo para popular o dropdown
+          await loadWorlds(world.universe_id);
+          // Manter o mundo selecionado
+          setSelectedWorldId(worldId);
         }
       }
     } catch (error) {
