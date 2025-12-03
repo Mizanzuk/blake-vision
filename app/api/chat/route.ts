@@ -119,7 +119,7 @@ ${textContent}
     // RAG: Search for relevant lore
     let contextText = "";
     if (universeId && isValidUUID(universeId)) {
-      const results = await searchLore(lastMessage.content, universeId, 0.7, 8);
+      const results = await searchLore(lastMessage.content, universeId, 0.5, 8);
       
       if (results.length > 0) {
         contextText = `
