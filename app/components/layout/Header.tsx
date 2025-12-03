@@ -68,11 +68,11 @@ export function Header({ title, showNav = true, currentPage }: HeaderProps) {
 
   const allNavItems = [
     { id: "home", href: "/", label: "Home" },
-    { id: "catalog", href: "/catalog", label: "Catálogo" },
-    { id: "timeline", href: "/timeline", label: "Timeline" },
-    { id: "biblioteca", href: "/biblioteca", label: "Biblioteca" },
     { id: "projetos", href: "/projetos", label: "Projetos" },
+    { id: "catalog", href: "/catalog", label: "Catálogo" },
     { id: "editor", href: "/editor", label: "Editor" },
+    { id: "biblioteca", href: "/biblioteca", label: "Biblioteca" },
+    { id: "timeline", href: "/timeline", label: "Timeline" },
     { id: "upload", href: "/upload", label: "Upload" },
   ];
   
