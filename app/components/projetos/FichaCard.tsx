@@ -85,7 +85,7 @@ export default function FichaCard({ ficha, onClick }: FichaCardProps) {
 
       {/* Description for episodes */}
       {ficha.tipo === "episodio" ? (
-        <div className="space-y-2">
+        <div className="space-y-2 pl-6">
           {getLogline() && (
             <p className="text-sm italic text-text-light-secondary dark:text-dark-secondary line-clamp-1">
               {getLogline()}
