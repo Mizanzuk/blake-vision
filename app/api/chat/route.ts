@@ -136,9 +136,6 @@ ${i + 1}. **${r.titulo}** (${r.tipo}) [ID: ${r.id}]
    ${r.resumo || ""}
    ${r.conteudo ? `\n   Conteúdo: ${r.conteudo.slice(0, 300)}...` : ""}
 `).join("\n")}
-
-IMPORTANTE: Ao citar fichas na sua resposta, use o formato: [Nome da Ficha](ficha:ID) para criar links clicáveis.
-Exemplo: [Incidente do sapo de plástico](ficha:${results[0].id})
 `;
       } else {
         console.log('[RAG] No results found');
@@ -162,7 +159,9 @@ ${mode === "consulta" ? `
 INSTRUÇÕES PARA MODO CONSULTA:
 - Responda APENAS com base nos fatos estabelecidos no contexto fornecido
 - Se não houver informação suficiente, diga claramente "Não há informação estabelecida sobre isso"
-- Cite as fichas relevantes quando possível
+- OBRIGATÓRIO: Ao mencionar fichas, SEMPRE use o formato [Nome da Ficha](ficha:ID_DA_FICHA)
+- Exemplo correto: [Incidente do sapo de plástico](ficha:${results.length > 0 ? results[0].id : 'ID_AQUI'})
+- NUNCA use links normais como [Texto](https://...), use APENAS o formato ficha:ID
 - Seja preciso e factual
 - Identifique inconsistências se houver
 ` : `
@@ -172,6 +171,9 @@ INSTRUÇÕES PARA MODO CRIATIVO:
 - Mantenha coerência com o contexto estabelecido
 - Seja criativo mas consistente
 - Sugira novas possibilidades que enriqueçam o universo
+- OBRIGATÓRIO: Ao mencionar fichas existentes, SEMPRE use o formato [Nome da Ficha](ficha:ID_DA_FICHA)
+- Exemplo correto: [Incidente do sapo de plástico](ficha:${results.length > 0 ? results[0].id : 'ID_AQUI'})
+- NUNCA use links normais como [Texto](https://...), use APENAS o formato ficha:ID
 `}
 
 Responda de forma clara, organizada e em português brasileiro.`;
