@@ -152,16 +152,16 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "ID é obrigatório" }, { status: 400 });
     }
 
-    // Generate new embedding if content changed
-    const textForEmbedding = `${updateData.titulo || ""} ${updateData.resumo || ""} ${updateData.conteudo || ""}`.trim();
-    
-    if (textForEmbedding) {
-      try {
-        updateData.embedding = await generateEmbedding(textForEmbedding);
-      } catch (error) {
-        console.error("Error generating embedding:", error);
-      }
-    }
+    // Generate new embedding if content changed - DESABILITADO (coluna não existe na tabela)
+    // const textForEmbedding = `${updateData.titulo || ""} ${updateData.resumo || ""} ${updateData.conteudo || ""}`.trim();
+    // 
+    // if (textForEmbedding) {
+    //   try {
+    //     updateData.embedding = await generateEmbedding(textForEmbedding);
+    //   } catch (error) {
+    //     console.error("Error generating embedding:", error);
+    //   }
+    // }
 
     updateData.updated_at = new Date().toISOString();
 
