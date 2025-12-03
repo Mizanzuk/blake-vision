@@ -118,15 +118,9 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Add "Episódio" as a special category
-    const categoriesWithEpisode = [
-      { slug: "episodio", label: "Episódio", prefix: "EP" },
-      ...categories,
-    ];
-
     return NextResponse.json({
       worlds: worlds || [],
-      types: categoriesWithEpisode,
+      types: categories,
       fichas: fichas,
     });
 
