@@ -36,8 +36,8 @@ export default function FichaCard({ ficha, onClick }: FichaCardProps) {
   };
 
   const getTitle = () => {
-    if (ficha.tipo === "episodio" && ficha.numero_episodio) {
-      return `${ficha.numero_episodio}. ${ficha.titulo}`;
+    if (ficha.tipo === "episodio" && ficha.episodio) {
+      return `${ficha.episodio}. ${ficha.titulo}`;
     }
     return ficha.titulo;
   };
@@ -87,7 +87,7 @@ export default function FichaCard({ ficha, onClick }: FichaCardProps) {
       {ficha.tipo === "episodio" ? (
         <div className="space-y-2">
           {getLogline() && (
-            <p className="text-sm text-text-light-secondary dark:text-dark-secondary line-clamp-1">
+            <p className="text-sm italic text-text-light-secondary dark:text-dark-secondary line-clamp-1">
               {getLogline()}
             </p>
           )}

@@ -189,7 +189,7 @@ export default function EpisodeModal({
       
       if (response.ok && data.fichas) {
         const duplicateEpisode = data.fichas.find((f: any) => 
-          f.numero_episodio === episodeNumber && f.id !== episode?.id
+          (f.episodio === numeroEpisodio || f.numero_episodio === episodeNumber) && f.id !== episode?.id
         );
         
         if (duplicateEpisode) {
