@@ -25,12 +25,12 @@ export async function POST(req: NextRequest) {
     const { data: category, error } = await supabase
       .from("lore_categories")
       .insert({
-        user_id: user.id,
         universe_id,
         slug,
         label,
         description: description || null,
         prefix: prefix || null,
+        user_id: user.id,
       })
       .select()
       .single();
