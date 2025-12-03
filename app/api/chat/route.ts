@@ -120,6 +120,7 @@ ${textContent}
     // RAG: Search for relevant lore
     let contextText = "";
     let exampleFichaId = "ID_DA_FICHA_AQUI";
+    let fichasMap = new Map<string, string>(); // Map título -> ID
     console.log('[RAG] Starting search...', { universeId, query: lastMessage.content });
     if (universeId && isValidUUID(universeId)) {
       console.log('[RAG] Valid UUID, calling searchLore...');
@@ -129,6 +130,12 @@ ${textContent}
       if (results.length > 0) {
         console.log('[RAG] Adding context to prompt');
         exampleFichaId = results[0].id;
+        
+        // Criar mapa de títulos para IDs
+        results.forEach(r => {
+          fichasMap.set(r.titulo.toLowerCase(), r.id);
+        });
+        
         contextText = `
 ### CONTEXTO RELEVANTE DO UNIVERSO
 As seguintes fichas foram encontradas e são relevantes para a conversa:
@@ -189,30 +196,47 @@ Responda de forma clara, organizada e em português brasileiro.`;
       }))
     ];
 
-    // Call OpenAI with streaming
-    const stream = await openai.chat.completions.create({
+    // Call OpenAI (sem streaming para permitir pós-processamento)
+    const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: openaiMessages,
       temperature: mode === "consulta" ? 0.3 : 0.7,
       max_tokens: 2000,
-      stream: true,
+      stream: false,
     });
 
-    // Create a ReadableStream to send chunks to the client
+    let responseContent = completion.choices[0]?.message?.content || "";
+    
+    // Pós-processamento: converter links de fichas
+    if (fichasMap.size > 0 && responseContent) {
+      console.log('[RAG] Post-processing response to fix ficha links');
+      
+      fichasMap.forEach((id, titulo) => {
+        // Escapar caracteres especiais no título para regex
+        const escapedTitulo = titulo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        
+        // Padrão 1: [Título] sem link -> [Título](ficha:ID)
+        const pattern1 = new RegExp(`\\[${escapedTitulo}\\](?!\\()`, 'gi');
+        if (pattern1.test(responseContent)) {
+          console.log(`[RAG] Fixing link without href for: ${titulo}`);
+          responseContent = responseContent.replace(pattern1, `[${titulo}](ficha:${id})`);
+        }
+        
+        // Padrão 2: [Título](qualquer-link) -> [Título](ficha:ID)
+        const pattern2 = new RegExp(`\\[${escapedTitulo}\\]\\([^)]*\\)`, 'gi');
+        if (pattern2.test(responseContent)) {
+          console.log(`[RAG] Fixing link with wrong href for: ${titulo}`);
+          responseContent = responseContent.replace(pattern2, `[${titulo}](ficha:${id})`);
+        }
+      });
+    }
+    
+    // Create a ReadableStream to send the processed response
     const encoder = new TextEncoder();
     const readableStream = new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const chunk of stream) {
-            const content = chunk.choices[0]?.delta?.content || "";
-            if (content) {
-              controller.enqueue(encoder.encode(content));
-            }
-          }
-          controller.close();
-        } catch (error) {
-          controller.error(error);
-        }
+      start(controller) {
+        controller.enqueue(encoder.encode(responseContent));
+        controller.close();
       },
     });
 
