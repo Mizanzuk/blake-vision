@@ -17,7 +17,7 @@ export interface LoreSearchResult {
 export async function searchLore(
   query: string,
   universeId: string,
-  matchThreshold: number = 0.7,
+  matchThreshold: number = 0.5,
   matchCount: number = 10
 ): Promise<LoreSearchResult[]> {
   try {
