@@ -21,16 +21,20 @@ export async function searchLore(
   matchThreshold: number = 0.5,
   matchCount: number = 10
 ): Promise<LoreSearchResult[]> {
+  console.log('[searchLore] Called with:', { query, universeId, matchThreshold, matchCount });
   try {
     // Generate embedding for the query
+    console.log('[searchLore] Generating embedding...');
     const embeddingResponse = await openai.embeddings.create({
       model: "text-embedding-3-small",
       input: query,
     });
 
     const queryEmbedding = embeddingResponse.data[0].embedding;
+    console.log('[searchLore] Embedding generated:', { dimensions: queryEmbedding.length });
 
     // Search for similar fichas
+    console.log('[searchLore] Calling match_fichas...');
     const supabase = getSupabaseClient();
     const { data, error } = await supabase.rpc("match_fichas", {
       query_embedding: queryEmbedding,
@@ -38,15 +42,17 @@ export async function searchLore(
       match_count: matchCount,
       filter_universe_id: universeId,
     });
+    console.log('[searchLore] Database response:', { data, error });
 
     if (error) {
-      console.error("Error searching lore:", error);
+      console.error("[searchLore] Error searching lore:", error);
       return [];
     }
 
+    console.log('[searchLore] Returning results:', { count: data?.length || 0 });
     return data || [];
   } catch (error) {
-    console.error("Error in searchLore:", error);
+    console.error("[searchLore] Exception in searchLore:", error);
     return [];
   }
 }

@@ -119,10 +119,14 @@ ${textContent}
 
     // RAG: Search for relevant lore
     let contextText = "";
+    console.log('[RAG] Starting search...', { universeId, query: lastMessage.content });
     if (universeId && isValidUUID(universeId)) {
+      console.log('[RAG] Valid UUID, calling searchLore...');
       const results = await searchLore(lastMessage.content, universeId, 0.5, 8);
+      console.log('[RAG] Search results:', { count: results.length, results });
       
       if (results.length > 0) {
+        console.log('[RAG] Adding context to prompt');
         contextText = `
 ### CONTEXTO RELEVANTE DO UNIVERSO
 As seguintes fichas foram encontradas e são relevantes para a conversa:
@@ -133,7 +137,11 @@ ${i + 1}. **${r.titulo}** (${r.tipo})
    ${r.conteudo ? `\n   Conteúdo: ${r.conteudo.slice(0, 300)}...` : ""}
 `).join("\n")}
 `;
+      } else {
+        console.log('[RAG] No results found');
       }
+    } else {
+      console.log('[RAG] Invalid or missing universeId:', { universeId, isValid: isValidUUID(universeId || '') });
     }
 
     // Build system prompt
