@@ -1008,7 +1008,7 @@ export default function HomePage() {
                     
                     {/* Action Buttons (only for assistant messages, on hover) */}
                     {message.role === "assistant" && message.id !== "intro" && (
-                      <div className="opacity-0 group-hover:opacity-100 mt-3 pt-3 border-t border-border-light-default dark:border-border-dark-default flex gap-1 justify-end">
+                      <div className="opacity-0 group-hover:opacity-100 mt-2 flex gap-1 justify-end">
                         <button
                           onClick={() => handleTextToSpeech(message.content)}
                           className="p-1.5 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary transition-all"
