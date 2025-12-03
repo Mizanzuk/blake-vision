@@ -42,16 +42,23 @@ export default function FichaCard({ ficha, onClick }: FichaCardProps) {
     return ficha.titulo;
   };
 
+  const getLogline = () => {
+    if (ficha.tipo === "episodio") {
+      return ficha.conteudo || "";
+    }
+    return "";
+  };
+
+  const getSinopse = () => {
+    if (ficha.tipo === "episodio") {
+      return ficha.resumo || "";
+    }
+    return "";
+  };
+
   const getDescription = () => {
     if (ficha.tipo === "episodio") {
-      // Para episódios: mostrar logline + sinopse
-      const logline = ficha.conteudo || "";
-      const sinopse = ficha.resumo || "";
-      
-      if (logline && sinopse) {
-        return `${logline}\n${sinopse}`;
-      }
-      return logline || sinopse;
+      return ""; // Episódios usam logline e sinopse separadamente
     }
     return ficha.descricao || ficha.resumo;
   };
@@ -76,11 +83,26 @@ export default function FichaCard({ ficha, onClick }: FichaCardProps) {
         {getTitle()}
       </h3>
 
-      {/* Description */}
-      {getDescription() && (
-        <p className="text-sm text-text-light-secondary dark:text-dark-secondary line-clamp-3">
-          {getDescription()}
-        </p>
+      {/* Description for episodes */}
+      {ficha.tipo === "episodio" ? (
+        <div className="space-y-1">
+          {getLogline() && (
+            <p className="text-sm text-text-light-secondary dark:text-dark-secondary line-clamp-1">
+              {getLogline()}
+            </p>
+          )}
+          {getSinopse() && (
+            <p className="text-sm text-text-light-secondary dark:text-dark-secondary line-clamp-2">
+              {getSinopse()}
+            </p>
+          )}
+        </div>
+      ) : (
+        getDescription() && (
+          <p className="text-sm text-text-light-secondary dark:text-dark-secondary line-clamp-3">
+            {getDescription()}
+          </p>
+        )
       )}
 
       {/* Hover indicator */}
