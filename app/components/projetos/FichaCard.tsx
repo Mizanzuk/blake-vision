@@ -44,7 +44,14 @@ export default function FichaCard({ ficha, onClick }: FichaCardProps) {
 
   const getDescription = () => {
     if (ficha.tipo === "episodio") {
-      return ficha.logline || ficha.resumo;
+      // Para episódios: mostrar logline + sinopse
+      const logline = ficha.conteudo || "";
+      const sinopse = ficha.resumo || "";
+      
+      if (logline && sinopse) {
+        return `${logline}\n${sinopse}`;
+      }
+      return logline || sinopse;
     }
     return ficha.descricao || ficha.resumo;
   };

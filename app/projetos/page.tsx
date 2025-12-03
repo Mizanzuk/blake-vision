@@ -12,6 +12,7 @@ import ConceptRuleModal from "@/app/components/projetos/ConceptRuleModal";
 import WorldModal from "@/app/components/projetos/WorldModal";
 import FichaCard from "@/app/components/projetos/FichaCard";
 import TipoDropdown from "@/app/components/projetos/TipoDropdown";
+import OrdenacaoDropdown from "@/app/components/projetos/OrdenacaoDropdown";
 import type { Universe, World, Ficha } from "@/app/types";
 import { toast } from "sonner";
 
@@ -29,6 +30,7 @@ export default function ProjetosPage() {
   const [selectedWorldId, setSelectedWorldId] = useState<string>("");
   const [selectedTipos, setSelectedTipos] = useState<string[]>([]);
   const [fichas, setFichas] = useState<Ficha[]>([]);
+  const [ordenacao, setOrdenacao] = useState<"asc" | "desc">("asc");
   
   // Modals
   const [showEpisodeModal, setShowEpisodeModal] = useState(false);
@@ -73,7 +75,7 @@ export default function ProjetosPage() {
     } else {
       setFichas([]);
     }
-  }, [selectedUniverseId, selectedWorldId, selectedTipos]);
+  }, [selectedUniverseId, selectedWorldId, selectedTipos, ordenacao]);
 
   async function checkAuth() {
     try {
@@ -203,18 +205,7 @@ export default function ProjetosPage() {
   }
 
   function handleNewEpisode() {
-    if (!selectedUniverseId || !selectedWorldId) {
-      toast.error("Selecione um universo e um mundo antes de criar um episódio");
-      return;
-    }
-    
-    // Check if world has episodes enabled
-    const world = worlds.find(w => w.id === selectedWorldId);
-    if (world && !world.has_episodes && !world.tem_episodios) {
-      toast.error("Este mundo não permite episódios. Edite o mundo para habilitar.");
-      return;
-    }
-    
+    // Não há mais pré-requisito - o usuário pode escolher universo e mundo no modal
     setSelectedFicha(null);
     setShowEpisodeModal(true);
   }
@@ -356,8 +347,7 @@ export default function ProjetosPage() {
     }
   }
 
-  const selectedWorldData = worlds.find(w => w.id === selectedWorldId);
-  const canCreateEpisode = selectedUniverseId && selectedWorldId && (selectedWorldData?.has_episodes || selectedWorldData?.tem_episodios);
+  // Remover restrição - botão sempre habilitado
 
   if (isLoading) {
     return (
@@ -400,6 +390,12 @@ export default function ProjetosPage() {
             selectedTipos={selectedTipos}
             onToggle={handleTipoToggle}
           />
+
+          <OrdenacaoDropdown
+            label="ORDENAÇÃO"
+            value={ordenacao}
+            onChange={setOrdenacao}
+          />
         </div>
 
         {/* Action Buttons Row */}
@@ -408,16 +404,6 @@ export default function ProjetosPage() {
             variant="primary"
             size="sm"
             onClick={handleNewEpisode}
-            disabled={!canCreateEpisode}
-            title={
-              !selectedUniverseId
-                ? "Selecione um universo primeiro"
-                : !selectedWorldId
-                ? "Selecione um mundo primeiro"
-                : !selectedWorldData?.tem_episodios
-                ? "Este mundo não permite episódios"
-                : ""
-            }
             fullWidth
           >
             + Novo Episódio
@@ -468,14 +454,77 @@ export default function ProjetosPage() {
             description="Crie episódios, conceitos ou regras para começar a planejar seu projeto"
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {fichas.map((ficha) => (
-              <FichaCard
-                key={ficha.id}
-                ficha={ficha}
-                onClick={() => handleEditFicha(ficha)}
-              />
-            ))}
+          <div className="space-y-8">
+            {/* Agrupar episódios por mundo */}
+            {(() => {
+              // Separar episódios de outros tipos
+              const episodios = fichas.filter(f => f.tipo === "episodio");
+              const outros = fichas.filter(f => f.tipo !== "episodio");
+              
+              // Agrupar episódios por mundo
+              const episodiosPorMundo = episodios.reduce((acc, ep) => {
+                const worldId = ep.world_id;
+                if (!acc[worldId]) {
+                  acc[worldId] = [];
+                }
+                acc[worldId].push(ep);
+                return acc;
+              }, {} as Record<string, Ficha[]>);
+              
+              // Ordenar episódios dentro de cada mundo
+              Object.keys(episodiosPorMundo).forEach(worldId => {
+                episodiosPorMundo[worldId].sort((a, b) => {
+                  const numA = a.numero_episodio || 0;
+                  const numB = b.numero_episodio || 0;
+                  return ordenacao === "asc" ? numA - numB : numB - numA;
+                });
+              });
+              
+              return (
+                <>
+                  {/* Renderizar episódios agrupados por mundo */}
+                  {Object.entries(episodiosPorMundo).map(([worldId, worldEpisodes]) => {
+                    const world = allWorlds.find(w => w.id === worldId);
+                    return (
+                      <div key={worldId}>
+                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                          {world?.nome || "Mundo Desconhecido"}
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {worldEpisodes.map((ficha) => (
+                            <FichaCard
+                              key={ficha.id}
+                              ficha={ficha}
+                              onClick={() => handleEditFicha(ficha)}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  
+                  {/* Renderizar conceitos e regras */}
+                  {outros.length > 0 && (
+                    <div>
+                      {episodios.length > 0 && (
+                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                          Conceitos e Regras
+                        </h2>
+                      )}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {outros.map((ficha) => (
+                          <FichaCard
+                            key={ficha.id}
+                            ficha={ficha}
+                            onClick={() => handleEditFicha(ficha)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </div>
         )}
       </div>

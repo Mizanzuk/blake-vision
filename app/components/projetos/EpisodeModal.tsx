@@ -2,13 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { Modal, Input, Button } from "@/app/components/ui";
-import type { Ficha } from "@/app/types";
+import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
+import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
+import type { Ficha, Universe, World } from "@/app/types";
 import { toast } from "sonner";
 
 interface EpisodeModalProps {
   episode: Ficha | null;
-  worldId: string;
-  universeId: string;
+  worldId?: string;
+  universeId?: string;
   onSave: (data: any) => void;
   onDelete: (id: string) => void;
   onClose: () => void;
@@ -27,6 +29,16 @@ export default function EpisodeModal({
   const [titulo, setTitulo] = useState("");
   const [logline, setLogline] = useState("");
   const [sinopse, setSinopse] = useState("");
+  
+  // Universo e Mundo
+  const [universes, setUniverses] = useState<Universe[]>([]);
+  const [worlds, setWorlds] = useState<World[]>([]);
+  const [selectedUniverseId, setSelectedUniverseId] = useState<string>("");
+  const [selectedWorldId, setSelectedWorldId] = useState<string>("");
+
+  useEffect(() => {
+    loadUniverses();
+  }, []);
 
   useEffect(() => {
     if (episode) {
@@ -34,14 +46,80 @@ export default function EpisodeModal({
       setTitulo(episode.titulo || "");
       setLogline(episode.conteudo || "");
       setSinopse(episode.resumo || "");
+      
+      // Set universe and world from episode
+      if (episode.world_id) {
+        setSelectedWorldId(episode.world_id);
+        // Load the world to get universe_id
+        loadWorldUniverse(episode.world_id);
+      }
     } else {
       setNumeroEpisodio("");
       setTitulo("");
       setLogline("");
       setSinopse("");
+      
+      // Use pre-selected values if provided
+      if (universeId) {
+        setSelectedUniverseId(universeId);
+      }
+      if (worldId) {
+        setSelectedWorldId(worldId);
+      }
     }
     setHasChanges(false);
-  }, [episode]);
+  }, [episode, universeId, worldId]);
+
+  useEffect(() => {
+    if (selectedUniverseId) {
+      loadWorlds(selectedUniverseId);
+    } else {
+      setWorlds([]);
+      setSelectedWorldId("");
+    }
+  }, [selectedUniverseId]);
+
+  async function loadUniverses() {
+    try {
+      const response = await fetch("/api/universes");
+      const data = await response.json();
+      
+      if (response.ok) {
+        setUniverses(data.universes || []);
+      }
+    } catch (error) {
+      console.error("Error loading universes:", error);
+    }
+  }
+
+  async function loadWorlds(universeId: string) {
+    try {
+      const response = await fetch(`/api/worlds?universeId=${universeId}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        setWorlds(data.worlds || []);
+      }
+    } catch (error) {
+      console.error("Error loading worlds:", error);
+    }
+  }
+
+  async function loadWorldUniverse(worldId: string) {
+    try {
+      const response = await fetch(`/api/worlds`);
+      const data = await response.json();
+      
+      if (response.ok && data.worlds) {
+        const world = data.worlds.find((w: World) => w.id === worldId);
+        if (world) {
+          setSelectedUniverseId(world.universe_id);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading world universe:", error);
+    }
+  }
 
   function handleChange() {
     setHasChanges(true);
@@ -57,10 +135,35 @@ export default function EpisodeModal({
     onClose();
   }
 
-  function handleSave() {
+  async function handleSave() {
+    // Validation - Universe and World are required
+    if (!selectedUniverseId) {
+      toast.error("Selecione um universo");
+      return;
+    }
+
+    if (!selectedWorldId) {
+      toast.error("Selecione um mundo");
+      return;
+    }
+
+    // Check if world has episodes enabled
+    const world = worlds.find(w => w.id === selectedWorldId);
+    if (world && !world.has_episodes && !world.tem_episodios) {
+      toast.error("Este mundo não permite episódios. Edite o mundo para habilitar.");
+      return;
+    }
+
     // Validation - All fields are required
     if (!numeroEpisodio.trim()) {
       toast.error("Número do episódio é obrigatório");
+      return;
+    }
+
+    // Validação numérica
+    const episodeNumber = parseInt(numeroEpisodio);
+    if (isNaN(episodeNumber) || episodeNumber <= 0) {
+      toast.error("Número do episódio deve ser um número válido maior que zero");
       return;
     }
 
@@ -79,11 +182,33 @@ export default function EpisodeModal({
       return;
     }
 
+    // Verificar se já existe episódio com esse número no mesmo mundo
+    try {
+      const response = await fetch(`/api/catalog?worldId=${selectedWorldId}&tipo=episodio`);
+      const data = await response.json();
+      
+      if (response.ok && data.fichas) {
+        const duplicateEpisode = data.fichas.find((f: any) => 
+          f.numero_episodio === episodeNumber && f.id !== episode?.id
+        );
+        
+        if (duplicateEpisode) {
+          toast.error(`Já existe um episódio ${episodeNumber} neste mundo`);
+          return;
+        }
+      }
+    } catch (error) {
+      console.error("Error checking duplicate episodes:", error);
+      toast.error("Erro ao verificar episódios duplicados");
+      return;
+    }
+
     const episodeData = {
       id: episode?.id,
-      world_id: episode?.world_id || worldId, // Preserve original world_id when editing
+      world_id: selectedWorldId,
       tipo: "episodio",
       episodio: parseInt(numeroEpisodio),
+      numero_episodio: parseInt(numeroEpisodio),
       titulo: titulo.trim(),
       resumo: sinopse.trim(),
       conteudo: logline.trim(),
@@ -113,18 +238,47 @@ export default function EpisodeModal({
       size="lg"
     >
       <div className="space-y-4">
+        {/* Universo e Mundo */}
+        <div className="grid grid-cols-2 gap-4">
+          <UniverseDropdown
+            label="UNIVERSO"
+            universes={universes}
+            selectedId={selectedUniverseId}
+            onSelect={(id) => {
+              setSelectedUniverseId(id);
+              handleChange();
+            }}
+          />
+
+          <WorldsDropdownSingle
+            label="MUNDOS"
+            worlds={worlds}
+            selectedId={selectedWorldId}
+            onSelect={(id) => {
+              setSelectedWorldId(id);
+              handleChange();
+            }}
+            disabled={!selectedUniverseId}
+          />
+        </div>
+
         {/* Número do Episódio */}
         <Input
           label="Número do Episódio"
-          type="text"
+          type="number"
           value={numeroEpisodio}
           onChange={(e) => {
-            setNumeroEpisodio(e.target.value);
-            handleChange();
+            // Aceitar apenas números
+            const value = e.target.value;
+            if (value === "" || /^\d+$/.test(value)) {
+              setNumeroEpisodio(value);
+              handleChange();
+            }
           }}
-          placeholder="Ex: 1, 01, 1A"
+          placeholder="Ex: 1, 2, 3"
           required
           fullWidth
+          min="1"
         />
 
         {/* Título */}
