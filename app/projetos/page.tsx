@@ -10,7 +10,8 @@ import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import EpisodeModal from "@/app/components/projetos/EpisodeModal";
 import ConceptRuleModal from "@/app/components/projetos/ConceptRuleModal";
 import WorldModal from "@/app/components/projetos/WorldModal";
-import FichaCard from "@/app/components/projetos/FichaCard";
+import FichaCard from "@/app/components/shared/FichaCard";
+import FichaViewModal from "@/app/components/shared/FichaViewModal";
 import TipoDropdown from "@/app/components/projetos/TipoDropdown";
 import OrdenacaoDropdown from "@/app/components/projetos/OrdenacaoDropdown";
 import type { Universe, World, Ficha } from "@/app/types";
@@ -39,6 +40,8 @@ export default function ProjetosPage() {
   const [selectedFicha, setSelectedFicha] = useState<Ficha | null>(null);
   const [showWorldModal, setShowWorldModal] = useState(false);
   const [selectedWorld, setSelectedWorld] = useState<World | null>(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [viewingFicha, setViewingFicha] = useState<Ficha | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -221,15 +224,29 @@ export default function ProjetosPage() {
     setShowConceptRuleModal(true);
   }
 
-  function handleEditFicha(ficha: Ficha) {
-    if (ficha.tipo === "episodio") {
-      setSelectedFicha(ficha);
+  function handleViewFicha(ficha: Ficha) {
+    setViewingFicha(ficha);
+    setShowViewModal(true);
+  }
+
+  function handleEditFromView() {
+    if (!viewingFicha) return;
+    
+    setShowViewModal(false);
+    
+    if (viewingFicha.tipo === "episodio") {
+      setSelectedFicha(viewingFicha);
       setShowEpisodeModal(true);
-    } else if (ficha.tipo === "conceito" || ficha.tipo === "regra") {
-      setConceptRuleType(ficha.tipo);
-      setSelectedFicha(ficha);
+    } else if (viewingFicha.tipo === "conceito" || viewingFicha.tipo === "regra") {
+      setConceptRuleType(viewingFicha.tipo);
+      setSelectedFicha(viewingFicha);
       setShowConceptRuleModal(true);
     }
+  }
+
+  function handleCloseViewModal() {
+    setShowViewModal(false);
+    setViewingFicha(null);
   }
 
   async function handleSaveFicha(fichaData: any) {
@@ -495,7 +512,8 @@ export default function ProjetosPage() {
                             <FichaCard
                               key={ficha.id}
                               ficha={ficha}
-                              onClick={() => handleEditFicha(ficha)}
+                              onClick={() => handleViewFicha(ficha)}
+                              withIndent={true}
                             />
                           ))}
                         </div>
@@ -516,7 +534,7 @@ export default function ProjetosPage() {
                           <FichaCard
                             key={ficha.id}
                             ficha={ficha}
-                            onClick={() => handleEditFicha(ficha)}
+                            onClick={() => handleViewFicha(ficha)}
                           />
                         ))}
                       </div>
@@ -575,6 +593,14 @@ export default function ProjetosPage() {
           }}
         />
       )}
+
+      {/* View Modal */}
+      <FichaViewModal
+        isOpen={showViewModal}
+        ficha={viewingFicha}
+        onClose={handleCloseViewModal}
+        onEdit={handleEditFromView}
+      />
     </div>
   );
 }

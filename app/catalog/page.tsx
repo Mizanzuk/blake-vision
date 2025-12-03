@@ -37,6 +37,8 @@ import { EpisodesDropdown } from "@/app/components/ui/EpisodesDropdown";
 import FichaModal from "@/app/components/catalog/FichaModal";
 import WorldModal from "@/app/components/catalog/WorldModal";
 import CategoryModal from "@/app/components/catalog/CategoryModal";
+import FichaCard from "@/app/components/shared/FichaCard";
+import FichaViewModal from "@/app/components/shared/FichaViewModal";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
 import type { Universe, World, Ficha, Category } from "@/app/types";
@@ -127,6 +129,8 @@ export default function CatalogPage() {
   const [selectedFicha, setSelectedFicha] = useState<Ficha | null>(null);
   const [selectedWorld, setSelectedWorld] = useState<World | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [viewingFicha, setViewingFicha] = useState<Ficha | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -320,11 +324,22 @@ export default function CatalogPage() {
     setShowFichaModal(true);
   }
 
-  function openEditFichaModal(ficha: Ficha) {
-    console.log('openEditFichaModal called with:', ficha.titulo);
-    setSelectedFicha(ficha);
+  function openViewFichaModal(ficha: Ficha) {
+    setViewingFicha(ficha);
+    setShowViewModal(true);
+  }
+
+  function handleEditFromView() {
+    if (!viewingFicha) return;
+    
+    setShowViewModal(false);
+    setSelectedFicha(viewingFicha);
     setShowFichaModal(true);
-    console.log('showFichaModal set to true');
+  }
+
+  function handleCloseViewModal() {
+    setShowViewModal(false);
+    setViewingFicha(null);
   }
 
   async function handleSaveFicha(fichaData: any) {
@@ -908,113 +923,30 @@ export default function CatalogPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {sortedFichas.map(ficha => (
                       <SortableCard key={ficha.id} id={ficha.id} isDragging={isDragging}>
-                  <Card
-                    key={ficha.id}
-                    variant="elevated"
-                    padding="md"
-                    hoverable
-                    className={`group relative h-48 flex flex-col ${isSelectionMode && selectedFichaIds.includes(ficha.id) ? 'ring-2 ring-primary-500' : ''}`}
-                  >
-                    {/* Checkbox for selection mode */}
-                    {isSelectionMode && (
-                      <div className="absolute top-2 left-2 z-50 pointer-events-auto">
-                        <input
-                          type="checkbox"
-                          checked={selectedFichaIds.includes(ficha.id)}
-                          onChange={(e) => {
-                            e.stopPropagation();
-                            if (selectedFichaIds.includes(ficha.id)) {
-                              setSelectedFichaIds(selectedFichaIds.filter(id => id !== ficha.id));
-                            } else {
-                              setSelectedFichaIds([...selectedFichaIds, ficha.id]);
-                            }
-                          }}
-                          className="w-5 h-5 rounded border-border-light-default dark:border-border-dark-default text-primary-500 focus:ring-primary-500 cursor-pointer"
-                        />
-                      </div>
-                    )}
-                    
-
-
-                    <div className="relative pointer-events-auto">
-                      {ficha.imagem_capa && (
-                        <img
-                          src={ficha.imagem_capa}
-                          alt={ficha.titulo}
-                          className="w-full h-48 object-cover rounded-lg mb-4 cursor-pointer"
-                          onClick={() => !isSelectionMode && openEditFichaModal(ficha)}
-                        />
-                      )}
-                      
-                      <div className="flex items-start justify-between mb-2">
-                        <h3 
-                          className="text-lg font-semibold text-text-light-primary dark:text-dark-primary flex-1 cursor-pointer"
-                          onClick={() => !isSelectionMode && openEditFichaModal(ficha)}
-                        >
-                          {ficha.titulo}
-                        </h3>
-                        {ficha.codigo && (
-                          <Badge variant="default" size="sm">
-                            {ficha.codigo}
-                          </Badge>
-                        )}
-                      </div>
-                    
-                    <div className="flex items-center gap-2 mb-3">
-                      <Badge variant="primary" size="sm">
-                        {categories.find(c => c.slug === ficha.tipo)?.label || ficha.tipo}
-                      </Badge>
-                      {ficha.ano_diegese && (
-                        <Badge variant="default" size="sm">
-                          {ficha.ano_diegese}
-                        </Badge>
-                      )}
-                    </div>
-                    
-                      {ficha.resumo && (
-                        <p 
-                          className="text-sm text-text-light-secondary dark:text-dark-secondary line-clamp-3 cursor-pointer"
-                          onClick={() => !isSelectionMode && openEditFichaModal(ficha)}
-                        >
-                          {ficha.resumo}
-                        </p>
-                      )}
-                      
-                      {/* Action buttons - Below code, visible on hover */}
-                      {!isSelectionMode && (
-                        <div className="flex gap-2 mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openEditFichaModal(ficha);
-                            }}
-                            className="flex-1 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:bg-gray-100 dark:hover:bg-gray-700 pointer-events-auto"
-                            aria-label="Editar ficha"
-                          >
-                            <svg className="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (confirm(`Tem certeza que deseja apagar a ficha "${ficha.titulo}"?`)) {
-                                handleDeleteFicha(ficha.id);
-                              }
-                            }}
-                            className="flex-1 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:bg-red-100 dark:hover:bg-red-900 pointer-events-auto"
-                            aria-label="Apagar ficha"
-                          >
-                            <svg className="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
+                        <div className={`relative ${isSelectionMode && selectedFichaIds.includes(ficha.id) ? 'ring-2 ring-primary-500 rounded-lg' : ''}`}>
+                          {/* Checkbox for selection mode */}
+                          {isSelectionMode && (
+                            <div className="absolute top-2 left-2 z-50">
+                              <input
+                                type="checkbox"
+                                checked={selectedFichaIds.includes(ficha.id)}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  if (selectedFichaIds.includes(ficha.id)) {
+                                    setSelectedFichaIds(selectedFichaIds.filter(id => id !== ficha.id));
+                                  } else {
+                                    setSelectedFichaIds([...selectedFichaIds, ficha.id]);
+                                  }
+                                }}
+                                className="w-5 h-5 rounded border-border-light-default dark:border-border-dark-default text-primary-500 focus:ring-primary-500 cursor-pointer"
+                              />
+                            </div>
+                          )}
+                          <FichaCard
+                            ficha={ficha}
+                            onClick={() => !isSelectionMode && openViewFichaModal(ficha)}
+                          />
                         </div>
-                      )}
-                    </div>
-                  </Card>
                       </SortableCard>
                     ))}
                   </div>
@@ -1069,6 +1001,13 @@ export default function CatalogPage() {
         category={selectedCategory}
         onSave={handleSaveCategory}
         onDelete={selectedCategory ? handleDeleteCategory : undefined}
+      />
+
+      <FichaViewModal
+        isOpen={showViewModal}
+        onClose={handleCloseViewModal}
+        ficha={viewingFicha}
+        onEdit={handleEditFromView}
       />
 
       {/* Manage Categories Modal */}
