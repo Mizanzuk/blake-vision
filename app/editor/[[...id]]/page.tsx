@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
 import { Header } from "@/app/components/layout/Header";
 import { Button, Input, Select, Loading, UniverseDropdown } from "@/app/components/ui";
+import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import { toast } from "sonner";
 import type { Universe, World } from "@/app/types";
 
@@ -369,19 +370,13 @@ export default function EditorPage() {
                 }}
               />
 
-              <Select
+              <WorldsDropdownSingle
                 label="Mundo"
-                value={worldId}
-                onChange={(e) => setWorldId(e.target.value)}
+                worlds={filteredWorlds}
+                selectedId={worldId}
+                onSelect={(id) => setWorldId(id)}
                 disabled={!universeId}
-              >
-                <option value="">{!universeId ? "Selecione um universo primeiro" : "Selecione um mundo"}</option>
-                {filteredWorlds.map((w) => (
-                  <option key={w.id} value={w.id}>
-                    {w.nome}
-                  </option>
-                ))}
-              </Select>
+              />
 
               <Input
                 label="Episódio"
@@ -450,19 +445,19 @@ export default function EditorPage() {
               
               {/* Botões de Ação */}
               <div className="flex gap-3">
-                <Button variant="secondary" onClick={() => router.push("/biblioteca")}>
+                <Button variant="secondary" size="sm" onClick={() => router.push("/biblioteca")}>
                   Voltar
                 </Button>
-                <Button variant="secondary" onClick={() => handleSave()} disabled={isSaving}>
+                <Button variant="secondary" size="sm" onClick={() => handleSave()} disabled={isSaving}>
                   {isSaving ? "Salvando..." : "Salvar"}
                 </Button>
                 {status === "rascunho" && (
-                  <Button onClick={handlePublish}>
+                  <Button size="sm" onClick={handlePublish}>
                     Publicar
                   </Button>
                 )}
                 {status === "publicado" && (
-                  <Button onClick={handleSendToUpload}>
+                  <Button size="sm" onClick={handleSendToUpload}>
                     Enviar para Upload
                   </Button>
                 )}
@@ -472,22 +467,6 @@ export default function EditorPage() {
 
           {/* Assistentes */}
           <div className="space-y-4">
-            <Button
-              variant="secondary"
-              onClick={() => setShowUrthona(!showUrthona)}
-              className="w-full"
-            >
-              {showUrthona ? "Fechar" : "Abrir"} Urthona (Criativo)
-            </Button>
-
-            <Button
-              variant="secondary"
-              onClick={() => setShowUrizen(!showUrizen)}
-              className="w-full"
-            >
-              {showUrizen ? "Fechar" : "Abrir"} Urizen (Analítico)
-            </Button>
-
             {(showUrthona || showUrizen) && (
               <div className="bg-white rounded-lg shadow-md p-4 max-h-[600px] flex flex-col">
                 <h3 className="font-semibold mb-4">
