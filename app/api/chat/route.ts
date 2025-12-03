@@ -215,18 +215,14 @@ Responda de forma clara, organizada e em português brasileiro.`;
         // Escapar caracteres especiais no título para regex
         const escapedTitulo = titulo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         
-        // Padrão 1: [Título] sem link -> [Título](ficha:ID)
-        const pattern1 = new RegExp(`\\[${escapedTitulo}\\](?!\\()`, 'gi');
-        if (pattern1.test(responseContent)) {
-          console.log(`[RAG] Fixing link without href for: ${titulo}`);
-          responseContent = responseContent.replace(pattern1, `[${titulo}](ficha:${id})`);
-        }
+        // Padrão: [Título]() ou [Título](qualquer-link) -> [Título](ficha:ID)
+        // Usando replace global que captura todos os casos
+        const pattern = new RegExp(`\\[${escapedTitulo}\\]\\([^)]*\\)`, 'gi');
+        const newContent = responseContent.replace(pattern, `[${titulo}](ficha:${id})`);
         
-        // Padrão 2: [Título](qualquer-link) -> [Título](ficha:ID)
-        const pattern2 = new RegExp(`\\[${escapedTitulo}\\]\\([^)]*\\)`, 'gi');
-        if (pattern2.test(responseContent)) {
-          console.log(`[RAG] Fixing link with wrong href for: ${titulo}`);
-          responseContent = responseContent.replace(pattern2, `[${titulo}](ficha:${id})`);
+        if (newContent !== responseContent) {
+          console.log(`[RAG] Fixed link for: ${titulo}`);
+          responseContent = newContent;
         }
       });
     }
