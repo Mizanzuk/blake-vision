@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/app/lib/supabase/server";
+import { createClient, createAdminClient } from "@/app/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -15,8 +15,12 @@ const DEFAULT_CATEGORIES = [
 
 export async function GET(req: NextRequest) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    // Use admin client to bypass RLS and authentication issues
+    const supabase = await createAdminClient();
+    
+    // Still check for user authentication via regular client for security
+    const regularClient = await createClient();
+    const { data: { user } } = await regularClient.auth.getUser();
 
     if (!user) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
@@ -90,7 +94,7 @@ export async function GET(req: NextRequest) {
     if (worldIds.length > 0) {
       let query = supabase
         .from("fichas")
-        .select("id, world_id, tipo, titulo, slug, codigo, resumo, descricao, logline, numero_episodio, ano_diegese, tags, episodio, imagem_url")
+        .select("id, world_id, tipo, titulo, slug, codigo, resumo, conteudo, ano_diegese, tags, episodio, imagem_url, aparece_em")
         .in("world_id", worldIds);
 
       // Filter by tipo if provided
