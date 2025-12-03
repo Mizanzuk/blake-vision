@@ -258,6 +258,9 @@ export default function EpisodeModal({
               setSelectedWorldId(id);
               handleChange();
             }}
+            onEdit={() => {}} // No modal, não permitimos editar mundos
+            onDelete={() => {}} // No modal, não permitimos deletar mundos
+            onCreate={() => {}} // No modal, não permitimos criar mundos
             disabled={!selectedUniverseId}
           />
         </div>
