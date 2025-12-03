@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
 import { Header } from "@/app/components/layout/Header";
@@ -8,7 +8,11 @@ import { Button, Input, Select, Loading, UniverseDropdown } from "@/app/componen
 import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import { EpisodesDropdownSingle } from "@/app/components/ui/EpisodesDropdownSingle";
 import { toast } from "sonner";
-import type { Universe, World } from "@/app/types";
+import type { Universe, World, Ficha } from "@/app/types";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import FichaViewModal from "@/app/components/shared/FichaViewModal";
+import { clsx } from "clsx";
 
 export default function EditorPage() {
   const router = useRouter();
@@ -41,6 +45,9 @@ export default function EditorPage() {
   const [urizenMessages, setUrizenMessages] = useState<any[]>([]);
   const [assistantInput, setAssistantInput] = useState("");
   const [isAssistantLoading, setIsAssistantLoading] = useState(false);
+  const [selectedFicha, setSelectedFicha] = useState<Ficha | null>(null);
+  const [showFichaModal, setShowFichaModal] = useState(false);
+  const chatRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     checkAuth();
@@ -83,6 +90,34 @@ export default function EditorPage() {
 
     return () => clearInterval(interval);
   }, [titulo, conteudo, universeId, worldId, episodio, status]);
+
+  // Fechar chat com Esc
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && (showUrthona || showUrizen)) {
+        setShowUrthona(false);
+        setShowUrizen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [showUrthona, showUrizen]);
+
+  // Fechar chat ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (chatRef.current && !chatRef.current.contains(e.target as Node) && (showUrthona || showUrizen)) {
+        setShowUrthona(false);
+        setShowUrizen(false);
+      }
+    };
+
+    if (showUrthona || showUrizen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showUrthona, showUrizen]);
 
   async function checkAuth() {
     try {
@@ -348,6 +383,16 @@ export default function EditorPage() {
         }]);
       }
 
+      // Detectar e aplicar EDIT_CONTENT (apenas para Urthona)
+      if (mode === "urthona" && assistantMessage.includes('```EDIT_CONTENT')) {
+        const editMatch = assistantMessage.match(/```EDIT_CONTENT\s*([\s\S]*?)```/);
+        if (editMatch && editMatch[1]) {
+          const newContent = editMatch[1].trim();
+          setConteudo(newContent);
+          toast.success("Texto atualizado por Urthona!");
+        }
+      }
+
     } catch (error: any) {
       console.error("Erro ao conversar com assistente:", error);
       toast.error(error.message || "Erro ao conversar com assistente");
@@ -503,26 +548,79 @@ export default function EditorPage() {
           {/* Assistentes */}
           <div className="space-y-4">
             {(showUrthona || showUrizen) && (
-              <div className="bg-white rounded-lg shadow-md p-4 max-h-[600px] flex flex-col">
-                <h3 className="font-semibold mb-4">
-                  {showUrthona ? "Urthona" : "Urizen"}
-                </h3>
+              <div ref={chatRef} className="bg-white rounded-lg shadow-md p-4 max-h-[600px] flex flex-col relative">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-semibold">
+                    {showUrthona ? "Urthona" : "Urizen"}
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setShowUrthona(false);
+                      setShowUrizen(false);
+                    }}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                    title="Fechar"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
                 
                 <div className="flex-1 overflow-y-auto mb-4 space-y-3">
                   {(showUrthona ? urthonaMessages : urizenMessages).map((msg, idx) => (
                     <div
                       key={idx}
-                      className={`relative group p-3 rounded-lg ${
+                      className={`relative group p-3 rounded-lg text-base ${
                         msg.role === "user"
                           ? "bg-gray-100 ml-4"
                           : "bg-[#C1666B] text-white mr-4"
                       }`}
                     >
-                      {msg.content}
+                      {msg.role === "assistant" ? (
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          urlTransform={(url) => url}
+                          components={{
+                            a: ({ node, href, children, ...props }) => {
+                              if (href?.startsWith('ficha:')) {
+                                const fichaId = href.replace('ficha:', '');
+                                return (
+                                  <button
+                                    onClick={async () => {
+                                      const { data } = await supabase
+                                        .from('fichas')
+                                        .select('*')
+                                        .eq('id', fichaId)
+                                        .single();
+                                      if (data) {
+                                        setSelectedFicha(data);
+                                        setShowFichaModal(true);
+                                      }
+                                    }}
+                                    className="text-white underline hover:no-underline font-semibold"
+                                  >
+                                    {children}
+                                  </button>
+                                );
+                              }
+                              return (
+                                <a href={href} target="_blank" rel="noopener noreferrer" className="underline hover:no-underline" {...props}>
+                                  {children}
+                                </a>
+                              );
+                            },
+                          }}
+                        >
+                          {msg.content}
+                        </ReactMarkdown>
+                      ) : (
+                        msg.content
+                      )}
                       {msg.role === "assistant" && (
                         <button
                           onClick={() => handleTextToSpeech(msg.content)}
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded hover:bg-white/20"
+                          className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded hover:bg-white/20"
                           title="Ler em voz alta"
                         >
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -551,6 +649,7 @@ export default function EditorPage() {
                   <Button
                     onClick={() => handleAssistantMessage(showUrthona ? "urthona" : "urizen")}
                     disabled={isAssistantLoading}
+                    className="px-4 py-2 text-sm"
                   >
                     Enviar
                   </Button>
@@ -560,6 +659,17 @@ export default function EditorPage() {
           </div>
         </div>
       </div>
+      
+      {/* Modal de Ficha */}
+      {showFichaModal && selectedFicha && (
+        <FichaViewModal
+          ficha={selectedFicha}
+          onClose={() => {
+            setShowFichaModal(false);
+            setSelectedFicha(null);
+          }}
+        />
+      )}
     </div>
   );
 }
