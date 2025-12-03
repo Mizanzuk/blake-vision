@@ -474,8 +474,8 @@ export default function ProjetosPage() {
               // Ordenar episódios dentro de cada mundo
               Object.keys(episodiosPorMundo).forEach(worldId => {
                 episodiosPorMundo[worldId].sort((a, b) => {
-                  const numA = a.numero_episodio || 0;
-                  const numB = b.numero_episodio || 0;
+                  const numA = parseInt(a.episodio || "0");
+                  const numB = parseInt(b.episodio || "0");
                   return ordenacao === "asc" ? numA - numB : numB - numA;
                 });
               });
