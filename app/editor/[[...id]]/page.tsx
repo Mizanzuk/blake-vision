@@ -285,6 +285,7 @@ export default function EditorPage() {
           messages: [...messages, newUserMessage],
           mode: mode === "urthona" ? "criativo" : "consulta",
           universeId: universeId,
+          textContent: conteudo, // Enviar o conteúdo do texto atual
         }),
       });
 

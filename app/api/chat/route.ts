@@ -86,6 +86,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => null);
     const messages = (body?.messages ?? []) as Message[];
     const universeId = body?.universeId as string | undefined;
+    const textContent = body?.textContent as string | undefined;
 
     if (!Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json({ error: "Nenhuma mensagem fornecida." }, { status: 400 });
@@ -101,6 +102,19 @@ export async function POST(req: NextRequest) {
 
     // Fetch global rules
     const globalRules = await fetchGlobalRules(supabase, universeId);
+
+    // Add current text content as context if provided
+    let textContextSection = "";
+    if (textContent && textContent.trim()) {
+      textContextSection = `
+### TEXTO ATUAL EM EDIÇÃO
+O usuário está trabalhando no seguinte texto:
+
+${textContent}
+
+---
+`;
+    }
 
     // RAG: Search for relevant lore
     let contextText = "";
@@ -127,6 +141,8 @@ ${i + 1}. **${r.titulo}** (${r.tipo})
 MODO: ${persona.modo}
 
 ${globalRules}
+
+${textContextSection}
 
 ${contextText}
 
