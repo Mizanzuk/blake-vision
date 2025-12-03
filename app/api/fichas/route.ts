@@ -84,17 +84,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Generate embedding - DESABILITADO (coluna não existe na tabela)
-    // const textForEmbedding = `${titulo} ${resumo || ""} ${conteudo || ""}`.trim();
-    // let embedding: number[] | null = null;
-    // 
-    // if (textForEmbedding) {
-    //   try {
-    //     embedding = await generateEmbedding(textForEmbedding);
-    //   } catch (error) {
-    //     console.error("Error generating embedding:", error);
-    //   }
-    // }
+    // Generate embedding
+    const textForEmbedding = `${titulo} ${resumo || ""} ${conteudo || ""}`.trim();
+    let embedding: number[] | null = null;
+    
+    if (textForEmbedding) {
+      try {
+        embedding = await generateEmbedding(textForEmbedding);
+      } catch (error) {
+        console.error("Error generating embedding:", error);
+      }
+    }
 
     const { data: ficha, error } = await supabase
       .from("fichas")
@@ -116,6 +116,7 @@ export async function POST(req: NextRequest) {
         data_fim: data_fim || null,
         granularidade_data: granularidade_data || null,
         camada_temporal: camada_temporal || null,
+        embedding: embedding || null,
       })
       .select()
       .single();
@@ -152,16 +153,16 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "ID é obrigatório" }, { status: 400 });
     }
 
-    // Generate new embedding if content changed - DESABILITADO (coluna não existe na tabela)
-    // const textForEmbedding = `${updateData.titulo || ""} ${updateData.resumo || ""} ${updateData.conteudo || ""}`.trim();
-    // 
-    // if (textForEmbedding) {
-    //   try {
-    //     updateData.embedding = await generateEmbedding(textForEmbedding);
-    //   } catch (error) {
-    //     console.error("Error generating embedding:", error);
-    //   }
-    // }
+    // Generate new embedding if content changed
+    const textForEmbedding = `${updateData.titulo || ""} ${updateData.resumo || ""} ${updateData.conteudo || ""}`.trim();
+    
+    if (textForEmbedding) {
+      try {
+        updateData.embedding = await generateEmbedding(textForEmbedding);
+      } catch (error) {
+        console.error("Error generating embedding:", error);
+      }
+    }
 
     updateData.updated_at = new Date().toISOString();
 
