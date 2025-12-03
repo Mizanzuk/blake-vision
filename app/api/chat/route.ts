@@ -131,9 +131,9 @@ ${textContent}
         console.log('[RAG] Adding context to prompt');
         exampleFichaId = results[0].id;
         
-        // Criar mapa de títulos para IDs
+        // Criar mapa de títulos para IDs (manter capitalização original)
         results.forEach(r => {
-          fichasMap.set(r.titulo.toLowerCase(), r.id);
+          fichasMap.set(r.titulo, r.id);
         });
         
         contextText = `
