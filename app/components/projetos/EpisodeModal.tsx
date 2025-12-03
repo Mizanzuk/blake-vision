@@ -30,9 +30,9 @@ export default function EpisodeModal({
 
   useEffect(() => {
     if (episode) {
-      setNumeroEpisodio(episode.numero_episodio?.toString() || "");
+      setNumeroEpisodio(episode.episodio?.toString() || "");
       setTitulo(episode.titulo || "");
-      setLogline(episode.logline || "");
+      setLogline(episode.conteudo || "");
       setSinopse(episode.resumo || "");
     } else {
       setNumeroEpisodio("");
@@ -81,7 +81,7 @@ export default function EpisodeModal({
 
     const episodeData = {
       id: episode?.id,
-      world_id: worldId,
+      world_id: episode?.world_id || worldId, // Preserve original world_id when editing
       tipo: "episodio",
       episodio: parseInt(numeroEpisodio),
       titulo: titulo.trim(),
