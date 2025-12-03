@@ -984,7 +984,6 @@ export default function HomePage() {
                                   <button
                                     onClick={() => handleOpenFicha(fichaId)}
                                     className="text-primary-light dark:text-primary-dark hover:underline cursor-pointer font-medium"
-                                    {...props}
                                   >
                                     {children}
                                   </button>
@@ -1346,6 +1345,12 @@ export default function HomePage() {
         onClose={() => {
           setShowFichaModal(false);
           setViewingFicha(null);
+        }}
+        onEdit={() => {
+          // Navegar para o editor com a ficha
+          if (viewingFicha) {
+            router.push(`/editor/${viewingFicha.id}`);
+          }
         }}
         ficha={viewingFicha}
       />
