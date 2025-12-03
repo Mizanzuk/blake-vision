@@ -24,6 +24,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import FichaViewModal from "@/app/components/shared/FichaViewModal";
 import type { ChatMessage, ChatMode, ChatSession, Universe, Ficha } from "@/app/types";
+import { loadChatSessions, saveChatSession, deleteChatSession } from "@/app/lib/chat-sessions";
 
 const SESSION_STORAGE_KEY = "blake-vision-sessions-v1";
 const MAX_MESSAGES_PER_SESSION = 32;
@@ -136,16 +137,17 @@ export default function HomePage() {
     scrollToBottom();
   }, [activeSessionId, sessions]);
 
+  // Auto-save active session when messages change
   useEffect(() => {
-    // Save sessions to localStorage
-    if (sessions.length > 0) {
-      try {
-        localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessions));
-      } catch (e) {
-        console.error("Error saving sessions:", e);
+    if (activeSessionId && userId) {
+      const activeSession = sessions.find(s => s.id === activeSessionId);
+      if (activeSession) {
+        saveChatSession(supabase, activeSession, userId).catch(err => {
+          console.error("Error auto-saving session:", err);
+        });
       }
     }
-  }, [sessions]);
+  }, [sessions, activeSessionId, userId, supabase]);
 
   // Close profile dropdown on Esc key
   useEffect(() => {
@@ -202,13 +204,10 @@ export default function HomePage() {
     }
   }
 
-  function loadSessions() {
+  async function loadSessions() {
     try {
-      const saved = localStorage.getItem(SESSION_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setSessions(parsed || []);
-      }
+      const loadedSessions = await loadChatSessions(supabase);
+      setSessions(loadedSessions || []);
     } catch (e) {
       console.error("Error loading sessions:", e);
     }
@@ -354,7 +353,12 @@ export default function HomePage() {
     }
   }
 
-  function startNewSession(mode: ChatMode) {
+  async function startNewSession(mode: ChatMode) {
+    if (!userId) {
+      toast.error("Erro: usuário não autenticado");
+      return;
+    }
+
     const newSession: ChatSession = {
       id: Date.now().toString(),
       title: t.chat.newChat,
@@ -363,6 +367,13 @@ export default function HomePage() {
       messages: [createIntroMessage(mode)],
       universeId: selectedUniverseId || undefined,
     };
+
+    // Save to database
+    const success = await saveChatSession(supabase, newSession, userId);
+    if (!success) {
+      toast.error("Erro ao criar nova conversa");
+      return;
+    }
 
     // Use functional form to ensure we have the latest sessions state
     setSessions(prevSessions => [newSession, ...prevSessions].slice(0, MAX_SESSIONS));
@@ -589,15 +600,25 @@ export default function HomePage() {
     }
   }
 
-  function deleteSession(sessionId: string) {
+  async function deleteSession(sessionId: string) {
     const session = sessions.find(s => s.id === sessionId);
     const confirmed = confirm(`Tem certeza que deseja deletar a conversa "${session?.title || 'Nova Conversa'}"? Esta ação não pode ser desfeita.`);
     if (!confirmed) return;
     
+    // Delete from database
+    const success = await deleteChatSession(supabase, sessionId);
+    if (!success) {
+      toast.error("Erro ao deletar conversa");
+      return;
+    }
+    
+    // Update local state
     setSessions(prevSessions => prevSessions.filter(s => s.id !== sessionId));
     if (activeSessionId === sessionId) {
       setActiveSessionId(null);
     }
+    
+    toast.success("Conversa deletada com sucesso");
   }
   
   function startEditingSession(sessionId: string, currentTitle: string) {
