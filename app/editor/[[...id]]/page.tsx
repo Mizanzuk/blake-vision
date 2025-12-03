@@ -6,6 +6,7 @@ import { getSupabaseClient } from "@/app/lib/supabase/client";
 import { Header } from "@/app/components/layout/Header";
 import { Button, Input, Select, Loading, UniverseDropdown } from "@/app/components/ui";
 import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
+import { EpisodesDropdownSingle } from "@/app/components/ui/EpisodesDropdownSingle";
 import { toast } from "sonner";
 import type { Universe, World } from "@/app/types";
 
@@ -32,6 +33,8 @@ export default function EditorPage() {
   const [universes, setUniverses] = useState<Universe[]>([]);
   const [worlds, setWorlds] = useState<World[]>([]);
   const [filteredWorlds, setFilteredWorlds] = useState<World[]>([]);
+  const [episodes, setEpisodes] = useState<any[]>([]);
+  const [filteredEpisodes, setFilteredEpisodes] = useState<any[]>([]);
 
   // Chat com assistentes
   const [urthonaMessages, setUrthonaMessages] = useState<any[]>([]);
@@ -61,6 +64,15 @@ export default function EditorPage() {
     }
   }, [universeId, worlds]);
 
+  useEffect(() => {
+    if (worldId) {
+      const filtered = episodes.filter(ep => ep.world_id === worldId);
+      setFilteredEpisodes(filtered);
+    } else {
+      setFilteredEpisodes([]);
+    }
+  }, [worldId, episodes]);
+
   // Auto-save a cada 30 segundos
   useEffect(() => {
     if (!textoId || !titulo || !conteudo) return;
@@ -89,13 +101,15 @@ export default function EditorPage() {
 
   async function loadUniversesAndWorlds() {
     try {
-      const [universesRes, worldsRes] = await Promise.all([
+      const [universesRes, worldsRes, episodesRes] = await Promise.all([
         fetch("/api/universes"),
         fetch("/api/worlds"),
+        fetch("/api/fichas?tipo=Episódio"),
       ]);
 
       const universesData = await universesRes.json();
       const worldsData = await worldsRes.json();
+      const episodesData = await episodesRes.json();
 
       if (universesRes.ok) {
         setUniverses(universesData.universes || []);
@@ -103,6 +117,10 @@ export default function EditorPage() {
 
       if (worldsRes.ok) {
         setWorlds(worldsData.worlds || []);
+      }
+
+      if (episodesRes.ok) {
+        setEpisodes(episodesData.fichas || []);
       }
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
@@ -353,7 +371,7 @@ export default function EditorPage() {
           {/* Editor principal */}
           <div className="lg:col-span-2 space-y-4">
             <Input
-              label="Título"
+              label="TÍTULO"
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
               placeholder="Digite o título do texto..."
@@ -361,34 +379,51 @@ export default function EditorPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <UniverseDropdown
-                label="Universo"
+                label="UNIVERSO"
                 universes={universes}
                 selectedId={universeId}
                 onSelect={(id) => {
                   setUniverseId(id);
                   setWorldId("");
                 }}
+                onCreate={() => {
+                  // TODO: Implementar modal de criação de universo
+                  console.log("Criar novo universo");
+                }}
               />
 
               <WorldsDropdownSingle
-                label="Mundo"
+                label="MUNDO"
                 worlds={filteredWorlds}
                 selectedId={worldId}
                 onSelect={(id) => setWorldId(id)}
                 disabled={!universeId}
+                onCreate={() => {
+                  // TODO: Implementar modal de criação de mundo
+                  console.log("Criar novo mundo");
+                }}
               />
 
-              <Input
-                label="Episódio"
-                value={episodio}
-                onChange={(e) => setEpisodio(e.target.value)}
-                placeholder="Ex: EP01"
+              <EpisodesDropdownSingle
+                label="EPISÓDIO"
+                episodes={filteredEpisodes.map(ep => ({
+                  id: ep.id,
+                  numero: ep.numero || "?",
+                  titulo: ep.titulo || "Sem título"
+                }))}
+                selectedId={episodio}
+                onSelect={(id) => setEpisodio(id)}
+                disabled={!worldId}
+                onCreate={() => {
+                  // TODO: Implementar modal de criação de episódio
+                  console.log("Criar novo episódio");
+                }}
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Conteúdo
+                CONTEÚDO
               </label>
               <textarea
                 value={conteudo}
