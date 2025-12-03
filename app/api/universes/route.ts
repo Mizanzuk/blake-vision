@@ -83,6 +83,7 @@ export async function POST(req: NextRequest) {
 
     // Create default categories
     const defaultCategories = [
+      { slug: "episodio", label: "Episódio", prefix: "EP" },
       { slug: "conceito", label: "Conceito", prefix: "CON" },
       { slug: "regra", label: "Regra", prefix: "REG" },
       { slug: "evento", label: "Evento", prefix: "EVT" },
