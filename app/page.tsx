@@ -967,7 +967,7 @@ export default function HomePage() {
                     )}
                   >
                     <div className={clsx(
-                      "prose prose-sm max-w-none",
+                      "prose prose-sm max-w-none [&>*:last-child]:mb-0",
                       message.role === "user" 
                         ? "prose-invert" 
                         : "prose-stone dark:prose-invert"
