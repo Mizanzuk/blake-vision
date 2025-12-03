@@ -208,8 +208,16 @@ Responda de forma clara, organizada e em português brasileiro.`;
     let responseContent = completion.choices[0]?.message?.content || "";
     
     // Pós-processamento: converter links de fichas
+    console.log('[RAG] Post-processing check:', { 
+      fichasMapSize: fichasMap.size, 
+      hasResponseContent: !!responseContent,
+      responseLength: responseContent?.length 
+    });
+    
     if (fichasMap.size > 0 && responseContent) {
-      console.log('[RAG] Post-processing response to fix ficha links');
+      console.log('[RAG] Starting post-processing...');
+      console.log('[RAG] Fichas map:', Array.from(fichasMap.entries()));
+      console.log('[RAG] Response preview:', responseContent.substring(0, 200));
       
       fichasMap.forEach((id, titulo) => {
         // Escapar caracteres especiais no título para regex
@@ -221,10 +229,17 @@ Responda de forma clara, organizada e em português brasileiro.`;
         const newContent = responseContent.replace(pattern, `[${titulo}](ficha:${id})`);
         
         if (newContent !== responseContent) {
-          console.log(`[RAG] Fixed link for: ${titulo}`);
+          console.log(`[RAG] ✅ Fixed link for: ${titulo}`);
           responseContent = newContent;
+        } else {
+          console.log(`[RAG] ❌ No match found for: ${titulo}`);
         }
       });
+      
+      console.log('[RAG] Post-processing complete');
+      console.log('[RAG] Final response preview:', responseContent.substring(0, 200));
+    } else {
+      console.log('[RAG] Skipping post-processing');
     }
     
     // Create a ReadableStream to send the processed response
