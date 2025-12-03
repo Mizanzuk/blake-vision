@@ -66,7 +66,7 @@ export default function FichaCard({ ficha, onClick }: FichaCardProps) {
   return (
     <div
       onClick={onClick}
-      className="group relative bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg p-4 hover:shadow-md transition-all cursor-pointer"
+      className="group relative bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg p-4 hover:shadow-md transition-all cursor-pointer h-48 flex flex-col"
     >
       {/* Type Badge */}
       <div className="flex items-center justify-between mb-2">

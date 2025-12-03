@@ -913,7 +913,7 @@ export default function CatalogPage() {
                     variant="elevated"
                     padding="md"
                     hoverable
-                    className={`group relative ${isSelectionMode && selectedFichaIds.includes(ficha.id) ? 'ring-2 ring-primary-500' : ''}`}
+                    className={`group relative h-48 flex flex-col ${isSelectionMode && selectedFichaIds.includes(ficha.id) ? 'ring-2 ring-primary-500' : ''}`}
                   >
                     {/* Checkbox for selection mode */}
                     {isSelectionMode && (
