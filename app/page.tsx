@@ -659,7 +659,7 @@ export default function HomePage() {
         isSidebarOpen ? "w-80" : "w-0 border-r-0"
       )}>
         {/* Header */}
-        <div className="p-4 border-b border-border-light-default dark:border-border-dark-default">
+        <div className="p-4">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-xl font-bold text-text-light-primary dark:text-dark-primary">
               Blake Vision
@@ -693,7 +693,7 @@ export default function HomePage() {
 
 
         {/* Navigation */}
-        <nav className="p-4 space-y-1 border-b border-border-light-default dark:border-border-dark-default">
+        <nav className="p-4 space-y-1">
           <button
             onClick={() => router.push("/projetos")}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
@@ -766,7 +766,7 @@ export default function HomePage() {
         </nav>
 
         {/* New Chat Button - Moved after navigation */}
-        <div className="p-4 border-b border-border-light-default dark:border-border-dark-default">
+        <div className="p-4">
           <Button
             variant="primary"
             size="sm"
@@ -798,10 +798,10 @@ export default function HomePage() {
                 <div
                   key={session.id}
                   className={clsx(
-                    "group flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors",
+                    "group flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors border",
                     activeSessionId === session.id
-                      ? "bg-primary-100 dark:bg-primary-900/30 text-text-light-primary dark:text-dark-primary"
-                      : "bg-white/50 dark:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary hover:bg-white dark:hover:bg-dark-raised"
+                      ? "bg-primary-100 dark:bg-primary-900/30 text-text-light-primary dark:text-dark-primary border-border-light-strong dark:border-border-dark-strong"
+                      : "bg-transparent dark:bg-transparent text-text-light-secondary dark:text-dark-secondary border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay"
                   )}
                   onClick={() => setActiveSessionId(session.id)}
                 >
