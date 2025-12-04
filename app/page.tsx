@@ -846,18 +846,26 @@ export default function HomePage() {
                     {session.mode === 'consulta' ? 'Consulta' : 'Criativo'}
                   </Badge>
                   {editingSessionId === session.id && editingLocation === 'sidebar' ? (
-                    <input
-                      type="text"
+                    <textarea
                       value={editingSessionTitle}
                       onChange={(e) => setEditingSessionTitle(e.target.value)}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter') saveSessionTitle();
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          saveSessionTitle();
+                        }
                         if (e.key === 'Escape') cancelEditingSession();
                       }}
                       onBlur={saveSessionTitle}
                       onClick={(e) => e.stopPropagation()}
                       autoFocus
-                      className="flex-1 text-sm px-2 py-1 rounded bg-light-overlay dark:bg-dark-overlay border border-border-light-default dark:border-border-dark-default relative z-10"
+                      rows={1}
+                      onInput={(e) => {
+                        const target = e.target as HTMLTextAreaElement;
+                        target.style.height = 'auto';
+                        target.style.height = target.scrollHeight + 'px';
+                      }}
+                      className="absolute left-[78px] right-2 top-2 text-sm px-2 py-1 rounded bg-light-overlay dark:bg-dark-overlay border-2 border-primary-500 dark:border-primary-400 resize-none overflow-hidden z-10"
                     />
                   ) : (
                     <span 
