@@ -73,6 +73,24 @@ export default function EditorPage() {
   }, [universeId, worlds]);
 
   useEffect(() => {
+    if (universeId) {
+      // Carregar fichas do universo selecionado
+      fetch(`/api/catalog?universeId=${universeId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.fichas) {
+            setAllFichas(data.fichas);
+          }
+        })
+        .catch(error => {
+          console.error("Erro ao carregar fichas:", error);
+        });
+    } else {
+      setAllFichas([]);
+    }
+  }, [universeId]);
+
+  useEffect(() => {
     if (worldId) {
       // Filtrar fichas do mundo selecionado e extrair episódios únicos
       const worldFichas = allFichas.filter(f => f.world_id === worldId);
@@ -131,15 +149,13 @@ export default function EditorPage() {
 
   async function loadUniversesAndWorlds() {
     try {
-      const [universesRes, worldsRes, fichasRes] = await Promise.all([
+      const [universesRes, worldsRes] = await Promise.all([
         fetch("/api/universes"),
         fetch("/api/worlds"),
-        fetch("/api/catalog"),
       ]);
 
       const universesData = await universesRes.json();
       const worldsData = await worldsRes.json();
-      const fichasData = await fichasRes.json();
 
       if (universesRes.ok) {
         setUniverses(universesData.universes || []);
@@ -147,10 +163,6 @@ export default function EditorPage() {
 
       if (worldsRes.ok) {
         setWorlds(worldsData.worlds || []);
-      }
-
-      if (fichasRes.ok) {
-        setAllFichas(fichasData.fichas || []);
       }
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
