@@ -656,7 +656,7 @@ export default function HomePage() {
       <aside className={clsx(
         "bg-light-raised dark:bg-dark-raised flex flex-col transition-all duration-300 overflow-hidden",
         "fixed md:relative inset-y-0 left-0 z-50",
-        isSidebarOpen ? "w-80" : "w-0"
+        isSidebarOpen ? "w-[250px]" : "w-0"
       )}>
         {/* Header */}
         <div className="p-4">
