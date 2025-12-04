@@ -1155,14 +1155,55 @@ export default function HomePage() {
         ) : (
           universes.length > 0 ? (
             // Mostrar seleção de agentes quando há universos
-            <div className="flex items-center justify-center h-full">
-              <Button
-                variant="primary"
-                size="lg"
-                onClick={() => setShowModeSelector(true)}
-              >
-                {t.chat.newChat}
-              </Button>
+            <div className="flex items-center justify-center h-full p-6">
+              <div className="max-w-4xl w-full">
+                <h2 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary text-center mb-8">
+                  Selecione o modo
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card
+                    variant="outlined"
+                    padding="lg"
+                    hoverable
+                    onClick={() => startNewSession("consulta")}
+                    className="cursor-pointer"
+                  >
+                    <div className="w-16 h-16 rounded-full mb-4 overflow-hidden border-2 border-primary-300">
+                      <img src="/urizen-avatar.png" alt="Urizen" className="w-full h-full object-cover" />
+                    </div>
+                    <h3 className="text-xl font-bold text-text-light-primary dark:text-dark-primary mb-2">
+                      {PERSONAS.consulta.nome}
+                    </h3>
+                    <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary mb-4">
+                      {PERSONAS.consulta.titulo}
+                    </p>
+                    <p className="text-sm text-text-light-secondary dark:text-dark-secondary">
+                      Consulte fatos estabelecidos, verifique consistências e analise seu universo com precisão.
+                    </p>
+                  </Card>
+
+                  <Card
+                    variant="outlined"
+                    padding="lg"
+                    hoverable
+                    onClick={() => startNewSession("criativo")}
+                    className="cursor-pointer"
+                  >
+                    <div className="w-16 h-16 rounded-full mb-4 overflow-hidden border-2 border-primary-300">
+                      <img src="/urthona-avatar.png" alt="Urthona" className="w-full h-full object-cover" />
+                    </div>
+                    <h3 className="text-xl font-bold text-text-light-primary dark:text-dark-primary mb-2">
+                      {PERSONAS.criativo.nome}
+                    </h3>
+                    <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary mb-4">
+                      {PERSONAS.criativo.titulo}
+                    </p>
+                    <p className="text-sm text-text-light-secondary dark:text-dark-secondary">
+                      Crie e expanda narrativas, gere novas histórias e enriqueça seu universo com coerência.
+                    </p>
+                  </Card>
+                </div>
+              </div>
             </div>
           ) : (
             // Mostrar empty state quando não há universos
