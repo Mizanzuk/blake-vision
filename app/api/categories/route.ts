@@ -1,12 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/app/lib/supabase/server";
+import { createClient, createAdminClient } from "@/app/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
+// Categorias padrão (mesmas do Catálogo)
+const DEFAULT_CATEGORIES = [
+  { slug: "personagem", label: "Personagem" },
+  { slug: "local", label: "Local" },
+  { slug: "evento", label: "Evento" },
+  { slug: "conceito", label: "Conceito" },
+  { slug: "regra", label: "Regra" },
+  { slug: "roteiro", label: "Roteiro" },
+];
+
 export async function GET(req: NextRequest) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    // Use admin client para buscar categorias (mesma lógica do Catálogo)
+    const supabase = await createAdminClient();
+    
+    // Verificar autenticação via client regular
+    const regularClient = await createClient();
+    const { data: { user } } = await regularClient.auth.getUser();
 
     if (!user) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
@@ -22,47 +36,29 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Buscar mundos do universo
-    const { data: worlds, error: worldsError } = await supabase
-      .from("worlds")
-      .select("id")
-      .eq("universe_id", universeId);
+    // Buscar categorias - com fallback para categorias padrão (mesma lógica do Catálogo)
+    let categories: { slug: string; label: string; description?: string | null; prefix?: string | null }[] = [];
+    
+    try {
+      const { data: categoriesData, error: categoriesError } = await supabase
+        .from("lore_categories")
+        .select("slug, label, description, prefix")
+        .eq("universe_id", universeId)
+        .order("label", { ascending: true });
 
-    if (worldsError) {
-      console.error("Erro ao buscar mundos:", worldsError);
-      return NextResponse.json({ error: "Erro ao buscar mundos" }, { status: 500 });
+      if (categoriesError) {
+        console.warn("Erro ao buscar categorias (usando padrão):", categoriesError);
+        categories = DEFAULT_CATEGORIES;
+      } else if (categoriesData && categoriesData.length > 0) {
+        categories = categoriesData;
+      } else {
+        // Se não há categorias para este universo, usar padrão
+        categories = DEFAULT_CATEGORIES;
+      }
+    } catch (e) {
+      console.warn("Tabela lore_categories não encontrada ou erro de acesso, usando padrão");
+      categories = DEFAULT_CATEGORIES;
     }
-
-    const worldIds = (worlds || []).map(w => w.id);
-
-    if (worldIds.length === 0) {
-      // Sem mundos, retornar array vazio
-      return NextResponse.json({ categories: [] });
-    }
-
-    // Buscar fichas de todos os mundos do universo
-    const { data: fichas, error: fichasError } = await supabase
-      .from("fichas")
-      .select("tipo")
-      .in("world_id", worldIds);
-
-    if (fichasError) {
-      console.error("Erro ao buscar fichas:", fichasError);
-      return NextResponse.json({ error: "Erro ao buscar fichas" }, { status: 500 });
-    }
-
-    // Extrair tipos únicos e criar array de categorias
-    const uniqueTypes = Array.from(new Set(
-      (fichas || [])
-        .map(f => f.tipo)
-        .filter((tipo): tipo is string => !!tipo)
-    )).sort();
-
-    // Converter para formato de categoria
-    const categories = uniqueTypes.map(tipo => ({
-      label: tipo,
-      slug: tipo.toLowerCase().replace(/\s+/g, '-'),
-    }));
 
     return NextResponse.json({ categories });
 
