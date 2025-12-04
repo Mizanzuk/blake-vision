@@ -406,11 +406,14 @@ export default function EditorPage() {
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Editor</h1>
 
         <div className={clsx(
-          "grid gap-6 transition-all duration-300",
-          (showUrthona || showUrizen) ? "grid-cols-1 lg:grid-cols-3" : "grid-cols-1 lg:grid-cols-3 lg:max-w-4xl lg:mx-auto"
+          "gap-6 transition-all duration-300",
+          (showUrthona || showUrizen) ? "grid grid-cols-1 lg:grid-cols-3" : "flex justify-center"
         )}>
           {/* Editor principal */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className={clsx(
+            "space-y-4",
+            (showUrthona || showUrizen) ? "lg:col-span-2" : "w-full max-w-4xl"
+          )}>
             <Input
               label="TÍTULO"
               value={titulo}
