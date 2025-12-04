@@ -15,20 +15,26 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("search");
+    const tipo = searchParams.get("tipo");
 
-    if (!search) {
+    // Se tem tipo, busca por tipo; senão, busca por search
+    let query = supabase
+      .from("fichas")
+      .select("id, titulo, tipo, slug, world_id, numero")
+      .eq("user_id", user.id);
+
+    if (tipo) {
+      query = query.eq("tipo", tipo);
+    } else if (search) {
+      query = query.ilike("titulo", `%${search}%`).limit(10);
+    } else {
       return NextResponse.json(
-        { error: "Parâmetro search é obrigatório" },
+        { error: "Parâmetro search ou tipo é obrigatório" },
         { status: 400 }
       );
     }
 
-    const { data: fichas, error } = await supabase
-      .from("fichas")
-      .select("id, titulo, tipo, slug")
-      .ilike("titulo", `%${search}%`)
-      .eq("user_id", user.id)
-      .limit(10);
+    const { data: fichas, error } = await query;
 
     if (error) {
       console.error("Erro ao buscar fichas:", error);
