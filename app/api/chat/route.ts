@@ -138,8 +138,9 @@ ${textContent}
       
       // Busca adicional por título (busca exata de nomes mencionados)
       const titleResults: LoreSearchResult[] = [];
-      const words = lastMessage.content.toLowerCase().split(/\s+/);
-      console.log('[RAG] Searching by title for words:', words);
+      // Usar contexto completo da conversa, não apenas última mensagem
+      const words = conversationContext.toLowerCase().split(/\s+/);
+      console.log('[RAG] Searching by title for words from full context:', words.slice(0, 20));
       
       // Buscar worlds do universo
       const { data: worlds } = await supabase
