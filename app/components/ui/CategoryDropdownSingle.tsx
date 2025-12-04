@@ -65,15 +65,8 @@ export function CategoryDropdownSingle({
             : "hover:bg-light-overlay dark:hover:bg-dark-overlay cursor-pointer"
         )}
       >
-        <span className="text-sm truncate flex items-center gap-2">
-          {selectedCategoryLabel ? (
-            <>
-              <span className="text-lg">🏷️</span>
-              {selectedCategoryLabel}
-            </>
-          ) : (
-            "Texto Livre"
-          )}
+        <span className="text-sm truncate">
+          {selectedCategoryLabel || "Texto Livre"}
         </span>
         <svg
           className={clsx(
@@ -140,14 +133,13 @@ export function CategoryDropdownSingle({
                 }}
               >
                 <p className={clsx(
-                  "text-sm font-medium truncate flex items-center gap-2",
+                  "text-sm font-medium truncate",
                   selectedCategory === category.slug 
                     ? "text-primary-700 dark:text-primary-300" 
                     : isDisabled
                     ? "text-text-light-tertiary dark:text-dark-tertiary"
                     : "text-text-light-primary dark:text-dark-primary"
                 )}>
-                  <span className="text-lg">🏷️</span>
                   {category.label}
                 </p>
               </div>
