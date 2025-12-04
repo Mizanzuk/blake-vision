@@ -805,7 +805,7 @@ export default function HomePage() {
                   )}
                   onClick={() => setActiveSessionId(session.id)}
                 >
-                  <Badge variant={PERSONAS[session.mode].styles.badge} size="sm">
+                  <Badge variant={PERSONAS[session.mode].styles.badge} size="sm" className="w-[70px] justify-center flex-shrink-0">
                     {session.mode === 'consulta' ? 'Consulta' : 'Criativo'}
                   </Badge>
                   {editingSessionId === session.id ? (
