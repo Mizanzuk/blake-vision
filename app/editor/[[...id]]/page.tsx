@@ -427,7 +427,10 @@ export default function EditorPage() {
               <div className="flex items-center gap-3 pt-10">
                 <div className="relative group">
                   <button
-                    onClick={() => setShowUrthona(!showUrthona)}
+                    onClick={() => {
+                      setShowUrthona(!showUrthona);
+                      if (!showUrthona) setShowUrizen(false);
+                    }}
                     className={`w-12 h-12 rounded-full overflow-hidden border-4 transition-colors ${
                       showUrthona ? 'border-[#C1666B]' : 'border-gray-300 hover:border-[#C1666B]'
                     }`}
@@ -449,7 +452,10 @@ export default function EditorPage() {
                 
                 <div className="relative group">
                   <button
-                    onClick={() => setShowUrizen(!showUrizen)}
+                    onClick={() => {
+                      setShowUrizen(!showUrizen);
+                      if (!showUrizen) setShowUrthona(false);
+                    }}
                     className={`w-12 h-12 rounded-full overflow-hidden border-4 transition-colors ${
                       showUrizen ? 'border-[#7BA5C4]' : 'border-gray-300 hover:border-[#7BA5C4]'
                     }`}
