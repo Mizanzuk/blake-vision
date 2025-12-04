@@ -833,7 +833,8 @@ export default function HomePage() {
                   onDragOver={(e) => handleDragOver(e, session.id)}
                   onDragEnd={handleDragEnd}
                   className={clsx(
-                    "group relative flex items-center gap-2 px-3 py-2 rounded-lg cursor-move transition-colors border",
+                    "group relative flex items-center gap-2 px-3 py-2 rounded-lg cursor-move transition-colors",
+                    editingSessionId === session.id && editingLocation === 'sidebar' ? "border-0" : "border",
                     activeSessionId === session.id
                       ? "bg-[#FAFAF8] dark:bg-primary-900/30 text-text-light-primary dark:text-dark-primary border-border-light-strong dark:border-border-dark-strong"
                       : "bg-transparent dark:bg-transparent text-text-light-secondary dark:text-dark-secondary border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay",
