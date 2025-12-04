@@ -1005,7 +1005,7 @@ export default function HomePage() {
                   
                   <div
                     className={clsx(
-                      "relative max-w-3xl rounded-2xl px-6 py-4",
+                      "max-w-3xl rounded-2xl px-6 py-4",
                       message.role === "user"
                         ? "bg-primary-600 dark:bg-primary-500 text-white"
                         : "bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default"
@@ -1050,40 +1050,31 @@ export default function HomePage() {
                         message.content
                       )}
                     </div>
-                    
-                    {/* Action Buttons (only for assistant messages, on hover) */}
-                    {message.role === "assistant" && message.id !== "intro" && (
-                      <div className="opacity-0 group-hover:opacity-100 absolute bottom-4 right-6 flex gap-1">
-                        <button
-                          onClick={() => handleTextToSpeech(message.content)}
-                          className="p-1.5 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary transition-all"
-                          title="Ler em voz alta"
-                        >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => handleCopyMessage(message.content)}
-                          className="p-1.5 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary transition-all"
-                          title="Copiar"
-                        >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => handleSendToEditor(message.content)}
-                          className="p-1.5 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary transition-all"
-                          title="Enviar para Editor"
-                        >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                        </button>
-                      </div>
-                    )}
                   </div>
+                  
+                  {/* Action Buttons - Fora do balão, apenas para mensagens do assistente */}
+                  {message.role === "assistant" && message.id !== "intro" && (
+                    <div className="opacity-0 group-hover:opacity-100 flex lg:flex-col flex-row gap-2 self-center">
+                      <button
+                        onClick={() => handleCopyMessage(message.content)}
+                        className="p-2 rounded-lg hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary transition-all border border-border-light-default dark:border-border-dark-default"
+                        title="Copiar"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => handleSendToEditor(message.content)}
+                        className="p-2 rounded-lg hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary transition-all border border-border-light-default dark:border-border-dark-default"
+                        title="Enviar para Editor"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
 
 
                 </div>
