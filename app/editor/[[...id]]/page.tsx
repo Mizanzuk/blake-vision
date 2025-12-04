@@ -428,7 +428,9 @@ export default function EditorPage() {
                 <div className="relative group">
                   <button
                     onClick={() => setShowUrthona(!showUrthona)}
-                    className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-300 hover:border-[#C1666B] transition-colors"
+                    className={`w-12 h-12 rounded-full overflow-hidden border-4 transition-colors ${
+                      showUrthona ? 'border-[#C1666B]' : 'border-gray-300 hover:border-[#C1666B]'
+                    }`}
                   >
                     <img
                       src="/urthona-avatar.png"
@@ -448,7 +450,9 @@ export default function EditorPage() {
                 <div className="relative group">
                   <button
                     onClick={() => setShowUrizen(!showUrizen)}
-                    className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-300 hover:border-[#C1666B] transition-colors"
+                    className={`w-12 h-12 rounded-full overflow-hidden border-4 transition-colors ${
+                      showUrizen ? 'border-[#7BA5C4]' : 'border-gray-300 hover:border-[#7BA5C4]'
+                    }`}
                   >
                     <img
                       src="/urizen-avatar.png"
@@ -549,11 +553,16 @@ export default function EditorPage() {
           {/* Assistentes */}
           <div className="space-y-4">
             {(showUrthona || showUrizen) && (
-              <div ref={chatRef} className="bg-white rounded-lg shadow-md p-4 max-h-[600px] flex flex-col relative">
+              <div ref={chatRef} className="bg-[#F5F1E8] rounded-lg border border-gray-300 p-4 max-h-[600px] flex flex-col relative">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-semibold">
-                    {showUrthona ? "Urthona" : "Urizen"}
-                  </h3>
+                  <div>
+                    <h3 className="font-semibold">
+                      {showUrthona ? "Urthona" : "Urizen"}
+                    </h3>
+                    <p className="text-xs text-gray-500">
+                      {showUrthona ? "Criativo" : "Consulta"}
+                    </p>
+                  </div>
                   <button
                     onClick={() => {
                       setShowUrthona(false);
@@ -572,10 +581,10 @@ export default function EditorPage() {
                   {(showUrthona ? urthonaMessages : urizenMessages).map((msg, idx) => (
                     <div
                       key={idx}
-                      className={`relative group p-3 rounded-lg text-base ${
+                      className={`relative group px-4 py-3 rounded-lg text-sm ${
                         msg.role === "user"
-                          ? "bg-gray-100 ml-4"
-                          : "bg-[#C1666B] text-white mr-4"
+                          ? "bg-light-raised ml-4"
+                          : (showUrthona ? "bg-[#C1666B]" : "bg-[#7BA5C4]") + " text-white mr-4"
                       }`}
                     >
                       {msg.role === "assistant" ? (
@@ -651,7 +660,8 @@ export default function EditorPage() {
                   <Button
                     onClick={() => handleAssistantMessage(showUrthona ? "urthona" : "urizen")}
                     disabled={isAssistantLoading}
-                    className="px-4 py-2 text-sm"
+                    size="sm"
+                    className="px-3 py-1.5 text-xs"
                   >
                     Enviar
                   </Button>
