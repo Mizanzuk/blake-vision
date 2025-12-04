@@ -866,7 +866,7 @@ export default function HomePage() {
                         target.style.height = 'auto';
                         target.style.height = target.scrollHeight + 'px';
                       }}
-                      className="absolute left-2 right-2 top-2 text-sm px-3 py-2 rounded bg-white dark:bg-dark-overlay border border-primary-500 dark:border-primary-400 resize-none overflow-hidden z-20 shadow-lg min-h-[60px]"
+                      className="absolute left-2 right-2 top-2 text-sm px-3 py-2 rounded bg-white dark:bg-dark-overlay border border-primary-500 dark:border-primary-400 resize-none overflow-hidden z-20 shadow-lg min-h-[60px] focus:outline-none focus:ring-0"
                     />
                   ) : (
                     <span 
