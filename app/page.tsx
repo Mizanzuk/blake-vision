@@ -977,38 +977,44 @@ export default function HomePage() {
       )}>
         {activeSession ? (
           <>
+            {/* Header Fixo com Avatar e Nome */}
+            <div className="border-b border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base px-6 py-4">
+              <div className="max-w-4xl mx-auto flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                  <img 
+                    src={`/${activeSession.mode === 'consulta' ? 'urizen' : 'urthona'}-avatar.png`}
+                    alt={activeSession.mode === 'consulta' ? 'Urizen' : 'Urthona'}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div>
+                  <h2 className="font-semibold text-text-light-primary dark:text-dark-primary">
+                    {activeSession.mode === 'consulta' ? 'Urizen' : 'Urthona'}
+                  </h2>
+                  <p className="text-sm text-text-light-secondary dark:text-dark-secondary">
+                    {activeSession.mode === 'consulta' ? 'A Lei (Consulta)' : 'O Fluxo (Criativo)'}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-6">
-              <div className="max-w-4xl mx-auto space-y-6">
+              <div className="max-w-4xl mx-auto space-y-4">
               {activeSession.messages.map((message, index) => (
                 <div
                   key={message.id || index}
                   className={clsx(
-                    "group flex gap-4",
+                    "group flex gap-2",
                     message.role === "user" ? "justify-end" : "justify-start"
                   )}
                 >
-                  {message.role === "assistant" && (
-                    <div className="flex flex-col items-center gap-1">
-                      <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
-                        <img 
-                          src={`/${activeSession.mode === 'consulta' ? 'urizen' : 'urthona'}-avatar.png`}
-                          alt={activeSession.mode === 'consulta' ? 'Urizen' : 'Urthona'}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <span className="text-xs text-text-light-tertiary dark:text-dark-tertiary">
-                        {activeSession.mode === 'consulta' ? 'Urizen' : 'Urthona'}
-                      </span>
-                    </div>
-                  )}
-                  
                   <div
                     className={clsx(
-                      "max-w-3xl rounded-2xl px-6 py-4",
+                      "max-w-3xl rounded-2xl px-4 py-3",
                       message.role === "user"
                         ? "bg-primary-600 dark:bg-primary-500 text-white"
-                        : "bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default"
+                        : "bg-light-raised dark:bg-dark-raised shadow-sm"
                     )}
                   >
                     <div className={clsx(
