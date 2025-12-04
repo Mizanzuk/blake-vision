@@ -869,7 +869,7 @@ export default function HomePage() {
                     />
                   ) : (
                     <span 
-                      className="flex-1 text-sm line-clamp-3"
+                      className="flex-1 text-xs line-clamp-3"
                       title={session.title.length > 50 ? session.title : undefined}
                     >
                       {session.title}
@@ -1035,7 +1035,7 @@ export default function HomePage() {
         {activeSession ? (
           <>
             {/* Header Fixo com Avatar, Título e Botões */}
-            <div className="bg-light-base dark:bg-dark-base px-6 py-3">
+            <div className="bg-light-base dark:bg-dark-base px-6 py-4">
               <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
                 {/* Avatar e Nome do Agente */}
                 <div className="flex items-center gap-2 flex-shrink-0">
@@ -1046,7 +1046,7 @@ export default function HomePage() {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <div>
+                  <div className="hidden md:block">
                     <h2 className="text-sm font-semibold text-text-light-primary dark:text-dark-primary">
                       {activeSession.mode === 'consulta' ? 'Urizen' : 'Urthona'}
                     </h2>
@@ -1072,7 +1072,7 @@ export default function HomePage() {
                       className="text-sm font-medium px-3 py-1 rounded bg-light-overlay dark:bg-dark-overlay border border-border-light-default dark:border-border-dark-default text-center w-full max-w-md mx-auto"
                     />
                   ) : (
-                    <h3 className="text-sm font-medium text-text-light-primary dark:text-dark-primary truncate">
+                    <h3 className="text-xs md:text-sm font-medium text-text-light-primary dark:text-dark-primary line-clamp-2 md:truncate">
                       {activeSession.title}
                     </h3>
                   )}
