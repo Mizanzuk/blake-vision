@@ -800,7 +800,7 @@ export default function HomePage() {
                   className={clsx(
                     "group flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors border",
                     activeSessionId === session.id
-                      ? "bg-primary-100 dark:bg-primary-900/30 text-text-light-primary dark:text-dark-primary border-border-light-strong dark:border-border-dark-strong"
+                      ? "bg-[#FAFAF8] dark:bg-primary-900/30 text-text-light-primary dark:text-dark-primary border-border-light-strong dark:border-border-dark-strong"
                       : "bg-transparent dark:bg-transparent text-text-light-secondary dark:text-dark-secondary border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay"
                   )}
                   onClick={() => setActiveSessionId(session.id)}
@@ -1155,7 +1155,7 @@ export default function HomePage() {
         ) : (
           universes.length > 0 ? (
             // Mostrar seleção de agentes quando há universos
-            <div className="flex items-center justify-center h-full p-6">
+            <div className="flex items-start justify-center h-full p-6 pt-16">
               <div className="max-w-4xl w-full">
                 <h2 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary text-center mb-8">
                   Selecione o modo
