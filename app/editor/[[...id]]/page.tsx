@@ -552,6 +552,7 @@ export default function EditorPage() {
                 selectedCategory={categoria}
                 onSelect={(cat) => setCategoria(cat)}
                 disabled={!universeId}
+                worldId={worldId}
                 onCreate={() => {
                   // TODO: Implementar modal de criação de categoria
                   toast.info("Funcionalidade de criar categoria será implementada em breve");

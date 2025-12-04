@@ -6,6 +6,7 @@ import { getSupabaseClient } from "@/app/lib/supabase/client";
 import { Header } from "@/app/components/layout/Header";
 import { Button, Card, Badge, EmptyState, Loading } from "@/app/components/ui";
 import { toast } from "sonner";
+import clsx from "clsx";
 
 interface Texto {
   id: string;
@@ -147,6 +148,33 @@ export default function BibliotecaPage() {
     });
   }
 
+  // Funções helper para badges de categoria (mesmas cores do Catálogo)
+  function getCategoryColor(categoria: string) {
+    const colors: Record<string, string> = {
+      episodio: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+      personagem: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+      local: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+      evento: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+      conceito: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200",
+      regra: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
+      roteiro: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200",
+    };
+    return colors[categoria.toLowerCase()] || "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+  }
+
+  function getCategoryLabel(categoria: string) {
+    const labels: Record<string, string> = {
+      episodio: "Episódio",
+      personagem: "Personagem",
+      local: "Local",
+      evento: "Evento",
+      conceito: "Conceito",
+      regra: "Regra",
+      roteiro: "Roteiro",
+    };
+    return labels[categoria.toLowerCase()] || categoria;
+  }
+
   function truncateText(text: string, maxLength: number = 150) {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + "...";
@@ -274,9 +302,12 @@ export default function BibliotecaPage() {
                   {/* Badge de Categoria */}
                   {texto.categoria && (
                     <div className="mb-2">
-                      <Badge variant="default" className="text-xs">
-                        🏷️ {texto.categoria}
-                      </Badge>
+                      <span className={clsx(
+                        "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium",
+                        getCategoryColor(texto.categoria)
+                      )}>
+                        {getCategoryLabel(texto.categoria)}
+                      </span>
                     </div>
                   )}
                   

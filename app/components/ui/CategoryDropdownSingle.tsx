@@ -11,6 +11,7 @@ interface CategoryDropdownSingleProps {
   onSelect: (category: string) => void;
   onCreate?: () => void;
   disabled?: boolean;
+  worldId?: string; // Para validar categoria Episódio
 }
 
 export function CategoryDropdownSingle({
@@ -20,6 +21,7 @@ export function CategoryDropdownSingle({
   onSelect,
   onCreate,
   disabled = false,
+  worldId,
 }: CategoryDropdownSingleProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -70,7 +72,7 @@ export function CategoryDropdownSingle({
               {selectedCategoryLabel}
             </>
           ) : (
-            "Roteiro/Texto Livre"
+            "Texto Livre"
           )}
         </span>
         <svg
@@ -106,43 +108,51 @@ export function CategoryDropdownSingle({
                 ? "text-primary-700 dark:text-primary-300" 
                 : "text-text-light-tertiary dark:text-dark-tertiary"
             )}>
-              Roteiro/Texto Livre
+              Texto Livre
             </p>
           </div>
 
-          {/* Separador */}
-          {categories.length > 0 && (
-            <div className="px-3 py-1 bg-light-overlay/50 dark:bg-dark-overlay/50">
-              <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary">
-                Categorias do Universo
-              </p>
-            </div>
-          )}
+
 
           {/* Category Options */}
-          {categories.map((category) => (
-            <div
-              key={category.slug}
-              className={clsx(
-                "px-3 py-2 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors cursor-pointer border-b border-border-light-default dark:border-border-dark-default last:border-b-0",
-                selectedCategory === category.slug && "bg-primary-50 dark:bg-primary-900/20"
-              )}
-              onClick={() => {
-                onSelect(category.slug);
-                setIsOpen(false);
-              }}
-            >
-              <p className={clsx(
-                "text-sm font-medium truncate flex items-center gap-2",
-                selectedCategory === category.slug 
-                  ? "text-primary-700 dark:text-primary-300" 
-                  : "text-text-light-primary dark:text-dark-primary"
-              )}>
-                <span className="text-lg">🏷️</span>
-                {category.label}
-              </p>
-            </div>
-          ))}
+          {categories.map((category) => {
+            // Categoria "Episódio" requer mundo selecionado
+            const requiresWorld = category.slug === "episodio";
+            const isDisabled = requiresWorld && !worldId;
+            
+            return (
+              <div
+                key={category.slug}
+                className={clsx(
+                  "px-3 py-2 transition-colors border-b border-border-light-default dark:border-border-dark-default last:border-b-0",
+                  isDisabled 
+                    ? "opacity-50 cursor-not-allowed" 
+                    : "hover:bg-light-overlay dark:hover:bg-dark-overlay cursor-pointer",
+                  selectedCategory === category.slug && "bg-primary-50 dark:bg-primary-900/20"
+                )}
+                onClick={() => {
+                  if (isDisabled) {
+                    alert("Essa categoria exige seleção de mundo");
+                    return;
+                  }
+                  onSelect(category.slug);
+                  setIsOpen(false);
+                }}
+              >
+                <p className={clsx(
+                  "text-sm font-medium truncate flex items-center gap-2",
+                  selectedCategory === category.slug 
+                    ? "text-primary-700 dark:text-primary-300" 
+                    : isDisabled
+                    ? "text-text-light-tertiary dark:text-dark-tertiary"
+                    : "text-text-light-primary dark:text-dark-primary"
+                )}>
+                  <span className="text-lg">🏷️</span>
+                  {category.label}
+                </p>
+              </div>
+            );
+          })}
 
           {/* Create New Category Option */}
           {onCreate && (
