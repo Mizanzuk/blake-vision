@@ -525,8 +525,17 @@ export default function EditorPage() {
                 onSelect={(episode) => setEpisodio(episode)}
                 disabled={!worldId}
                 onCreate={() => {
-                  // TODO: Implementar modal de criação de episódio
-                  console.log("Criar novo episódio");
+                  const novoEpisodio = prompt("Digite o número ou nome do novo episódio:");
+                  if (novoEpisodio && novoEpisodio.trim()) {
+                    const episodioTrimmed = novoEpisodio.trim();
+                    // Adicionar à lista se não existir
+                    if (!availableEpisodes.includes(episodioTrimmed)) {
+                      setAvailableEpisodes([...availableEpisodes, episodioTrimmed].sort());
+                    }
+                    // Selecionar o novo episódio
+                    setEpisodio(episodioTrimmed);
+                    toast.success(`Episódio "${episodioTrimmed}" criado com sucesso!`);
+                  }
                 }}
               />
             </div>
