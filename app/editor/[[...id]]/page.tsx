@@ -7,8 +7,9 @@ import { Header } from "@/app/components/layout/Header";
 import { Button, Input, Select, Loading, UniverseDropdown } from "@/app/components/ui";
 import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import { EpisodesDropdownSingle } from "@/app/components/ui/EpisodesDropdownSingle";
+import { CategoryDropdownSingle } from "@/app/components/ui/CategoryDropdownSingle";
 import { toast } from "sonner";
-import type { Universe, World, Ficha } from "@/app/types";
+import type { Universe, World, Ficha, Category } from "@/app/types";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import FichaViewModal from "@/app/components/shared/FichaViewModal";
@@ -33,6 +34,7 @@ export default function EditorPage() {
   const [universeId, setUniverseId] = useState("");
   const [worldId, setWorldId] = useState("");
   const [episodio, setEpisodio] = useState("");
+  const [categoria, setCategoria] = useState("");
   const [status, setStatus] = useState<"rascunho" | "publicado">("rascunho");
   
   // Dados para selects
@@ -41,6 +43,7 @@ export default function EditorPage() {
   const [filteredWorlds, setFilteredWorlds] = useState<World[]>([]);
   const [allFichas, setAllFichas] = useState<Ficha[]>([]);
   const [availableEpisodes, setAvailableEpisodes] = useState<string[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   // Chat com assistentes
   const [urthonaMessages, setUrthonaMessages] = useState<any[]>([]);
@@ -87,8 +90,21 @@ export default function EditorPage() {
         .catch(error => {
           console.error("Erro ao carregar fichas:", error);
         });
+
+      // Carregar categorias do universo selecionado
+      fetch(`/api/categories?universeId=${universeId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.categories) {
+            setCategories(data.categories);
+          }
+        })
+        .catch(error => {
+          console.error("Erro ao carregar categorias:", error);
+        });
     } else {
       setAllFichas([]);
+      setCategories([]);
     }
   }, [universeId]);
 
@@ -183,6 +199,7 @@ export default function EditorPage() {
         setUniverseId(texto.universe_id || "");
         setWorldId(texto.world_id || "");
         setEpisodio(texto.episodio || "");
+        setCategoria(texto.categoria || "");
         setStatus(texto.status);
       } else {
         toast.error("Texto não encontrado");
@@ -207,8 +224,8 @@ export default function EditorPage() {
     try {
       const method = textoId ? "PUT" : "POST";
       const body = textoId
-        ? { id: textoId, titulo, conteudo, universe_id: universeId || null, world_id: worldId || null, episodio, status }
-        : { titulo, conteudo, universe_id: universeId || null, world_id: worldId || null, episodio, status };
+        ? { id: textoId, titulo, conteudo, universe_id: universeId || null, world_id: worldId || null, episodio, categoria: categoria || null, status }
+        : { titulo, conteudo, universe_id: universeId || null, world_id: worldId || null, episodio, categoria: categoria || null, status };
 
       const response = await fetch("/api/textos", {
         method,
@@ -493,7 +510,7 @@ export default function EditorPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <UniverseDropdown
                 label="UNIVERSO"
                 universes={universes}
@@ -527,6 +544,18 @@ export default function EditorPage() {
                 onSelect={(episode) => setEpisodio(episode)}
                 disabled={!worldId}
                 onCreate={() => setShowNewEpisodeModal(true)}
+              />
+
+              <CategoryDropdownSingle
+                label="CATEGORIA"
+                categories={categories}
+                selectedCategory={categoria}
+                onSelect={(cat) => setCategoria(cat)}
+                disabled={!universeId}
+                onCreate={() => {
+                  // TODO: Implementar modal de criação de categoria
+                  toast.info("Funcionalidade de criar categoria será implementada em breve");
+                }}
               />
             </div>
 

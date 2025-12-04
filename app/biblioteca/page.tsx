@@ -14,6 +14,7 @@ interface Texto {
   universe_id: string | null;
   world_id: string | null;
   episodio: string | null;
+  categoria: string | null;
   status: "rascunho" | "publicado";
   extraido: boolean;
   created_at: string;
@@ -29,6 +30,7 @@ export default function BibliotecaPage() {
   const [rascunhos, setRascunhos] = useState<Texto[]>([]);
   const [publicados, setPublicados] = useState<Texto[]>([]);
   const [selectedTexto, setSelectedTexto] = useState<Texto | null>(null);
+  const [selectedCategoria, setSelectedCategoria] = useState<string>("todas");
 
   useEffect(() => {
     checkAuth();
@@ -150,7 +152,25 @@ export default function BibliotecaPage() {
     return text.substring(0, maxLength) + "...";
   }
 
-  const textos = activeTab === "rascunhos" ? rascunhos : publicados;
+  // Filtrar textos por categoria
+  const textosBase = activeTab === "rascunhos" ? rascunhos : publicados;
+  const textos = selectedCategoria === "todas" 
+    ? textosBase
+    : textosBase.filter(t => {
+        if (selectedCategoria === "sem-categoria") {
+          return !t.categoria;
+        }
+        return t.categoria === selectedCategoria;
+      });
+
+  // Extrair categorias únicas dos textos
+  const categoriasUnicas = Array.from(
+    new Set(
+      textosBase
+        .map(t => t.categoria)
+        .filter((c): c is string => c !== null && c !== "")
+    )
+  ).sort();
 
   if (isLoading) {
     return <Loading />;
@@ -168,8 +188,9 @@ export default function BibliotecaPage() {
           </Button>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-4 mb-6 border-b border-gray-300">
+        {/* Tabs e Filtros */}
+        <div className="flex items-center justify-between mb-6 border-b border-gray-300">
+          <div className="flex gap-4">
           <button
             onClick={() => setActiveTab("rascunhos")}
             className={`pb-2 px-4 font-medium transition-colors ${
@@ -190,6 +211,29 @@ export default function BibliotecaPage() {
           >
             Publicados ({publicados.length})
           </button>
+          </div>
+
+          {/* Filtro por Categoria */}
+          {categoriasUnicas.length > 0 && (
+            <div className="flex items-center gap-2 pb-2">
+              <span className="text-sm text-gray-600">Categoria:</span>
+              <select
+                value={selectedCategoria}
+                onChange={(e) => setSelectedCategoria(e.target.value)}
+                className="px-3 py-1 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-[#C1666B] focus:border-transparent"
+              >
+                <option value="todas">Todas ({textosBase.length})</option>
+                <option value="sem-categoria">
+                  Roteiro/Texto Livre ({textosBase.filter(t => !t.categoria).length})
+                </option>
+                {categoriasUnicas.map(cat => (
+                  <option key={cat} value={cat}>
+                    🏷️ {cat} ({textosBase.filter(t => t.categoria === cat).length})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
         {/* Lista de textos */}
@@ -218,12 +262,23 @@ export default function BibliotecaPage() {
                     <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
                       {texto.titulo}
                     </h3>
-                    {activeTab === "publicados" && texto.extraido && (
-                      <Badge variant="success" className="ml-2 flex-shrink-0">
-                        Extração OK
-                      </Badge>
-                    )}
+                    <div className="flex gap-2 ml-2 flex-shrink-0">
+                      {activeTab === "publicados" && texto.extraido && (
+                        <Badge variant="success">
+                          Extração OK
+                        </Badge>
+                      )}
+                    </div>
                   </div>
+                  
+                  {/* Badge de Categoria */}
+                  {texto.categoria && (
+                    <div className="mb-2">
+                      <Badge variant="default" className="text-xs">
+                        🏷️ {texto.categoria}
+                      </Badge>
+                    </div>
+                  )}
                   
                   <p className="text-sm text-gray-600 mb-4 line-clamp-3">
                     {truncateText(texto.conteudo)}

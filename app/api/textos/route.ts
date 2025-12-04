@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { titulo, conteudo, universe_id, world_id, episodio, status = 'rascunho' } = body;
+    const { titulo, conteudo, universe_id, world_id, episodio, categoria, status = 'rascunho' } = body;
 
     if (!titulo || !conteudo) {
       return NextResponse.json(
@@ -93,6 +93,7 @@ export async function POST(req: NextRequest) {
         universe_id: universe_id || null,
         world_id: world_id || null,
         episodio: episodio || null,
+        categoria: categoria || null,
         status,
         extraido: false,
       })
@@ -126,7 +127,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { id, titulo, conteudo, universe_id, world_id, episodio, status, extraido } = body;
+    const { id, titulo, conteudo, universe_id, world_id, episodio, categoria, status, extraido } = body;
 
     if (!id) {
       return NextResponse.json({ error: "ID é obrigatório" }, { status: 400 });
@@ -138,6 +139,7 @@ export async function PUT(req: NextRequest) {
     if (universe_id !== undefined) updateData.universe_id = universe_id;
     if (world_id !== undefined) updateData.world_id = world_id;
     if (episodio !== undefined) updateData.episodio = episodio;
+    if (categoria !== undefined) updateData.categoria = categoria;
     if (status !== undefined) updateData.status = status;
     if (extraido !== undefined) updateData.extraido = extraido;
 
