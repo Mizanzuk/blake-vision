@@ -839,7 +839,7 @@ export default function HomePage() {
                     "group relative flex items-center gap-2 px-3 py-2 rounded-lg cursor-move transition-colors",
                     editingSessionId === session.id && editingLocation === 'sidebar' ? "border-0" : "border",
                     activeSessionId === session.id
-                      ? "bg-[#FAFAF8] dark:bg-primary-900/30 text-text-light-primary dark:text-dark-primary border-border-light-strong dark:border-border-dark-strong"
+                      ? "bg-[#E8E4DB] dark:bg-primary-900/30 text-text-light-primary dark:text-dark-primary border-border-light-strong dark:border-border-dark-strong"
                       : "bg-transparent dark:bg-transparent text-text-light-secondary dark:text-dark-secondary border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay",
                     draggedSessionId === session.id && "opacity-50",
                     dragOverSessionId === session.id && "border-primary-500 border-2"
@@ -882,7 +882,7 @@ export default function HomePage() {
                   
                   {/* Botões com posicionamento absoluto e gradiente */}
                   {!(editingSessionId === session.id && editingLocation === 'sidebar') && (
-                  <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 pr-2 pl-8 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-[#FAFAF8] via-[#FAFAF8]/95 to-transparent dark:from-primary-900/30 dark:via-primary-900/30 dark:to-transparent">
+                  <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 pr-2 pl-8 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-[#E8E4DB] via-[#E8E4DB]/95 to-transparent dark:from-primary-900/30 dark:via-primary-900/30 dark:to-transparent">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
