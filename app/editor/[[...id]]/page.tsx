@@ -48,6 +48,7 @@ export default function EditorPage() {
   const [selectedFicha, setSelectedFicha] = useState<Ficha | null>(null);
   const [showFichaModal, setShowFichaModal] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     checkAuth();
@@ -104,20 +105,12 @@ export default function EditorPage() {
     return () => document.removeEventListener('keydown', handleEscape);
   }, [showUrthona, showUrizen]);
 
-  // Fechar chat ao clicar fora
+  // Auto-scroll para última mensagem
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (chatRef.current && !chatRef.current.contains(e.target as Node) && (showUrthona || showUrizen)) {
-        setShowUrthona(false);
-        setShowUrizen(false);
-      }
-    };
-
-    if (showUrthona || showUrizen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [showUrthona, showUrizen]);
+  }, [urthonaMessages, urizenMessages]);
 
   async function checkAuth() {
     try {
@@ -409,7 +402,10 @@ export default function EditorPage() {
     <div className="min-h-screen bg-[#F5F1E8]">
       <Header showNav={true} currentPage="editor" />
       
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className={clsx(
+        "max-w-7xl px-4 py-8 transition-all duration-300",
+        (showUrthona || showUrizen) ? "mx-0 ml-auto" : "mx-auto"
+      )}>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Editor</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -630,6 +626,7 @@ export default function EditorPage() {
                       )}
                     </div>
                   ))}
+                  <div ref={messagesEndRef} />
                 </div>
 
                 <div className="flex gap-2">
