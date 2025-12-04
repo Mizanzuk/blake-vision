@@ -859,13 +859,13 @@ export default function HomePage() {
                       onBlur={saveSessionTitle}
                       onClick={(e) => e.stopPropagation()}
                       autoFocus
-                      rows={1}
+                      rows={2}
                       onInput={(e) => {
                         const target = e.target as HTMLTextAreaElement;
                         target.style.height = 'auto';
                         target.style.height = target.scrollHeight + 'px';
                       }}
-                      className="absolute left-2 right-2 top-2 bottom-2 text-sm px-3 py-2 rounded bg-white dark:bg-dark-overlay border-2 border-primary-500 dark:border-primary-400 resize-none overflow-hidden z-20 shadow-lg"
+                      className="absolute left-2 right-2 top-2 text-sm px-3 py-2 rounded bg-white dark:bg-dark-overlay border border-primary-500 dark:border-primary-400 resize-none overflow-hidden z-20 shadow-lg min-h-[60px]"
                     />
                   ) : (
                     <span 
