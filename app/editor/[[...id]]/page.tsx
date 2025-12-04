@@ -37,8 +37,8 @@ export default function EditorPage() {
   const [universes, setUniverses] = useState<Universe[]>([]);
   const [worlds, setWorlds] = useState<World[]>([]);
   const [filteredWorlds, setFilteredWorlds] = useState<World[]>([]);
-  const [episodes, setEpisodes] = useState<any[]>([]);
-  const [filteredEpisodes, setFilteredEpisodes] = useState<any[]>([]);
+  const [allFichas, setAllFichas] = useState<Ficha[]>([]);
+  const [availableEpisodes, setAvailableEpisodes] = useState<string[]>([]);
 
   // Chat com assistentes
   const [urthonaMessages, setUrthonaMessages] = useState<any[]>([]);
@@ -74,12 +74,14 @@ export default function EditorPage() {
 
   useEffect(() => {
     if (worldId) {
-      const filtered = episodes.filter(ep => ep.world_id === worldId);
-      setFilteredEpisodes(filtered);
+      // Filtrar fichas do mundo selecionado e extrair episódios únicos
+      const worldFichas = allFichas.filter(f => f.world_id === worldId);
+      const episodes = Array.from(new Set(worldFichas.filter(f => f.episodio).map(f => f.episodio)));
+      setAvailableEpisodes(episodes.sort());
     } else {
-      setFilteredEpisodes([]);
+      setAvailableEpisodes([]);
     }
-  }, [worldId, episodes]);
+  }, [worldId, allFichas]);
 
   // Auto-save a cada 30 segundos
   useEffect(() => {
@@ -129,15 +131,15 @@ export default function EditorPage() {
 
   async function loadUniversesAndWorlds() {
     try {
-      const [universesRes, worldsRes, episodesRes] = await Promise.all([
+      const [universesRes, worldsRes, fichasRes] = await Promise.all([
         fetch("/api/universes"),
         fetch("/api/worlds"),
-        fetch("/api/fichas?tipo=Episódio"),
+        fetch("/api/catalog"),
       ]);
 
       const universesData = await universesRes.json();
       const worldsData = await worldsRes.json();
-      const episodesData = await episodesRes.json();
+      const fichasData = await fichasRes.json();
 
       if (universesRes.ok) {
         setUniverses(universesData.universes || []);
@@ -147,8 +149,8 @@ export default function EditorPage() {
         setWorlds(worldsData.worlds || []);
       }
 
-      if (episodesRes.ok) {
-        setEpisodes(episodesData.fichas || []);
+      if (fichasRes.ok) {
+        setAllFichas(fichasData.fichas || []);
       }
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
@@ -506,13 +508,9 @@ export default function EditorPage() {
 
               <EpisodesDropdownSingle
                 label="EPISÓDIO"
-                episodes={filteredEpisodes.map(ep => ({
-                  id: ep.id,
-                  numero: ep.numero || "?",
-                  titulo: ep.titulo || "Sem título"
-                }))}
-                selectedId={episodio}
-                onSelect={(id) => setEpisodio(id)}
+                episodes={availableEpisodes}
+                selectedEpisode={episodio}
+                onSelect={(episode) => setEpisodio(episode)}
                 disabled={!worldId}
                 onCreate={() => {
                   // TODO: Implementar modal de criação de episódio

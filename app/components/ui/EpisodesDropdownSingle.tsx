@@ -3,17 +3,11 @@
 import { useState, useRef, useEffect } from "react";
 import { clsx } from "clsx";
 
-interface Episode {
-  id: string;
-  numero: string;
-  titulo: string;
-}
-
 interface EpisodesDropdownSingleProps {
   label?: string;
-  episodes: Episode[];
-  selectedId: string;
-  onSelect: (id: string) => void;
+  episodes: string[];
+  selectedEpisode: string;
+  onSelect: (episode: string) => void;
   onCreate?: () => void;
   disabled?: boolean;
 }
@@ -21,15 +15,13 @@ interface EpisodesDropdownSingleProps {
 export function EpisodesDropdownSingle({
   label,
   episodes,
-  selectedId,
+  selectedEpisode,
   onSelect,
   onCreate,
   disabled = false,
 }: EpisodesDropdownSingleProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const selectedEpisode = episodes.find(ep => ep.id === selectedId);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -66,9 +58,7 @@ export function EpisodesDropdownSingle({
         )}
       >
         <span className="text-sm truncate">
-          {selectedEpisode 
-            ? `${selectedEpisode.numero}. ${selectedEpisode.titulo}` 
-            : "Selecione um episódio"}
+          {selectedEpisode || "Selecione um episódio"}
         </span>
         <svg
           className={clsx(
@@ -90,7 +80,7 @@ export function EpisodesDropdownSingle({
           <div
             className={clsx(
               "px-3 py-2 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors cursor-pointer border-b border-border-light-default dark:border-border-dark-default",
-              selectedId === "" && "bg-primary-50 dark:bg-primary-900/20"
+              selectedEpisode === "" && "bg-primary-50 dark:bg-primary-900/20"
             )}
             onClick={() => {
               onSelect("");
@@ -99,7 +89,7 @@ export function EpisodesDropdownSingle({
           >
             <p className={clsx(
               "text-sm font-medium",
-              selectedId === "" 
+              selectedEpisode === "" 
                 ? "text-primary-700 dark:text-primary-300" 
                 : "text-text-light-tertiary dark:text-dark-tertiary"
             )}>
@@ -110,23 +100,23 @@ export function EpisodesDropdownSingle({
           {/* Episode Options */}
           {episodes.map((episode) => (
             <div
-              key={episode.id}
+              key={episode}
               className={clsx(
                 "px-3 py-2 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors cursor-pointer border-b border-border-light-default dark:border-border-dark-default last:border-b-0",
-                selectedId === episode.id && "bg-primary-50 dark:bg-primary-900/20"
+                selectedEpisode === episode && "bg-primary-50 dark:bg-primary-900/20"
               )}
               onClick={() => {
-                onSelect(episode.id);
+                onSelect(episode);
                 setIsOpen(false);
               }}
             >
               <p className={clsx(
                 "text-sm font-medium truncate",
-                selectedId === episode.id 
+                selectedEpisode === episode 
                   ? "text-primary-700 dark:text-primary-300" 
                   : "text-text-light-primary dark:text-dark-primary"
               )}>
-                {episode.numero}. {episode.titulo}
+                {episode}
               </p>
             </div>
           ))}
