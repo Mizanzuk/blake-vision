@@ -76,7 +76,7 @@ export default function EditorPage() {
     if (worldId) {
       // Filtrar fichas do mundo selecionado e extrair episódios únicos
       const worldFichas = allFichas.filter(f => f.world_id === worldId);
-      const episodes = Array.from(new Set(worldFichas.filter(f => f.episodio).map(f => f.episodio)));
+      const episodes = Array.from(new Set(worldFichas.map(f => f.episodio).filter((ep): ep is string => ep !== null && ep !== undefined)));
       setAvailableEpisodes(episodes.sort());
     } else {
       setAvailableEpisodes([]);
