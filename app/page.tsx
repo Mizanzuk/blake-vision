@@ -108,6 +108,8 @@ export default function HomePage() {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [editingSessionTitle, setEditingSessionTitle] = useState("");
+  const [draggedSessionId, setDraggedSessionId] = useState<string | null>(null);
+  const [dragOverSessionId, setDragOverSessionId] = useState<string | null>(null);
   
   // Ficha modal state
   const [viewingFicha, setViewingFicha] = useState<Ficha | null>(null);
@@ -642,6 +644,31 @@ export default function HomePage() {
     setEditingSessionId(null);
     setEditingSessionTitle("");
   }
+  
+  function handleDragStart(sessionId: string) {
+    setDraggedSessionId(sessionId);
+  }
+  
+  function handleDragOver(e: React.DragEvent, sessionId: string) {
+    e.preventDefault();
+    setDragOverSessionId(sessionId);
+  }
+  
+  function handleDragEnd() {
+    if (draggedSessionId && dragOverSessionId && draggedSessionId !== dragOverSessionId) {
+      const draggedIndex = sessions.findIndex(s => s.id === draggedSessionId);
+      const targetIndex = sessions.findIndex(s => s.id === dragOverSessionId);
+      
+      const newSessions = [...sessions];
+      const [removed] = newSessions.splice(draggedIndex, 1);
+      newSessions.splice(targetIndex, 0, removed);
+      
+      setSessions(newSessions);
+    }
+    
+    setDraggedSessionId(null);
+    setDragOverSessionId(null);
+  }
 
   const activeSession = sessions.find(s => s.id === activeSessionId);
   const persona = activeSession ? PERSONAS[activeSession.mode] : null;
@@ -797,11 +824,17 @@ export default function HomePage() {
               {sessions.map(session => (
                 <div
                   key={session.id}
+                  draggable
+                  onDragStart={() => handleDragStart(session.id)}
+                  onDragOver={(e) => handleDragOver(e, session.id)}
+                  onDragEnd={handleDragEnd}
                   className={clsx(
-                    "group flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors border",
+                    "group relative flex items-center gap-2 px-3 py-2 rounded-lg cursor-move transition-colors border",
                     activeSessionId === session.id
                       ? "bg-[#FAFAF8] dark:bg-primary-900/30 text-text-light-primary dark:text-dark-primary border-border-light-strong dark:border-border-dark-strong"
-                      : "bg-transparent dark:bg-transparent text-text-light-secondary dark:text-dark-secondary border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay"
+                      : "bg-transparent dark:bg-transparent text-text-light-secondary dark:text-dark-secondary border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay",
+                    draggedSessionId === session.id && "opacity-50",
+                    dragOverSessionId === session.id && "border-primary-500 border-2"
                   )}
                   onClick={() => setActiveSessionId(session.id)}
                 >
@@ -822,49 +855,53 @@ export default function HomePage() {
                       className="flex-1 text-sm px-2 py-1 rounded bg-light-overlay dark:bg-dark-overlay border border-border-light-default dark:border-border-dark-default"
                     />
                   ) : (
-                    <span className="flex-1 text-sm line-clamp-2">{session.title}</span>
+                    <span className="flex-1 text-sm line-clamp-2 pr-24">{session.title}</span>
                   )}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      startEditingSession(session.id, session.title);
-                    }}
-                    className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-primary-light/10 text-primary-light transition-opacity"
-                    title="Editar"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const prevSessionId = activeSessionId;
-                      setActiveSessionId(session.id);
-                      setTimeout(() => {
-                        handleExportConversation();
-                        setActiveSessionId(prevSessionId);
-                      }, 0);
-                    }}
-                    className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-primary-light/10 text-primary-light transition-opacity"
-                    title="Exportar"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteSession(session.id);
-                    }}
-                    className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-error-light/10 text-error-light transition-opacity"
-                    title="Apagar"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
+                  
+                  {/* Botões com posicionamento absoluto */}
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        startEditingSession(session.id, session.title);
+                      }}
+                      className="p-1 rounded hover:bg-primary-light/10 text-primary-light"
+                      title="Editar"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const prevSessionId = activeSessionId;
+                        setActiveSessionId(session.id);
+                        setTimeout(() => {
+                          handleExportConversation();
+                          setActiveSessionId(prevSessionId);
+                        }, 0);
+                      }}
+                      className="p-1 rounded hover:bg-primary-light/10 text-primary-light"
+                      title="Exportar"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteSession(session.id);
+                      }}
+                      className="p-1 rounded hover:bg-error-light/10 text-error-light"
+                      title="Apagar"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -977,23 +1014,79 @@ export default function HomePage() {
       )}>
         {activeSession ? (
           <>
-            {/* Header Fixo com Avatar e Nome */}
-            <div className="bg-light-base dark:bg-dark-base px-6 py-4">
-              <div className="max-w-4xl mx-auto flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
-                  <img 
-                    src={`/${activeSession.mode === 'consulta' ? 'urizen' : 'urthona'}-avatar.png`}
-                    alt={activeSession.mode === 'consulta' ? 'Urizen' : 'Urthona'}
-                    className="w-full h-full object-cover"
-                  />
+            {/* Header Fixo com Avatar, Título e Botões */}
+            <div className="bg-light-base dark:bg-dark-base px-6 py-3">
+              <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+                {/* Avatar e Nome do Agente */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full overflow-hidden">
+                    <img 
+                      src={`/${activeSession.mode === 'consulta' ? 'urizen' : 'urthona'}-avatar.png`}
+                      alt={activeSession.mode === 'consulta' ? 'Urizen' : 'Urthona'}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-semibold text-text-light-primary dark:text-dark-primary">
+                      {activeSession.mode === 'consulta' ? 'Urizen' : 'Urthona'}
+                    </h2>
+                    <p className="text-xs text-text-light-secondary dark:text-dark-secondary">
+                      {activeSession.mode === 'consulta' ? 'A Lei (Consulta)' : 'O Fluxo (Criativo)'}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="font-semibold text-text-light-primary dark:text-dark-primary">
-                    {activeSession.mode === 'consulta' ? 'Urizen' : 'Urthona'}
-                  </h2>
-                  <p className="text-sm text-text-light-secondary dark:text-dark-secondary">
-                    {activeSession.mode === 'consulta' ? 'A Lei (Consulta)' : 'O Fluxo (Criativo)'}
-                  </p>
+                
+                {/* Título do Chat */}
+                <div className="flex-1 text-center">
+                  {editingSessionId === activeSession.id ? (
+                    <input
+                      type="text"
+                      value={editingSessionTitle}
+                      onChange={(e) => setEditingSessionTitle(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') saveSessionTitle();
+                        if (e.key === 'Escape') cancelEditingSession();
+                      }}
+                      onBlur={saveSessionTitle}
+                      autoFocus
+                      className="text-sm font-medium px-3 py-1 rounded bg-light-overlay dark:bg-dark-overlay border border-border-light-default dark:border-border-dark-default text-center w-full max-w-md mx-auto"
+                    />
+                  ) : (
+                    <h3 className="text-sm font-medium text-text-light-primary dark:text-dark-primary truncate">
+                      {activeSession.title}
+                    </h3>
+                  )}
+                </div>
+                
+                {/* Botões de Ação */}
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <button
+                    onClick={() => startEditingSession(activeSession.id, activeSession.title)}
+                    className="p-2 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-secondary hover:text-text-light-primary dark:text-dark-secondary dark:hover:text-dark-primary transition-colors"
+                    title="Editar título"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={handleExportConversation}
+                    className="p-2 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-secondary hover:text-text-light-primary dark:text-dark-secondary dark:hover:text-dark-primary transition-colors"
+                    title="Exportar conversa"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => deleteSession(activeSession.id)}
+                    className="p-2 rounded hover:bg-error-light/10 text-text-light-secondary hover:text-error-light dark:text-dark-secondary dark:hover:text-error-light transition-colors"
+                    title="Apagar conversa"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>
