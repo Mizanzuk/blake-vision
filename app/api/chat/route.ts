@@ -122,9 +122,8 @@ ${textContent}
     let exampleFichaId = "ID_DA_FICHA_AQUI";
     let fichasMap = new Map<string, string>(); // Map título -> ID
     
-    // Build conversation context from last 3 messages for better RAG results
+    // Build conversation context from all user messages for better RAG results
     const conversationContext = messages
-      .slice(-3)
       .filter(m => m.role === 'user')
       .map(m => m.content)
       .join(' ');
