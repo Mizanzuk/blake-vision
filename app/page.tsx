@@ -978,7 +978,8 @@ export default function HomePage() {
         {activeSession ? (
           <>
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="max-w-4xl mx-auto space-y-6">
               {activeSession.messages.map((message, index) => (
                 <div
                   key={message.id || index}
@@ -1104,6 +1105,7 @@ export default function HomePage() {
               )}
               
               <div ref={messagesEndRef} />
+              </div>
             </div>
 
             {/* Input */}
