@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
-import { searchLore } from "@/app/lib/rag";
+import { searchLore, LoreSearchResult } from "@/app/lib/rag";
 import { createClient } from "@/app/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -132,15 +132,59 @@ ${textContent}
     console.log('[RAG] Starting search...', { universeId, query: ragQuery, lastMessageOnly: lastMessage.content });
     if (universeId && isValidUUID(universeId)) {
       console.log('[RAG] Valid UUID, calling searchLore...');
-      const results = await searchLore(ragQuery, universeId, 0.5, 8);
-      console.log('[RAG] Search results:', { count: results.length, results });
+      // Busca vetorial com threshold mais baixo e mais resultados
+      const results = await searchLore(ragQuery, universeId, 0.3, 15);
+      console.log('[RAG] Vector search results:', { count: results.length });
       
-      if (results.length > 0) {
+      // Busca adicional por título (busca exata de nomes mencionados)
+      const titleResults: LoreSearchResult[] = [];
+      const words = lastMessage.content.toLowerCase().split(/\s+/);
+      console.log('[RAG] Searching by title for words:', words);
+      
+      // Buscar worlds do universo
+      const { data: worlds } = await supabase
+        .from('worlds')
+        .select('id')
+        .eq('universe_id', universeId);
+      
+      if (worlds && worlds.length > 0) {
+        const worldIds = worlds.map(w => w.id);
+        
+        // Buscar fichas cujo título contenha palavras da pergunta
+        for (const word of words) {
+          if (word.length >= 3) { // Apenas palavras com 3+ caracteres
+            const { data: titleMatches } = await supabase
+              .from('fichas')
+              .select('id, titulo, tipo, resumo, conteudo')
+              .in('world_id', worldIds)
+              .ilike('titulo', `%${word}%`)
+              .limit(5);
+            
+            if (titleMatches) {
+              titleMatches.forEach(match => {
+                // Adicionar apenas se não estiver já nos resultados vetoriais
+                if (!results.find(r => r.id === match.id)) {
+                  titleResults.push({
+                    ...match,
+                    similarity: 0.9 // Alta similaridade para matches de título
+                  });
+                }
+              });
+            }
+          }
+        }
+      }
+      
+      // Combinar resultados (vetorial + título)
+      const combinedResults = [...results, ...titleResults];
+      console.log('[RAG] Combined results:', { vector: results.length, title: titleResults.length, total: combinedResults.length });
+      
+      if (combinedResults.length > 0) {
         console.log('[RAG] Adding context to prompt');
-        exampleFichaId = results[0].id;
+        exampleFichaId = combinedResults[0].id;
         
         // Criar mapa de títulos para IDs (manter capitalização original)
-        results.forEach(r => {
+        combinedResults.forEach(r => {
           fichasMap.set(r.titulo, r.id);
         });
         
@@ -148,7 +192,7 @@ ${textContent}
 ### CONTEXTO RELEVANTE DO UNIVERSO
 As seguintes fichas foram encontradas e são relevantes para a conversa:
 
-${results.map((r, i) => `
+${combinedResults.map((r, i) => `
 ${i + 1}. **${r.titulo}** (${r.tipo}) [ID: ${r.id}]
    ${r.resumo || ""}
    ${r.conteudo ? `\n   Conteúdo: ${r.conteudo.slice(0, 300)}...` : ""}
