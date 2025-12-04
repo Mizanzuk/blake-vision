@@ -654,9 +654,9 @@ export default function HomePage() {
     <div className="flex h-screen bg-light-base dark:bg-dark-base">
       {/* Sidebar */}
       <aside className={clsx(
-        "border-r border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised flex flex-col transition-all duration-300 overflow-hidden",
+        "bg-light-raised dark:bg-dark-raised flex flex-col transition-all duration-300 overflow-hidden",
         "fixed md:relative inset-y-0 left-0 z-50",
-        isSidebarOpen ? "w-80" : "w-0 border-r-0"
+        isSidebarOpen ? "w-80" : "w-0"
       )}>
         {/* Header */}
         <div className="p-4">
@@ -872,7 +872,7 @@ export default function HomePage() {
         </div>
         
         {/* Footer with Profile Dropdown */}
-        <div className="p-4 border-t border-border-light-default dark:border-border-dark-default">
+        <div className="p-4">
           <div className="relative">
             <button
               onClick={() => setShowProfileDropdown(!showProfileDropdown)}
@@ -942,7 +942,7 @@ export default function HomePage() {
 
       {/* Sidebar Icons (when closed) - ChatGPT style */}
       {!isSidebarOpen && (
-        <div className="fixed left-0 top-0 h-full w-12 bg-light-raised dark:bg-dark-raised border-r border-border-light-default dark:border-border-dark-default flex flex-col items-center py-4 gap-3 z-50">
+        <div className="fixed left-0 top-0 h-full w-12 bg-light-raised dark:bg-dark-raised flex flex-col items-center py-4 gap-3 z-50">
           {/* Expand Button */}
           <button
             onClick={() => setIsSidebarOpen(true)}
@@ -978,7 +978,7 @@ export default function HomePage() {
         {activeSession ? (
           <>
             {/* Header Fixo com Avatar e Nome */}
-            <div className="border-b border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base px-6 py-4">
+            <div className="bg-light-base dark:bg-dark-base px-6 py-4">
               <div className="max-w-4xl mx-auto flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
                   <img 
@@ -1014,7 +1014,7 @@ export default function HomePage() {
                       "max-w-3xl rounded-2xl px-4 py-3",
                       message.role === "user"
                         ? "bg-primary-600 dark:bg-primary-500 text-white"
-                        : "bg-light-raised dark:bg-dark-raised shadow-sm"
+                        : "bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default"
                     )}
                   >
                     <div className={clsx(
