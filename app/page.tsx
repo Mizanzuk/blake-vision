@@ -1109,7 +1109,7 @@ export default function HomePage() {
             </div>
 
             {/* Input */}
-            <div className="p-6 border-t border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised">
+            <div className="p-6">
               <form onSubmit={handleSendMessage} className="max-w-4xl mx-auto">
                 <div className="flex gap-3 items-end">
                   <textarea
@@ -1128,7 +1128,7 @@ export default function HomePage() {
                     placeholder={t.chat.placeholder}
                     rows={1}
                     disabled={isSending}
-                    className="flex-1 px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary placeholder:text-text-light-tertiary dark:placeholder:text-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none overflow-y-auto"
+                    className="flex-1 px-4 py-3 rounded-xl border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder:text-text-light-tertiary dark:placeholder:text-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none overflow-y-auto shadow-soft"
                     style={{ minHeight: '40px', maxHeight: '240px', lineHeight: '24px' }}
                   />
                   <button
