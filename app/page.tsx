@@ -108,6 +108,7 @@ export default function HomePage() {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [editingSessionTitle, setEditingSessionTitle] = useState("");
+  const [editingLocation, setEditingLocation] = useState<'header' | 'sidebar' | null>(null);
   const [draggedSessionId, setDraggedSessionId] = useState<string | null>(null);
   const [dragOverSessionId, setDragOverSessionId] = useState<string | null>(null);
   
@@ -623,9 +624,10 @@ export default function HomePage() {
     toast.success("Conversa deletada com sucesso");
   }
   
-  function startEditingSession(sessionId: string, currentTitle: string) {
+  function startEditingSession(sessionId: string, currentTitle: string, location: 'header' | 'sidebar' = 'sidebar') {
     setEditingSessionId(sessionId);
     setEditingSessionTitle(currentTitle);
+    setEditingLocation(location);
   }
   
   function saveSessionTitle() {
@@ -637,12 +639,14 @@ export default function HomePage() {
       ));
       setEditingSessionId(null);
       setEditingSessionTitle("");
+      setEditingLocation(null);
     }
   }
   
   function cancelEditingSession() {
     setEditingSessionId(null);
     setEditingSessionTitle("");
+    setEditingLocation(null);
   }
   
   function handleDragStart(sessionId: string) {
@@ -841,7 +845,7 @@ export default function HomePage() {
                   <Badge variant={PERSONAS[session.mode].styles.badge} size="sm" className="w-[70px] justify-center flex-shrink-0">
                     {session.mode === 'consulta' ? 'Consulta' : 'Criativo'}
                   </Badge>
-                  {editingSessionId === session.id ? (
+                  {editingSessionId === session.id && editingLocation === 'sidebar' ? (
                     <input
                       type="text"
                       value={editingSessionTitle}
@@ -851,14 +855,21 @@ export default function HomePage() {
                         if (e.key === 'Escape') cancelEditingSession();
                       }}
                       onBlur={saveSessionTitle}
+                      onClick={(e) => e.stopPropagation()}
                       autoFocus
-                      className="flex-1 text-sm px-2 py-1 rounded bg-light-overlay dark:bg-dark-overlay border border-border-light-default dark:border-border-dark-default"
+                      className="flex-1 text-sm px-2 py-1 rounded bg-light-overlay dark:bg-dark-overlay border border-border-light-default dark:border-border-dark-default relative z-10"
                     />
                   ) : (
-                    <span className="flex-1 text-sm line-clamp-2">{session.title}</span>
+                    <span 
+                      className="flex-1 text-sm line-clamp-3"
+                      title={session.title.length > 50 ? session.title : undefined}
+                    >
+                      {session.title}
+                    </span>
                   )}
                   
                   {/* Botões com posicionamento absoluto e gradiente */}
+                  {!(editingSessionId === session.id && editingLocation === 'sidebar') && (
                   <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 pr-2 pl-8 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-[#FAFAF8] via-[#FAFAF8]/95 to-transparent dark:from-primary-900/30 dark:via-primary-900/30 dark:to-transparent">
                     <button
                       onClick={(e) => {
@@ -902,6 +913,7 @@ export default function HomePage() {
                       </svg>
                     </button>
                   </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -1038,7 +1050,7 @@ export default function HomePage() {
                 
                 {/* Título do Chat */}
                 <div className="flex-1 text-center">
-                  {editingSessionId === activeSession.id ? (
+                  {editingSessionId === activeSession.id && editingLocation === 'header' ? (
                     <input
                       type="text"
                       value={editingSessionTitle}
@@ -1061,7 +1073,7 @@ export default function HomePage() {
                 {/* Botões de Ação */}
                 <div className="flex items-center gap-1 flex-shrink-0">
                   <button
-                    onClick={() => startEditingSession(activeSession.id, activeSession.title)}
+                    onClick={() => startEditingSession(activeSession.id, activeSession.title, 'header')}
                     className="p-2 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-secondary hover:text-text-light-primary dark:text-dark-secondary dark:hover:text-dark-primary transition-colors"
                     title="Editar título"
                   >
