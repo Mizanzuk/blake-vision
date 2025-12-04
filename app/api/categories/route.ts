@@ -3,6 +3,78 @@ import { createClient } from "@/app/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
+export async function GET(req: NextRequest) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const universeId = searchParams.get("universeId");
+
+    if (!universeId) {
+      return NextResponse.json(
+        { error: "universeId é obrigatório" },
+        { status: 400 }
+      );
+    }
+
+    // Buscar mundos do universo
+    const { data: worlds, error: worldsError } = await supabase
+      .from("worlds")
+      .select("id")
+      .eq("universe_id", universeId);
+
+    if (worldsError) {
+      console.error("Erro ao buscar mundos:", worldsError);
+      return NextResponse.json({ error: "Erro ao buscar mundos" }, { status: 500 });
+    }
+
+    const worldIds = (worlds || []).map(w => w.id);
+
+    if (worldIds.length === 0) {
+      // Sem mundos, retornar array vazio
+      return NextResponse.json({ categories: [] });
+    }
+
+    // Buscar fichas de todos os mundos do universo
+    const { data: fichas, error: fichasError } = await supabase
+      .from("fichas")
+      .select("tipo")
+      .in("world_id", worldIds);
+
+    if (fichasError) {
+      console.error("Erro ao buscar fichas:", fichasError);
+      return NextResponse.json({ error: "Erro ao buscar fichas" }, { status: 500 });
+    }
+
+    // Extrair tipos únicos e criar array de categorias
+    const uniqueTypes = Array.from(new Set(
+      (fichas || [])
+        .map(f => f.tipo)
+        .filter((tipo): tipo is string => !!tipo)
+    )).sort();
+
+    // Converter para formato de categoria
+    const categories = uniqueTypes.map(tipo => ({
+      label: tipo,
+      slug: tipo.toLowerCase().replace(/\s+/g, '-'),
+    }));
+
+    return NextResponse.json({ categories });
+
+  } catch (error: any) {
+    console.error("Erro na API de categories:", error);
+    return NextResponse.json(
+      { error: error.message || "Erro interno" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient();
