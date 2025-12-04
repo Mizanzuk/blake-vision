@@ -12,6 +12,7 @@ import type { Universe, World, Ficha } from "@/app/types";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import FichaViewModal from "@/app/components/shared/FichaViewModal";
+import { NewEpisodeModal } from "@/app/components/modals/NewEpisodeModal";
 import { clsx } from "clsx";
 
 export default function EditorPage() {
@@ -24,6 +25,7 @@ export default function EditorPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [showUrthona, setShowUrthona] = useState(false);
   const [showUrizen, setShowUrizen] = useState(false);
+  const [showNewEpisodeModal, setShowNewEpisodeModal] = useState(false);
   
   // Dados do texto
   const [titulo, setTitulo] = useState("");
@@ -524,19 +526,7 @@ export default function EditorPage() {
                 selectedEpisode={episodio}
                 onSelect={(episode) => setEpisodio(episode)}
                 disabled={!worldId}
-                onCreate={() => {
-                  const novoEpisodio = prompt("Digite o número ou nome do novo episódio:");
-                  if (novoEpisodio && novoEpisodio.trim()) {
-                    const episodioTrimmed = novoEpisodio.trim();
-                    // Adicionar à lista se não existir
-                    if (!availableEpisodes.includes(episodioTrimmed)) {
-                      setAvailableEpisodes([...availableEpisodes, episodioTrimmed].sort());
-                    }
-                    // Selecionar o novo episódio
-                    setEpisodio(episodioTrimmed);
-                    toast.success(`Episódio "${episodioTrimmed}" criado com sucesso!`);
-                  }
-                }}
+                onCreate={() => setShowNewEpisodeModal(true)}
               />
             </div>
 
@@ -716,6 +706,20 @@ export default function EditorPage() {
         onEdit={() => {
           // Não implementado no editor
           setShowFichaModal(false);
+        }}
+      />
+
+      <NewEpisodeModal
+        isOpen={showNewEpisodeModal}
+        onClose={() => setShowNewEpisodeModal(false)}
+        onSave={(novoEpisodio) => {
+          // Adicionar à lista se não existir
+          if (!availableEpisodes.includes(novoEpisodio)) {
+            setAvailableEpisodes([...availableEpisodes, novoEpisodio].sort());
+          }
+          // Selecionar o novo episódio
+          setEpisodio(novoEpisodio);
+          toast.success(`Episódio "${novoEpisodio}" criado com sucesso!`);
         }}
       />
     </div>
