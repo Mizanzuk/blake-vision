@@ -132,15 +132,9 @@ ${textContent}
     console.log('[RAG] Starting search...', { universeId, query: ragQuery, lastMessageOnly: lastMessage.content });
     if (universeId && isValidUUID(universeId)) {
       console.log('[RAG] Valid UUID, calling searchLore...');
-      // Busca vetorial com threshold mais baixo e mais resultados
-      const results = await searchLore(ragQuery, universeId, 0.3, 15);
-      console.log('[RAG] Vector search results:', { count: results.length });
-      
-      // Busca adicional por título (busca exata de nomes mencionados)
-      const titleResults: LoreSearchResult[] = [];
-      // Usar contexto completo da conversa, não apenas última mensagem
-      const words = conversationContext.toLowerCase().split(/\s+/);
-      console.log('[RAG] Searching by title for words from full context:', words.slice(0, 20));
+      // CAMADA 1: Busca vetorial com threshold baixo e muitos resultados
+      const results = await searchLore(ragQuery, universeId, 0.2, 30);
+      console.log('[RAG] Layer 1 - Vector search:', { count: results.length });
       
       // Buscar worlds do universo
       const { data: worlds } = await supabase
@@ -148,37 +142,82 @@ ${textContent}
         .select('id')
         .eq('universe_id', universeId);
       
+      const allResults: LoreSearchResult[] = [...results];
+      const processedIds = new Set(results.map(r => r.id));
+      
       if (worlds && worlds.length > 0) {
         const worldIds = worlds.map(w => w.id);
         
-        // Buscar fichas cujo título contenha palavras da pergunta
+        // CAMADA 2: Busca por título (contexto completo)
+        const words = conversationContext.toLowerCase().split(/\s+/);
+        console.log('[RAG] Layer 2 - Title search for:', words.slice(0, 15));
+        
         for (const word of words) {
-          if (word.length >= 3) { // Apenas palavras com 3+ caracteres
+          if (word.length >= 3) {
             const { data: titleMatches } = await supabase
               .from('fichas')
               .select('id, titulo, tipo, resumo, conteudo')
               .in('world_id', worldIds)
               .ilike('titulo', `%${word}%`)
-              .limit(5);
+              .limit(10);
             
             if (titleMatches) {
               titleMatches.forEach(match => {
-                // Adicionar apenas se não estiver já nos resultados vetoriais
-                if (!results.find(r => r.id === match.id)) {
-                  titleResults.push({
-                    ...match,
-                    similarity: 0.9 // Alta similaridade para matches de título
-                  });
+                if (!processedIds.has(match.id)) {
+                  allResults.push({ ...match, similarity: 0.9 });
+                  processedIds.add(match.id);
                 }
               });
             }
           }
         }
+        
+        // CAMADA 3: Busca por relacionamentos (entidades mencionadas)
+        console.log('[RAG] Layer 3 - Relationship search');
+        const mentionedEntities = new Set<string>();
+        
+        // Extrair entidades mencionadas nas fichas já encontradas
+        allResults.forEach(ficha => {
+          const content = `${ficha.titulo} ${ficha.resumo || ''} ${ficha.conteudo || ''}`;
+          const contentWords = content.toLowerCase().split(/\s+/);
+          
+          // Adicionar palavras significativas (3+ caracteres)
+          contentWords.forEach(w => {
+            if (w.length >= 3 && !['para', 'com', 'uma', 'dos', 'das', 'que', 'foi', 'ser'].includes(w)) {
+              mentionedEntities.add(w);
+            }
+          });
+        });
+        
+        console.log('[RAG] Found entities:', Array.from(mentionedEntities).slice(0, 20));
+        
+        // Buscar fichas relacionadas às entidades mencionadas
+        for (const entity of Array.from(mentionedEntities).slice(0, 30)) {
+          const { data: relatedMatches } = await supabase
+            .from('fichas')
+            .select('id, titulo, tipo, resumo, conteudo')
+            .in('world_id', worldIds)
+            .or(`titulo.ilike.%${entity}%,conteudo.ilike.%${entity}%`)
+            .limit(3);
+          
+          if (relatedMatches) {
+            relatedMatches.forEach(match => {
+              if (!processedIds.has(match.id)) {
+                allResults.push({ ...match, similarity: 0.7 });
+                processedIds.add(match.id);
+              }
+            });
+          }
+        }
       }
       
-      // Combinar resultados (vetorial + título)
-      const combinedResults = [...results, ...titleResults];
-      console.log('[RAG] Combined results:', { vector: results.length, title: titleResults.length, total: combinedResults.length });
+      // Ordenar por similaridade (maior primeiro)
+      const combinedResults = allResults.sort((a, b) => b.similarity - a.similarity);
+      console.log('[RAG] Final results:', { 
+        vector: results.length, 
+        total: combinedResults.length,
+        unique: processedIds.size 
+      });
       
       if (combinedResults.length > 0) {
         console.log('[RAG] Adding context to prompt');
@@ -191,12 +230,13 @@ ${textContent}
         
         contextText = `
 ### CONTEXTO RELEVANTE DO UNIVERSO
-As seguintes fichas foram encontradas e são relevantes para a conversa:
+As seguintes fichas foram encontradas e são relevantes para a conversa.
+Você deve analisar TODAS as fichas e conectar informações relacionadas entre elas.
 
 ${combinedResults.map((r, i) => `
-${i + 1}. **${r.titulo}** (${r.tipo}) [ID: ${r.id}]
-   ${r.resumo || ""}
-   ${r.conteudo ? `\n   Conteúdo: ${r.conteudo.slice(0, 300)}...` : ""}
+${i + 1}. **${r.titulo}** (${r.tipo}) [ID: ${r.id}] [Similaridade: ${r.similarity.toFixed(2)}]
+   Resumo: ${r.resumo || "N/A"}
+   Conteúdo Completo: ${r.conteudo || "N/A"}
 `).join("\n")}
 `;
       } else {
@@ -219,13 +259,26 @@ ${contextText}
 
 ${mode === "consulta" ? `
 INSTRUÇÕES PARA MODO CONSULTA:
-- Responda APENAS com base nos fatos estabelecidos no contexto fornecido
-- Se não houver informação suficiente, diga claramente "Não há informação estabelecida sobre isso"
-- OBRIGATÓRIO: Ao mencionar fichas, SEMPRE use o formato [Nome da Ficha](ficha:ID_DA_FICHA)
-- Exemplo correto: [Incidente do sapo de plástico](ficha:${exampleFichaId})
-- NUNCA use links normais como [Texto](https://...), use APENAS o formato ficha:ID
-- Seja preciso e factual
+
+**PRINCÍPIOS DE ANÁLISE:**
+- Você recebeu um contexto MASSIVO com dezenas de fichas relacionadas
+- Sua missão é CONECTAR informações entre diferentes fichas
+- INFIRA relações mesmo quando não explícitas: se duas fichas mencionam o mesmo evento/pessoa/data, elas estão relacionadas
+- PRIORIZE COMPLETUDE sobre brevidade: mencione TODAS as fichas relevantes
+
+**REGRAS DE RESPOSTA:**
+- Responda com base nos fatos estabelecidos no contexto fornecido
+- Se múltiplas fichas mencionam o mesmo evento/pessoa, COMBINE as informações de todas elas
+- Exemplo: se ficha de "Ana" menciona "suspensão em 2012" e existe ficha "Suspensão Coletiva em 23/08/2012", conecte-as automaticamente
+- Se não houver informação suficiente APÓS analisar TODAS as fichas, diga "Não há informação estabelecida sobre isso"
+- Seja preciso, factual e COMPLETO
 - Identifique inconsistências se houver
+
+**FORMATO DE LINKS:**
+- OBRIGATÓRIO: Ao mencionar fichas, SEMPRE use [Nome da Ficha](ficha:ID_DA_FICHA)
+- Exemplo: [Incidente do sapo de plástico](ficha:${exampleFichaId})
+- NUNCA use links normais como [Texto](https://...)
+- Mencione TODAS as fichas relevantes encontradas, não apenas a primeira
 ` : `
 INSTRUÇÕES PARA MODO CRIATIVO:
 - Você pode criar e expandir narrativas
