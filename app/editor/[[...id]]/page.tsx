@@ -91,13 +91,10 @@ export default function EditorPage() {
   }, [universeId]);
 
   useEffect(() => {
-    console.log('useEffect episódios - worldId:', worldId, 'allFichas:', allFichas.length);
     if (worldId) {
       // Filtrar fichas do mundo selecionado e extrair episódios únicos
       const worldFichas = allFichas.filter(f => f.world_id === worldId);
-      console.log('worldFichas:', worldFichas.length);
       const episodes = Array.from(new Set(worldFichas.map(f => f.episodio).filter((ep): ep is string => ep !== null && ep !== undefined)));
-      console.log('episodes:', episodes);
       setAvailableEpisodes(episodes.sort());
     } else {
       setAvailableEpisodes([]);
