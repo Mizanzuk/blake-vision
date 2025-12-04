@@ -402,13 +402,13 @@ export default function EditorPage() {
     <div className="min-h-screen bg-[#F5F1E8]">
       <Header showNav={true} currentPage="editor" />
       
-      <div className={clsx(
-        "max-w-7xl px-4 py-8 transition-all duration-300",
-        (showUrthona || showUrizen) ? "mx-0 ml-auto" : "mx-auto"
-      )}>
+      <div className="max-w-7xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Editor</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className={clsx(
+          "grid gap-6 transition-all duration-300",
+          (showUrthona || showUrizen) ? "grid-cols-1 lg:grid-cols-3" : "grid-cols-1 lg:grid-cols-3 lg:max-w-4xl lg:mx-auto"
+        )}>
           {/* Editor principal */}
           <div className="lg:col-span-2 space-y-4">
             <Input
