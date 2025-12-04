@@ -80,7 +80,7 @@ export function Header({ title, showNav = true, currentPage }: HeaderProps) {
   const navItems = allNavItems.filter(item => item.id !== currentPage);
 
   return (
-    <header className="sticky top-0 z-40 bg-white/80 dark:bg-dark-raised/80 backdrop-blur-lg border-b border-border-light-default dark:border-border-dark-default">
+    <header className="sticky top-0 z-40 bg-[#F5F1E8]/80 dark:bg-dark-raised/80 backdrop-blur-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left: Title or Navigation */}
