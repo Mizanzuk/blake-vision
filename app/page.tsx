@@ -685,9 +685,10 @@ export default function HomePage() {
     <div className="flex h-screen bg-light-base dark:bg-dark-base">
       {/* Sidebar */}
       <aside className={clsx(
-        "bg-light-raised dark:bg-dark-raised flex flex-col transition-all duration-300 overflow-hidden",
+        "bg-light-raised dark:bg-dark-raised flex flex-col transition-all duration-300",
         "fixed md:relative inset-y-0 left-0 z-50",
-        isSidebarOpen ? "w-[250px]" : "w-0"
+        isSidebarOpen ? "w-[250px]" : "w-0",
+        !isSidebarOpen && "overflow-hidden"
       )}>
         {/* Header */}
         <div className="p-4">
@@ -723,6 +724,8 @@ export default function HomePage() {
 
 
 
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto">
         {/* Navigation */}
         <nav className="p-4 space-y-1">
           <button
@@ -814,7 +817,7 @@ export default function HomePage() {
         </div>
 
         {/* History */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="p-4">
           <h3 className="text-xs font-semibold text-text-light-tertiary dark:text-dark-tertiary uppercase tracking-wide mb-3">
             {t.chat.history}
           </h3>
@@ -927,6 +930,7 @@ export default function HomePage() {
               ))}
             </div>
           )}
+        </div>
         </div>
         
         {/* Footer with Profile Dropdown */}
