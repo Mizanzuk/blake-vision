@@ -32,7 +32,7 @@ export function TopNav({ currentPage }: TopNavProps) {
   return (
     <>
       {/* Desktop Nav */}
-      <nav className="hidden md:flex items-center justify-between px-6 py-4 bg-light-raised dark:bg-dark-raised border-b border-border-light-default dark:border-border-dark-default">
+      <nav className="hidden md:flex items-center justify-between px-6 py-4 bg-[#F5F1E8] dark:bg-dark-raised">
         {/* Left: Navigation Links */}
         <div className="flex items-center gap-6">
           {navLinks.filter(link => link.id !== currentPage).map((link) => (
@@ -141,7 +141,7 @@ export function TopNav({ currentPage }: TopNavProps) {
       </nav>
 
       {/* Mobile Nav */}
-      <nav className="md:hidden flex items-center justify-between px-4 py-3 bg-light-raised dark:bg-dark-raised border-b border-border-light-default dark:border-border-dark-default">
+      <nav className="md:hidden flex items-center justify-between px-4 py-3 bg-[#F5F1E8] dark:bg-dark-raised">
         {/* Hamburger Menu */}
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

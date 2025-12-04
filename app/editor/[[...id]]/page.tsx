@@ -403,8 +403,6 @@ export default function EditorPage() {
       <Header showNav={true} currentPage="editor" />
       
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Editor</h1>
-
         <div className={clsx(
           "gap-6 transition-all duration-300",
           (showUrthona || showUrizen) ? "grid grid-cols-1 lg:grid-cols-3" : "flex justify-center"
@@ -414,12 +412,60 @@ export default function EditorPage() {
             "space-y-4",
             (showUrthona || showUrizen) ? "lg:col-span-2" : "w-full max-w-4xl"
           )}>
-            <Input
-              label="TÍTULO"
-              value={titulo}
-              onChange={(e) => setTitulo(e.target.value)}
-              placeholder="Digite o título do texto..."
-            />
+            <div className="flex items-start justify-between gap-4 mb-8">
+              <div className="flex-1">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Editor</h1>
+                <Input
+                  label="TÍTULO"
+                  value={titulo}
+                  onChange={(e) => setTitulo(e.target.value)}
+                  placeholder="Digite o título do texto..."
+                />
+              </div>
+              
+              {/* Avatares dos Agentes */}
+              <div className="flex items-center gap-3 pt-10">
+                <div className="relative group">
+                  <button
+                    onClick={() => setShowUrthona(!showUrthona)}
+                    className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-300 hover:border-[#C1666B] transition-colors"
+                  >
+                    <img
+                      src="/urthona-avatar.png"
+                      alt="Urthona"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="48" height="48"%3E%3Crect fill="%23C1666B" width="48" height="48"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="20" font-weight="bold"%3EU%3C/text%3E%3C/svg%3E';
+                      }}
+                    />
+                  </button>
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                    Urthona (Criativo)
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                  </div>
+                </div>
+                
+                <div className="relative group">
+                  <button
+                    onClick={() => setShowUrizen(!showUrizen)}
+                    className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-300 hover:border-[#C1666B] transition-colors"
+                  >
+                    <img
+                      src="/urizen-avatar.png"
+                      alt="Urizen"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="48" height="48"%3E%3Crect fill="%234A5568" width="48" height="48"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="20" font-weight="bold"%3EU%3C/text%3E%3C/svg%3E';
+                      }}
+                    />
+                  </button>
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                    Urizen (Analítico)
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <UniverseDropdown
@@ -477,52 +523,8 @@ export default function EditorPage() {
               />
             </div>
             
-            {/* Avatares e Botões */}
-            <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-              {/* Avatares dos Agentes */}
-              <div className="flex items-center gap-3">
-                <div className="relative group">
-                  <button
-                    onClick={() => setShowUrthona(!showUrthona)}
-                    className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-300 hover:border-[#C1666B] transition-colors"
-                  >
-                    <img
-                      src="/urthona-avatar.png"
-                      alt="Urthona"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="48" height="48"%3E%3Crect fill="%23C1666B" width="48" height="48"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="20" font-weight="bold"%3EU%3C/text%3E%3C/svg%3E';
-                      }}
-                    />
-                  </button>
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                    Urthona (Criativo)
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
-                  </div>
-                </div>
-                
-                <div className="relative group">
-                  <button
-                    onClick={() => setShowUrizen(!showUrizen)}
-                    className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-300 hover:border-[#C1666B] transition-colors"
-                  >
-                    <img
-                      src="/urizen-avatar.png"
-                      alt="Urizen"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="48" height="48"%3E%3Crect fill="%234A5568" width="48" height="48"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="20" font-weight="bold"%3EU%3C/text%3E%3C/svg%3E';
-                      }}
-                    />
-                  </button>
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                    Urizen (Analítico)
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Botões de Ação */}
+            {/* Botões de Ação */}
+            <div className="flex items-center justify-end pt-4 border-t border-gray-200">
               <div className="flex gap-3">
                 <Button variant="secondary" size="sm" onClick={() => router.push("/biblioteca")}>
                   Voltar
