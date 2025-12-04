@@ -865,7 +865,7 @@ export default function HomePage() {
                         target.style.height = 'auto';
                         target.style.height = target.scrollHeight + 'px';
                       }}
-                      className="absolute left-[78px] right-2 top-2 text-sm px-2 py-1 rounded bg-light-overlay dark:bg-dark-overlay border-2 border-primary-500 dark:border-primary-400 resize-none overflow-hidden z-10"
+                      className="absolute left-2 right-2 top-2 bottom-2 text-sm px-3 py-2 rounded bg-white dark:bg-dark-overlay border-2 border-primary-500 dark:border-primary-400 resize-none overflow-hidden z-20 shadow-lg"
                     />
                   ) : (
                     <span 
@@ -1258,7 +1258,7 @@ export default function HomePage() {
                     )}
                   </button>
                 </div>
-                <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary mt-2">
+                <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary mt-3 text-center">
                   Pressione Enter para enviar, Shift+Enter para nova linha
                 </p>
               </form>
