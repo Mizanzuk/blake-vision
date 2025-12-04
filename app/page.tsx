@@ -855,11 +855,11 @@ export default function HomePage() {
                       className="flex-1 text-sm px-2 py-1 rounded bg-light-overlay dark:bg-dark-overlay border border-border-light-default dark:border-border-dark-default"
                     />
                   ) : (
-                    <span className="flex-1 text-sm line-clamp-2 pr-24">{session.title}</span>
+                    <span className="flex-1 text-sm line-clamp-2">{session.title}</span>
                   )}
                   
-                  {/* Botões com posicionamento absoluto */}
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {/* Botões com posicionamento absoluto e gradiente */}
+                  <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 pr-2 pl-8 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-[#FAFAF8] via-[#FAFAF8]/95 to-transparent dark:from-primary-900/30 dark:via-primary-900/30 dark:to-transparent">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
