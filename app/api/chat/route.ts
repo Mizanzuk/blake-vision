@@ -121,10 +121,19 @@ ${textContent}
     let contextText = "";
     let exampleFichaId = "ID_DA_FICHA_AQUI";
     let fichasMap = new Map<string, string>(); // Map título -> ID
-    console.log('[RAG] Starting search...', { universeId, query: lastMessage.content });
+    
+    // Build conversation context from last 3 messages for better RAG results
+    const conversationContext = messages
+      .slice(-3)
+      .filter(m => m.role === 'user')
+      .map(m => m.content)
+      .join(' ');
+    
+    const ragQuery = conversationContext || lastMessage.content;
+    console.log('[RAG] Starting search...', { universeId, query: ragQuery, lastMessageOnly: lastMessage.content });
     if (universeId && isValidUUID(universeId)) {
       console.log('[RAG] Valid UUID, calling searchLore...');
-      const results = await searchLore(lastMessage.content, universeId, 0.5, 8);
+      const results = await searchLore(ragQuery, universeId, 0.5, 8);
       console.log('[RAG] Search results:', { count: results.length, results });
       
       if (results.length > 0) {
