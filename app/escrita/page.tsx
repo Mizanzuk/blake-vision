@@ -127,6 +127,10 @@ function EscritaPageContent() {
   const [urizenMessages, setUrizenMessages] = useState<any[]>([]);
   const [assistantInput, setAssistantInput] = useState("");
   const [isAssistantLoading, setIsAssistantLoading] = useState(false);
+  
+  // Estados para seleção de texto
+  const [selectedText, setSelectedText] = useState("");
+  const [selectionMenuPosition, setSelectionMenuPosition] = useState<{x: number, y: number} | null>(null);
 
   // Estados para drag and drop
   const [draggedTextoId, setDraggedTextoId] = useState<string | null>(null);
@@ -1362,6 +1366,21 @@ function EscritaPageContent() {
                     ref={textareaRef}
                     value={conteudo}
                     onChange={(e) => setConteudo(e.target.value)}
+                    onMouseUp={(e) => {
+                      const selection = window.getSelection();
+                      const text = selection?.toString().trim();
+                      if (text && text.length > 0) {
+                        setSelectedText(text);
+                        const rect = (e.target as HTMLTextAreaElement).getBoundingClientRect();
+                        setSelectionMenuPosition({
+                          x: e.clientX,
+                          y: e.clientY - 50
+                        });
+                      } else {
+                        setSelectedText("");
+                        setSelectionMenuPosition(null);
+                      }
+                    }}
                     placeholder="Escreva seu texto aqui..."
                     className="w-full h-[calc(100vh-32rem)] px-4 py-3 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none font-mono text-sm leading-relaxed"
                   />
@@ -1453,16 +1472,18 @@ function EscritaPageContent() {
                           : "bg-transparent border border-border-light-default dark:border-border-dark-default text-text-light-secondary dark:text-dark-secondary"
                       )}
                     >
-                      <div className={clsx(
-                        "prose max-w-none [&>*:last-child]:mb-0",
-                        "[&>*]:text-[11px] [&>*]:leading-relaxed",
-                        "[&>p]:text-[11px] [&>h1]:text-[13px] [&>h2]:text-[12px] [&>h3]:text-[11px]",
-                        "[&>ul]:text-[11px] [&>ol]:text-[11px] [&>li]:text-[11px]",
-                        "[&>strong]:text-[11px] [&>em]:text-[11px] [&>code]:text-[10px]",
-                        msg.role === "user" 
-                          ? "prose-invert" 
-                          : "prose-stone dark:prose-invert"
-                      )}>
+                      <div 
+                        className={clsx(
+                          "prose prose-sm max-w-none [&>*:last-child]:mb-0",
+                          msg.role === "user" 
+                            ? "prose-invert" 
+                            : "prose-stone dark:prose-invert"
+                        )}
+                        style={{
+                          fontSize: '11px',
+                          lineHeight: '1.6'
+                        }}
+                      >
                         {msg.role === "assistant" ? (
                           <ReactMarkdown remarkPlugins={[remarkGfm]}>
                             {msg.content}
@@ -1490,12 +1511,13 @@ function EscritaPageContent() {
                   }}
                   placeholder="Mensagem..."
                   rows={1}
-                  className="flex-1 px-4 py-2 rounded-lg border-2 border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary placeholder:text-text-light-tertiary dark:placeholder:text-dark-tertiary outline-none focus:outline-none focus:border-primary-500 dark:focus:border-primary-400 text-sm resize-none max-h-24 overflow-y-auto"
+                  className="flex-1 px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary placeholder:text-text-light-tertiary dark:placeholder:text-dark-tertiary outline-none focus:outline-none focus:border-primary-500 dark:focus:border-primary-400 text-sm resize-none max-h-24 overflow-y-auto"
                   disabled={isAssistantLoading}
                   style={{
                     height: 'auto',
                     minHeight: '40px',
-                    maxHeight: '96px'
+                    maxHeight: '96px',
+                    boxShadow: 'none'
                   }}
                   onInput={(e) => {
                     const target = e.target as HTMLTextAreaElement;
@@ -1653,6 +1675,92 @@ function EscritaPageContent() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Menu Flutuante de Seleção de Texto */}
+      {selectionMenuPosition && selectedText && (
+        <>
+          {/* Backdrop invisível para fechar o menu */}
+          <div
+            className="fixed inset-0 z-[9990]"
+            onClick={() => {
+              setSelectionMenuPosition(null);
+              setSelectedText("");
+            }}
+          />
+          
+          {/* Menu */}
+          <div
+            className="fixed z-[9991] bg-white dark:bg-dark-raised rounded-lg shadow-lg border border-border-light-default dark:border-border-dark-default overflow-hidden"
+            style={{
+              left: `${selectionMenuPosition.x}px`,
+              top: `${selectionMenuPosition.y}px`,
+              transform: 'translateX(-50%)'
+            }}
+          >
+            <div className="flex flex-col">
+              <button
+                onClick={() => {
+                  if (!isMetadataSaved) return;
+                  setShowUrthona(true);
+                  setShowUrizen(false);
+                  // Adicionar mensagem inicial com o trecho selecionado
+                  setUrthonaMessages(prev => [
+                    ...prev,
+                    {
+                      role: "user",
+                      content: `Sobre este trecho:\n\n"${selectedText}"\n\n`
+                    }
+                  ]);
+                  setAssistantInput("");
+                  setSelectionMenuPosition(null);
+                  setSelectedText("");
+                }}
+                disabled={!isMetadataSaved}
+                className={clsx(
+                  "px-4 py-2.5 text-left text-sm transition-colors flex items-center gap-2",
+                  isMetadataSaved
+                    ? "hover:bg-[#C85A54]/10 text-text-light-primary dark:text-dark-primary cursor-pointer"
+                    : "text-text-light-tertiary dark:text-dark-tertiary cursor-not-allowed"
+                )}
+              >
+                <span className="text-base">📝</span>
+                <span>Perguntar para Urthona</span>
+              </button>
+              
+              <div className="h-px bg-border-light-default dark:bg-border-dark-default" />
+              
+              <button
+                onClick={() => {
+                  if (!isMetadataSaved) return;
+                  setShowUrizen(true);
+                  setShowUrthona(false);
+                  // Adicionar mensagem inicial com o trecho selecionado
+                  setUrizenMessages(prev => [
+                    ...prev,
+                    {
+                      role: "user",
+                      content: `Sobre este trecho:\n\n"${selectedText}"\n\n`
+                    }
+                  ]);
+                  setAssistantInput("");
+                  setSelectionMenuPosition(null);
+                  setSelectedText("");
+                }}
+                disabled={!isMetadataSaved}
+                className={clsx(
+                  "px-4 py-2.5 text-left text-sm transition-colors flex items-center gap-2",
+                  isMetadataSaved
+                    ? "hover:bg-[#5B7C8D]/10 text-text-light-primary dark:text-dark-primary cursor-pointer"
+                    : "text-text-light-tertiary dark:text-dark-tertiary cursor-not-allowed"
+                )}
+              >
+                <span className="text-base">📚</span>
+                <span>Perguntar para Urizen</span>
+              </button>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
