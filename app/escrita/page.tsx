@@ -1404,11 +1404,14 @@ function EscritaPageContent() {
                       const text = selection?.toString().trim();
                       if (text && text.length > 0) {
                         setSelectedText(text);
-                        const rect = (e.target as HTMLTextAreaElement).getBoundingClientRect();
-                        setSelectionMenuPosition({
-                          x: e.clientX,
-                          y: e.clientY - 80 // Aumentado para 80px para ficar acima do texto
-                        });
+                        const range = selection?.getRangeAt(0);
+                        const rect = range?.getBoundingClientRect();
+                        if (rect) {
+                          setSelectionMenuPosition({
+                            x: rect.left + (rect.width / 2),
+                            y: rect.top - 10 // 10px acima da primeira linha do texto selecionado
+                          });
+                        }
                       } else {
                         setSelectedText("");
                         setSelectionMenuPosition(null);
@@ -1422,7 +1425,7 @@ function EscritaPageContent() {
 
               {/* Ações (só aparecem após salvar metadados) */}
               {isMetadataSaved && (
-                <div className="flex justify-between items-center pt-4">
+                <div className="flex justify-between items-center pt-6">
                   {/* Botão Excluir à esquerda */}
                   <Button
                     onClick={() => currentTextoId && handleDelete(currentTextoId)}
@@ -1462,7 +1465,7 @@ function EscritaPageContent() {
         {/* Chat Lateral com Assistentes */}
         {(showUrthona || showUrizen) && (
           <div className="w-96 bg-light-base dark:bg-dark-base overflow-hidden flex flex-col">
-            <div ref={chatRef} className="flex flex-col h-full px-4 pt-4 pb-8">
+            <div ref={chatRef} className="flex flex-col h-full px-4 pt-4 pb-6">
               {/* Header do Chat */}
               <div className="flex justify-between items-center mb-4 pb-4">
                 <div>
@@ -1724,7 +1727,7 @@ function EscritaPageContent() {
           
           {/* Menu */}
           <div
-            className="fixed z-[9991] bg-white dark:bg-dark-raised rounded-lg shadow-lg border border-border-light-default dark:border-border-dark-default overflow-hidden"
+            className="fixed z-[9991] bg-light-base dark:bg-dark-base rounded-lg shadow-md border border-border-light-default dark:border-border-dark-default overflow-hidden"
             style={{
               left: `${selectionMenuPosition.x}px`,
               top: `${selectionMenuPosition.y}px`,
@@ -1732,28 +1735,21 @@ function EscritaPageContent() {
             }}
           >
             <div className="flex flex-col">
-              <div className="flex items-center justify-center gap-4 p-3">
+              <div className="flex items-center justify-center gap-3 p-2">
                 {/* Avatar Urthona */}
                 <button
                   onClick={() => {
                     if (!isMetadataSaved) return;
                     setShowUrthona(true);
                     setShowUrizen(false);
-                    // Adicionar mensagem inicial com o trecho selecionado
-                    setUrthonaMessages(prev => [
-                      ...prev,
-                      {
-                        role: "user",
-                        content: `Sobre este trecho:\n\n"${selectedText}"\n\n`
-                      }
-                    ]);
-                    setAssistantInput("");
+                    // Preencher o campo de input com o trecho selecionado
+                    setAssistantInput(`Sobre o trecho "${selectedText}", me diga: `);
                     setSelectionMenuPosition(null);
                     setSelectedText("");
                   }}
                   disabled={!isMetadataSaved}
                   className={clsx(
-                    "w-12 h-12 rounded-full transition-all",
+                    "w-10 h-10 rounded-full transition-all",
                     isMetadataSaved
                       ? "hover:scale-110 cursor-pointer"
                       : "opacity-30 cursor-not-allowed"
@@ -1773,21 +1769,14 @@ function EscritaPageContent() {
                     if (!isMetadataSaved) return;
                     setShowUrizen(true);
                     setShowUrthona(false);
-                    // Adicionar mensagem inicial com o trecho selecionado
-                    setUrizenMessages(prev => [
-                      ...prev,
-                      {
-                        role: "user",
-                        content: `Sobre este trecho:\n\n"${selectedText}"\n\n`
-                      }
-                    ]);
-                    setAssistantInput("");
+                    // Preencher o campo de input com o trecho selecionado
+                    setAssistantInput(`Sobre o trecho "${selectedText}", me diga: `);
                     setSelectionMenuPosition(null);
                     setSelectedText("");
                   }}
                   disabled={!isMetadataSaved}
                   className={clsx(
-                    "w-12 h-12 rounded-full transition-all",
+                    "w-10 h-10 rounded-full transition-all",
                     isMetadataSaved
                       ? "hover:scale-110 cursor-pointer"
                       : "opacity-30 cursor-not-allowed"
