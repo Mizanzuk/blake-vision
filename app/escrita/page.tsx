@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
 import { Header } from "@/app/components/layout/Header";
@@ -28,7 +28,7 @@ interface Texto {
   updated_at: string;
 }
 
-export default function EscritaPage() {
+function EscritaPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = getSupabaseClient();
@@ -688,5 +688,13 @@ export default function EscritaPage() {
         onSave={handleCreateNewEpisode}
       />
     </div>
+  );
+}
+
+export default function EscritaPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-light-base dark:bg-dark-base flex items-center justify-center"><div className="text-text-light-secondary dark:text-dark-secondary">Carregando...</div></div>}>
+      <EscritaPageContent />
+    </Suspense>
   );
 }
