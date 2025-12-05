@@ -1024,18 +1024,23 @@ function EscritaPageContent() {
                 {/* Urthona - Criativo */}
                 <div 
                   onClick={() => {
+                    if (!isMetadataSaved) return; // Não faz nada se não houver texto criado
                     setShowUrthona(!showUrthona);
                     if (!showUrthona) setShowUrizen(false);
                   }}
-                  className="relative group cursor-pointer"
-                  title="Urthona (Criativo)"
+                  className={clsx(
+                    "relative group",
+                    isMetadataSaved ? "cursor-pointer" : "cursor-not-allowed"
+                  )}
+                  title={isMetadataSaved ? "Urthona (Criativo)" : "Crie um texto para usar Urthona e Urizen"}
                 >
                   <img 
                     src="/urthona-avatar.png" 
                     alt="Urthona" 
                     className={clsx(
                       "w-12 h-12 rounded-full transition-all",
-                      showUrthona ? "ring-4 ring-[#C85A54]" : "hover:ring-2 hover:ring-[#C85A54]/50"
+                      !isMetadataSaved && "opacity-30",
+                      isMetadataSaved && (showUrthona ? "ring-4 ring-[#C85A54]" : "hover:ring-2 hover:ring-[#C85A54]/50")
                     )}
                   />
                 </div>
@@ -1043,18 +1048,23 @@ function EscritaPageContent() {
                 {/* Urizen - Consulta */}
                 <div 
                   onClick={() => {
+                    if (!isMetadataSaved) return; // Não faz nada se não houver texto criado
                     setShowUrizen(!showUrizen);
                     if (!showUrizen) setShowUrthona(false);
                   }}
-                  className="relative group cursor-pointer"
-                  title="Urizen (Consulta)"
+                  className={clsx(
+                    "relative group",
+                    isMetadataSaved ? "cursor-pointer" : "cursor-not-allowed"
+                  )}
+                  title={isMetadataSaved ? "Urizen (Consulta)" : "Crie um texto para usar Urthona e Urizen"}
                 >
                   <img 
                     src="/urizen-avatar.png" 
                     alt="Urizen" 
                     className={clsx(
                       "w-12 h-12 rounded-full transition-all",
-                      showUrizen ? "ring-4 ring-[#5B7C8D]" : "hover:ring-2 hover:ring-[#5B7C8D]/50"
+                      !isMetadataSaved && "opacity-30",
+                      isMetadataSaved && (showUrizen ? "ring-4 ring-[#5B7C8D]" : "hover:ring-2 hover:ring-[#5B7C8D]/50")
                     )}
                   />
                 </div>
