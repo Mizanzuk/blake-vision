@@ -816,7 +816,7 @@ function EscritaPageContent() {
 
         {/* Barra de ícones mobile (quando sidebar fechada) */}
         {!isSidebarOpen && (
-          <div className="md:hidden fixed left-0 top-16 h-[calc(100vh-4rem)] w-12 bg-light-raised dark:bg-dark-raised flex flex-col items-center py-4 gap-3 z-50 border-r border-border-light-default dark:border-border-dark-default">
+          <div className="md:hidden fixed left-0 top-0 h-full w-12 bg-light-raised dark:bg-dark-raised flex flex-col items-center pt-20 gap-3 z-40 border-r border-border-light-default dark:border-border-dark-default">
             {/* Botão Menu (Sanduíche) */}
             <button
               onClick={() => setShowMobileMenu(true)}
@@ -862,7 +862,7 @@ function EscritaPageContent() {
         {/* Container flex para Editor + Chat */}
         <div className={clsx(
           "flex-1 flex overflow-hidden transition-all duration-300",
-          !isSidebarOpen && "md:ml-12"
+          !isSidebarOpen && "ml-12 md:ml-12"
         )}>
           {/* Editor Principal */}
           <main className={clsx(
