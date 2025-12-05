@@ -61,6 +61,22 @@ function EscritaPageContent() {
   const [isMetadataLocked, setIsMetadataLocked] = useState(false);
   const [isMetadataSaved, setIsMetadataSaved] = useState(false); // Controla se metadados foram salvos
   const [isHeaderExpanded, setIsHeaderExpanded] = useState(true); // Controla expansão do cabeçalho
+  const [hasUnsavedMetadataChanges, setHasUnsavedMetadataChanges] = useState(false); // Controla se há alterações não salvas
+  const [savedMetadataSnapshot, setSavedMetadataSnapshot] = useState<any>(null); // Snapshot dos metadados salvos
+  
+  // Detectar alterações nos metadados
+  useEffect(() => {
+    if (!isMetadataLocked && savedMetadataSnapshot) {
+      const hasChanges = 
+        titulo !== savedMetadataSnapshot.titulo ||
+        universeId !== savedMetadataSnapshot.universeId ||
+        worldId !== savedMetadataSnapshot.worldId ||
+        episodio !== savedMetadataSnapshot.episodio ||
+        categoria !== savedMetadataSnapshot.categoria;
+      
+      setHasUnsavedMetadataChanges(hasChanges);
+    }
+  }, [titulo, universeId, worldId, episodio, categoria, isMetadataLocked, savedMetadataSnapshot]);
   
   // Estados de dados
   const [universes, setUniverses] = useState<Universe[]>([]);
@@ -98,6 +114,7 @@ function EscritaPageContent() {
 
   // Estados de modais
   const [showNewEpisodeModal, setShowNewEpisodeModal] = useState(false);
+  const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false);
   
   // Estado da sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -328,6 +345,10 @@ function EscritaPageContent() {
         setIsMetadataSaved(true);
         setIsMetadataLocked(true);
         setIsHeaderExpanded(false); // Colapsar cabeçalho
+        
+        // Salvar snapshot dos metadados e resetar flag de alterações
+        setSavedMetadataSnapshot({ titulo, universeId, worldId, episodio, categoria });
+        setHasUnsavedMetadataChanges(false);
         
         // Recarregar lista
         loadTextos();
@@ -1041,12 +1062,19 @@ function EscritaPageContent() {
 
               {/* Cabeçalho Colasável (quando metadados foram salvos) */}
               {isMetadataSaved ? (
-                <div className="border border-border-light-default dark:border-border-dark-default rounded-lg p-4">
+                <div className="p-4">
                   {/* Linha colapsada com título */}
                   <div className="flex items-center gap-3">
                     {/* Botão de expandir/colapsar */}
                     <button
-                      onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
+                      onClick={() => {
+                        if (isHeaderExpanded && hasUnsavedMetadataChanges) {
+                          // Mostrar modal de confirmação
+                          setShowUnsavedChangesModal(true);
+                        } else {
+                          setIsHeaderExpanded(!isHeaderExpanded);
+                        }
+                      }}
                       className="p-1 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary transition-colors"
                       title={isHeaderExpanded ? "Colapsar" : "Expandir"}
                     >
@@ -1063,20 +1091,6 @@ function EscritaPageContent() {
                       </svg>
                     </button>
 
-                    {/* Botão de editar */}
-                    <button
-                      onClick={() => {
-                        setIsMetadataLocked(false);
-                        setIsHeaderExpanded(true);
-                      }}
-                      className="p-1 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary transition-colors"
-                      title="Editar metadados"
-                    >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                      </svg>
-                    </button>
-
                     {/* Título */}
                     <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary flex-1">
                       {titulo || "Sem título"}
@@ -1086,6 +1100,20 @@ function EscritaPageContent() {
                   {/* Metadados expandidos */}
                   {isHeaderExpanded && (
                     <div className="mt-4 space-y-4">
+                      {/* Botão de editar (só aparece quando expandido) */}
+                      <div className="flex justify-end">
+                        <button
+                          onClick={() => setIsMetadataLocked(false)}
+                          className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                          title="Editar metadados"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                          Editar
+                        </button>
+                      </div>
+
                       {/* Título */}
                       <div>
                         <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
@@ -1146,6 +1174,20 @@ function EscritaPageContent() {
                           disabled={!universeId || isMetadataLocked}
                         />
                       </div>
+
+                      {/* Botão Salvar (só aparece quando está editando) */}
+                      {!isMetadataLocked && (
+                        <div className="flex justify-center">
+                          <Button
+                            onClick={handleSaveMetadata}
+                            disabled={isSaving || !titulo.trim() || !universeId}
+                            variant="primary"
+                            size="sm"
+                          >
+                            {isSaving ? "Salvando..." : "Salvar"}
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1245,7 +1287,19 @@ function EscritaPageContent() {
 
               {/* Ações (só aparecem após salvar metadados) */}
               {isMetadataSaved && (
-                <div className="flex justify-end items-center pt-4 gap-3">
+                <div className="flex justify-between items-center pt-4">
+                  {/* Botão Excluir à esquerda */}
+                  <Button
+                    onClick={() => currentTextoId && handleDelete(currentTextoId)}
+                    variant="secondary"
+                    size="sm"
+                    className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  >
+                    Excluir
+                  </Button>
+
+                  {/* Botões Salvar e Publicar à direita */}
+                  <div className="flex gap-3">
                   <Button
                     onClick={handleSave}
                     disabled={isSaving || !titulo.trim()}
@@ -1263,6 +1317,7 @@ function EscritaPageContent() {
                   >
                     Publicar
                   </Button>
+                  </div>
                 </div>
               )}
             </div>
@@ -1436,6 +1491,59 @@ function EscritaPageContent() {
         onClose={() => setShowNewEpisodeModal(false)}
         onSave={handleCreateNewEpisode}
       />
+
+      {/* Modal de Alterações Não Salvas */}
+      {showUnsavedChangesModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-light-raised dark:bg-dark-raised rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary mb-2">
+              Alterações não salvas
+            </h3>
+            <p className="text-text-light-secondary dark:text-dark-secondary mb-6">
+              Você tem alterações não salvas nos metadados. O que deseja fazer?
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button
+                onClick={() => setShowUnsavedChangesModal(false)}
+                variant="secondary"
+                size="sm"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => {
+                  // Descartar alterações - restaurar snapshot
+                  if (savedMetadataSnapshot) {
+                    setTitulo(savedMetadataSnapshot.titulo);
+                    setUniverseId(savedMetadataSnapshot.universeId);
+                    setWorldId(savedMetadataSnapshot.worldId);
+                    setEpisodio(savedMetadataSnapshot.episodio);
+                    setCategoria(savedMetadataSnapshot.categoria);
+                  }
+                  setIsMetadataLocked(true);
+                  setHasUnsavedMetadataChanges(false);
+                  setIsHeaderExpanded(false);
+                  setShowUnsavedChangesModal(false);
+                }}
+                variant="secondary"
+                size="sm"
+              >
+                Descartar
+              </Button>
+              <Button
+                onClick={() => {
+                  handleSaveMetadata();
+                  setShowUnsavedChangesModal(false);
+                }}
+                variant="primary"
+                size="sm"
+              >
+                Salvar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
