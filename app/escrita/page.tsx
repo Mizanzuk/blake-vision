@@ -5,8 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
 import { Header } from "@/app/components/layout/Header";
 import { Button, Card, Badge, EmptyState, Loading } from "@/app/components/ui";
-import { UniverseDropdownSingle } from "@/app/components/ui/UniverseDropdownSingle";
-import { WorldDropdownSingle } from "@/app/components/ui/WorldDropdownSingle";
+import { UniverseDropdown } from "@/app/components/ui";
+import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import { EpisodesDropdownSingle } from "@/app/components/ui/EpisodesDropdownSingle";
 import { CategoryDropdownSingle } from "@/app/components/ui/CategoryDropdownSingle";
 import { NewEpisodeModal } from "@/app/components/modals/NewEpisodeModal";
@@ -611,19 +611,28 @@ export default function EscritaPage() {
 
               {/* Metadados */}
               <div className="grid grid-cols-4 gap-4">
-                <UniverseDropdownSingle
+                <UniverseDropdown
                   label="UNIVERSO"
                   universes={universes}
-                  selectedUniverse={universeId}
-                  onSelect={setUniverseId}
+                  selectedId={universeId}
+                  onSelect={(id) => {
+                    setUniverseId(id);
+                    setWorldId("");
+                  }}
+                  onCreate={() => {
+                    console.log("Criar novo universo");
+                  }}
                 />
 
-                <WorldDropdownSingle
+                <WorldsDropdownSingle
                   label="MUNDO"
                   worlds={worlds.filter(w => w.universe_id === universeId)}
-                  selectedWorld={worldId}
-                  onSelect={setWorldId}
+                  selectedId={worldId}
+                  onSelect={(id) => setWorldId(id)}
                   disabled={!universeId}
+                  onCreate={() => {
+                    console.log("Criar novo mundo");
+                  }}
                 />
 
                 <EpisodesDropdownSingle
