@@ -19,6 +19,7 @@ export function Header({ title, showNav = true, currentPage }: HeaderProps) {
   
   const [userName, setUserName] = useState<string>("");
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -40,17 +41,18 @@ export function Header({ title, showNav = true, currentPage }: HeaderProps) {
     };
   }, []);
 
-  // Close dropdown on Esc key
+  // Close dropdowns on Esc key
   useEffect(() => {
     function handleEscape(e: globalThis.KeyboardEvent) {
-      if (e.key === 'Escape' && showProfileDropdown) {
+      if (e.key === 'Escape') {
         setShowProfileDropdown(false);
+        setShowMobileMenu(false);
       }
     }
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [showProfileDropdown]);
+  }, []);
 
   async function loadUserName() {
     try {
@@ -66,7 +68,7 @@ export function Header({ title, showNav = true, currentPage }: HeaderProps) {
     }
   }
 
-  const allNavItems = [
+  const navItems = [
     { id: "home", href: "/", label: "Home" },
     { id: "projetos", href: "/projetos", label: "Projetos" },
     { id: "catalog", href: "/catalog", label: "Catálogo" },
@@ -74,9 +76,6 @@ export function Header({ title, showNav = true, currentPage }: HeaderProps) {
     { id: "timeline", href: "/timeline", label: "Timeline" },
     { id: "upload", href: "/upload", label: "Upload" },
   ];
-  
-  // Filter out current page from navigation
-  const navItems = allNavItems.filter(item => item.id !== currentPage);
 
   return (
     <header className="sticky top-0 z-40 bg-[#F5F1E8]/80 dark:bg-dark-raised/80 backdrop-blur-lg">
@@ -90,18 +89,39 @@ export function Header({ title, showNav = true, currentPage }: HeaderProps) {
               </h1>
             )}
             
+            {/* Desktop Navigation */}
             {showNav && (
-              <nav className="hidden md:flex items-center gap-1">
+              <nav className="hidden md:flex items-center gap-6">
                 {navItems.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="px-3 py-2 text-sm font-medium text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay rounded-lg transition-colors"
+                    className={`text-sm font-medium transition-colors ${
+                      currentPage === item.id
+                        ? "text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400 pb-1"
+                        : "text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary"
+                    }`}
                   >
                     {item.label}
                   </Link>
                 ))}
               </nav>
+            )}
+
+            {/* Mobile Menu Button (Hamburger) */}
+            {showNav && (
+              <button
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                className="md:hidden p-2 rounded-lg text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  {showMobileMenu ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  )}
+                </svg>
+              </button>
             )}
           </div>
 
@@ -109,7 +129,7 @@ export function Header({ title, showNav = true, currentPage }: HeaderProps) {
           <div className="flex items-center gap-3">
             <Link
               href="/faq"
-              className="px-3 py-2 text-sm font-medium text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay rounded-lg transition-colors"
+              className="hidden md:block px-3 py-2 text-sm font-medium text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay rounded-lg transition-colors"
             >
               FAQ
             </Link>
@@ -174,6 +194,56 @@ export function Header({ title, showNav = true, currentPage }: HeaderProps) {
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu Drawer */}
+      {showMobileMenu && mounted && (
+        <>
+          {/* Backdrop */}
+          {createPortal(
+            <div
+              className="fixed inset-0 bg-black/50 z-[9997] md:hidden"
+              onClick={() => setShowMobileMenu(false)}
+            />,
+            document.body
+          )}
+          
+          {/* Menu Drawer */}
+          {createPortal(
+            <div className="fixed inset-y-0 right-0 w-64 bg-white dark:bg-dark-raised border-l border-border-light-default dark:border-border-dark-default z-[9998] md:hidden">
+              <div className="p-4 space-y-2">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setShowMobileMenu(false)}
+                    className={`block w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                      currentPage === item.id
+                        ? "bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400"
+                        : "text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                
+                {/* FAQ no mobile menu */}
+                <Link
+                  href="/faq"
+                  onClick={() => setShowMobileMenu(false)}
+                  className={`block w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                    currentPage === "faq"
+                      ? "bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400"
+                      : "text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay"
+                  }`}
+                >
+                  FAQ
+                </Link>
+              </div>
+            </div>,
+            document.body
+          )}
+        </>
+      )}
     </header>
   );
 }
