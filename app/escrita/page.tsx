@@ -319,6 +319,15 @@ function EscritaPageContent() {
     setIsMetadataSaved(true);
     setIsHeaderExpanded(false); // Começar colapsado para textos existentes
     
+    // Salvar snapshot dos metadados
+    setSavedMetadataSnapshot({
+      titulo: texto.titulo || "",
+      universeId: texto.universe_id || "",
+      worldId: texto.world_id || "",
+      episodio: texto.episodio || "",
+      categoria: texto.categoria || ""
+    });
+    
     // Atualizar URL
     router.push(`/escrita?id=${texto.id}`);
   }
