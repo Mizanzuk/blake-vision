@@ -816,7 +816,7 @@ function EscritaPageContent() {
 
         {/* Barra de ícones mobile (quando sidebar fechada) */}
         {!isSidebarOpen && (
-          <div className="md:hidden fixed left-0 top-0 h-full w-12 bg-light-raised dark:bg-dark-raised flex flex-col items-center pt-20 gap-3 z-40 border-r border-border-light-default dark:border-border-dark-default">
+          <div className="md:hidden fixed left-0 top-0 h-full w-12 bg-light-raised dark:bg-dark-raised flex flex-col items-center pt-4 gap-3 z-40">
             {/* Botão Menu (Sanduíche) */}
             <button
               onClick={() => setShowMobileMenu(true)}
