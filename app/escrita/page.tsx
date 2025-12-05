@@ -12,11 +12,7 @@ import { CategoryDropdownSingle } from "@/app/components/ui/CategoryDropdownSing
 import { NewEpisodeModal } from "@/app/components/modals/NewEpisodeModal";
 import { toast } from "sonner";
 import type { Universe, World, Category } from "@/app/types";
-import type { Ficha } from "@/app/types";
 import clsx from "clsx";
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import FichaViewModal from "@/app/components/shared/FichaViewModal";
 
 interface Texto {
   id: string;
@@ -48,7 +44,6 @@ function EscritaPageContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterUniverseId, setFilterUniverseId] = useState<string>("");
   const [filterWorldId, setFilterWorldId] = useState<string>("");
-  const [draggedTextoId, setDraggedTextoId] = useState<string | null>(null);
   const [filterCategoria, setFilterCategoria] = useState<string>("todas");
   
   // Estados do Editor
@@ -74,17 +69,9 @@ function EscritaPageContent() {
   // Estado da sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   
-  // Estados dos agentes (chat inline)
-  const [showUrthona, setShowUrthona] = useState(false);
-  const [showUrizen, setShowUrizen] = useState(false);
-  const [urthonaMessages, setUrthonaMessages] = useState<any[]>([]);
-  const [urizenMessages, setUrizenMessages] = useState<any[]>([]);
-  const [assistantInput, setAssistantInput] = useState("");
-  const [isAssistantLoading, setIsAssistantLoading] = useState(false);
-  const [selectedFicha, setSelectedFicha] = useState<Ficha | null>(null);
-  const [showFichaModal, setShowFichaModal] = useState(false);
-  const chatRef = useRef<HTMLDivElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  // Estado do modal de agente
+  const [showAgentModal, setShowAgentModal] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState<"urthona" | "urizen" | null>(null);
 
   // Refs
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -370,120 +357,6 @@ function EscritaPageContent() {
     toast.success(`Episódio "${episodeNumber}" criado!`);
   }
 
-  // Fechar chat com Esc
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && (showUrthona || showUrizen)) {
-        setShowUrthona(false);
-        setShowUrizen(false);
-      }
-    };
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [showUrthona, showUrizen]);
-
-  // Auto-scroll para última mensagem
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [urthonaMessages, urizenMessages]);
-
-  function handleTextToSpeech(text: string) {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'pt-BR';
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
-      
-      window.speechSynthesis.speak(utterance);
-    } else {
-      toast.error("Seu navegador não suporta leitura de texto");
-    }
-  }
-
-  async function handleAssistantMessage(mode: "urthona" | "urizen") {
-    if (!assistantInput.trim()) return;
-
-    setIsAssistantLoading(true);
-    const messages = mode === "urthona" ? urthonaMessages : urizenMessages;
-    const setMessages = mode === "urthona" ? setUrthonaMessages : setUrizenMessages;
-
-    const newUserMessage = {
-      role: "user",
-      content: assistantInput,
-    };
-
-    setMessages([...messages, newUserMessage]);
-    setAssistantInput("");
-
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [...messages, newUserMessage],
-          mode: mode === "urthona" ? "criativo" : "consulta",
-          universeId: universeId,
-          textContent: conteudo,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Erro desconhecido" }));
-        toast.error(errorData.error || "Erro ao conversar com assistente");
-        setIsAssistantLoading(false);
-        return;
-      }
-
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      let assistantMessage = "";
-
-      if (!reader) {
-        toast.error("Erro ao ler resposta do assistente");
-        setIsAssistantLoading(false);
-        return;
-      }
-
-      const assistantMessageObj = {
-        role: "assistant" as const,
-        content: "",
-      };
-      setMessages([...messages, newUserMessage, assistantMessageObj]);
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-        assistantMessage += chunk;
-
-        setMessages([...messages, newUserMessage, {
-          role: "assistant",
-          content: assistantMessage,
-        }]);
-      }
-
-      if (mode === "urthona" && assistantMessage.includes('```EDIT_CONTENT')) {
-        const editMatch = assistantMessage.match(/```EDIT_CONTENT\s*([\s\S]*?)```/);
-        if (editMatch && editMatch[1]) {
-          const newContent = editMatch[1].trim();
-          setConteudo(newContent);
-          toast.success("Texto atualizado por Urthona!");
-        }
-      }
-
-    } catch (error: any) {
-      console.error("Erro ao conversar com assistente:", error);
-      toast.error(error.message || "Erro ao conversar com assistente");
-    } finally {
-      setIsAssistantLoading(false);
-    }
-  }
-
   // Funções auxiliares para badges de categoria
   function getCategoryColor(categoria: string | null): string {
     if (!categoria) return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
@@ -574,9 +447,9 @@ function EscritaPageContent() {
       <div className="flex h-[calc(100vh-4rem)]">
         {/* Sidebar - Lista de Textos */}
         {isSidebarOpen && (
-        <aside className="w-[250px] bg-light-raised dark:bg-dark-raised overflow-y-auto fixed md:relative inset-y-0 left-0 z-50 md:z-auto">
+        <aside className="w-80 border-r border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised overflow-y-auto">
           {/* Header da Sidebar */}
-          <div className="p-4">
+          <div className="p-4 border-b border-border-light-default dark:border-border-dark-default">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-text-light-primary dark:text-dark-primary">Blake Vision</h2>
               <button
@@ -626,7 +499,7 @@ function EscritaPageContent() {
           </div>
 
           {/* Filtros */}
-          <div className="p-4 space-y-3">
+          <div className="p-4 space-y-3 border-b border-border-light-default dark:border-border-dark-default">
             {/* Busca */}
             <div className="relative">
               <input
@@ -676,91 +549,34 @@ function EscritaPageContent() {
                 {filteredTextos.map(texto => (
                   <div
                     key={texto.id}
-                    draggable
-                    onDragStart={() => setDraggedTextoId(texto.id)}
-                    onDragEnd={() => setDraggedTextoId(null)}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      if (draggedTextoId && draggedTextoId !== texto.id) {
-                        // Reordenar textos
-                        const list = activeTab === "rascunhos" ? rascunhos : publicados;
-                        const draggedIndex = list.findIndex(t => t.id === draggedTextoId);
-                        const targetIndex = list.findIndex(t => t.id === texto.id);
-                        const newList = [...list];
-                        const [removed] = newList.splice(draggedIndex, 1);
-                        newList.splice(targetIndex, 0, removed);
-                        if (activeTab === "rascunhos") {
-                          setRascunhos(newList);
-                        } else {
-                          setPublicados(newList);
-                        }
-                      }
-                    }}
                     onClick={() => handleSelectTexto(texto)}
                     className={clsx(
-                      "group relative flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors",
+                      "group relative flex flex-col gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors border",
                       currentTextoId === texto.id
-                        ? "bg-[#E8E4DB] dark:bg-primary-900/30 text-text-light-primary dark:text-dark-primary"
-                        : "bg-transparent dark:bg-transparent text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay"
+                        ? "bg-[#E8E4DB] dark:bg-primary-900/30 text-text-light-primary dark:text-dark-primary border-border-light-strong dark:border-border-dark-strong"
+                        : "bg-transparent dark:bg-transparent text-text-light-secondary dark:text-dark-secondary border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay"
                     )}
                   >
-                    {/* Badge centralizado verticalmente */}
-                    {texto.categoria && (
-                      <span className={clsx(
-                        "inline-block px-2 py-0.5 text-xs font-medium rounded flex-shrink-0",
-                        getCategoryColor(texto.categoria)
-                      )}>
-                        {getCategoryLabel(texto.categoria)}
+                    <div className="flex items-start gap-2">
+                      {texto.categoria && (
+                        <span className={clsx(
+                          "inline-block px-2 py-0.5 text-xs font-medium rounded flex-shrink-0",
+                          getCategoryColor(texto.categoria)
+                        )}>
+                          {getCategoryLabel(texto.categoria)}
+                        </span>
+                      )}
+                      <span className="flex-1 text-xs line-clamp-2">
+                        {texto.titulo || "Sem título"}
                       </span>
-                    )}
+                    </div>
                     
-                    {/* Título alinhado */}
-                    <span className="flex-1 text-sm line-clamp-1">
-                      {texto.titulo || "Sem título"}
-                    </span>
+                    <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary">
+                      {formatDate(texto.updated_at)}
+                    </p>
                     
                     {/* Botões com gradiente (aparecem no hover) */}
                     <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 pr-2 pl-8 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-[#E8E4DB] via-[#E8E4DB]/95 to-transparent dark:from-primary-900/30 dark:via-primary-900/30 dark:to-transparent">
-                      {/* Editar Título */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const novoTitulo = prompt('Novo título:', texto.titulo);
-                          if (novoTitulo && novoTitulo.trim()) {
-                            // TODO: Implementar edição de título
-                            toast.success('Título atualizado!');
-                          }
-                        }}
-                        className="p-1 rounded hover:bg-primary-500/10 text-text-light-secondary dark:text-dark-secondary"
-                        title="Editar Título"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                      </button>
-                      
-                      {/* Download */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const blob = new Blob([texto.conteudo || ''], { type: 'text/plain' });
-                          const url = URL.createObjectURL(blob);
-                          const a = document.createElement('a');
-                          a.href = url;
-                          a.download = `${texto.titulo || 'texto'}.txt`;
-                          a.click();
-                          URL.revokeObjectURL(url);
-                        }}
-                        className="p-1 rounded hover:bg-primary-500/10 text-text-light-secondary dark:text-dark-secondary"
-                        title="Download"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
-                      </button>
-                      
-                      {/* Apagar */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -776,9 +592,9 @@ function EscritaPageContent() {
                     </div>
                   </div>
                 ))}
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
         </aside>
         )}
 
@@ -791,21 +607,58 @@ function EscritaPageContent() {
               title="Abrir barra lateral"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
           </div>
         )}
 
         {/* Editor Principal */}
-        <main className="flex-1 overflow-y-auto flex">
-          {/* Área do Editor */}
-          <div className={clsx(
-            "transition-all duration-300 p-8",
-            (showUrthona || showUrizen) ? "w-2/3" : "w-full max-w-4xl mx-auto"
-          )}>
+        <main className="flex-1 overflow-y-auto">
+          <div className="max-w-4xl mx-auto p-8">
             <div className="space-y-6">
-              {/* Título e Avatares dos Agentes */}
+              {/* Agentes */}
+              <div className="flex gap-4 justify-end">
+                {/* Urthona - Criativo */}
+                <div 
+                  onClick={() => {
+                    setSelectedAgent("urthona");
+                    setShowAgentModal(true);
+                  }}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#C85A54]/10 dark:bg-[#C85A54]/20 border border-[#C85A54]/30 dark:border-[#C85A54]/40 hover:bg-[#C85A54]/15 dark:hover:bg-[#C85A54]/25 transition-all cursor-pointer group"
+                >
+                  <img 
+                    src="/urthona-avatar.png" 
+                    alt="Urthona" 
+                    className="w-10 h-10 rounded-full ring-2 ring-[#C85A54]/50"
+                  />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold text-[#C85A54] dark:text-[#D87A74]">Urthona</span>
+                    <span className="text-xs text-text-light-tertiary dark:text-dark-tertiary">O Fluxo (Criativo)</span>
+                  </div>
+                </div>
+
+                {/* Urizen - Consulta */}
+                <div 
+                  onClick={() => {
+                    setSelectedAgent("urizen");
+                    setShowAgentModal(true);
+                  }}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#5B7C8D]/10 dark:bg-[#5B7C8D]/20 border border-[#5B7C8D]/30 dark:border-[#5B7C8D]/40 hover:bg-[#5B7C8D]/15 dark:hover:bg-[#5B7C8D]/25 transition-all cursor-pointer group"
+                >
+                  <img 
+                    src="/urizen-avatar.png" 
+                    alt="Urizen" 
+                    className="w-10 h-10 rounded-full ring-2 ring-[#5B7C8D]/50"
+                  />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold text-[#5B7C8D] dark:text-[#7B9CAD]">Urizen</span>
+                    <span className="text-xs text-text-light-tertiary dark:text-dark-tertiary">A Lei (Consulta)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Título */}
               <div>
                 <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
                   TÍTULO
@@ -818,61 +671,6 @@ function EscritaPageContent() {
                   className="w-full px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
-              
-              {/* Avatares dos Agentes */}
-              <div className="flex items-center gap-3 justify-end">
-                <div className="relative group">
-                  <button
-                    onClick={() => {
-                      setShowUrthona(!showUrthona);
-                      if (!showUrthona) setShowUrizen(false);
-                    }}
-                    className={`w-12 h-12 rounded-full overflow-hidden border-4 transition-colors ${
-                      showUrthona ? 'border-[#C1666B]' : 'border-gray-300 hover:border-[#C1666B]'
-                    }`}
-                  >
-                    <img
-                      src="/urthona-avatar.png"
-                      alt="Urthona"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="48" height="48"%3E%3Crect fill="%23C1666B" width="48" height="48"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="20" font-weight="bold"%3EU%3C/text%3E%3C/svg%3E';
-                      }}
-                    />
-                  </button>
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
-                    Urthona (Criativo)
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
-                  </div>
-                </div>
-                
-                <div className="relative group">
-                  <button
-                    onClick={() => {
-                      setShowUrizen(!showUrizen);
-                      if (!showUrizen) setShowUrthona(false);
-                    }}
-                    className={`w-12 h-12 rounded-full overflow-hidden border-4 transition-colors ${
-                      showUrizen ? 'border-[#7BA5C4]' : 'border-gray-300 hover:border-[#7BA5C4]'
-                    }`}
-                  >
-                    <img
-                      src="/urizen-avatar.png"
-                      alt="Urizen"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="48" height="48"%3E%3Crect fill="%234A5568" width="48" height="48"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="20" font-weight="bold"%3EU%3C/text%3E%3C/svg%3E';
-                      }}
-                    />
-                  </button>
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
-                    Urizen (Analítico)
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
-                  </div>
-                </div>
-              </div>
-
-
 
               {/* Metadados */}
               <div className="grid grid-cols-4 gap-4">
@@ -934,11 +732,10 @@ function EscritaPageContent() {
               </div>
 
               {/* Ações */}
-              <div className="flex justify-between items-center pt-4">
+              <div className="flex justify-between items-center pt-4 border-t border-border-light-default dark:border-border-dark-default">
                 <Button
                   onClick={handleNewTexto}
                   variant="secondary"
-                  size="sm"
                 >
                   Voltar
                 </Button>
@@ -948,7 +745,6 @@ function EscritaPageContent() {
                     onClick={handleSave}
                     disabled={isSaving || !titulo.trim()}
                     variant="secondary"
-                    size="sm"
                   >
                     {isSaving ? "Salvando..." : "Salvar"}
                   </Button>
@@ -957,157 +753,96 @@ function EscritaPageContent() {
                     onClick={handlePublish}
                     disabled={isSaving || !titulo.trim()}
                     variant="primary"
-                    size="sm"
                   >
                     Publicar
                   </Button>
                 </div>
-            </div>
-          </div>
-
-          {/* Chat com Assistentes (Lateral) */}
-          {(showUrthona || showUrizen) && (
-            <div className="w-1/3 border-l border-border-light-default dark:border-border-dark-default p-6 overflow-y-auto">
-                <div ref={chatRef} className="bg-[#F5F1E8] rounded-lg border border-gray-300 p-4 max-h-[600px] flex flex-col relative">
-                  <div className="flex justify-between items-center mb-4">
-                    <div>
-                      <h3 className="font-semibold">
-                        {showUrthona ? "Urthona" : "Urizen"}
-                      </h3>
-                      <p className="text-xs text-gray-500">
-                        {showUrthona ? "Criativo" : "Consulta"}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setShowUrthona(false);
-                        setShowUrizen(false);
-                      }}
-                      className="text-gray-400 hover:text-gray-600 transition-colors"
-                      title="Fechar"
-                    >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                  
-                  <div className="flex-1 overflow-y-auto mb-4 space-y-3">
-                    {(showUrthona ? urthonaMessages : urizenMessages).map((msg, idx) => (
-                      <div
-                        key={idx}
-                        className={`relative group px-4 py-3 rounded-lg text-sm ${
-                          msg.role === "user"
-                            ? "bg-light-raised ml-4"
-                            : (showUrthona ? "bg-[#C1666B]" : "bg-[#7BA5C4]") + " text-white mr-4"
-                        }`}
-                      >
-                        {msg.role === "assistant" ? (
-                          <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                            urlTransform={(url) => url}
-                            components={{
-                              a: ({ node, href, children, ...props }) => {
-                                if (href?.startsWith('ficha:')) {
-                                  const fichaId = href.replace('ficha:', '');
-                                  return (
-                                    <button
-                                      onClick={async () => {
-                                        const { data } = await supabase
-                                          .from('fichas')
-                                          .select('*')
-                                          .eq('id', fichaId)
-                                          .single();
-                                        if (data) {
-                                          setSelectedFicha(data);
-                                          setShowFichaModal(true);
-                                        }
-                                      }}
-                                      className="text-white underline hover:no-underline font-semibold"
-                                    >
-                                      {children}
-                                    </button>
-                                  );
-                                }
-                                return (
-                                  <a href={href} target="_blank" rel="noopener noreferrer" className="underline hover:no-underline" {...props}>
-                                    {children}
-                                  </a>
-                                );
-                              },
-                            }}
-                          >
-                            {msg.content}
-                          </ReactMarkdown>
-                        ) : (
-                          msg.content
-                        )}
-                        {msg.role === "assistant" && (
-                          <button
-                            onClick={() => handleTextToSpeech(msg.content)}
-                            className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded hover:bg-white/20"
-                            title="Ler em voz alta"
-                          >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                            </svg>
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                    <div ref={messagesEndRef} />
-                  </div>
-
-                  <div className="flex gap-3 items-end">
-                    <input
-                      type="text"
-                      value={assistantInput}
-                      onChange={(e) => setAssistantInput(e.target.value)}
-                      onKeyPress={(e) => {
-                        if (e.key === "Enter") {
-                          handleAssistantMessage(showUrthona ? "urthona" : "urizen");
-                        }
-                      }}
-                      placeholder="Mensagem..."
-                      className="flex-1 px-4 py-3 rounded-xl border border-border-light-default dark:border-border-dark-default bg-[#F5F1E8] dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder:text-text-light-tertiary dark:placeholder:text-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-soft"
-                      disabled={isAssistantLoading}
-                    />
-                    <button
-                      onClick={() => handleAssistantMessage(showUrthona ? "urthona" : "urizen")}
-                      disabled={!assistantInput.trim() || isAssistantLoading}
-                      className="px-4 h-10 bg-primary-500 hover:bg-primary-600 disabled:bg-primary-300 dark:disabled:bg-primary-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2 flex-shrink-0"
-                    >
-                      {isAssistantLoading ? (
-                        <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                      ) : (
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
           </div>
         </main>
       </div>
 
-      {/* Modal de Ficha */}
-      <FichaViewModal
-        isOpen={showFichaModal}
-        ficha={selectedFicha}
-        onClose={() => {
-          setShowFichaModal(false);
-          setSelectedFicha(null);
-        }}
-        onEdit={() => {
-          setShowFichaModal(false);
-        }}
-      />
+      {/* Modal de Conversa com Agente */}
+      {showAgentModal && selectedAgent && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-light-raised dark:bg-dark-raised rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+            {/* Header do Modal */}
+            <div className={clsx(
+              "flex items-center justify-between p-4 border-b border-border-light-default dark:border-border-dark-default rounded-t-xl",
+              selectedAgent === "urthona" 
+                ? "bg-[#C85A54]/10 dark:bg-[#C85A54]/20"
+                : "bg-[#5B7C8D]/10 dark:bg-[#5B7C8D]/20"
+            )}>
+              <div className="flex items-center gap-3">
+                <img 
+                  src={selectedAgent === "urthona" ? "/urthona-avatar.png" : "/urizen-avatar.png"}
+                  alt={selectedAgent === "urthona" ? "Urthona" : "Urizen"}
+                  className={clsx(
+                    "w-10 h-10 rounded-full ring-2",
+                    selectedAgent === "urthona" ? "ring-[#C85A54]/50" : "ring-[#5B7C8D]/50"
+                  )}
+                />
+                <div>
+                  <h3 className={clsx(
+                    "text-lg font-semibold",
+                    selectedAgent === "urthona" 
+                      ? "text-[#C85A54] dark:text-[#D87A74]"
+                      : "text-[#5B7C8D] dark:text-[#7B9CAD]"
+                  )}>
+                    {selectedAgent === "urthona" ? "Urthona" : "Urizen"}
+                  </h3>
+                  <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary">
+                    {selectedAgent === "urthona" ? "O Fluxo (Criativo)" : "A Lei (Consulta)"}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowAgentModal(false);
+                  setSelectedAgent(null);
+                }}
+                className="p-2 rounded-lg hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Corpo do Modal */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className={clsx(
+                "p-4 rounded-lg border",
+                selectedAgent === "urthona"
+                  ? "bg-[#C85A54]/5 border-[#C85A54]/20"
+                  : "bg-[#5B7C8D]/5 border-[#5B7C8D]/20"
+              )}>
+                <p className="text-sm text-text-light-secondary dark:text-dark-secondary">
+                  {selectedAgent === "urthona" 
+                    ? "Eu sou Urthona, o Forjador. Minha forja está pronta para criar e expandir as narrativas. Qual a próxima história?"
+                    : "Eu sou Urizen, a Lei deste universo. Minha função é garantir a coerência dos Registros. O que você quer analisar hoje?"}
+                </p>
+              </div>
+              
+              <div className="mt-6 text-center">
+                <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary mb-4">
+                  Esta funcionalidade abrirá uma conversa completa com o agente.
+                </p>
+                <Button
+                  onClick={() => {
+                    // Redirecionar para home com o modo selecionado
+                    router.push(`/?mode=${selectedAgent === "urthona" ? "criativo" : "consulta"}`);
+                  }}
+                  variant="primary"
+                >
+                  Iniciar Conversa na Home
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de Novo Episódio */}
       <NewEpisodeModal
