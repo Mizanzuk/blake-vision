@@ -140,6 +140,7 @@ function EscritaPageContent() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatInputRef = useRef<HTMLTextAreaElement>(null);
 
   // Carregar dados iniciais
   useEffect(() => {
@@ -160,6 +161,15 @@ function EscritaPageContent() {
       loadTexto(textoId);
     }
   }, [searchParams, isLoading]);
+
+  // Ajustar altura do textarea do chat quando assistantInput mudar
+  useEffect(() => {
+    if (chatInputRef.current) {
+      chatInputRef.current.style.height = 'auto';
+      const newHeight = Math.min(chatInputRef.current.scrollHeight, 96);
+      chatInputRef.current.style.height = `${newHeight}px`;
+    }
+  }, [assistantInput]);
 
   // Carregar fichas quando universo muda
   useEffect(() => {
@@ -1407,9 +1417,11 @@ function EscritaPageContent() {
                         const range = selection?.getRangeAt(0);
                         const rect = range?.getBoundingClientRect();
                         if (rect) {
+                          // Garantir que o menu nunca apareça muito acima (mínimo 80px do topo)
+                          const menuY = Math.max(80, rect.top - 60);
                           setSelectionMenuPosition({
                             x: rect.left + (rect.width / 2),
-                            y: rect.top - 10 // 10px acima da primeira linha do texto selecionado
+                            y: menuY
                           });
                         }
                       } else {
@@ -1425,7 +1437,7 @@ function EscritaPageContent() {
 
               {/* Ações (só aparecem após salvar metadados) */}
               {isMetadataSaved && (
-                <div className="flex justify-between items-center pt-6">
+                <div className="flex justify-between items-center pt-5">
                   {/* Botão Excluir à esquerda */}
                   <Button
                     onClick={() => currentTextoId && handleDelete(currentTextoId)}
@@ -1465,7 +1477,7 @@ function EscritaPageContent() {
         {/* Chat Lateral com Assistentes */}
         {(showUrthona || showUrizen) && (
           <div className="w-96 bg-light-base dark:bg-dark-base overflow-hidden flex flex-col">
-            <div ref={chatRef} className="flex flex-col h-full px-4 pt-4 pb-6">
+            <div ref={chatRef} className="flex flex-col h-full px-4 pt-4 pb-5">
               {/* Header do Chat */}
               <div className="flex justify-between items-center mb-4 pb-4">
                 <div>
@@ -1537,6 +1549,7 @@ function EscritaPageContent() {
               {/* Input de Mensagem */}
               <div className="flex gap-2 items-end pt-4">
                 <textarea
+                  ref={chatInputRef}
                   value={assistantInput}
                   onChange={(e) => setAssistantInput(e.target.value)}
                   onKeyPress={(e) => {
