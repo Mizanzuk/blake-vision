@@ -637,7 +637,7 @@ function EscritaPageContent() {
       <div className="flex h-[calc(100vh-4rem)]">
         {/* Sidebar - Lista de Textos */}
         {isSidebarOpen && (
-        <aside className="w-[250px] bg-light-raised dark:bg-dark-raised overflow-y-auto">
+        <aside className="w-[250px] bg-light-raised dark:bg-dark-raised overflow-y-auto md:relative fixed inset-y-0 left-0 z-40 md:z-auto">
           {/* Header da Sidebar */}
           <div className="p-4">
             <div className="flex items-center justify-between mb-3">
@@ -822,7 +822,7 @@ function EscritaPageContent() {
               title="Abrir barra lateral"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
               </svg>
             </button>
           </div>
