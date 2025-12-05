@@ -557,7 +557,7 @@ function EscritaPageContent() {
                         : "bg-transparent dark:bg-transparent text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay"
                     )}
                   >
-                    <div className="flex items-start gap-2">
+                    <div className="flex items-center gap-2">
                       {texto.categoria && (
                         <span className={clsx(
                           "inline-block px-2 py-0.5 text-xs font-medium rounded flex-shrink-0",
@@ -566,14 +566,10 @@ function EscritaPageContent() {
                           {getCategoryLabel(texto.categoria)}
                         </span>
                       )}
-                      <span className="flex-1 text-xs line-clamp-2">
+                      <span className="flex-1 text-xs line-clamp-1">
                         {texto.titulo || "Sem título"}
                       </span>
                     </div>
-                    
-                    <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary">
-                      {formatDate(texto.updated_at)}
-                    </p>
                     
                     {/* Botões com gradiente (aparecem no hover) */}
                     <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 pr-2 pl-8 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-[#E8E4DB] via-[#E8E4DB]/95 to-transparent dark:from-primary-900/30 dark:via-primary-900/30 dark:to-transparent">
