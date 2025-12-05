@@ -685,7 +685,7 @@ export default function EscritaPage() {
       <NewEpisodeModal
         isOpen={showNewEpisodeModal}
         onClose={() => setShowNewEpisodeModal(false)}
-        onCreate={handleCreateNewEpisode}
+        onSave={handleCreateNewEpisode}
       />
     </div>
   );
