@@ -447,9 +447,9 @@ function EscritaPageContent() {
       <div className="flex h-[calc(100vh-4rem)]">
         {/* Sidebar - Lista de Textos */}
         {isSidebarOpen && (
-        <aside className="w-[250px] border-r border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised overflow-y-auto">
+        <aside className="w-[250px] bg-light-raised dark:bg-dark-raised overflow-y-auto">
           {/* Header da Sidebar */}
-          <div className="p-4 border-b border-border-light-default dark:border-border-dark-default">
+          <div className="p-4">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-text-light-primary dark:text-dark-primary">Blake Vision</h2>
               <button
@@ -473,7 +473,7 @@ function EscritaPageContent() {
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-border-light-default dark:border-border-dark-default">
+          <div className="flex">
             <button
               onClick={() => setActiveTab("rascunhos")}
               className={clsx(
@@ -499,7 +499,7 @@ function EscritaPageContent() {
           </div>
 
           {/* Filtros */}
-          <div className="p-4 space-y-3 border-b border-border-light-default dark:border-border-dark-default">
+          <div className="p-4 space-y-3">
             {/* Busca */}
             <div className="relative">
               <input
@@ -551,10 +551,10 @@ function EscritaPageContent() {
                     key={texto.id}
                     onClick={() => handleSelectTexto(texto)}
                     className={clsx(
-                      "group relative flex flex-col gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors border",
+                      "group relative flex flex-col gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors",
                       currentTextoId === texto.id
-                        ? "bg-[#E8E4DB] dark:bg-primary-900/30 text-text-light-primary dark:text-dark-primary border-border-light-strong dark:border-border-dark-strong"
-                        : "bg-transparent dark:bg-transparent text-text-light-secondary dark:text-dark-secondary border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay"
+                        ? "bg-[#E8E4DB] dark:bg-primary-900/30 text-text-light-primary dark:text-dark-primary"
+                        : "bg-transparent dark:bg-transparent text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay"
                     )}
                   >
                     <div className="flex items-start gap-2">
@@ -732,7 +732,7 @@ function EscritaPageContent() {
               </div>
 
               {/* Ações */}
-              <div className="flex justify-between items-center pt-4 border-t border-border-light-default dark:border-border-dark-default">
+              <div className="flex justify-between items-center pt-4">
                 <Button
                   onClick={handleNewTexto}
                   variant="secondary"
