@@ -73,6 +73,10 @@ function EscritaPageContent() {
   const [showAgentModal, setShowAgentModal] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<"urthona" | "urizen" | null>(null);
 
+  // Estados para drag and drop
+  const [draggedTextoId, setDraggedTextoId] = useState<string | null>(null);
+  const [dragOverTextoId, setDragOverTextoId] = useState<string | null>(null);
+
   // Refs
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -411,6 +415,44 @@ function EscritaPageContent() {
     toast.success(`Episódio "${episodeNumber}" criado!`);
   }
 
+  // Handlers para drag and drop
+  function handleDragStart(textoId: string) {
+    setDraggedTextoId(textoId);
+  }
+
+  function handleDragOver(e: React.DragEvent, textoId: string) {
+    e.preventDefault();
+    setDragOverTextoId(textoId);
+  }
+
+  function handleDragEnd() {
+    if (!draggedTextoId || !dragOverTextoId || draggedTextoId === dragOverTextoId) {
+      setDraggedTextoId(null);
+      setDragOverTextoId(null);
+      return;
+    }
+
+    // Reordenar lista
+    const currentList = activeTab === "rascunhos" ? rascunhos : publicados;
+    const draggedIndex = currentList.findIndex(t => t.id === draggedTextoId);
+    const targetIndex = currentList.findIndex(t => t.id === dragOverTextoId);
+
+    if (draggedIndex === -1 || targetIndex === -1) return;
+
+    const newList = [...currentList];
+    const [removed] = newList.splice(draggedIndex, 1);
+    newList.splice(targetIndex, 0, removed);
+
+    if (activeTab === "rascunhos") {
+      setRascunhos(newList);
+    } else {
+      setPublicados(newList);
+    }
+
+    setDraggedTextoId(null);
+    setDragOverTextoId(null);
+  }
+
   // Funções auxiliares para badges de categoria
   function getCategoryColor(categoria: string | null): string {
     if (!categoria) return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
@@ -603,12 +645,17 @@ function EscritaPageContent() {
                 {filteredTextos.map(texto => (
                   <div
                     key={texto.id}
+                    draggable
+                    onDragStart={() => handleDragStart(texto.id)}
+                    onDragOver={(e) => handleDragOver(e, texto.id)}
+                    onDragEnd={handleDragEnd}
                     onClick={() => handleSelectTexto(texto)}
                     className={clsx(
-                      "group relative flex flex-col gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors",
+                      "group relative flex flex-col gap-2 px-3 py-2 rounded-lg cursor-move transition-colors",
                       currentTextoId === texto.id
                         ? "bg-[#E8E4DB] dark:bg-primary-900/30 text-text-light-primary dark:text-dark-primary"
-                        : "bg-transparent dark:bg-transparent text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay"
+                        : "bg-transparent dark:bg-transparent text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay",
+                      draggedTextoId === texto.id && "opacity-50"
                     )}
                   >
                     <div className="flex items-center gap-2">
