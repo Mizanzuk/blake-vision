@@ -48,6 +48,7 @@ function EscritaPageContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterUniverseId, setFilterUniverseId] = useState<string>("");
   const [filterWorldId, setFilterWorldId] = useState<string>("");
+  const [draggedTextoId, setDraggedTextoId] = useState<string | null>(null);
   const [filterCategoria, setFilterCategoria] = useState<string>("todas");
   
   // Estados do Editor
@@ -573,9 +574,9 @@ function EscritaPageContent() {
       <div className="flex h-[calc(100vh-4rem)]">
         {/* Sidebar - Lista de Textos */}
         {isSidebarOpen && (
-        <aside className="w-80 border-r border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised overflow-y-auto">
+        <aside className="w-[250px] bg-light-raised dark:bg-dark-raised overflow-y-auto fixed md:relative inset-y-0 left-0 z-50 md:z-auto">
           {/* Header da Sidebar */}
-          <div className="p-4 border-b border-border-light-default dark:border-border-dark-default">
+          <div className="p-4">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-text-light-primary dark:text-dark-primary">Blake Vision</h2>
               <button
@@ -625,7 +626,7 @@ function EscritaPageContent() {
           </div>
 
           {/* Filtros */}
-          <div className="p-4 space-y-3 border-b border-border-light-default dark:border-border-dark-default">
+          <div className="p-4 space-y-3">
             {/* Busca */}
             <div className="relative">
               <input
@@ -675,34 +676,91 @@ function EscritaPageContent() {
                 {filteredTextos.map(texto => (
                   <div
                     key={texto.id}
+                    draggable
+                    onDragStart={() => setDraggedTextoId(texto.id)}
+                    onDragEnd={() => setDraggedTextoId(null)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (draggedTextoId && draggedTextoId !== texto.id) {
+                        // Reordenar textos
+                        const list = activeTab === "rascunhos" ? rascunhos : publicados;
+                        const draggedIndex = list.findIndex(t => t.id === draggedTextoId);
+                        const targetIndex = list.findIndex(t => t.id === texto.id);
+                        const newList = [...list];
+                        const [removed] = newList.splice(draggedIndex, 1);
+                        newList.splice(targetIndex, 0, removed);
+                        if (activeTab === "rascunhos") {
+                          setRascunhos(newList);
+                        } else {
+                          setPublicados(newList);
+                        }
+                      }
+                    }}
                     onClick={() => handleSelectTexto(texto)}
                     className={clsx(
-                      "group relative flex flex-col gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors border",
+                      "group relative flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors",
                       currentTextoId === texto.id
-                        ? "bg-[#E8E4DB] dark:bg-primary-900/30 text-text-light-primary dark:text-dark-primary border-border-light-strong dark:border-border-dark-strong"
-                        : "bg-transparent dark:bg-transparent text-text-light-secondary dark:text-dark-secondary border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay"
+                        ? "bg-[#E8E4DB] dark:bg-primary-900/30 text-text-light-primary dark:text-dark-primary"
+                        : "bg-transparent dark:bg-transparent text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay"
                     )}
                   >
-                    <div className="flex items-start gap-2">
-                      {texto.categoria && (
-                        <span className={clsx(
-                          "inline-block px-2 py-0.5 text-xs font-medium rounded flex-shrink-0",
-                          getCategoryColor(texto.categoria)
-                        )}>
-                          {getCategoryLabel(texto.categoria)}
-                        </span>
-                      )}
-                      <span className="flex-1 text-xs line-clamp-2">
-                        {texto.titulo || "Sem título"}
+                    {/* Badge centralizado verticalmente */}
+                    {texto.categoria && (
+                      <span className={clsx(
+                        "inline-block px-2 py-0.5 text-xs font-medium rounded flex-shrink-0",
+                        getCategoryColor(texto.categoria)
+                      )}>
+                        {getCategoryLabel(texto.categoria)}
                       </span>
-                    </div>
+                    )}
                     
-                    <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary">
-                      {formatDate(texto.updated_at)}
-                    </p>
+                    {/* Título alinhado */}
+                    <span className="flex-1 text-sm line-clamp-1">
+                      {texto.titulo || "Sem título"}
+                    </span>
                     
                     {/* Botões com gradiente (aparecem no hover) */}
                     <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 pr-2 pl-8 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-[#E8E4DB] via-[#E8E4DB]/95 to-transparent dark:from-primary-900/30 dark:via-primary-900/30 dark:to-transparent">
+                      {/* Editar Título */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const novoTitulo = prompt('Novo título:', texto.titulo);
+                          if (novoTitulo && novoTitulo.trim()) {
+                            // TODO: Implementar edição de título
+                            toast.success('Título atualizado!');
+                          }
+                        }}
+                        className="p-1 rounded hover:bg-primary-500/10 text-text-light-secondary dark:text-dark-secondary"
+                        title="Editar Título"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                      
+                      {/* Download */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const blob = new Blob([texto.conteudo || ''], { type: 'text/plain' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `${texto.titulo || 'texto'}.txt`;
+                          a.click();
+                          URL.revokeObjectURL(url);
+                        }}
+                        className="p-1 rounded hover:bg-primary-500/10 text-text-light-secondary dark:text-dark-secondary"
+                        title="Download"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                      </button>
+                      
+                      {/* Apagar */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -718,9 +776,9 @@ function EscritaPageContent() {
                     </div>
                   </div>
                 ))}
-              </div>
-            )}
-          </div>
+            </div>
+          )}
+        </div>
         </aside>
         )}
 
@@ -733,15 +791,19 @@ function EscritaPageContent() {
               title="Abrir barra lateral"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
               </svg>
             </button>
           </div>
         )}
 
         {/* Editor Principal */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="max-w-4xl mx-auto p-8">
+        <main className="flex-1 overflow-y-auto flex">
+          {/* Área do Editor */}
+          <div className={clsx(
+            "transition-all duration-300 p-8",
+            (showUrthona || showUrizen) ? "w-2/3" : "w-full max-w-4xl mx-auto"
+          )}>
             <div className="space-y-6">
               {/* Título e Avatares dos Agentes */}
               <div>
@@ -758,7 +820,7 @@ function EscritaPageContent() {
               </div>
               
               {/* Avatares dos Agentes */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 justify-end">
                 <div className="relative group">
                   <button
                     onClick={() => {
@@ -872,10 +934,11 @@ function EscritaPageContent() {
               </div>
 
               {/* Ações */}
-              <div className="flex justify-between items-center pt-4 border-t border-border-light-default dark:border-border-dark-default">
+              <div className="flex justify-between items-center pt-4">
                 <Button
                   onClick={handleNewTexto}
                   variant="secondary"
+                  size="sm"
                 >
                   Voltar
                 </Button>
@@ -885,6 +948,7 @@ function EscritaPageContent() {
                     onClick={handleSave}
                     disabled={isSaving || !titulo.trim()}
                     variant="secondary"
+                    size="sm"
                   >
                     {isSaving ? "Salvando..." : "Salvar"}
                   </Button>
@@ -893,14 +957,17 @@ function EscritaPageContent() {
                     onClick={handlePublish}
                     disabled={isSaving || !titulo.trim()}
                     variant="primary"
+                    size="sm"
                   >
                     Publicar
                   </Button>
                 </div>
-              </div>
+            </div>
+          </div>
 
-              {/* Chat com Assistentes */}
-              {(showUrthona || showUrizen) && (
+          {/* Chat com Assistentes (Lateral) */}
+          {(showUrthona || showUrizen) && (
+            <div className="w-1/3 border-l border-border-light-default dark:border-border-dark-default p-6 overflow-y-auto">
                 <div ref={chatRef} className="bg-[#F5F1E8] rounded-lg border border-gray-300 p-4 max-h-[600px] flex flex-col relative">
                   <div className="flex justify-between items-center mb-4">
                     <div>

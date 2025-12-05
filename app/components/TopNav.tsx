@@ -34,14 +34,14 @@ export function TopNav({ currentPage }: TopNavProps) {
       <nav className="hidden md:flex items-center justify-between px-6 py-4 bg-[#F5F1E8] dark:bg-dark-raised">
         {/* Left: Navigation Links */}
         <div className="flex items-center gap-6">
-          {navLinks.filter(link => link.id !== currentPage).map((link) => (
+          {navLinks.map((link) => (
             <button
               key={link.id}
               onClick={() => router.push(link.href)}
               className={clsx(
                 "text-sm font-medium transition-colors",
                 currentPage === link.id
-                  ? "text-primary-500 border-b-2 border-primary-500 pb-1"
+                  ? "text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400 pb-1"
                   : "text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary"
               )}
             >
@@ -193,7 +193,7 @@ export function TopNav({ currentPage }: TopNavProps) {
           />
           <div className="md:hidden fixed inset-y-0 left-0 w-64 bg-white dark:bg-dark-raised border-r border-border-light-default dark:border-border-dark-default z-50 p-4">
             <div className="space-y-2">
-              {navLinks.filter(link => link.id !== currentPage).map((link) => (
+              {navLinks.map((link) => (
                 <button
                   key={link.id}
                   onClick={() => {
