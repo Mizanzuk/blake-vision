@@ -1708,65 +1708,75 @@ function EscritaPageContent() {
             }}
           >
             <div className="flex flex-col">
-              <button
-                onClick={() => {
-                  if (!isMetadataSaved) return;
-                  setShowUrthona(true);
-                  setShowUrizen(false);
-                  // Adicionar mensagem inicial com o trecho selecionado
-                  setUrthonaMessages(prev => [
-                    ...prev,
-                    {
-                      role: "user",
-                      content: `Sobre este trecho:\n\n"${selectedText}"\n\n`
-                    }
-                  ]);
-                  setAssistantInput("");
-                  setSelectionMenuPosition(null);
-                  setSelectedText("");
-                }}
-                disabled={!isMetadataSaved}
-                className={clsx(
-                  "px-4 py-2.5 text-left text-sm transition-colors flex items-center gap-2",
-                  isMetadataSaved
-                    ? "hover:bg-[#C85A54]/10 text-text-light-primary dark:text-dark-primary cursor-pointer"
-                    : "text-text-light-tertiary dark:text-dark-tertiary cursor-not-allowed"
-                )}
-              >
-                <span className="text-base">📝</span>
-                <span>Perguntar para Urthona</span>
-              </button>
-              
-              <div className="h-px bg-border-light-default dark:bg-border-dark-default" />
-              
-              <button
-                onClick={() => {
-                  if (!isMetadataSaved) return;
-                  setShowUrizen(true);
-                  setShowUrthona(false);
-                  // Adicionar mensagem inicial com o trecho selecionado
-                  setUrizenMessages(prev => [
-                    ...prev,
-                    {
-                      role: "user",
-                      content: `Sobre este trecho:\n\n"${selectedText}"\n\n`
-                    }
-                  ]);
-                  setAssistantInput("");
-                  setSelectionMenuPosition(null);
-                  setSelectedText("");
-                }}
-                disabled={!isMetadataSaved}
-                className={clsx(
-                  "px-4 py-2.5 text-left text-sm transition-colors flex items-center gap-2",
-                  isMetadataSaved
-                    ? "hover:bg-[#5B7C8D]/10 text-text-light-primary dark:text-dark-primary cursor-pointer"
-                    : "text-text-light-tertiary dark:text-dark-tertiary cursor-not-allowed"
-                )}
-              >
-                <span className="text-base">📚</span>
-                <span>Perguntar para Urizen</span>
-              </button>
+              <div className="flex items-center justify-center gap-4 p-3">
+                {/* Avatar Urthona */}
+                <button
+                  onClick={() => {
+                    if (!isMetadataSaved) return;
+                    setShowUrthona(true);
+                    setShowUrizen(false);
+                    // Adicionar mensagem inicial com o trecho selecionado
+                    setUrthonaMessages(prev => [
+                      ...prev,
+                      {
+                        role: "user",
+                        content: `Sobre este trecho:\n\n"${selectedText}"\n\n`
+                      }
+                    ]);
+                    setAssistantInput("");
+                    setSelectionMenuPosition(null);
+                    setSelectedText("");
+                  }}
+                  disabled={!isMetadataSaved}
+                  className={clsx(
+                    "w-12 h-12 rounded-full transition-all",
+                    isMetadataSaved
+                      ? "hover:scale-110 cursor-pointer"
+                      : "opacity-30 cursor-not-allowed"
+                  )}
+                  title={isMetadataSaved ? "Perguntar para Urthona" : "Crie um texto primeiro"}
+                >
+                  <img
+                    src="/urthona.webp"
+                    alt="Urthona"
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                </button>
+                
+                {/* Avatar Urizen */}
+                <button
+                  onClick={() => {
+                    if (!isMetadataSaved) return;
+                    setShowUrizen(true);
+                    setShowUrthona(false);
+                    // Adicionar mensagem inicial com o trecho selecionado
+                    setUrizenMessages(prev => [
+                      ...prev,
+                      {
+                        role: "user",
+                        content: `Sobre este trecho:\n\n"${selectedText}"\n\n`
+                      }
+                    ]);
+                    setAssistantInput("");
+                    setSelectionMenuPosition(null);
+                    setSelectedText("");
+                  }}
+                  disabled={!isMetadataSaved}
+                  className={clsx(
+                    "w-12 h-12 rounded-full transition-all",
+                    isMetadataSaved
+                      ? "hover:scale-110 cursor-pointer"
+                      : "opacity-30 cursor-not-allowed"
+                  )}
+                  title={isMetadataSaved ? "Perguntar para Urizen" : "Crie um texto primeiro"}
+                >
+                  <img
+                    src="/urizen.webp"
+                    alt="Urizen"
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                </button>
+              </div>
             </div>
           </div>
         </>
