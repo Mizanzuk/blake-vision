@@ -77,9 +77,10 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { titulo, conteudo, universe_id, world_id, episodio, categoria, status = 'rascunho' } = body;
 
-    if (!titulo || !conteudo) {
+    // Apenas título é obrigatório (conteúdo pode ser vazio no primeiro save)
+    if (!titulo) {
       return NextResponse.json(
-        { error: "Título e conteúdo são obrigatórios" },
+        { error: "Título é obrigatório" },
         { status: 400 }
       );
     }
