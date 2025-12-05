@@ -70,13 +70,27 @@ function EscritaPageContent() {
   const textoCategorias = React.useMemo(() => {
     const allTextos = [...rascunhos, ...publicados];
     const uniqueCategories = new Set(allTextos.map(t => t.categoria).filter(Boolean));
-    return Array.from(uniqueCategories).map(slug => ({
+    const categoriasList = Array.from(uniqueCategories).map(slug => ({
       slug: slug!,
       label: getCategoryLabel(slug!),
       universe_id: "",
       user_id: "",
       created_at: ""
     }));
+    
+    // Adicionar "Texto Livre" se houver textos sem categoria
+    const hasTextoLivre = allTextos.some(t => !t.categoria);
+    if (hasTextoLivre) {
+      categoriasList.push({
+        slug: "texto-livre",
+        label: "Texto Livre",
+        universe_id: "",
+        user_id: "",
+        created_at: ""
+      });
+    }
+    
+    return categoriasList;
   }, [rascunhos, publicados, categories]);
 
   // Estados de modais
@@ -634,8 +648,15 @@ function EscritaPageContent() {
     }
     
     // Filtro de categorias (múltipla seleção)
-    if (filterCategorias.length > 0 && !filterCategorias.includes(texto.categoria || "")) {
-      return false;
+    if (filterCategorias.length > 0) {
+      // Se "texto-livre" estiver selecionado, incluir textos sem categoria
+      if (filterCategorias.includes("texto-livre") && !texto.categoria) {
+        return true;
+      }
+      // Caso contrário, verificar se a categoria do texto está na lista
+      if (!filterCategorias.includes(texto.categoria || "")) {
+        return false;
+      }
     }
     
     return true;
