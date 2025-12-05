@@ -198,6 +198,26 @@ function EscritaPageContent() {
     }
   }, [worldId, allFichas]);
 
+  // Scroll automático do chat quando novas mensagens chegam
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [urthonaMessages, urizenMessages]);
+
+  // Fechar chat com ESC
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && (showUrthona || showUrizen)) {
+        setShowUrthona(false);
+        setShowUrizen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [showUrthona, showUrizen]);
+
   async function checkAuth() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -1029,8 +1049,10 @@ function EscritaPageContent() {
                     if (!showUrthona) setShowUrizen(false);
                   }}
                   className={clsx(
-                    "relative group",
-                    isMetadataSaved ? "cursor-pointer" : "cursor-not-allowed"
+                    "relative group transition-all duration-300",
+                    isMetadataSaved ? "cursor-pointer" : "cursor-not-allowed",
+                    showUrthona && "translate-x-0",
+                    showUrizen && "opacity-30"
                   )}
                   title={isMetadataSaved ? "Urthona (Criativo)" : "Crie um texto para usar Urthona e Urizen"}
                 >
@@ -1053,8 +1075,10 @@ function EscritaPageContent() {
                     if (!showUrizen) setShowUrthona(false);
                   }}
                   className={clsx(
-                    "relative group",
-                    isMetadataSaved ? "cursor-pointer" : "cursor-not-allowed"
+                    "relative group transition-all duration-300",
+                    isMetadataSaved ? "cursor-pointer" : "cursor-not-allowed",
+                    showUrizen && "translate-x-0",
+                    showUrthona && "opacity-30"
                   )}
                   title={isMetadataSaved ? "Urizen (Consulta)" : "Crie um texto para usar Urthona e Urizen"}
                 >
@@ -1360,7 +1384,7 @@ function EscritaPageContent() {
               </div>
               
               {/* Mensagens */}
-              <div className="flex-1 overflow-y-auto mb-4 space-y-4 pr-2">
+              <div className="flex-1 overflow-y-auto mb-4 space-y-3 pr-2">
                 {(showUrthona ? urthonaMessages : urizenMessages).map((msg, idx) => (
                   <div
                     key={idx}
@@ -1371,14 +1395,14 @@ function EscritaPageContent() {
                   >
                     <div
                       className={clsx(
-                        "max-w-3xl rounded-2xl px-4 py-3",
+                        "max-w-3xl rounded-2xl px-3 py-2 text-[11px]",
                         msg.role === "user"
                           ? "bg-primary-600 dark:bg-primary-500 text-white"
-                          : "bg-transparent border border-border-light-default dark:border-border-dark-default"
+                          : "bg-transparent border border-border-light-default dark:border-border-dark-default text-text-light-secondary dark:text-dark-secondary"
                       )}
                     >
                       <div className={clsx(
-                        "prose prose-xs max-w-none [&>*:last-child]:mb-0",
+                        "prose max-w-none [&>*:last-child]:mb-0 [&>p]:text-[11px] [&>p]:leading-relaxed",
                         msg.role === "user" 
                           ? "prose-invert" 
                           : "prose-stone dark:prose-invert"
@@ -1399,8 +1423,7 @@ function EscritaPageContent() {
 
               {/* Input de Mensagem */}
               <div className="flex gap-2 items-end pt-4">
-                <input
-                  type="text"
+                <textarea
                   value={assistantInput}
                   onChange={(e) => setAssistantInput(e.target.value)}
                   onKeyPress={(e) => {
@@ -1410,8 +1433,20 @@ function EscritaPageContent() {
                     }
                   }}
                   placeholder="Mensagem..."
-                  className="flex-1 px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary placeholder:text-text-light-tertiary dark:placeholder:text-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                  rows={1}
+                  className="flex-1 px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary placeholder:text-text-light-tertiary dark:placeholder:text-dark-tertiary focus:outline-none focus:border-primary-500 dark:focus:border-primary-400 text-sm resize-none max-h-24 overflow-y-auto"
                   disabled={isAssistantLoading}
+                  style={{
+                    height: 'auto',
+                    minHeight: '40px',
+                    maxHeight: '96px'
+                  }}
+                  onInput={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    target.style.height = 'auto';
+                    const newHeight = Math.min(target.scrollHeight, 96);
+                    target.style.height = `${newHeight}px`;
+                  }}
                 />
                 <button
                   onClick={() => handleAssistantMessage(showUrthona ? "urthona" : "urizen")}
