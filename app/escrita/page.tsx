@@ -1006,7 +1006,7 @@ function EscritaPageContent() {
               title="Abrir barra lateral"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </button>
           </div>
@@ -1021,7 +1021,7 @@ function EscritaPageContent() {
               title="Abrir barra lateral"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </button>
           </div>
@@ -1040,58 +1040,110 @@ function EscritaPageContent() {
           <div className="max-w-4xl mx-auto p-8">
             <div className="space-y-6">
               {/* Agentes */}
-              <div className="flex gap-4 justify-end">
-                {/* Urthona - Criativo */}
-                <div 
-                  onClick={() => {
-                    if (!isMetadataSaved) return; // Não faz nada se não houver texto criado
-                    setShowUrthona(!showUrthona);
-                    if (!showUrthona) setShowUrizen(false);
-                  }}
-                  className={clsx(
-                    "relative group transition-all duration-300",
-                    isMetadataSaved ? "cursor-pointer" : "cursor-not-allowed",
-                    showUrthona && "translate-x-0",
-                    showUrizen && "opacity-30"
-                  )}
-                  title={isMetadataSaved ? "Urthona (Criativo)" : "Crie um texto para usar Urthona e Urizen"}
-                >
-                  <img 
-                    src="/urthona-avatar.png" 
-                    alt="Urthona" 
-                    className={clsx(
-                      "w-12 h-12 rounded-full transition-all",
-                      !isMetadataSaved && "opacity-30",
-                      isMetadataSaved && (showUrthona ? "ring-4 ring-[#C85A54]" : "hover:ring-2 hover:ring-[#C85A54]/50")
-                    )}
-                  />
-                </div>
-
-                {/* Urizen - Consulta */}
-                <div 
-                  onClick={() => {
-                    if (!isMetadataSaved) return; // Não faz nada se não houver texto criado
-                    setShowUrizen(!showUrizen);
-                    if (!showUrizen) setShowUrthona(false);
-                  }}
-                  className={clsx(
-                    "relative group transition-all duration-300",
-                    isMetadataSaved ? "cursor-pointer" : "cursor-not-allowed",
-                    showUrizen && "translate-x-0",
-                    showUrthona && "opacity-30"
-                  )}
-                  title={isMetadataSaved ? "Urizen (Consulta)" : "Crie um texto para usar Urthona e Urizen"}
-                >
-                  <img 
-                    src="/urizen-avatar.png" 
-                    alt="Urizen" 
-                    className={clsx(
-                      "w-12 h-12 rounded-full transition-all",
-                      !isMetadataSaved && "opacity-30",
-                      isMetadataSaved && (showUrizen ? "ring-4 ring-[#5B7C8D]" : "hover:ring-2 hover:ring-[#5B7C8D]/50")
-                    )}
-                  />
-                </div>
+              <div className="flex gap-4 justify-end items-center">
+                {/* Ordem dinâmica: agente ativo sempre à direita */}
+                {showUrizen ? (
+                  <>
+                    {/* Urthona - Inativo */}
+                    <div 
+                      onClick={() => {
+                        if (!isMetadataSaved) return;
+                        setShowUrthona(!showUrthona);
+                        if (!showUrthona) setShowUrizen(false);
+                      }}
+                      className={clsx(
+                        "relative group transition-all duration-300",
+                        isMetadataSaved ? "cursor-pointer" : "cursor-not-allowed",
+                        "opacity-30"
+                      )}
+                      title={isMetadataSaved ? "Urthona (Criativo)" : "Crie um texto para usar Urthona e Urizen"}
+                    >
+                      <img 
+                        src="/urthona-avatar.png" 
+                        alt="Urthona" 
+                        className={clsx(
+                          "w-12 h-12 rounded-full transition-all",
+                          !isMetadataSaved && "opacity-30",
+                          isMetadataSaved && "hover:ring-2 hover:ring-[#C85A54]/50"
+                        )}
+                      />
+                    </div>
+                    {/* Urizen - Ativo */}
+                    <div 
+                      onClick={() => {
+                        if (!isMetadataSaved) return;
+                        setShowUrizen(!showUrizen);
+                        if (!showUrizen) setShowUrthona(false);
+                      }}
+                      className={clsx(
+                        "relative group transition-all duration-300",
+                        isMetadataSaved ? "cursor-pointer" : "cursor-not-allowed"
+                      )}
+                      title={isMetadataSaved ? "Urizen (Consulta)" : "Crie um texto para usar Urthona e Urizen"}
+                    >
+                      <img 
+                        src="/urizen-avatar.png" 
+                        alt="Urizen" 
+                        className={clsx(
+                          "w-12 h-12 rounded-full transition-all",
+                          !isMetadataSaved && "opacity-30",
+                          isMetadataSaved && "ring-4 ring-[#5B7C8D]"
+                        )}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Urizen - Inativo */}
+                    <div 
+                      onClick={() => {
+                        if (!isMetadataSaved) return;
+                        setShowUrizen(!showUrizen);
+                        if (!showUrizen) setShowUrthona(false);
+                      }}
+                      className={clsx(
+                        "relative group transition-all duration-300",
+                        isMetadataSaved ? "cursor-pointer" : "cursor-not-allowed",
+                        !showUrthona && !showUrizen && "opacity-100",
+                        showUrthona && "opacity-30"
+                      )}
+                      title={isMetadataSaved ? "Urizen (Consulta)" : "Crie um texto para usar Urthona e Urizen"}
+                    >
+                      <img 
+                        src="/urizen-avatar.png" 
+                        alt="Urizen" 
+                        className={clsx(
+                          "w-12 h-12 rounded-full transition-all",
+                          !isMetadataSaved && "opacity-30",
+                          isMetadataSaved && !showUrthona && "hover:ring-2 hover:ring-[#5B7C8D]/50"
+                        )}
+                      />
+                    </div>
+                    {/* Urthona - Ativo ou Padrão */}
+                    <div 
+                      onClick={() => {
+                        if (!isMetadataSaved) return;
+                        setShowUrthona(!showUrthona);
+                        if (!showUrthona) setShowUrizen(false);
+                      }}
+                      className={clsx(
+                        "relative group transition-all duration-300",
+                        isMetadataSaved ? "cursor-pointer" : "cursor-not-allowed"
+                      )}
+                      title={isMetadataSaved ? "Urthona (Criativo)" : "Crie um texto para usar Urthona e Urizen"}
+                    >
+                      <img 
+                        src="/urthona-avatar.png" 
+                        alt="Urthona" 
+                        className={clsx(
+                          "w-12 h-12 rounded-full transition-all",
+                          !isMetadataSaved && "opacity-30",
+                          isMetadataSaved && (showUrthona ? "ring-4 ring-[#C85A54]" : "hover:ring-2 hover:ring-[#C85A54]/50")
+                        )}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Cabeçalho Colasável (quando metadados foram salvos) */}
@@ -1402,7 +1454,11 @@ function EscritaPageContent() {
                       )}
                     >
                       <div className={clsx(
-                        "prose max-w-none [&>*:last-child]:mb-0 [&>p]:text-[11px] [&>p]:leading-relaxed",
+                        "prose max-w-none [&>*:last-child]:mb-0",
+                        "[&>*]:text-[11px] [&>*]:leading-relaxed",
+                        "[&>p]:text-[11px] [&>h1]:text-[13px] [&>h2]:text-[12px] [&>h3]:text-[11px]",
+                        "[&>ul]:text-[11px] [&>ol]:text-[11px] [&>li]:text-[11px]",
+                        "[&>strong]:text-[11px] [&>em]:text-[11px] [&>code]:text-[10px]",
                         msg.role === "user" 
                           ? "prose-invert" 
                           : "prose-stone dark:prose-invert"
@@ -1434,7 +1490,7 @@ function EscritaPageContent() {
                   }}
                   placeholder="Mensagem..."
                   rows={1}
-                  className="flex-1 px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary placeholder:text-text-light-tertiary dark:placeholder:text-dark-tertiary focus:outline-none focus:border-primary-500 dark:focus:border-primary-400 text-sm resize-none max-h-24 overflow-y-auto"
+                  className="flex-1 px-4 py-2 rounded-lg border-2 border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary placeholder:text-text-light-tertiary dark:placeholder:text-dark-tertiary outline-none focus:outline-none focus:border-primary-500 dark:focus:border-primary-400 text-sm resize-none max-h-24 overflow-y-auto"
                   disabled={isAssistantLoading}
                   style={{
                     height: 'auto',
