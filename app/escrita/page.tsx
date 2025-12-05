@@ -58,6 +58,7 @@ function EscritaPageContent() {
   const [episodio, setEpisodio] = useState<string>("");
   const [categoria, setCategoria] = useState<string>("");
   const [status, setStatus] = useState<"rascunho" | "publicado">("rascunho");
+  const [isMetadataLocked, setIsMetadataLocked] = useState(false);
   
   // Estados de dados
   const [universes, setUniverses] = useState<Universe[]>([]);
@@ -270,6 +271,9 @@ function EscritaPageContent() {
     setCategoria(texto.categoria || "");
     setStatus(texto.status || "rascunho");
     
+    // Bloquear metadados ao carregar texto existente salvo
+    setIsMetadataLocked(true);
+    
     // Atualizar URL
     router.push(`/escrita?id=${texto.id}`);
   }
@@ -283,6 +287,9 @@ function EscritaPageContent() {
     setEpisodio("");
     setCategoria("");
     setStatus("rascunho");
+    
+    // Desbloquear metadados ao criar novo texto
+    setIsMetadataLocked(false);
     
     // Limpar URL
     router.push("/escrita");
@@ -334,6 +341,9 @@ function EscritaPageContent() {
           setCurrentTextoId(data.texto.id);
           router.push(`/escrita?id=${data.texto.id}`);
         }
+        
+        // Bloquear metadados após salvar
+        setIsMetadataLocked(true);
         
         // Recarregar lista
         loadTextos();
@@ -796,7 +806,8 @@ function EscritaPageContent() {
                         draggedTextoId === texto.id && "opacity-50"
                       )}
                     >
-                    <div className="flex items-center gap-2">
+                    {/* Badge na primeira linha */}
+                    <div className="flex items-center">
                       {texto.categoria ? (
                         <span className={clsx(
                           "inline-block px-2 py-0.5 text-[10px] font-medium rounded flex-shrink-0",
@@ -809,9 +820,11 @@ function EscritaPageContent() {
                           Texto Livre
                         </span>
                       )}
-                      <span className="flex-1 text-xs line-clamp-3">
-                        {texto.titulo || "Sem título"}
-                      </span>
+                    </div>
+                    
+                    {/* Título na segunda linha */}
+                    <div className="text-xs line-clamp-3">
+                      {texto.titulo || "Sem título"}
                     </div>
                     
                     {/* Botões com gradiente (aparecem no hover) */}
@@ -960,6 +973,21 @@ function EscritaPageContent() {
                 </div>
               </div>
 
+              {/* Botão Editar Metadados (quando bloqueado) */}
+              {isMetadataLocked && (
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setIsMetadataLocked(false)}
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    Editar Metadados
+                  </button>
+                </div>
+              )}
+
               {/* Título */}
               <div>
                 <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
@@ -970,7 +998,8 @@ function EscritaPageContent() {
                   value={titulo}
                   onChange={(e) => setTitulo(e.target.value)}
                   placeholder="Digite o título do texto..."
-                  className="w-full px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  disabled={isMetadataLocked}
+                  className="w-full px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-60 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -987,6 +1016,7 @@ function EscritaPageContent() {
                   onCreate={() => {
                     console.log("Criar novo universo");
                   }}
+                  disabled={isMetadataLocked}
                 />
 
                 <WorldsDropdownSingle
@@ -994,7 +1024,7 @@ function EscritaPageContent() {
                   worlds={worlds.filter(w => w.universe_id === universeId)}
                   selectedId={worldId}
                   onSelect={(id) => setWorldId(id)}
-                  disabled={!universeId}
+                  disabled={!universeId || isMetadataLocked}
                   onCreate={() => {
                     console.log("Criar novo mundo");
                   }}
@@ -1006,7 +1036,7 @@ function EscritaPageContent() {
                   selectedEpisode={episodio}
                   onSelect={setEpisodio}
                   onCreate={() => setShowNewEpisodeModal(true)}
-                  disabled={!worldId}
+                  disabled={!worldId || isMetadataLocked}
                 />
 
                 <CategoryDropdownSingle
@@ -1015,7 +1045,7 @@ function EscritaPageContent() {
                   selectedCategory={categoria}
                   onSelect={setCategoria}
                   worldId={worldId}
-                  disabled={!universeId}
+                  disabled={!universeId || isMetadataLocked}
                 />
               </div>
 

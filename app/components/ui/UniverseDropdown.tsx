@@ -28,6 +28,7 @@ interface UniverseDropdownProps {
   onDelete?: (id: string, name: string) => void;
   onCreate?: () => void;
   onReorder?: (universes: Universe[]) => void;
+  disabled?: boolean;
 }
 
 // Sortable Item Component
@@ -145,6 +146,7 @@ export function UniverseDropdown({
   onDelete,
   onCreate,
   onReorder,
+  disabled = false,
 }: UniverseDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [localUniverses, setLocalUniverses] = useState<Universe[]>(universes);
@@ -212,8 +214,9 @@ export function UniverseDropdown({
       {/* Dropdown Button */}
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-2 text-left rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors flex items-center justify-between"
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        disabled={disabled}
+        className="w-full px-4 py-2 text-left rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors flex items-center justify-between disabled:opacity-60 disabled:cursor-not-allowed"
       >
         <span className="text-sm truncate">
           {selectedUniverse?.nome || "Selecione um universo"}
