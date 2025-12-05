@@ -846,7 +846,7 @@ function EscritaPageContent() {
 
         {/* Botão de expandir sidebar desktop (quando colapsada) */}
         {!isSidebarOpen && (
-          <div className="hidden md:flex fixed left-0 top-0 h-full w-12 bg-light-raised dark:bg-dark-raised flex-col items-center pt-20 gap-3 z-40">
+          <div className="hidden md:flex fixed left-0 top-0 h-full w-12 bg-light-raised dark:bg-dark-raised flex-col items-center pt-48 gap-3 z-40">
             <button
               onClick={() => setIsSidebarOpen(true)}
               className="p-2 rounded-lg text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
