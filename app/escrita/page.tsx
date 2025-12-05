@@ -898,9 +898,10 @@ function EscritaPageContent() {
                   </Button>
                 </div>
               </div>
+            </div>
 
-              {/* Chat com Assistentes */}
-              {(showUrthona || showUrizen) && (
+            {/* Chat com Assistentes */}
+            {(showUrthona || showUrizen) && (
                 <div ref={chatRef} className="bg-[#F5F1E8] rounded-lg border border-gray-300 p-4 max-h-[600px] flex flex-col relative">
                   <div className="flex justify-between items-center mb-4">
                     <div>
@@ -1024,7 +1025,6 @@ function EscritaPageContent() {
                   </div>
                 </div>
               )}
-            </div>
           </div>
         </main>
       </div>
