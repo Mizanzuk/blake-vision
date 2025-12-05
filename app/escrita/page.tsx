@@ -1282,9 +1282,6 @@ function EscritaPageContent() {
               {/* Conteúdo (só aparece após salvar metadados) */}
               {isMetadataSaved && (
                 <div>
-                  <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
-                    CONTEÚDO
-                  </label>
                   <textarea
                     ref={textareaRef}
                     value={conteudo}
@@ -1336,10 +1333,10 @@ function EscritaPageContent() {
 
         {/* Chat Lateral com Assistentes */}
         {(showUrthona || showUrizen) && (
-          <div className="w-96 border-l border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base overflow-hidden flex flex-col">
+          <div className="w-96 bg-light-base dark:bg-dark-base overflow-hidden flex flex-col">
             <div ref={chatRef} className="flex flex-col h-full p-4">
               {/* Header do Chat */}
-              <div className="flex justify-between items-center mb-4 pb-4 border-b border-border-light-default dark:border-border-dark-default">
+              <div className="flex justify-between items-center mb-4 pb-4">
                 <div>
                   <h3 className="font-semibold text-text-light-primary dark:text-dark-primary">
                     {showUrthona ? "Urthona" : "Urizen"}
@@ -1363,33 +1360,45 @@ function EscritaPageContent() {
               </div>
               
               {/* Mensagens */}
-              <div className="flex-1 overflow-y-auto mb-4 space-y-3 pr-2">
+              <div className="flex-1 overflow-y-auto mb-4 space-y-4 pr-2">
                 {(showUrthona ? urthonaMessages : urizenMessages).map((msg, idx) => (
                   <div
                     key={idx}
                     className={clsx(
-                      "relative group px-4 py-3 rounded-lg text-sm",
-                      msg.role === "user"
-                        ? "bg-light-raised dark:bg-dark-raised ml-4"
-                        : (showUrthona ? "bg-[#C85A54]" : "bg-[#5B7C8D]") + " text-white mr-4"
+                      "flex gap-2",
+                      msg.role === "user" ? "justify-end" : "justify-start"
                     )}
                   >
-                    {msg.role === "assistant" ? (
-                      <div className="prose prose-sm max-w-none prose-invert">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {msg.content}
-                        </ReactMarkdown>
+                    <div
+                      className={clsx(
+                        "max-w-3xl rounded-2xl px-4 py-3",
+                        msg.role === "user"
+                          ? "bg-primary-600 dark:bg-primary-500 text-white"
+                          : "bg-transparent border border-border-light-default dark:border-border-dark-default"
+                      )}
+                    >
+                      <div className={clsx(
+                        "prose prose-xs max-w-none [&>*:last-child]:mb-0",
+                        msg.role === "user" 
+                          ? "prose-invert" 
+                          : "prose-stone dark:prose-invert"
+                      )}>
+                        {msg.role === "assistant" ? (
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {msg.content}
+                          </ReactMarkdown>
+                        ) : (
+                          msg.content
+                        )}
                       </div>
-                    ) : (
-                      msg.content
-                    )}
+                    </div>
                   </div>
                 ))}
                 <div ref={messagesEndRef} />
               </div>
 
               {/* Input de Mensagem */}
-              <div className="flex gap-2 items-end pt-4 border-t border-border-light-default dark:border-border-dark-default">
+              <div className="flex gap-2 items-end pt-4">
                 <input
                   type="text"
                   value={assistantInput}
