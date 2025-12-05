@@ -576,6 +576,35 @@ function EscritaPageContent() {
         <main className="flex-1 overflow-y-auto">
           <div className="max-w-4xl mx-auto p-8">
             <div className="space-y-6">
+              {/* Agentes */}
+              <div className="flex gap-4 justify-end">
+                {/* Urthona - Criativo */}
+                <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#C85A54]/10 dark:bg-[#C85A54]/20 border border-[#C85A54]/30 dark:border-[#C85A54]/40 hover:bg-[#C85A54]/15 dark:hover:bg-[#C85A54]/25 transition-all cursor-pointer group">
+                  <img 
+                    src="/urthona-avatar.png" 
+                    alt="Urthona" 
+                    className="w-10 h-10 rounded-full ring-2 ring-[#C85A54]/50"
+                  />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold text-[#C85A54] dark:text-[#D87A74]">Urthona</span>
+                    <span className="text-xs text-text-light-tertiary dark:text-dark-tertiary">O Fluxo (Criativo)</span>
+                  </div>
+                </div>
+
+                {/* Urizen - Consulta */}
+                <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#5B7C8D]/10 dark:bg-[#5B7C8D]/20 border border-[#5B7C8D]/30 dark:border-[#5B7C8D]/40 hover:bg-[#5B7C8D]/15 dark:hover:bg-[#5B7C8D]/25 transition-all cursor-pointer group">
+                  <img 
+                    src="/urizen-avatar.png" 
+                    alt="Urizen" 
+                    className="w-10 h-10 rounded-full ring-2 ring-[#5B7C8D]/50"
+                  />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold text-[#5B7C8D] dark:text-[#7B9CAD]">Urizen</span>
+                    <span className="text-xs text-text-light-tertiary dark:text-dark-tertiary">A Lei (Consulta)</span>
+                  </div>
+                </div>
+              </div>
+
               {/* Título */}
               <div>
                 <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
