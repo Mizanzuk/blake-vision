@@ -447,7 +447,7 @@ function EscritaPageContent() {
       <div className="flex h-[calc(100vh-4rem)]">
         {/* Sidebar - Lista de Textos */}
         {isSidebarOpen && (
-        <aside className="w-80 border-r border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised overflow-y-auto">
+        <aside className="w-[250px] border-r border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised overflow-y-auto">
           {/* Header da Sidebar */}
           <div className="p-4 border-b border-border-light-default dark:border-border-dark-default">
             <div className="flex items-center justify-between mb-3">
@@ -736,6 +736,7 @@ function EscritaPageContent() {
                 <Button
                   onClick={handleNewTexto}
                   variant="secondary"
+                  size="sm"
                 >
                   Voltar
                 </Button>
@@ -745,6 +746,7 @@ function EscritaPageContent() {
                     onClick={handleSave}
                     disabled={isSaving || !titulo.trim()}
                     variant="secondary"
+                    size="sm"
                   >
                     {isSaving ? "Salvando..." : "Salvar"}
                   </Button>
@@ -753,6 +755,7 @@ function EscritaPageContent() {
                     onClick={handlePublish}
                     disabled={isSaving || !titulo.trim()}
                     variant="primary"
+                    size="sm"
                   >
                     Publicar
                   </Button>
