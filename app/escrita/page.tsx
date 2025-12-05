@@ -1410,20 +1410,18 @@ function EscritaPageContent() {
                     value={conteudo}
                     onChange={(e) => setConteudo(e.target.value)}
                     onMouseUp={(e) => {
-                      const selection = window.getSelection();
-                      const text = selection?.toString().trim();
+                      const textarea = e.currentTarget;
+                      const start = textarea.selectionStart;
+                      const end = textarea.selectionEnd;
+                      const text = textarea.value.substring(start, end).trim();
+                      
                       if (text && text.length > 0) {
                         setSelectedText(text);
-                        const range = selection?.getRangeAt(0);
-                        const rect = range?.getBoundingClientRect();
-                        if (rect) {
-                          // Posicionar acima do texto (altura do menu ~60px + margem 10px)
-                          const menuY = Math.max(10, rect.top - 70);
-                          setSelectionMenuPosition({
-                            x: rect.left + (rect.width / 2),
-                            y: menuY
-                          });
-                        }
+                        // Usar posição do mouse, 70px acima para o menu
+                        setSelectionMenuPosition({
+                          x: e.clientX,
+                          y: e.clientY - 70
+                        });
                       } else {
                         setSelectedText("");
                         setSelectionMenuPosition(null);
@@ -1477,7 +1475,7 @@ function EscritaPageContent() {
         {/* Chat Lateral com Assistentes */}
         {(showUrthona || showUrizen) && (
           <div className="w-96 bg-light-base dark:bg-dark-base overflow-hidden flex flex-col">
-            <div ref={chatRef} className="flex flex-col h-full px-4 pt-4 pb-11">
+            <div ref={chatRef} className="flex flex-col h-full px-4 pt-4 pb-32">
               {/* Header do Chat */}
               <div className="flex justify-between items-center mb-4 pb-4">
                 <div>
