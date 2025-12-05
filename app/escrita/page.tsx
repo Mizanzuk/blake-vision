@@ -344,6 +344,60 @@ function EscritaPageContent() {
     }
   }
 
+  async function handleEditTitle(id: string, currentTitle: string) {
+    const newTitle = prompt("Digite o novo título:", currentTitle);
+    
+    if (!newTitle || newTitle === currentTitle) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/textos?id=${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ titulo: newTitle }),
+      });
+
+      if (response.ok) {
+        toast.success("Título atualizado com sucesso");
+        
+        // Se é o texto atual, atualizar no editor
+        if (id === currentTextoId) {
+          setTitulo(newTitle);
+        }
+        
+        loadTextos();
+      } else {
+        toast.error("Erro ao atualizar título");
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar título:", error);
+      toast.error("Erro ao atualizar título");
+    }
+  }
+
+  function handleDownload(texto: Texto) {
+    // Criar conteúdo do arquivo
+    const content = `TÍTULO: ${texto.titulo}\n\nCONTEÚDO:\n${texto.conteudo}`;
+    
+    // Criar blob e URL
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    
+    // Criar link temporário e clicar
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${texto.titulo || "texto"}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    
+    // Limpar
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    toast.success("Download iniciado");
+  }
+
   function handleCreateNewEpisode(episodeNumber: string) {
     if (!episodeNumber.trim()) return;
     
@@ -573,6 +627,30 @@ function EscritaPageContent() {
                     
                     {/* Botões com gradiente (aparecem no hover) */}
                     <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 pr-2 pl-8 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-[#E8E4DB] via-[#E8E4DB]/95 to-transparent dark:from-primary-900/30 dark:via-primary-900/30 dark:to-transparent">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditTitle(texto.id, texto.titulo);
+                        }}
+                        className="p-1 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary"
+                        title="Editar Título"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownload(texto);
+                        }}
+                        className="p-1 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary"
+                        title="Download"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                      </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
