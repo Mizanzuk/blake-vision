@@ -13,6 +13,8 @@ import { NewEpisodeModal } from "@/app/components/modals/NewEpisodeModal";
 import { toast } from "sonner";
 import type { Universe, World, Category } from "@/app/types";
 import clsx from "clsx";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface Texto {
   id: string;
@@ -69,9 +71,13 @@ function EscritaPageContent() {
   // Estado da sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   
-  // Estado do modal de agente
-  const [showAgentModal, setShowAgentModal] = useState(false);
-  const [selectedAgent, setSelectedAgent] = useState<"urthona" | "urizen" | null>(null);
+  // Estados do chat com assistentes
+  const [showUrthona, setShowUrthona] = useState(false);
+  const [showUrizen, setShowUrizen] = useState(false);
+  const [urthonaMessages, setUrthonaMessages] = useState<any[]>([]);
+  const [urizenMessages, setUrizenMessages] = useState<any[]>([]);
+  const [assistantInput, setAssistantInput] = useState("");
+  const [isAssistantLoading, setIsAssistantLoading] = useState(false);
 
   // Estados para drag and drop
   const [draggedTextoId, setDraggedTextoId] = useState<string | null>(null);
@@ -79,6 +85,8 @@ function EscritaPageContent() {
 
   // Refs
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const chatRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Carregar dados iniciais
   useEffect(() => {
@@ -453,6 +461,92 @@ function EscritaPageContent() {
     setDragOverTextoId(null);
   }
 
+  // Função para conversar com assistentes
+  async function handleAssistantMessage(mode: "urthona" | "urizen") {
+    if (!assistantInput.trim()) return;
+
+    setIsAssistantLoading(true);
+    const messages = mode === "urthona" ? urthonaMessages : urizenMessages;
+    const setMessages = mode === "urthona" ? setUrthonaMessages : setUrizenMessages;
+
+    const newUserMessage = {
+      role: "user",
+      content: assistantInput,
+    };
+
+    setMessages([...messages, newUserMessage]);
+    setAssistantInput("");
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [...messages, newUserMessage],
+          mode: mode === "urthona" ? "criativo" : "consulta",
+          universeId: universeId,
+          textContent: conteudo,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Erro desconhecido" }));
+        toast.error(errorData.error || "Erro ao conversar com assistente");
+        setIsAssistantLoading(false);
+        return;
+      }
+
+      // Ler stream de resposta
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let assistantMessage = "";
+
+      if (!reader) {
+        toast.error("Erro ao ler resposta do assistente");
+        setIsAssistantLoading(false);
+        return;
+      }
+
+      // Adicionar mensagem do assistente vazia
+      const assistantMessageObj = {
+        role: "assistant" as const,
+        content: "",
+      };
+      setMessages([...messages, newUserMessage, assistantMessageObj]);
+
+      // Ler chunks do stream
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        assistantMessage += chunk;
+
+        // Atualizar mensagem progressivamente
+        setMessages([...messages, newUserMessage, {
+          role: "assistant",
+          content: assistantMessage,
+        }]);
+      }
+
+      // Detectar e aplicar EDIT_CONTENT (apenas para Urthona)
+      if (mode === "urthona" && assistantMessage.includes('```EDIT_CONTENT')) {
+        const editMatch = assistantMessage.match(/```EDIT_CONTENT\s*([\s\S]*?)```/);
+        if (editMatch && editMatch[1]) {
+          const newContent = editMatch[1].trim();
+          setConteudo(newContent);
+          toast.success("Texto atualizado por Urthona!");
+        }
+      }
+
+    } catch (error: any) {
+      console.error("Erro ao conversar com assistente:", error);
+      toast.error(error.message || "Erro ao conversar com assistente");
+    } finally {
+      setIsAssistantLoading(false);
+    }
+  }
+
   // Funções auxiliares para badges de categoria
   function getCategoryColor(categoria: string | null): string {
     if (!categoria) return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
@@ -734,8 +828,13 @@ function EscritaPageContent() {
           </div>
         )}
 
-        {/* Editor Principal */}
-        <main className="flex-1 overflow-y-auto">
+        {/* Container flex para Editor + Chat */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* Editor Principal */}
+          <main className={clsx(
+            "overflow-y-auto transition-all duration-300",
+            (showUrthona || showUrizen) ? "flex-1" : "w-full"
+          )}>
           <div className="max-w-4xl mx-auto p-8">
             <div className="space-y-6">
               {/* Agentes */}
@@ -743,8 +842,8 @@ function EscritaPageContent() {
                 {/* Urthona - Criativo */}
                 <div 
                   onClick={() => {
-                    setSelectedAgent("urthona");
-                    setShowAgentModal(true);
+                    setShowUrthona(!showUrthona);
+                    if (!showUrthona) setShowUrizen(false);
                   }}
                   className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#C85A54]/10 dark:bg-[#C85A54]/20 border border-[#C85A54]/30 dark:border-[#C85A54]/40 hover:bg-[#C85A54]/15 dark:hover:bg-[#C85A54]/25 transition-all cursor-pointer group"
                 >
@@ -762,8 +861,8 @@ function EscritaPageContent() {
                 {/* Urizen - Consulta */}
                 <div 
                   onClick={() => {
-                    setSelectedAgent("urizen");
-                    setShowAgentModal(true);
+                    setShowUrizen(!showUrizen);
+                    if (!showUrizen) setShowUrthona(false);
                   }}
                   className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#5B7C8D]/10 dark:bg-[#5B7C8D]/20 border border-[#5B7C8D]/30 dark:border-[#5B7C8D]/40 hover:bg-[#5B7C8D]/15 dark:hover:bg-[#5B7C8D]/25 transition-all cursor-pointer group"
                 >
@@ -885,88 +984,101 @@ function EscritaPageContent() {
             </div>
           </div>
         </main>
-      </div>
 
-      {/* Modal de Conversa com Agente */}
-      {showAgentModal && selectedAgent && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-light-raised dark:bg-dark-raised rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col">
-            {/* Header do Modal */}
-            <div className={clsx(
-              "flex items-center justify-between p-4 border-b border-border-light-default dark:border-border-dark-default rounded-t-xl",
-              selectedAgent === "urthona" 
-                ? "bg-[#C85A54]/10 dark:bg-[#C85A54]/20"
-                : "bg-[#5B7C8D]/10 dark:bg-[#5B7C8D]/20"
-            )}>
-              <div className="flex items-center gap-3">
-                <img 
-                  src={selectedAgent === "urthona" ? "/urthona-avatar.png" : "/urizen-avatar.png"}
-                  alt={selectedAgent === "urthona" ? "Urthona" : "Urizen"}
-                  className={clsx(
-                    "w-10 h-10 rounded-full ring-2",
-                    selectedAgent === "urthona" ? "ring-[#C85A54]/50" : "ring-[#5B7C8D]/50"
-                  )}
-                />
+        {/* Chat Lateral com Assistentes */}
+        {(showUrthona || showUrizen) && (
+          <div className="w-96 border-l border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base overflow-hidden flex flex-col">
+            <div ref={chatRef} className="flex flex-col h-full p-4">
+              {/* Header do Chat */}
+              <div className="flex justify-between items-center mb-4 pb-4 border-b border-border-light-default dark:border-border-dark-default">
                 <div>
-                  <h3 className={clsx(
-                    "text-lg font-semibold",
-                    selectedAgent === "urthona" 
-                      ? "text-[#C85A54] dark:text-[#D87A74]"
-                      : "text-[#5B7C8D] dark:text-[#7B9CAD]"
-                  )}>
-                    {selectedAgent === "urthona" ? "Urthona" : "Urizen"}
+                  <h3 className="font-semibold text-text-light-primary dark:text-dark-primary">
+                    {showUrthona ? "Urthona" : "Urizen"}
                   </h3>
                   <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary">
-                    {selectedAgent === "urthona" ? "O Fluxo (Criativo)" : "A Lei (Consulta)"}
+                    {showUrthona ? "Criativo" : "Consulta"}
                   </p>
                 </div>
-              </div>
-              <button
-                onClick={() => {
-                  setShowAgentModal(false);
-                  setSelectedAgent(null);
-                }}
-                className="p-2 rounded-lg hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Corpo do Modal */}
-            <div className="flex-1 overflow-y-auto p-6">
-              <div className={clsx(
-                "p-4 rounded-lg border",
-                selectedAgent === "urthona"
-                  ? "bg-[#C85A54]/5 border-[#C85A54]/20"
-                  : "bg-[#5B7C8D]/5 border-[#5B7C8D]/20"
-              )}>
-                <p className="text-sm text-text-light-secondary dark:text-dark-secondary">
-                  {selectedAgent === "urthona" 
-                    ? "Eu sou Urthona, o Forjador. Minha forja está pronta para criar e expandir as narrativas. Qual a próxima história?"
-                    : "Eu sou Urizen, a Lei deste universo. Minha função é garantir a coerência dos Registros. O que você quer analisar hoje?"}
-                </p>
+                <button
+                  onClick={() => {
+                    setShowUrthona(false);
+                    setShowUrizen(false);
+                  }}
+                  className="text-text-light-tertiary hover:text-text-light-primary dark:text-dark-tertiary dark:hover:text-dark-primary transition-colors p-2 rounded-lg hover:bg-light-overlay dark:hover:bg-dark-overlay"
+                  title="Fechar"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
               
-              <div className="mt-6 text-center">
-                <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary mb-4">
-                  Esta funcionalidade abrirá uma conversa completa com o agente.
-                </p>
-                <Button
-                  onClick={() => {
-                    // Redirecionar para home com o modo selecionado
-                    router.push(`/?mode=${selectedAgent === "urthona" ? "criativo" : "consulta"}`);
+              {/* Mensagens */}
+              <div className="flex-1 overflow-y-auto mb-4 space-y-3 pr-2">
+                {(showUrthona ? urthonaMessages : urizenMessages).map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={clsx(
+                      "relative group px-4 py-3 rounded-lg text-sm",
+                      msg.role === "user"
+                        ? "bg-light-raised dark:bg-dark-raised ml-4"
+                        : (showUrthona ? "bg-[#C85A54]" : "bg-[#5B7C8D]") + " text-white mr-4"
+                    )}
+                  >
+                    {msg.role === "assistant" ? (
+                      <div className="prose prose-sm max-w-none prose-invert">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {msg.content}
+                        </ReactMarkdown>
+                      </div>
+                    ) : (
+                      msg.content
+                    )}
+                  </div>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Input de Mensagem */}
+              <div className="flex gap-2 items-end pt-4 border-t border-border-light-default dark:border-border-dark-default">
+                <input
+                  type="text"
+                  value={assistantInput}
+                  onChange={(e) => setAssistantInput(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleAssistantMessage(showUrthona ? "urthona" : "urizen");
+                    }
                   }}
-                  variant="primary"
+                  placeholder="Mensagem..."
+                  className="flex-1 px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary placeholder:text-text-light-tertiary dark:placeholder:text-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                  disabled={isAssistantLoading}
+                />
+                <button
+                  onClick={() => handleAssistantMessage(showUrthona ? "urthona" : "urizen")}
+                  disabled={!assistantInput.trim() || isAssistantLoading}
+                  className="px-4 py-2 bg-primary-500 hover:bg-primary-600 disabled:bg-primary-300 dark:disabled:bg-primary-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2 flex-shrink-0"
                 >
-                  Iniciar Conversa na Home
-                </Button>
+                  {isAssistantLoading ? (
+                    <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                  )}
+                </button>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+      </div>
+
+
 
       {/* Modal de Novo Episódio */}
       <NewEpisodeModal
