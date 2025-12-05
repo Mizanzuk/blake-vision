@@ -11,6 +11,7 @@ import { EpisodesDropdownSingle } from "@/app/components/ui/EpisodesDropdownSing
 import { CategoryDropdownSingle } from "@/app/components/ui/CategoryDropdownSingle";
 import { NewEpisodeModal } from "@/app/components/modals/NewEpisodeModal";
 import { toast } from "sonner";
+import type { Universe, World, Category } from "@/app/types";
 import clsx from "clsx";
 
 interface Texto {
@@ -25,26 +26,6 @@ interface Texto {
   extraido: boolean;
   created_at: string;
   updated_at: string;
-}
-
-interface Universe {
-  id: string;
-  nome: string;
-  slug: string;
-}
-
-interface World {
-  id: string;
-  nome: string;
-  slug: string;
-  universe_id: string;
-}
-
-interface Category {
-  slug: string;
-  label: string;
-  description?: string;
-  prefix?: string;
 }
 
 export default function EscritaPage() {
