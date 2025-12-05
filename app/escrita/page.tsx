@@ -59,6 +59,8 @@ function EscritaPageContent() {
   const [categoria, setCategoria] = useState<string>("");
   const [status, setStatus] = useState<"rascunho" | "publicado">("rascunho");
   const [isMetadataLocked, setIsMetadataLocked] = useState(false);
+  const [isMetadataSaved, setIsMetadataSaved] = useState(false); // Controla se metadados foram salvos
+  const [isHeaderExpanded, setIsHeaderExpanded] = useState(true); // Controla expansão do cabeçalho
   
   // Estados de dados
   const [universes, setUniverses] = useState<Universe[]>([]);
@@ -273,9 +275,71 @@ function EscritaPageContent() {
     
     // Bloquear metadados ao carregar texto existente salvo
     setIsMetadataLocked(true);
+    setIsMetadataSaved(true);
+    setIsHeaderExpanded(false); // Começar colapsado para textos existentes
     
     // Atualizar URL
     router.push(`/escrita?id=${texto.id}`);
+  }
+
+  // Função para salvar apenas metadados (primeiro save)
+  async function handleSaveMetadata() {
+    if (!titulo.trim()) {
+      toast.error("Por favor, adicione um título");
+      return;
+    }
+    
+    if (!universeId) {
+      toast.error("Por favor, selecione um universo");
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const body = {
+        titulo,
+        conteudo: "", // Conteúdo vazio no primeiro save
+        universe_id: universeId,
+        world_id: worldId || null,
+        episodio: episodio || null,
+        categoria: categoria || null,
+        status: "rascunho",
+      };
+
+      const response = await fetch("/api/textos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Metadados salvos! Agora você pode escrever.");
+        
+        // Atualizar ID do texto
+        if (data.texto) {
+          setCurrentTextoId(data.texto.id);
+          router.push(`/escrita?id=${data.texto.id}`);
+        }
+        
+        // Marcar metadados como salvos e bloquear
+        setIsMetadataSaved(true);
+        setIsMetadataLocked(true);
+        setIsHeaderExpanded(false); // Colapsar cabeçalho
+        
+        // Recarregar lista
+        loadTextos();
+      } else {
+        toast.error(data.error || "Erro ao salvar metadados");
+      }
+    } catch (error) {
+      console.error("Erro ao salvar metadados:", error);
+      toast.error("Erro ao salvar metadados");
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   function handleNewTexto() {
@@ -288,8 +352,10 @@ function EscritaPageContent() {
     setCategoria("");
     setStatus("rascunho");
     
-    // Desbloquear metadados ao criar novo texto
+    // Resetar estados de controle
     setIsMetadataLocked(false);
+    setIsMetadataSaved(false);
+    setIsHeaderExpanded(true);
     
     // Limpar URL
     router.push("/escrita");
@@ -973,107 +1039,213 @@ function EscritaPageContent() {
                 </div>
               </div>
 
-              {/* Botão Editar Metadados (quando bloqueado) */}
-              {isMetadataLocked && (
-                <div className="flex justify-end">
-                  <button
-                    onClick={() => setIsMetadataLocked(false)}
-                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
-                    Editar Metadados
-                  </button>
+              {/* Cabeçalho Colasável (quando metadados foram salvos) */}
+              {isMetadataSaved ? (
+                <div className="border border-border-light-default dark:border-border-dark-default rounded-lg p-4">
+                  {/* Linha colapsada com título */}
+                  <div className="flex items-center gap-3">
+                    {/* Botão de expandir/colapsar */}
+                    <button
+                      onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
+                      className="p-1 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary transition-colors"
+                      title={isHeaderExpanded ? "Colapsar" : "Expandir"}
+                    >
+                      <svg 
+                        className={clsx(
+                          "w-5 h-5 transition-transform",
+                          isHeaderExpanded && "rotate-90"
+                        )} 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+
+                    {/* Botão de editar */}
+                    <button
+                      onClick={() => {
+                        setIsMetadataLocked(false);
+                        setIsHeaderExpanded(true);
+                      }}
+                      className="p-1 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary transition-colors"
+                      title="Editar metadados"
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+
+                    {/* Título */}
+                    <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary flex-1">
+                      {titulo || "Sem título"}
+                    </h2>
+                  </div>
+
+                  {/* Metadados expandidos */}
+                  {isHeaderExpanded && (
+                    <div className="mt-4 space-y-4">
+                      {/* Título */}
+                      <div>
+                        <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
+                          TÍTULO
+                        </label>
+                        <input
+                          type="text"
+                          value={titulo}
+                          onChange={(e) => setTitulo(e.target.value)}
+                          placeholder="Digite o título do texto..."
+                          disabled={isMetadataLocked}
+                          className="w-full px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                        />
+                      </div>
+
+                      {/* Metadados */}
+                      <div className="grid grid-cols-4 gap-4">
+                        <UniverseDropdown
+                          label="UNIVERSO"
+                          universes={universes}
+                          selectedId={universeId}
+                          onSelect={(id) => {
+                            setUniverseId(id);
+                            setWorldId("");
+                          }}
+                          onCreate={() => {
+                            console.log("Criar novo universo");
+                          }}
+                          disabled={isMetadataLocked}
+                        />
+
+                        <WorldsDropdownSingle
+                          label="MUNDO"
+                          worlds={worlds.filter(w => w.universe_id === universeId)}
+                          selectedId={worldId}
+                          onSelect={(id) => setWorldId(id)}
+                          disabled={!universeId || isMetadataLocked}
+                          onCreate={() => {
+                            console.log("Criar novo mundo");
+                          }}
+                        />
+
+                        <EpisodesDropdownSingle
+                          label="EPISÓDIO"
+                          episodes={availableEpisodes}
+                          selectedEpisode={episodio}
+                          onSelect={setEpisodio}
+                          onCreate={() => setShowNewEpisodeModal(true)}
+                          disabled={!worldId || isMetadataLocked}
+                        />
+
+                        <CategoryDropdownSingle
+                          label="CATEGORIA"
+                          categories={categories}
+                          selectedCategory={categoria}
+                          onSelect={setCategoria}
+                          worldId={worldId}
+                          disabled={!universeId || isMetadataLocked}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                // Formulário inicial de metadados (antes de salvar)
+                <div className="space-y-4">
+                  {/* Título */}
+                  <div>
+                    <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
+                      TÍTULO
+                    </label>
+                    <input
+                      type="text"
+                      value={titulo}
+                      onChange={(e) => setTitulo(e.target.value)}
+                      placeholder="Digite o título do texto..."
+                      className="w-full px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    />
+                  </div>
+
+                  {/* Metadados */}
+                  <div className="grid grid-cols-4 gap-4">
+                    <UniverseDropdown
+                      label="UNIVERSO"
+                      universes={universes}
+                      selectedId={universeId}
+                      onSelect={(id) => {
+                        setUniverseId(id);
+                        setWorldId("");
+                      }}
+                      onCreate={() => {
+                        console.log("Criar novo universo");
+                      }}
+                    />
+
+                    <WorldsDropdownSingle
+                      label="MUNDO"
+                      worlds={worlds.filter(w => w.universe_id === universeId)}
+                      selectedId={worldId}
+                      onSelect={(id) => setWorldId(id)}
+                      disabled={!universeId}
+                      onCreate={() => {
+                        console.log("Criar novo mundo");
+                      }}
+                    />
+
+                    <EpisodesDropdownSingle
+                      label="EPISÓDIO"
+                      episodes={availableEpisodes}
+                      selectedEpisode={episodio}
+                      onSelect={setEpisodio}
+                      onCreate={() => setShowNewEpisodeModal(true)}
+                      disabled={!worldId}
+                    />
+
+                    <CategoryDropdownSingle
+                      label="CATEGORIA"
+                      categories={categories}
+                      selectedCategory={categoria}
+                      onSelect={setCategoria}
+                      worldId={worldId}
+                      disabled={!universeId}
+                    />
+                  </div>
                 </div>
               )}
 
-              {/* Título */}
-              <div>
-                <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
-                  TÍTULO
-                </label>
-                <input
-                  type="text"
-                  value={titulo}
-                  onChange={(e) => setTitulo(e.target.value)}
-                  placeholder="Digite o título do texto..."
-                  disabled={isMetadataLocked}
-                  className="w-full px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-60 disabled:cursor-not-allowed"
-                />
-              </div>
+              {/* Botão Salvar Metadados (apenas quando não foram salvos ainda) */}
+              {!isMetadataSaved && (
+                <div className="flex justify-center">
+                  <Button
+                    onClick={handleSaveMetadata}
+                    disabled={isSaving || !titulo.trim() || !universeId}
+                    variant="primary"
+                    size="sm"
+                  >
+                    {isSaving ? "Salvando..." : "Salvar"}
+                  </Button>
+                </div>
+              )}
 
-              {/* Metadados */}
-              <div className="grid grid-cols-4 gap-4">
-                <UniverseDropdown
-                  label="UNIVERSO"
-                  universes={universes}
-                  selectedId={universeId}
-                  onSelect={(id) => {
-                    setUniverseId(id);
-                    setWorldId("");
-                  }}
-                  onCreate={() => {
-                    console.log("Criar novo universo");
-                  }}
-                  disabled={isMetadataLocked}
-                />
+              {/* Conteúdo (só aparece após salvar metadados) */}
+              {isMetadataSaved && (
+                <div>
+                  <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
+                    CONTEÚDO
+                  </label>
+                  <textarea
+                    ref={textareaRef}
+                    value={conteudo}
+                    onChange={(e) => setConteudo(e.target.value)}
+                    placeholder="Escreva seu texto aqui..."
+                    className="w-full h-[calc(100vh-32rem)] px-4 py-3 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none font-mono text-sm leading-relaxed"
+                  />
+                </div>
+              )}
 
-                <WorldsDropdownSingle
-                  label="MUNDO"
-                  worlds={worlds.filter(w => w.universe_id === universeId)}
-                  selectedId={worldId}
-                  onSelect={(id) => setWorldId(id)}
-                  disabled={!universeId || isMetadataLocked}
-                  onCreate={() => {
-                    console.log("Criar novo mundo");
-                  }}
-                />
-
-                <EpisodesDropdownSingle
-                  label="EPISÓDIO"
-                  episodes={availableEpisodes}
-                  selectedEpisode={episodio}
-                  onSelect={setEpisodio}
-                  onCreate={() => setShowNewEpisodeModal(true)}
-                  disabled={!worldId || isMetadataLocked}
-                />
-
-                <CategoryDropdownSingle
-                  label="CATEGORIA"
-                  categories={categories}
-                  selectedCategory={categoria}
-                  onSelect={setCategoria}
-                  worldId={worldId}
-                  disabled={!universeId || isMetadataLocked}
-                />
-              </div>
-
-              {/* Conteúdo */}
-              <div>
-                <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
-                  CONTEÚDO
-                </label>
-                <textarea
-                  ref={textareaRef}
-                  value={conteudo}
-                  onChange={(e) => setConteudo(e.target.value)}
-                  placeholder="Escreva seu texto aqui..."
-                  className="w-full h-[calc(100vh-32rem)] px-4 py-3 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none font-mono text-sm leading-relaxed"
-                />
-              </div>
-
-              {/* Ações */}
-              <div className="flex justify-between items-center pt-4">
-                <Button
-                  onClick={handleNewTexto}
-                  variant="secondary"
-                  size="sm"
-                >
-                  Voltar
-                </Button>
-
-                <div className="flex gap-3">
+              {/* Ações (só aparecem após salvar metadados) */}
+              {isMetadataSaved && (
+                <div className="flex justify-end items-center pt-4 gap-3">
                   <Button
                     onClick={handleSave}
                     disabled={isSaving || !titulo.trim()}
@@ -1092,7 +1264,7 @@ function EscritaPageContent() {
                     Publicar
                   </Button>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </main>
