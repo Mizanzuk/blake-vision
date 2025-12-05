@@ -297,6 +297,20 @@ function EscritaPageContent() {
         setEpisodio(texto.episodio || "");
         setCategoria(texto.categoria || "");
         setStatus(texto.status || "rascunho");
+        
+        // Configurar estados de controle
+        setIsMetadataLocked(true);
+        setIsMetadataSaved(true);
+        setIsHeaderExpanded(false);
+        
+        // Salvar snapshot dos metadados
+        setSavedMetadataSnapshot({
+          titulo: texto.titulo || "",
+          universeId: texto.universe_id || "",
+          worldId: texto.world_id || "",
+          episodio: texto.episodio || "",
+          categoria: texto.categoria || ""
+        });
       }
     } catch (error) {
       console.error("Erro ao carregar texto:", error);
@@ -410,6 +424,16 @@ function EscritaPageContent() {
     setIsMetadataLocked(false);
     setIsMetadataSaved(false);
     setIsHeaderExpanded(true);
+    setHasUnsavedMetadataChanges(false);
+    
+    // Limpar snapshot
+    setSavedMetadataSnapshot({
+      titulo: "",
+      universeId: "",
+      worldId: "",
+      episodio: "",
+      categoria: ""
+    });
     
     // Limpar URL
     router.push("/escrita");
@@ -1027,7 +1051,7 @@ function EscritaPageContent() {
 
         {/* Botão de expandir sidebar desktop (quando colapsada) */}
         {!isSidebarOpen && (
-          <div className="hidden md:flex fixed left-0 top-16 h-[calc(100vh-4rem)] w-12 bg-light-raised dark:bg-dark-raised flex-col items-center pt-48 gap-3 z-40">
+          <div className="hidden md:flex fixed left-0 top-16 h-[calc(100vh-4rem)] w-12 bg-light-raised dark:bg-dark-raised flex-col items-center pt-4 gap-3 z-40">
             <button
               onClick={() => setIsSidebarOpen(true)}
               className="p-2 rounded-lg text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
@@ -1383,7 +1407,7 @@ function EscritaPageContent() {
                         const rect = (e.target as HTMLTextAreaElement).getBoundingClientRect();
                         setSelectionMenuPosition({
                           x: e.clientX,
-                          y: e.clientY - 50
+                          y: e.clientY - 80 // Aumentado para 80px para ficar acima do texto
                         });
                       } else {
                         setSelectedText("");
@@ -1438,7 +1462,7 @@ function EscritaPageContent() {
         {/* Chat Lateral com Assistentes */}
         {(showUrthona || showUrizen) && (
           <div className="w-96 bg-light-base dark:bg-dark-base overflow-hidden flex flex-col">
-            <div ref={chatRef} className="flex flex-col h-full p-4">
+            <div ref={chatRef} className="flex flex-col h-full px-4 pt-4 pb-8">
               {/* Header do Chat */}
               <div className="flex justify-between items-center mb-4 pb-4">
                 <div>
@@ -1737,7 +1761,7 @@ function EscritaPageContent() {
                   title={isMetadataSaved ? "Perguntar para Urthona" : "Crie um texto primeiro"}
                 >
                   <img
-                    src="/urthona.webp"
+                    src="/urthona-avatar.png"
                     alt="Urthona"
                     className="w-full h-full rounded-full object-cover"
                   />
@@ -1771,7 +1795,7 @@ function EscritaPageContent() {
                   title={isMetadataSaved ? "Perguntar para Urizen" : "Crie um texto primeiro"}
                 >
                   <img
-                    src="/urizen.webp"
+                    src="/urizen-avatar.png"
                     alt="Urizen"
                     className="w-full h-full rounded-full object-cover"
                   />
