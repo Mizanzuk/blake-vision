@@ -108,8 +108,8 @@ export function Header({ title, showNav = true, currentPage }: HeaderProps) {
               </nav>
             )}
 
-            {/* Mobile Menu Button (Hamburger) */}
-            {showNav && (
+            {/* Mobile Menu Button (Hamburger) - Hidden on Escrita page */}
+            {showNav && currentPage !== "escrita" && (
               <button
                 onClick={() => setShowMobileMenu(!showMobileMenu)}
                 className="md:hidden p-2 rounded-lg text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
@@ -209,7 +209,7 @@ export function Header({ title, showNav = true, currentPage }: HeaderProps) {
           
           {/* Menu Drawer */}
           {createPortal(
-            <div className="fixed inset-y-0 right-0 w-64 bg-white dark:bg-dark-raised border-l border-border-light-default dark:border-border-dark-default z-[9998] md:hidden">
+            <div className="fixed inset-y-0 left-0 w-64 bg-[#F5F1E8] dark:bg-dark-raised border-r border-border-light-default dark:border-border-dark-default z-[9998] md:hidden">
               <div className="p-4 space-y-2">
                 {navItems.map((item) => (
                   <Link

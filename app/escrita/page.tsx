@@ -70,6 +70,7 @@ function EscritaPageContent() {
   
   // Estado da sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   
   // Estados do chat com assistentes
   const [showUrthona, setShowUrthona] = useState(false);
@@ -813,9 +814,39 @@ function EscritaPageContent() {
         </aside>
         )}
 
-        {/* Botão de expandir sidebar (quando colapsada) */}
+        {/* Barra de ícones mobile (quando sidebar fechada) */}
         {!isSidebarOpen && (
-          <div className="fixed left-0 top-0 h-full w-12 bg-light-raised dark:bg-dark-raised flex flex-col items-center py-4 gap-3 z-50 border-r border-border-light-default dark:border-border-dark-default">
+          <div className="md:hidden fixed left-0 top-16 h-[calc(100vh-4rem)] w-12 bg-light-raised dark:bg-dark-raised flex flex-col items-center py-4 gap-3 z-50 border-r border-border-light-default dark:border-border-dark-default">
+            {/* Botão Menu (Sanduíche) */}
+            <button
+              onClick={() => setShowMobileMenu(true)}
+              className="p-2 rounded-lg text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
+              title="Abrir menu"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+
+            {/* Divisor */}
+            <div className="w-6 h-px bg-border-light-default dark:bg-border-dark-default" />
+
+            {/* Botão Lápis (Abrir Sidebar de Textos) */}
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="p-2 rounded-lg text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
+              title="Abrir barra lateral"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+            </button>
+          </div>
+        )}
+
+        {/* Botão de expandir sidebar desktop (quando colapsada) */}
+        {!isSidebarOpen && (
+          <div className="hidden md:flex fixed left-0 top-0 h-full w-12 bg-light-raised dark:bg-dark-raised flex-col items-center py-4 gap-3 z-50 border-r border-border-light-default dark:border-border-dark-default">
             <button
               onClick={() => setIsSidebarOpen(true)}
               className="p-2 rounded-lg text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
@@ -829,7 +860,10 @@ function EscritaPageContent() {
         )}
 
         {/* Container flex para Editor + Chat */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className={clsx(
+          "flex-1 flex overflow-hidden transition-all duration-300",
+          !isSidebarOpen && "md:ml-12"
+        )}>
           {/* Editor Principal */}
           <main className={clsx(
             "overflow-y-auto transition-all duration-300",
@@ -1079,6 +1113,72 @@ function EscritaPageContent() {
       </div>
 
 
+
+      {/* Menu Mobile Drawer */}
+      {showMobileMenu && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/50 z-[9997] md:hidden"
+            onClick={() => setShowMobileMenu(false)}
+          />
+          
+          {/* Menu Drawer */}
+          <div className="fixed inset-y-0 left-0 w-64 bg-[#F5F1E8] dark:bg-dark-raised border-r border-border-light-default dark:border-border-dark-default z-[9998] md:hidden">
+            <div className="p-4 space-y-2">
+              <a
+                href="/"
+                onClick={() => setShowMobileMenu(false)}
+                className="block w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
+              >
+                Home
+              </a>
+              <a
+                href="/projetos"
+                onClick={() => setShowMobileMenu(false)}
+                className="block w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
+              >
+                Projetos
+              </a>
+              <a
+                href="/catalog"
+                onClick={() => setShowMobileMenu(false)}
+                className="block w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
+              >
+                Catálogo
+              </a>
+              <a
+                href="/escrita"
+                onClick={() => setShowMobileMenu(false)}
+                className="block w-full text-left px-4 py-3 rounded-lg text-sm font-medium bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 transition-colors"
+              >
+                Escrita
+              </a>
+              <a
+                href="/timeline"
+                onClick={() => setShowMobileMenu(false)}
+                className="block w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
+              >
+                Timeline
+              </a>
+              <a
+                href="/upload"
+                onClick={() => setShowMobileMenu(false)}
+                className="block w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
+              >
+                Upload
+              </a>
+              <a
+                href="/faq"
+                onClick={() => setShowMobileMenu(false)}
+                className="block w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
+              >
+                FAQ
+              </a>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Modal de Novo Episódio */}
       <NewEpisodeModal
