@@ -819,21 +819,26 @@ export default function HomePage() {
           ) : (
             <div className="space-y-1">
               {sessions.map(session => (
-                <div
-                  key={session.id}
-                  draggable
-                  onDragStart={() => handleDragStart(session.id)}
-                  onDragOver={(e) => handleDragOver(e, session.id)}
-                  onDragEnd={handleDragEnd}
-                  className={clsx(
-                    "group relative flex items-center gap-2 px-3 py-2 rounded-lg cursor-move transition-colors",
-                    activeSessionId === session.id
-                      ? "bg-[#E8E4DB] dark:bg-primary-900/30 text-text-light-primary dark:text-dark-primary"
-                      : "bg-transparent dark:bg-transparent text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay",
-                    draggedSessionId === session.id && "opacity-50"
+                <div key={session.id} className="relative">
+                  {/* Linha indicadora de drag and drop */}
+                  {dragOverSessionId === session.id && draggedSessionId !== session.id && (
+                    <div className="absolute -top-1 left-0 right-0 h-0.5 bg-primary-600 dark:bg-primary-400 z-10" />
                   )}
-                  onClick={() => setActiveSessionId(session.id)}
-                >
+                  
+                  <div
+                    draggable
+                    onDragStart={() => handleDragStart(session.id)}
+                    onDragOver={(e) => handleDragOver(e, session.id)}
+                    onDragEnd={handleDragEnd}
+                    className={clsx(
+                      "group relative flex items-center gap-2 px-3 py-2 rounded-lg cursor-move transition-colors",
+                      activeSessionId === session.id
+                        ? "bg-[#E8E4DB] dark:bg-primary-900/30 text-text-light-primary dark:text-dark-primary"
+                        : "bg-transparent dark:bg-transparent text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay",
+                      draggedSessionId === session.id && "opacity-50"
+                    )}
+                    onClick={() => setActiveSessionId(session.id)}
+                  >
                   <Badge variant={PERSONAS[session.mode].styles.badge} size="sm" className="w-[70px] justify-center flex-shrink-0">
                     {session.mode === 'consulta' ? 'Consulta' : 'Criativo'}
                   </Badge>
@@ -914,6 +919,7 @@ export default function HomePage() {
                     </button>
                   </div>
                   )}
+                  </div>
                 </div>
               ))}
             </div>

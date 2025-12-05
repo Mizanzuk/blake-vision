@@ -9,6 +9,7 @@ import { UniverseDropdown } from "@/app/components/ui";
 import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import { EpisodesDropdownSingle } from "@/app/components/ui/EpisodesDropdownSingle";
 import { CategoryDropdownSingle } from "@/app/components/ui/CategoryDropdownSingle";
+import { TypesDropdown } from "@/app/components/ui/TypesDropdown";
 import { NewEpisodeModal } from "@/app/components/modals/NewEpisodeModal";
 import { toast } from "sonner";
 import type { Universe, World, Category } from "@/app/types";
@@ -46,7 +47,7 @@ function EscritaPageContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterUniverseId, setFilterUniverseId] = useState<string>("");
   const [filterWorldId, setFilterWorldId] = useState<string>("");
-  const [filterCategoria, setFilterCategoria] = useState<string>("todas");
+  const [filterCategorias, setFilterCategorias] = useState<string[]>([]);
   
   // Estados do Editor
   const [currentTextoId, setCurrentTextoId] = useState<string | null>(null);
@@ -619,8 +620,8 @@ function EscritaPageContent() {
       return false;
     }
     
-    // Filtro de categoria
-    if (filterCategoria !== "todas" && texto.categoria !== filterCategoria) {
+    // Filtro de categorias (múltipla seleção)
+    if (filterCategorias.length > 0 && !filterCategorias.includes(texto.categoria || "")) {
       return false;
     }
     
@@ -711,16 +712,17 @@ function EscritaPageContent() {
             </div>
 
             {/* Filtro de Categoria */}
-            <select
-              value={filterCategoria}
-              onChange={(e) => setFilterCategoria(e.target.value)}
-              className="w-full px-3 py-2 text-sm rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
-              <option value="todas">Todas as categorias</option>
-              {categories.map(cat => (
-                <option key={cat.slug} value={cat.slug}>{cat.label}</option>
-              ))}
-            </select>
+            <TypesDropdown
+              types={categories}
+              selectedSlugs={filterCategorias}
+              onToggle={(slug) => {
+                setFilterCategorias(prev => 
+                  prev.includes(slug) 
+                    ? prev.filter(s => s !== slug)
+                    : [...prev, slug]
+                );
+              }}
+            />
           </div>
 
           {/* Lista de Textos */}
@@ -728,7 +730,7 @@ function EscritaPageContent() {
             {filteredTextos.length === 0 ? (
               <div className="p-8 text-center">
                 <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary">
-                  {searchQuery || filterCategoria !== "todas"
+                  {searchQuery || filterCategorias.length > 0
                     ? "Nenhum texto encontrado"
                     : activeTab === "rascunhos"
                     ? "Nenhum rascunho ainda"
@@ -738,28 +740,37 @@ function EscritaPageContent() {
             ) : (
               <div className="space-y-1">
                 {filteredTextos.map(texto => (
-                  <div
-                    key={texto.id}
-                    draggable
-                    onDragStart={() => handleDragStart(texto.id)}
-                    onDragOver={(e) => handleDragOver(e, texto.id)}
-                    onDragEnd={handleDragEnd}
-                    onClick={() => handleSelectTexto(texto)}
-                    className={clsx(
-                      "group relative flex flex-col gap-2 px-3 py-2 rounded-lg cursor-move transition-colors",
-                      currentTextoId === texto.id
-                        ? "bg-[#E8E4DB] dark:bg-primary-900/30 text-text-light-primary dark:text-dark-primary"
-                        : "bg-transparent dark:bg-transparent text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay",
-                      draggedTextoId === texto.id && "opacity-50"
+                  <div key={texto.id} className="relative">
+                    {/* Linha indicadora de drag and drop */}
+                    {dragOverTextoId === texto.id && draggedTextoId !== texto.id && (
+                      <div className="absolute -top-1 left-0 right-0 h-0.5 bg-primary-600 dark:bg-primary-400 z-10" />
                     )}
-                  >
+                    
+                    <div
+                      draggable
+                      onDragStart={() => handleDragStart(texto.id)}
+                      onDragOver={(e) => handleDragOver(e, texto.id)}
+                      onDragEnd={handleDragEnd}
+                      onClick={() => handleSelectTexto(texto)}
+                      className={clsx(
+                        "group relative flex flex-col gap-2 px-3 py-2 rounded-lg cursor-move transition-colors",
+                        currentTextoId === texto.id
+                          ? "bg-[#E8E4DB] dark:bg-primary-900/30 text-text-light-primary dark:text-dark-primary"
+                          : "bg-transparent dark:bg-transparent text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay",
+                        draggedTextoId === texto.id && "opacity-50"
+                      )}
+                    >
                     <div className="flex items-center gap-2">
-                      {texto.categoria && (
+                      {texto.categoria ? (
                         <span className={clsx(
                           "inline-block px-2 py-0.5 text-xs font-medium rounded flex-shrink-0",
                           getCategoryColor(texto.categoria)
                         )}>
                           {getCategoryLabel(texto.categoria)}
+                        </span>
+                      ) : (
+                        <span className="inline-block px-2 py-0.5 text-xs font-medium rounded flex-shrink-0 bg-text-light-tertiary/20 dark:bg-dark-tertiary/20 text-text-light-secondary dark:text-dark-secondary">
+                          Texto Livre
                         </span>
                       )}
                       <span className="flex-1 text-xs line-clamp-1">
@@ -805,6 +816,7 @@ function EscritaPageContent() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
                       </button>
+                    </div>
                     </div>
                   </div>
                 ))}
@@ -879,17 +891,17 @@ function EscritaPageContent() {
                     setShowUrthona(!showUrthona);
                     if (!showUrthona) setShowUrizen(false);
                   }}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#C85A54]/10 dark:bg-[#C85A54]/20 border border-[#C85A54]/30 dark:border-[#C85A54]/40 hover:bg-[#C85A54]/15 dark:hover:bg-[#C85A54]/25 transition-all cursor-pointer group"
+                  className="relative group cursor-pointer"
+                  title="Urthona (Criativo)"
                 >
                   <img 
                     src="/urthona-avatar.png" 
                     alt="Urthona" 
-                    className="w-10 h-10 rounded-full ring-2 ring-[#C85A54]/50"
+                    className={clsx(
+                      "w-12 h-12 rounded-full transition-all",
+                      showUrthona ? "ring-4 ring-[#C85A54]" : "hover:ring-2 hover:ring-[#C85A54]/50"
+                    )}
                   />
-                  <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-[#C85A54] dark:text-[#D87A74]">Urthona</span>
-                    <span className="text-xs text-text-light-tertiary dark:text-dark-tertiary">O Fluxo (Criativo)</span>
-                  </div>
                 </div>
 
                 {/* Urizen - Consulta */}
@@ -898,17 +910,17 @@ function EscritaPageContent() {
                     setShowUrizen(!showUrizen);
                     if (!showUrizen) setShowUrthona(false);
                   }}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#5B7C8D]/10 dark:bg-[#5B7C8D]/20 border border-[#5B7C8D]/30 dark:border-[#5B7C8D]/40 hover:bg-[#5B7C8D]/15 dark:hover:bg-[#5B7C8D]/25 transition-all cursor-pointer group"
+                  className="relative group cursor-pointer"
+                  title="Urizen (Consulta)"
                 >
                   <img 
                     src="/urizen-avatar.png" 
                     alt="Urizen" 
-                    className="w-10 h-10 rounded-full ring-2 ring-[#5B7C8D]/50"
+                    className={clsx(
+                      "w-12 h-12 rounded-full transition-all",
+                      showUrizen ? "ring-4 ring-[#5B7C8D]" : "hover:ring-2 hover:ring-[#5B7C8D]/50"
+                    )}
                   />
-                  <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-[#5B7C8D] dark:text-[#7B9CAD]">Urizen</span>
-                    <span className="text-xs text-text-light-tertiary dark:text-dark-tertiary">A Lei (Consulta)</span>
-                  </div>
                 </div>
               </div>
 
