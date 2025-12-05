@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, Suspense } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
 import { Header } from "@/app/components/layout/Header";
@@ -66,6 +66,19 @@ function EscritaPageContent() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [allFichas, setAllFichas] = useState<any[]>([]);
   
+  // Categorias únicas dos textos (para filtro)
+  const textoCategorias = React.useMemo(() => {
+    const allTextos = [...rascunhos, ...publicados];
+    const uniqueCategories = new Set(allTextos.map(t => t.categoria).filter(Boolean));
+    return Array.from(uniqueCategories).map(slug => ({
+      slug: slug!,
+      label: getCategoryLabel(slug!),
+      universe_id: "",
+      user_id: "",
+      created_at: ""
+    }));
+  }, [rascunhos, publicados, categories]);
+
   // Estados de modais
   const [showNewEpisodeModal, setShowNewEpisodeModal] = useState(false);
   
@@ -712,17 +725,19 @@ function EscritaPageContent() {
             </div>
 
             {/* Filtro de Categoria */}
-            <TypesDropdown
-              types={categories}
-              selectedSlugs={filterCategorias}
-              onToggle={(slug) => {
-                setFilterCategorias(prev => 
-                  prev.includes(slug) 
-                    ? prev.filter(s => s !== slug)
-                    : [...prev, slug]
-                );
-              }}
-            />
+            <div className="relative z-50">
+              <TypesDropdown
+                types={textoCategorias}
+                selectedSlugs={filterCategorias}
+                onToggle={(slug) => {
+                  setFilterCategorias(prev => 
+                    prev.includes(slug) 
+                      ? prev.filter(s => s !== slug)
+                      : [...prev, slug]
+                  );
+                }}
+              />
+            </div>
           </div>
 
           {/* Lista de Textos */}
@@ -763,17 +778,17 @@ function EscritaPageContent() {
                     <div className="flex items-center gap-2">
                       {texto.categoria ? (
                         <span className={clsx(
-                          "inline-block px-2 py-0.5 text-xs font-medium rounded flex-shrink-0",
+                          "inline-block px-2 py-0.5 text-[10px] font-medium rounded flex-shrink-0",
                           getCategoryColor(texto.categoria)
                         )}>
                           {getCategoryLabel(texto.categoria)}
                         </span>
                       ) : (
-                        <span className="inline-block px-2 py-0.5 text-xs font-medium rounded flex-shrink-0 bg-text-light-tertiary/20 dark:bg-dark-tertiary/20 text-text-light-secondary dark:text-dark-secondary">
+                        <span className="inline-block px-2 py-0.5 text-[10px] font-medium rounded flex-shrink-0 bg-text-light-tertiary/20 dark:bg-dark-tertiary/20 text-text-light-secondary dark:text-dark-secondary">
                           Texto Livre
                         </span>
                       )}
-                      <span className="flex-1 text-xs line-clamp-1">
+                      <span className="flex-1 text-xs line-clamp-3">
                         {texto.titulo || "Sem título"}
                       </span>
                     </div>
