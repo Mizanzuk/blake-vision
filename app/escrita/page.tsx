@@ -65,6 +65,13 @@ function EscritaPageContent() {
   
   // Estados de modais
   const [showNewEpisodeModal, setShowNewEpisodeModal] = useState(false);
+  
+  // Estado da sidebar
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  
+  // Estado do modal de agente
+  const [showAgentModal, setShowAgentModal] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState<"urthona" | "urizen" | null>(null);
 
   // Refs
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -439,13 +446,27 @@ function EscritaPageContent() {
       
       <div className="flex h-[calc(100vh-4rem)]">
         {/* Sidebar - Lista de Textos */}
+        {isSidebarOpen && (
         <aside className="w-80 border-r border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised overflow-y-auto">
           {/* Header da Sidebar */}
           <div className="p-4 border-b border-border-light-default dark:border-border-dark-default">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-text-light-primary dark:text-dark-primary">Blake Vision</h2>
+              <button
+                onClick={() => setIsSidebarOpen(false)}
+                className="p-1.5 rounded-lg text-text-light-tertiary hover:text-text-light-secondary hover:bg-light-overlay dark:text-dark-tertiary dark:hover:text-dark-secondary dark:hover:bg-dark-overlay transition-colors"
+                title="Fechar barra lateral"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                </svg>
+              </button>
+            </div>
             <Button
               onClick={handleNewTexto}
               className="w-full"
               variant="primary"
+              size="sm"
             >
               + Novo Texto
             </Button>
@@ -512,7 +533,7 @@ function EscritaPageContent() {
           </div>
 
           {/* Lista de Textos */}
-          <div className="p-2">
+          <div className="p-4">
             {filteredTextos.length === 0 ? (
               <div className="p-8 text-center">
                 <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary">
@@ -524,53 +545,73 @@ function EscritaPageContent() {
                 </p>
               </div>
             ) : (
-              filteredTextos.map(texto => (
-                <div
-                  key={texto.id}
-                  onClick={() => handleSelectTexto(texto)}
-                  className={clsx(
-                    "p-3 mb-2 rounded-lg cursor-pointer transition-colors",
-                    currentTextoId === texto.id
-                      ? "bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800"
-                      : "hover:bg-light-overlay dark:hover:bg-dark-overlay"
-                  )}
-                >
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <h3 className="text-sm font-medium text-text-light-primary dark:text-dark-primary line-clamp-2 flex-1">
-                      {texto.titulo || "Sem título"}
-                    </h3>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(texto.id);
-                      }}
-                      className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                  </div>
-                  
-                  {texto.categoria && (
-                    <div className="mb-2">
-                      <span className={clsx(
-                        "inline-block px-2 py-0.5 text-xs font-medium rounded",
-                        getCategoryColor(texto.categoria)
-                      )}>
-                        {getCategoryLabel(texto.categoria)}
+              <div className="space-y-1">
+                {filteredTextos.map(texto => (
+                  <div
+                    key={texto.id}
+                    onClick={() => handleSelectTexto(texto)}
+                    className={clsx(
+                      "group relative flex flex-col gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors border",
+                      currentTextoId === texto.id
+                        ? "bg-[#E8E4DB] dark:bg-primary-900/30 text-text-light-primary dark:text-dark-primary border-border-light-strong dark:border-border-dark-strong"
+                        : "bg-transparent dark:bg-transparent text-text-light-secondary dark:text-dark-secondary border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay"
+                    )}
+                  >
+                    <div className="flex items-start gap-2">
+                      {texto.categoria && (
+                        <span className={clsx(
+                          "inline-block px-2 py-0.5 text-xs font-medium rounded flex-shrink-0",
+                          getCategoryColor(texto.categoria)
+                        )}>
+                          {getCategoryLabel(texto.categoria)}
+                        </span>
+                      )}
+                      <span className="flex-1 text-xs line-clamp-2">
+                        {texto.titulo || "Sem título"}
                       </span>
                     </div>
-                  )}
-                  
-                  <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary">
-                    Atualizado em {formatDate(texto.updated_at)}
-                  </p>
-                </div>
-              ))
+                    
+                    <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary">
+                      {formatDate(texto.updated_at)}
+                    </p>
+                    
+                    {/* Botões com gradiente (aparecem no hover) */}
+                    <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 pr-2 pl-8 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-[#E8E4DB] via-[#E8E4DB]/95 to-transparent dark:from-primary-900/30 dark:via-primary-900/30 dark:to-transparent">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(texto.id);
+                        }}
+                        className="p-1 rounded hover:bg-error-light/10 text-error-light"
+                        title="Apagar"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </aside>
+        )}
+
+        {/* Botão de expandir sidebar (quando colapsada) */}
+        {!isSidebarOpen && (
+          <div className="fixed left-0 top-0 h-full w-12 bg-light-raised dark:bg-dark-raised flex flex-col items-center py-4 gap-3 z-50 border-r border-border-light-default dark:border-border-dark-default">
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="p-2 rounded-lg text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
+              title="Abrir barra lateral"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+        )}
 
         {/* Editor Principal */}
         <main className="flex-1 overflow-y-auto">
@@ -579,7 +620,13 @@ function EscritaPageContent() {
               {/* Agentes */}
               <div className="flex gap-4 justify-end">
                 {/* Urthona - Criativo */}
-                <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#C85A54]/10 dark:bg-[#C85A54]/20 border border-[#C85A54]/30 dark:border-[#C85A54]/40 hover:bg-[#C85A54]/15 dark:hover:bg-[#C85A54]/25 transition-all cursor-pointer group">
+                <div 
+                  onClick={() => {
+                    setSelectedAgent("urthona");
+                    setShowAgentModal(true);
+                  }}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#C85A54]/10 dark:bg-[#C85A54]/20 border border-[#C85A54]/30 dark:border-[#C85A54]/40 hover:bg-[#C85A54]/15 dark:hover:bg-[#C85A54]/25 transition-all cursor-pointer group"
+                >
                   <img 
                     src="/urthona-avatar.png" 
                     alt="Urthona" 
@@ -592,7 +639,13 @@ function EscritaPageContent() {
                 </div>
 
                 {/* Urizen - Consulta */}
-                <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#5B7C8D]/10 dark:bg-[#5B7C8D]/20 border border-[#5B7C8D]/30 dark:border-[#5B7C8D]/40 hover:bg-[#5B7C8D]/15 dark:hover:bg-[#5B7C8D]/25 transition-all cursor-pointer group">
+                <div 
+                  onClick={() => {
+                    setSelectedAgent("urizen");
+                    setShowAgentModal(true);
+                  }}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#5B7C8D]/10 dark:bg-[#5B7C8D]/20 border border-[#5B7C8D]/30 dark:border-[#5B7C8D]/40 hover:bg-[#5B7C8D]/15 dark:hover:bg-[#5B7C8D]/25 transition-all cursor-pointer group"
+                >
                   <img 
                     src="/urizen-avatar.png" 
                     alt="Urizen" 
@@ -709,6 +762,87 @@ function EscritaPageContent() {
           </div>
         </main>
       </div>
+
+      {/* Modal de Conversa com Agente */}
+      {showAgentModal && selectedAgent && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-light-raised dark:bg-dark-raised rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+            {/* Header do Modal */}
+            <div className={clsx(
+              "flex items-center justify-between p-4 border-b border-border-light-default dark:border-border-dark-default rounded-t-xl",
+              selectedAgent === "urthona" 
+                ? "bg-[#C85A54]/10 dark:bg-[#C85A54]/20"
+                : "bg-[#5B7C8D]/10 dark:bg-[#5B7C8D]/20"
+            )}>
+              <div className="flex items-center gap-3">
+                <img 
+                  src={selectedAgent === "urthona" ? "/urthona-avatar.png" : "/urizen-avatar.png"}
+                  alt={selectedAgent === "urthona" ? "Urthona" : "Urizen"}
+                  className={clsx(
+                    "w-10 h-10 rounded-full ring-2",
+                    selectedAgent === "urthona" ? "ring-[#C85A54]/50" : "ring-[#5B7C8D]/50"
+                  )}
+                />
+                <div>
+                  <h3 className={clsx(
+                    "text-lg font-semibold",
+                    selectedAgent === "urthona" 
+                      ? "text-[#C85A54] dark:text-[#D87A74]"
+                      : "text-[#5B7C8D] dark:text-[#7B9CAD]"
+                  )}>
+                    {selectedAgent === "urthona" ? "Urthona" : "Urizen"}
+                  </h3>
+                  <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary">
+                    {selectedAgent === "urthona" ? "O Fluxo (Criativo)" : "A Lei (Consulta)"}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowAgentModal(false);
+                  setSelectedAgent(null);
+                }}
+                className="p-2 rounded-lg hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Corpo do Modal */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className={clsx(
+                "p-4 rounded-lg border",
+                selectedAgent === "urthona"
+                  ? "bg-[#C85A54]/5 border-[#C85A54]/20"
+                  : "bg-[#5B7C8D]/5 border-[#5B7C8D]/20"
+              )}>
+                <p className="text-sm text-text-light-secondary dark:text-dark-secondary">
+                  {selectedAgent === "urthona" 
+                    ? "Eu sou Urthona, o Forjador. Minha forja está pronta para criar e expandir as narrativas. Qual a próxima história?"
+                    : "Eu sou Urizen, a Lei deste universo. Minha função é garantir a coerência dos Registros. O que você quer analisar hoje?"}
+                </p>
+              </div>
+              
+              <div className="mt-6 text-center">
+                <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary mb-4">
+                  Esta funcionalidade abrirá uma conversa completa com o agente.
+                </p>
+                <Button
+                  onClick={() => {
+                    // Redirecionar para home com o modo selecionado
+                    router.push(`/?mode=${selectedAgent === "urthona" ? "criativo" : "consulta"}`);
+                  }}
+                  variant="primary"
+                >
+                  Iniciar Conversa na Home
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de Novo Episódio */}
       <NewEpisodeModal
