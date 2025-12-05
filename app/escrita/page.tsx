@@ -1050,7 +1050,7 @@ function EscritaPageContent() {
             "overflow-y-auto transition-all duration-300",
             (showUrthona || showUrizen) ? "flex-1" : "w-full"
           )}>
-          <div className="max-w-4xl mx-auto p-8">
+          <div className="max-w-4xl mx-auto p-8 min-h-full">
             <div className="space-y-6">
               {/* Agentes */}
               <div className="flex gap-4 justify-end items-center">
