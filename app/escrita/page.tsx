@@ -1417,10 +1417,11 @@ function EscritaPageContent() {
                         const range = selection?.getRangeAt(0);
                         const rect = range?.getBoundingClientRect();
                         if (rect) {
-                          // Posicionar 10px acima da primeira linha do texto selecionado
+                          // Posicionar acima do texto (altura do menu ~60px + margem 10px)
+                          const menuY = Math.max(10, rect.top - 70);
                           setSelectionMenuPosition({
                             x: rect.left + (rect.width / 2),
-                            y: rect.top - 10
+                            y: menuY
                           });
                         }
                       } else {
@@ -1476,7 +1477,7 @@ function EscritaPageContent() {
         {/* Chat Lateral com Assistentes */}
         {(showUrthona || showUrizen) && (
           <div className="w-96 bg-light-base dark:bg-dark-base overflow-hidden flex flex-col">
-            <div ref={chatRef} className="flex flex-col h-full px-4 pt-4 pb-3">
+            <div ref={chatRef} className="flex flex-col h-full px-4 pt-4 pb-11">
               {/* Header do Chat */}
               <div className="flex justify-between items-center mb-4 pb-4">
                 <div>
@@ -1743,7 +1744,7 @@ function EscritaPageContent() {
             style={{
               left: `${selectionMenuPosition.x}px`,
               top: `${selectionMenuPosition.y}px`,
-              transform: 'translate(-50%, -100%)'
+              transform: 'translateX(-50%)'
             }}
           >
             <div className="flex flex-col">
