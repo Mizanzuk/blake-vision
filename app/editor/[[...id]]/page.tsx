@@ -433,7 +433,7 @@ export default function EditorPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F1E8]">
-      <Header showNav={true} currentPage="editor" />
+      <Header showNav={true} currentPage="escrita" />
       
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className={clsx(
