@@ -1062,7 +1062,7 @@ function EscritaPageContent() {
 
               {/* Cabeçalho Colasável (quando metadados foram salvos) */}
               {isMetadataSaved ? (
-                <div className="p-4">
+                <div>
                   {/* Linha colapsada com título */}
                   <div className="flex items-center gap-3">
                     {/* Botão de expandir/colapsar */}
