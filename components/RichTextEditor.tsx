@@ -94,12 +94,14 @@ export default function RichTextEditor({
           height: 14px !important;
         }
         
-        /* Container com borda */
+        /* Container externo com borda visível (máscara) */
         .ql-container {
           flex: 1 !important;
           overflow: hidden !important;
           border: 1px solid #d1d5db !important;
           border-radius: 0 0 0.5rem 0.5rem !important;
+          position: relative !important;
+          max-height: calc(100vh - 32rem) !important;
         }
         
         /* Wrapper sem borda */
@@ -111,15 +113,15 @@ export default function RichTextEditor({
           flex-direction: column !important;
         }
         
-        /* Editor com scroll interno */
+        /* Editor interno com scroll - 100px menor que o container */
         .ql-editor {
           padding: 48px 64px 48px 64px !important;
-          min-height: calc(100% + 150px) !important;
+          min-height: 400px !important;
           flex: 1 !important;
           overflow-y: auto !important;
           scroll-behavior: smooth !important;
-          border: 1px solid #d1d5db !important;
-          border-radius: 0.5rem !important;
+          border: none !important;
+          max-height: calc(100vh - 32rem - 100px) !important;
         }
         
         .ql-editor p {
@@ -134,7 +136,7 @@ export default function RichTextEditor({
         }
         
         .ql-editor p:last-child {
-          margin-bottom: 150px !important;
+          margin-bottom: 14px !important;
         }
       `}</style>
       <ReactQuill
