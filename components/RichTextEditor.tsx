@@ -31,6 +31,28 @@ export default function RichTextEditor({
 
   return (
     <div className={className}>
+      <style jsx global>{`
+        .ql-container {
+          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+          font-size: 14px !important;
+          line-height: 1.5 !important;
+        }
+        
+        .ql-editor {
+          padding: 48px 64px !important;
+          min-height: 200px;
+        }
+        
+        .ql-editor p {
+          margin-bottom: 21px !important;
+          font-size: 14px !important;
+          line-height: 1.5 !important;
+        }
+        
+        .ql-editor p:last-child {
+          margin-bottom: 0 !important;
+        }
+      `}</style>
       <ReactQuill
         theme="snow"
         value={value}
