@@ -64,7 +64,8 @@ export default function RichTextEditor({
           font-size: 14px !important;
           line-height: 1.5 !important;
           border: none !important;
-          height: auto !important;
+          max-height: calc(100vh - 32rem) !important;
+          overflow: hidden !important;
         }
         
         .ql-toolbar {
@@ -76,6 +77,10 @@ export default function RichTextEditor({
         .ql-snow {
           border: 1px solid #d1d5db !important;
           border-radius: 0.5rem !important;
+          max-height: calc(100vh - 32rem) !important;
+          overflow: hidden !important;
+          display: flex !important;
+          flex-direction: column !important;
         }
         
         /* Limitar altura do editor e adicionar scroll */
