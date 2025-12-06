@@ -78,7 +78,7 @@ export default function RichTextEditor({
           padding: 12px 64px !important;
           flex-shrink: 0 !important;
           margin-bottom: 0 !important;
-          margin-top: -24px !important;
+          margin-top: -28px !important;
         }
         
         .ql-toolbar button {
@@ -116,6 +116,16 @@ export default function RichTextEditor({
           margin-bottom: 14px !important;
           font-size: 16px !important;
           line-height: 1.5 !important;
+        }
+        
+        /* Respiro visual na parte inferior do editor */
+        .ql-editor::after {
+          content: '' !important;
+          display: block !important;
+          height: 48px !important;
+          background-color: #f5f1e8 !important;
+          margin: 0 -64px -120px -64px !important;
+          border-radius: 0 0 0.5rem 0.5rem !important;
         }
         
         .ql-editor p + p {
