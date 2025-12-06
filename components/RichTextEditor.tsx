@@ -100,13 +100,13 @@ export default function RichTextEditor({
           overflow: hidden !important;
           border: none !important;
           position: relative !important;
-          max-height: calc(100vh - 28rem) !important;
+          max-height: calc(100vh - 32rem) !important;
         }
         
         /* Wrapper sem borda */
         .ql-snow {
           border: none !important;
-          max-height: calc(100vh - 28rem) !important;
+          max-height: calc(100vh - 32rem) !important;
           overflow: hidden !important;
           display: flex !important;
           flex-direction: column !important;
