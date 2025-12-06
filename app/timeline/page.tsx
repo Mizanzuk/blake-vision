@@ -535,11 +535,11 @@ export default function TimelinePage() {
                           {/* Conteúdo - visível quando expandido */}
                           {isExpanded && displayMode === "agrupado" && (
                             <div 
-                              className="mt-2 cursor-pointer space-y-2 ml-3"
+                              className="mt-2 cursor-pointer space-y-2 ml-6"
                               onClick={() => openViewFichaModal(event)}
                             >
                                 {event.resumo && (
-                                  <p className="text-sm text-text-light-secondary dark:text-dark-secondary">
+                                  <p className="text-sm text-text-light-secondary dark:text-dark-secondary hover:underline">
                                     {event.resumo}
                                   </p>
                                 )}
