@@ -17,6 +17,7 @@ import clsx from "clsx";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import getCaretCoordinates from "textarea-caret";
+import RichTextEditor from "@/components/RichTextEditor";
 
 interface Texto {
   id: string;
@@ -1585,35 +1586,11 @@ function EscritaPageContent() {
               {/* Conteúdo (só aparece após salvar metadados) */}
               {isMetadataSaved && (
                 <div>
-                  <textarea
-                    ref={textareaRef}
+                  <RichTextEditor
                     value={conteudo}
-                    onChange={(e) => setConteudo(e.target.value)}
-                    onMouseUp={(e) => {
-                      const textarea = e.currentTarget;
-                      const start = textarea.selectionStart;
-                      const end = textarea.selectionEnd;
-                      const text = textarea.value.substring(start, end).trim();
-                      
-                      if (text && text.length > 0) {
-                        setSelectedText(text);
-                        
-                        // Calcular posição exata do início da seleção
-                        const textareaRect = textarea.getBoundingClientRect();
-                        const caretCoords = getCaretCoordinates(textarea, start);
-                        
-                        // Posicionar acima do texto selecionado
-                        setSelectionMenuPosition({
-                          x: textareaRect.left + caretCoords.left + (caretCoords.width || 0) / 2,
-                          y: textareaRect.top + caretCoords.top - 70  // 70px acima da linha
-                        });
-                      } else {
-                        setSelectedText("");
-                        setSelectionMenuPosition(null);
-                      }
-                    }}
+                    onChange={(value) => setConteudo(value)}
                     placeholder="Escreva seu texto aqui..."
-                    className="w-full h-[calc(100vh-32rem)] px-4 py-3 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none font-mono text-sm leading-relaxed"
+                    className="w-full h-[calc(100vh-32rem)] rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised"
                   />
                 </div>
               )}
