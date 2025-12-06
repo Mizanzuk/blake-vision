@@ -1077,7 +1077,7 @@ function EscritaPageContent() {
 
         {/* Container flex para Editor + Chat */}
         <div className={clsx(
-          "flex-1 flex gap-12 overflow-hidden transition-all duration-300",
+          "flex-1 flex gap-4 overflow-hidden transition-all duration-300",
           !isSidebarOpen && "ml-12 md:ml-12"
         )}>
           {/* Editor Principal */}
