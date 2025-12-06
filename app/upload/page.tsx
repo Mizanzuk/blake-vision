@@ -510,9 +510,8 @@ export default function UploadPage() {
       <div className="max-w-4xl mx-auto p-6 space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold">Upload de Arquivo ou Texto</h1>
-          <p className="text-sm text-text-light-secondary dark:text-dark-secondary mt-1">
-            Envie um roteiro (PDF, DOCX, TXT) ou cole o texto. A Lore Machine extrairá fichas automaticamente.
+          <p className="text-sm text-text-light-secondary dark:text-dark-secondary">
+            Envie um roteiro (PDF, DOCX, TXT) ou cole o texto. Urizen analisará as informações e gerará fichas automaticamente.
           </p>
         </div>
 

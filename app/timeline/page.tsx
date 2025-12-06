@@ -14,11 +14,13 @@ import {
 } from "@/app/components/ui";
 import { Header } from "@/app/components/layout/Header";
 import FichaModal from "@/app/components/catalog/FichaModal";
+import FichaViewModal from "@/app/components/shared/FichaViewModal";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
 import type { Universe, World, Category, Ficha } from "@/app/types";
 
 type ViewMode = "list" | "decade" | "year" | "month";
+type DisplayMode = "agrupado" | "lista";
 
 interface GroupedEvents {
   [key: string]: Ficha[];
@@ -42,11 +44,18 @@ export default function TimelinePage() {
   const [selectedType, setSelectedType] = useState<string>("");
   
   // View mode
-  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [viewMode, setViewMode] = useState<ViewMode>("decade");
+  const [displayMode, setDisplayMode] = useState<DisplayMode>("agrupado");
   
   // Modal
   const [showFichaModal, setShowFichaModal] = useState(false);
   const [selectedFicha, setSelectedFicha] = useState<Ficha | null>(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [viewingFicha, setViewingFicha] = useState<Ficha | null>(null);
+  
+  // Cards expansion
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+  const [allExpanded, setAllExpanded] = useState(false);
   const [showNewUniverseModal, setShowNewUniverseModal] = useState(false);
   const [newUniverseName, setNewUniverseName] = useState("");
   const [newUniverseDescription, setNewUniverseDescription] = useState("");
@@ -177,6 +186,61 @@ export default function TimelinePage() {
     setShowFichaModal(true);
   }
 
+  function openViewFichaModal(ficha: Ficha) {
+    setViewingFicha(ficha);
+    setShowViewModal(true);
+  }
+
+  function handleEditFromView(ficha: Ficha) {
+    setShowViewModal(false);
+    setViewingFicha(null);
+    handleEditFicha(ficha);
+  }
+
+  function handleCloseViewModal() {
+    setShowViewModal(false);
+    setViewingFicha(null);
+  }
+
+  function toggleCardExpansion(fichaId: string) {
+    setExpandedCards(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(fichaId)) {
+        newSet.delete(fichaId);
+      } else {
+        newSet.add(fichaId);
+      }
+      return newSet;
+    });
+  }
+
+  function toggleAllCards() {
+    if (allExpanded) {
+      setExpandedCards(new Set());
+      setAllExpanded(false);
+    } else {
+      const allIds = new Set(events.map(e => e.id));
+      setExpandedCards(allIds);
+      setAllExpanded(true);
+    }
+  }
+
+  function handleNextFicha() {
+    if (!viewingFicha) return;
+    const currentIndex = events.findIndex(e => e.id === viewingFicha.id);
+    if (currentIndex < events.length - 1) {
+      setViewingFicha(events[currentIndex + 1]);
+    }
+  }
+
+  function handlePreviousFicha() {
+    if (!viewingFicha) return;
+    const currentIndex = events.findIndex(e => e.id === viewingFicha.id);
+    if (currentIndex > 0) {
+      setViewingFicha(events[currentIndex - 1]);
+    }
+  }
+
   async function handleSaveFicha(fichaData: any) {
     try {
       const method = fichaData.id ? "PUT" : "POST";
@@ -300,9 +364,6 @@ export default function TimelinePage() {
       <header className="border-b border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
-              Timeline
-            </h1>
 
           </div>
 
@@ -325,7 +386,7 @@ export default function TimelinePage() {
 
           {/* Filters */}
           {selectedUniverseId && (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Input
                 type="text"
                 placeholder="Buscar eventos..."
@@ -348,28 +409,26 @@ export default function TimelinePage() {
               </Select>
 
               <Select
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
+                value={displayMode}
+                onChange={(e) => setDisplayMode(e.target.value as DisplayMode)}
                 fullWidth
               >
-                <option value="">Todos os tipos</option>
-                {categories.map(cat => (
-                  <option key={cat.slug} value={cat.slug}>
-                    {cat.label}
-                  </option>
-                ))}
+                <option value="agrupado">Agrupado</option>
+                <option value="lista">Lista</option>
               </Select>
+            </div>
+          )}
 
-              <Select
-                value={viewMode}
-                onChange={(e) => setViewMode(e.target.value as ViewMode)}
-                fullWidth
+          {/* Botão Expandir/Recolher Tudo */}
+          {selectedUniverseId && displayMode === "agrupado" && filteredEvents.length > 0 && (
+            <div className="mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleAllCards}
               >
-                <option value="list">Lista</option>
-                <option value="decade">Por Década</option>
-                <option value="year">Por Ano</option>
-                <option value="month">Por Mês</option>
-              </Select>
+                {allExpanded ? "Recolher tudo" : "Expandir tudo"}
+              </Button>
             </div>
           )}
         </div>
@@ -430,6 +489,8 @@ export default function TimelinePage() {
                       const category = categories.find(c => c.slug === event.tipo);
                       const year = event.ano_diegese || (event.data_inicio ? parseInt(event.data_inicio.split('-')[0]) : null);
 
+                      const isExpanded = displayMode === "lista" || expandedCards.has(event.id);
+                      
                       return (
                         <div key={event.id} className="relative pl-20">
                           {/* Year Circle */}
@@ -441,11 +502,14 @@ export default function TimelinePage() {
                           <Card
                             variant="outlined"
                             padding="lg"
-                            hoverable
-                            onClick={() => handleEditFicha(event)}
-                            className="cursor-pointer"
+                            hoverable={false}
+                            className=""
                           >
-                            <div className="flex items-start justify-between gap-4">
+                            {/* Título - sempre visível */}
+                            <div 
+                              className="flex items-start justify-between gap-4 cursor-pointer hover:bg-light-hover dark:hover:bg-dark-hover -m-4 p-4 rounded-lg transition-colors"
+                              onClick={() => displayMode === "agrupado" ? toggleCardExpansion(event.id) : openViewFichaModal(event)}
+                            >
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-2">
                                   {category && (
@@ -460,9 +524,32 @@ export default function TimelinePage() {
                                   )}
                                 </div>
 
-                                <h3 className="text-xl font-bold text-text-light-primary dark:text-dark-primary mb-2">
+                                <h3 className="text-xl font-bold text-text-light-primary dark:text-dark-primary">
                                   {event.titulo}
                                 </h3>
+                              </div>
+
+                              {displayMode === "agrupado" && (
+                                <div className="flex-shrink-0">
+                                  <svg 
+                                    className={`w-6 h-6 text-text-light-secondary dark:text-dark-secondary transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                  </svg>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Conteúdo - visível quando expandido */}
+                            {isExpanded && (
+                              <div 
+                                className="mt-4 cursor-pointer"
+                                onClick={() => openViewFichaModal(event)}
+                              >
+                                <div className="hover:bg-light-hover dark:hover:bg-dark-hover -m-4 p-4 rounded-lg transition-colors">
 
                                 {event.resumo && (
                                   <p className="text-sm text-text-light-secondary dark:text-dark-secondary mb-3">
@@ -496,12 +583,9 @@ export default function TimelinePage() {
                                     </div>
                                   );
                                 })()}
+                                </div>
                               </div>
-
-                              <div className="text-sm text-text-light-tertiary dark:text-dark-tertiary">
-                                Clique para editar
-                              </div>
-                            </div>
+                            )}
                           </Card>
                         </div>
                       );
@@ -529,6 +613,18 @@ export default function TimelinePage() {
           categories={categories}
         />
       )}
+
+      {/* Ficha View Modal */}
+      <FichaViewModal
+        isOpen={showViewModal}
+        onClose={handleCloseViewModal}
+        ficha={viewingFicha}
+        onEdit={handleEditFromView}
+        onNext={handleNextFicha}
+        onPrevious={handlePreviousFicha}
+        hasNext={viewingFicha ? events.findIndex(e => e.id === viewingFicha.id) < events.length - 1 : false}
+        hasPrevious={viewingFicha ? events.findIndex(e => e.id === viewingFicha.id) > 0 : false}
+      />
 
       {/* Modal Novo Universo */}
       {showNewUniverseModal && (

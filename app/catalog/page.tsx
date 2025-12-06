@@ -342,6 +342,22 @@ export default function CatalogPage() {
     setViewingFicha(null);
   }
 
+  function handleNextFicha() {
+    if (!viewingFicha) return;
+    const currentIndex = fichas.findIndex(f => f.id === viewingFicha.id);
+    if (currentIndex < fichas.length - 1) {
+      setViewingFicha(fichas[currentIndex + 1]);
+    }
+  }
+
+  function handlePreviousFicha() {
+    if (!viewingFicha) return;
+    const currentIndex = fichas.findIndex(f => f.id === viewingFicha.id);
+    if (currentIndex > 0) {
+      setViewingFicha(fichas[currentIndex - 1]);
+    }
+  }
+
   async function handleSaveFicha(fichaData: any) {
     try {
       const url = selectedFicha ? "/api/fichas" : "/api/fichas";
@@ -662,7 +678,6 @@ export default function CatalogPage() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Catálogo</h1>
         
         {/* All Dropdowns in one row */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -1008,6 +1023,10 @@ export default function CatalogPage() {
         onClose={handleCloseViewModal}
         ficha={viewingFicha}
         onEdit={handleEditFromView}
+        onNext={handleNextFicha}
+        onPrevious={handlePreviousFicha}
+        hasNext={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) < fichas.length - 1 : false}
+        hasPrevious={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) > 0 : false}
       />
 
       {/* Manage Categories Modal */}

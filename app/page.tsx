@@ -1279,7 +1279,7 @@ export default function HomePage() {
                     onClick={() => startNewSession("consulta")}
                     className="cursor-pointer"
                   >
-                    <div className="w-16 h-16 rounded-full mb-4 overflow-hidden border-2 border-primary-300">
+                    <div className="w-16 h-16 rounded-full mb-4 overflow-hidden ring-4 ring-[#5B7C8D]">
                       <img src="/urizen-avatar.png" alt="Urizen" className="w-full h-full object-cover" />
                     </div>
                     <h3 className="text-xl font-bold text-text-light-primary dark:text-dark-primary mb-2">
@@ -1300,7 +1300,7 @@ export default function HomePage() {
                     onClick={() => startNewSession("criativo")}
                     className="cursor-pointer"
                   >
-                    <div className="w-16 h-16 rounded-full mb-4 overflow-hidden border-2 border-primary-300">
+                    <div className="w-16 h-16 rounded-full mb-4 overflow-hidden ring-4 ring-[#C85A54]">
                       <img src="/urthona-avatar.png" alt="Urthona" className="w-full h-full object-cover" />
                     </div>
                     <h3 className="text-xl font-bold text-text-light-primary dark:text-dark-primary mb-2">
@@ -1355,7 +1355,7 @@ export default function HomePage() {
             onClick={() => startNewSession("consulta")}
             className="cursor-pointer"
           >
-            <div className="w-16 h-16 rounded-full mb-4 overflow-hidden border-2 border-primary-300">
+            <div className="w-16 h-16 rounded-full mb-4 overflow-hidden ring-4 ring-[#5B7C8D]">
               <img src="/urizen-avatar.png" alt="Urizen" className="w-full h-full object-cover" />
             </div>
             <h3 className="text-xl font-bold text-text-light-primary dark:text-dark-primary mb-2">
@@ -1376,7 +1376,7 @@ export default function HomePage() {
             onClick={() => startNewSession("criativo")}
             className="cursor-pointer"
           >
-            <div className="w-16 h-16 rounded-full mb-4 overflow-hidden border-2 border-primary-300">
+            <div className="w-16 h-16 rounded-full mb-4 overflow-hidden ring-4 ring-[#C85A54]">
               <img src="/urthona-avatar.png" alt="Urthona" className="w-full h-full object-cover" />
             </div>
             <h3 className="text-xl font-bold text-text-light-primary dark:text-dark-primary mb-2">

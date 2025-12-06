@@ -249,6 +249,22 @@ export default function ProjetosPage() {
     setViewingFicha(null);
   }
 
+  function handleNextFicha() {
+    if (!viewingFicha) return;
+    const currentIndex = fichas.findIndex(f => f.id === viewingFicha.id);
+    if (currentIndex < fichas.length - 1) {
+      setViewingFicha(fichas[currentIndex + 1]);
+    }
+  }
+
+  function handlePreviousFicha() {
+    if (!viewingFicha) return;
+    const currentIndex = fichas.findIndex(f => f.id === viewingFicha.id);
+    if (currentIndex > 0) {
+      setViewingFicha(fichas[currentIndex - 1]);
+    }
+  }
+
   async function handleSaveFicha(fichaData: any) {
     try {
       const method = fichaData.id ? "PUT" : "POST";
@@ -379,7 +395,6 @@ export default function ProjetosPage() {
       <Header showNav={true} currentPage="projetos" />
       
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Projetos</h1>
 
         {/* Filters Row */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -600,6 +615,10 @@ export default function ProjetosPage() {
         ficha={viewingFicha}
         onClose={handleCloseViewModal}
         onEdit={handleEditFromView}
+        onNext={handleNextFicha}
+        onPrevious={handlePreviousFicha}
+        hasNext={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) < fichas.length - 1 : false}
+        hasPrevious={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) > 0 : false}
       />
     </div>
   );

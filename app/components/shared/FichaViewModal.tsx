@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { Modal, Badge, Button } from "@/app/components/ui";
 import type { Ficha } from "@/app/types";
 import { PencilIcon } from "@heroicons/react/24/outline";
@@ -9,6 +10,10 @@ interface FichaViewModalProps {
   ficha: Ficha | null;
   onClose: () => void;
   onEdit: () => void;
+  onNext?: () => void;
+  onPrevious?: () => void;
+  hasNext?: boolean;
+  hasPrevious?: boolean;
 }
 
 export default function FichaViewModal({
@@ -16,7 +21,26 @@ export default function FichaViewModal({
   ficha,
   onClose,
   onEdit,
+  onNext,
+  onPrevious,
+  hasNext = false,
+  hasPrevious = false,
 }: FichaViewModalProps) {
+  
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft' && hasPrevious && onPrevious) {
+        onPrevious();
+      } else if (e.key === 'ArrowRight' && hasNext && onNext) {
+        onNext();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, hasNext, hasPrevious, onNext, onPrevious]);
   
   if (!isOpen || !ficha) return null;
   
@@ -221,15 +245,43 @@ export default function FichaViewModal({
   );
 
   return (
-    <Modal
-      isOpen={true}
-      onClose={onClose}
-      title=""
-      size="lg"
-    >
-      <div className="max-h-[70vh] overflow-y-auto px-6 py-4">
-        {ficha.tipo === "episodio" ? renderEpisodeView() : renderDefaultView()}
-      </div>
-    </Modal>
+    <div className="relative">
+      {/* Botão Anterior */}
+      {hasPrevious && onPrevious && (
+        <button
+          onClick={onPrevious}
+          className="fixed left-4 top-1/2 -translate-y-1/2 z-[60] w-12 h-12 rounded-full bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default hover:bg-light-hover dark:hover:bg-dark-hover transition-colors flex items-center justify-center shadow-lg"
+          aria-label="Ficha anterior"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+      )}
+
+      {/* Botão Próximo */}
+      {hasNext && onNext && (
+        <button
+          onClick={onNext}
+          className="fixed right-4 top-1/2 -translate-y-1/2 z-[60] w-12 h-12 rounded-full bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default hover:bg-light-hover dark:hover:bg-dark-hover transition-colors flex items-center justify-center shadow-lg"
+          aria-label="Próxima ficha"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      )}
+
+      <Modal
+        isOpen={true}
+        onClose={onClose}
+        title=""
+        size="lg"
+      >
+        <div className="max-h-[70vh] overflow-y-auto px-6 py-4">
+          {ficha.tipo === "episodio" ? renderEpisodeView() : renderDefaultView()}
+        </div>
+      </Modal>
+    </div>
   );
 }
