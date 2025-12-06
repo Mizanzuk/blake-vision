@@ -134,6 +134,14 @@ export default function RichTextEditor({
         .ql-editor p:last-child {
           margin-bottom: 0 !important;
         }
+        
+        /* Respiro visual no final do editor */
+        .ql-editor::after {
+          content: '' !important;
+          display: block !important;
+          height: 100px !important;
+          width: 100% !important;
+        }
       `}</style>
       <ReactQuill
         theme="snow"
