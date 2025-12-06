@@ -1264,7 +1264,7 @@ function EscritaPageContent() {
                       </div>
 
                       {/* Metadados */}
-                      <div className="grid grid-cols-4 gap-4">
+                      <div className="grid grid-cols-4 gap-4 mt-6">
                         <UniverseDropdown
                           label="UNIVERSO"
                           universes={universes}
@@ -1343,7 +1343,7 @@ function EscritaPageContent() {
                   </div>
 
                   {/* Metadados */}
-                  <div className="grid grid-cols-4 gap-4">
+                  <div className="grid grid-cols-4 gap-4 mt-6">
                     <UniverseDropdown
                       label="UNIVERSO"
                       universes={universes}
