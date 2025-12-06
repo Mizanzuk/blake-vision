@@ -191,10 +191,12 @@ export default function TimelinePage() {
     setShowViewModal(true);
   }
 
-  function handleEditFromView(ficha: Ficha) {
+  function handleEditFromView() {
+    if (!viewingFicha) return;
     setShowViewModal(false);
+    const fichaToEdit = viewingFicha;
     setViewingFicha(null);
-    handleEditFicha(ficha);
+    handleEditFicha(fichaToEdit);
   }
 
   function handleCloseViewModal() {
@@ -423,7 +425,7 @@ export default function TimelinePage() {
           {selectedUniverseId && displayMode === "agrupado" && filteredEvents.length > 0 && (
             <div className="mt-4">
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={toggleAllCards}
               >
