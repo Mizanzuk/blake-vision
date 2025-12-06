@@ -103,7 +103,7 @@ export default function RichTextEditor({
         
         /* Editor com scroll interno */
         .ql-editor {
-          padding: 48px 64px 120px 64px !important;
+          padding: 48px 64px 64px 64px !important;
           min-height: 400px !important;
           flex: 1 !important;
           overflow-y: auto !important;
@@ -117,16 +117,7 @@ export default function RichTextEditor({
           font-size: 16px !important;
           line-height: 1.5 !important;
         }
-        
-        /* Respiro visual na parte inferior do editor */
-        .ql-editor::after {
-          content: '' !important;
-          display: block !important;
-          height: 48px !important;
-          background-color: #f5f1e8 !important;
-          margin: 0 -64px -120px -64px !important;
-          border-radius: 0 0 0.5rem 0.5rem !important;
-        }
+
         
         .ql-editor p + p {
           margin-top: 14px !important;
