@@ -1417,10 +1417,11 @@ function EscritaPageContent() {
                       
                       if (text && text.length > 0) {
                         setSelectedText(text);
-                        // Usar posição do mouse, 70px acima para o menu
+                        // Posicionar acima do textarea, centralizado (estilo ChatGPT)
+                        const rect = textarea.getBoundingClientRect();
                         setSelectionMenuPosition({
-                          x: e.clientX,
-                          y: e.clientY - 70
+                          x: rect.left + (rect.width / 2),  // Centro horizontal do textarea
+                          y: rect.top - 70  // 70px acima do textarea
                         });
                       } else {
                         setSelectedText("");
