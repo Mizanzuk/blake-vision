@@ -362,17 +362,55 @@
     padding-bottom: 50vh;
   }
 
-  /* Focus Mode - Efeito de foco simples */
-  .focus-sentence,
-  .focus-paragraph {
-    opacity: 0.85;
-    transition: opacity 0.3s ease-in-out;
+  /* Focus Mode - Sentence Highlighting */
+  .focus-sentence {
+    position: relative;
   }
 
-  /* Typewriter Mode - Centralizar cursor */
-  .typewriter-mode {
-    padding-top: 40vh !important;
-    padding-bottom: 40vh !important;
+  .focus-sentence::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.6) 0%,
+      rgba(0, 0, 0, 0) 30%,
+      rgba(0, 0, 0, 0) 70%,
+      rgba(0, 0, 0, 0.6) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Focus Mode - Paragraph Highlighting */
+  .focus-paragraph {
+    position: relative;
+  }
+
+  .focus-paragraph::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.7) 0%,
+      rgba(0, 0, 0, 0) 20%,
+      rgba(0, 0, 0, 0) 80%,
+      rgba(0, 0, 0, 0.7) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Smooth transitions for focus changes */
+  textarea.focus-mode-editor {
+    transition: opacity 0.3s ease-in-out;
   }
 }
 
@@ -390,49 +428,4 @@
 
 .focus-mode-enter {
   animation: fadeInFocus 0.3s ease-out;
-}
-
-
-/* TipTap Editor Styles */
-.tiptap {
-  outline: none;
-  font-family: 'Courier New', Courier, monospace;
-}
-
-.tiptap p {
-  margin: 0 0 21px 0; /* 21px entre parágrafos */
-  font-size: 14px;
-  line-height: 1.5; /* 1.5 entrelinhas = 21px */
-}
-
-.tiptap p:last-child {
-  margin-bottom: 0;
-}
-
-.tiptap strong {
-  font-weight: 700;
-}
-
-.tiptap em {
-  font-style: italic;
-}
-
-.tiptap p.is-editor-empty:first-child::before {
-  color: #adb5bd;
-  content: attr(data-placeholder);
-  float: left;
-  height: 0;
-  pointer-events: none;
-}
-
-/* TipTap no modo foco */
-.tiptap-focus-mode {
-  min-height: calc(100vh - 12rem);
-  padding: 2rem 0; /* Padding vertical para respiro */
-}
-
-/* TipTap no modo normal */
-.tiptap-normal-mode {
-  min-height: calc(100vh - 32rem);
-  padding: 1.5rem; /* Padding para respiro */
 }

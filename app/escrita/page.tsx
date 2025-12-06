@@ -17,7 +17,6 @@ import clsx from "clsx";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import getCaretCoordinates from "textarea-caret";
-import TipTapEditor from "@/components/TipTapEditor";
 
 interface Texto {
   id: string;
@@ -271,15 +270,8 @@ function EscritaPageContent() {
     const handleKeyboard = (e: KeyboardEvent) => {
       if (!isFocusMode) return;
       
-      // ESC: Lógica hierárquica
+      // ESC: Sair do modo foco
       if (e.key === 'Escape') {
-        // 1º: Fechar chat se estiver aberto
-        if (showUrthona || showUrizen) {
-          setShowUrthona(false);
-          setShowUrizen(false);
-          return;
-        }
-        // 2º: Sair do modo foco se nenhum chat estiver aberto
         exitFocusMode();
         return;
       }
@@ -308,7 +300,7 @@ function EscritaPageContent() {
 
     window.addEventListener('keydown', handleKeyboard);
     return () => window.removeEventListener('keydown', handleKeyboard);
-  }, [isFocusMode, showUrthona, showUrizen]);
+  }, [isFocusMode]);
 
   // Funções do Modo Foco
   async function enterFocusMode() {
@@ -380,25 +372,21 @@ function EscritaPageContent() {
   }
 
   function applyFocusHighlight(textarea: HTMLTextAreaElement) {
-    if (!isFocusMode) return;
+    if (!isFocusMode || focusType === 'off') return;
 
-    // Typewriter Mode: Manter cursor centralizado verticalmente
-    if (typewriterMode) {
-      // Calcular a posição do cursor em pixels
-      const textBeforeCursor = textarea.value.substring(0, textarea.selectionStart);
-      const lines = textBeforeCursor.split('\n');
-      const currentLine = lines.length;
-      
-      // Estimar altura da linha (aproximadamente)
-      const lineHeight = 28; // Ajustar conforme o font-size
-      const cursorY = currentLine * lineHeight;
-      
-      // Centralizar o scroll
-      const viewportHeight = textarea.clientHeight;
-      const targetScroll = cursorY - (viewportHeight / 2);
-      
-      textarea.scrollTop = Math.max(0, targetScroll);
+    const position = textarea.selectionStart;
+    const text = textarea.value;
+    
+    let range: { start: number; end: number };
+    if (focusType === 'sentence') {
+      range = getCurrentSentence(text, position);
+    } else {
+      range = getCurrentParagraph(text, position);
     }
+
+    // Aplicar efeito visual usando CSS (implementação simplificada)
+    // Em uma implementação completa, usaríamos um editor rico como CodeMirror ou ProseMirror
+    // Por enquanto, o efeito será aplicado via CSS no textarea
   }
 
   async function checkAuth() {
@@ -1596,17 +1584,28 @@ function EscritaPageContent() {
 
               {/* Conteúdo (só aparece após salvar metadados) */}
               {isMetadataSaved && (
-                <div className="rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised focus-within:ring-2 focus-within:ring-primary-500">
-                  <TipTapEditor
-                    content={conteudo}
-                    onChange={(newContent) => setConteudo(newContent)}
-                    onSelectionChange={(from, to, text) => {
+                <div>
+                  <textarea
+                    ref={textareaRef}
+                    value={conteudo}
+                    onChange={(e) => setConteudo(e.target.value)}
+                    onMouseUp={(e) => {
+                      const textarea = e.currentTarget;
+                      const start = textarea.selectionStart;
+                      const end = textarea.selectionEnd;
+                      const text = textarea.value.substring(start, end).trim();
+                      
                       if (text && text.length > 0) {
                         setSelectedText(text);
-                        // Posicionar menu de seleção (simplificado)
+                        
+                        // Calcular posição exata do início da seleção
+                        const textareaRect = textarea.getBoundingClientRect();
+                        const caretCoords = getCaretCoordinates(textarea, start);
+                        
+                        // Posicionar acima do texto selecionado
                         setSelectionMenuPosition({
-                          x: window.innerWidth / 2,
-                          y: 200
+                          x: textareaRect.left + caretCoords.left + (caretCoords.width || 0) / 2,
+                          y: textareaRect.top + caretCoords.top - 70  // 70px acima da linha
                         });
                       } else {
                         setSelectedText("");
@@ -1614,7 +1613,7 @@ function EscritaPageContent() {
                       }
                     }}
                     placeholder="Escreva seu texto aqui..."
-                    className="tiptap tiptap-normal-mode w-full h-[calc(100vh-32rem)] text-text-light-primary dark:text-dark-primary font-mono"
+                    className="w-full h-[calc(100vh-32rem)] px-4 py-3 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none font-mono text-sm leading-relaxed"
                   />
                 </div>
               )}
@@ -2089,38 +2088,45 @@ function EscritaPageContent() {
           {/* Editor em Fullscreen */}
           <div className="flex-1 flex overflow-hidden">
             {/* Área do Editor */}
-            <div className="flex-1 overflow-y-auto transition-all duration-300">
-              <div className="max-w-4xl mx-auto px-16 py-12">
-                <TipTapEditor
-                  content={conteudo}
-                  onChange={(newContent) => setConteudo(newContent)}
-                  onSelectionChange={(from, to, text) => {
-                    if (text && text.length > 0) {
-                      setSelectedText(text);
-                      // Posicionar menu de seleção no modo foco
-                      setSelectionMenuPosition({
-                        x: window.innerWidth / 2,
-                        y: 200
-                      });
-                    } else {
-                      setSelectedText("");
-                      setSelectionMenuPosition(null);
-                    }
+            <div className={clsx(
+              "flex-1 overflow-y-auto transition-all duration-300",
+              (showUrthona || showUrizen) ? "mr-96" : ""
+            )}>
+              <div className="max-w-4xl mx-auto px-8 py-12">
+                <textarea
+                  ref={textareaRef}
+                  value={conteudo}
+                  onChange={(e) => {
+                    setConteudo(e.target.value);
+                    setCursorPosition(e.target.selectionStart);
+                  }}
+                  onKeyUp={(e) => {
+                    const target = e.currentTarget;
+                    setCursorPosition(target.selectionStart);
+                    applyFocusHighlight(target);
+                  }}
+                  onClick={(e) => {
+                    const target = e.currentTarget;
+                    setCursorPosition(target.selectionStart);
+                    applyFocusHighlight(target);
                   }}
                   placeholder="Escreva seu texto aqui..."
                   className={clsx(
-                    "tiptap tiptap-focus-mode w-full bg-transparent text-text-light-primary dark:text-dark-primary font-mono",
+                    "w-full min-h-[calc(100vh-12rem)] px-0 py-0 bg-transparent border-none text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none resize-none font-serif text-lg leading-relaxed transition-all",
                     typewriterMode && "typewriter-mode",
                     focusType === 'sentence' && "focus-sentence",
                     focusType === 'paragraph' && "focus-paragraph"
                   )}
+                  style={{
+                    caretColor: 'currentColor',
+                  }}
                 />
               </div>
             </div>
             
             {/* Chat Lateral com Assistentes no Modo Foco */}
             {(showUrthona || showUrizen) && (
-              <div className="fixed right-8 top-24 bottom-8 w-96 bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-2xl overflow-hidden flex flex-col z-40">
+              <div className="w-96 h-full bg-light-raised dark:bg-dark-raised border-l border-border-light-default dark:border-border-dark-default overflow-hidden flex flex-col">
                 <div className="flex flex-col h-full px-4 pt-4 pb-32">
                   {/* Header do Chat */}
                   <div className="flex justify-between items-center mb-4 pb-4 border-b border-border-light-default dark:border-border-dark-default">
