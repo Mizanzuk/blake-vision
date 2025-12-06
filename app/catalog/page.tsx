@@ -682,7 +682,7 @@ export default function CatalogPage() {
         {/* All Dropdowns in one row */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <UniverseDropdown
-            label="Universo"
+            label="UNIVERSO"
             universes={universes}
             selectedId={selectedUniverseId}
             onSelect={setSelectedUniverseId}
@@ -692,7 +692,7 @@ export default function CatalogPage() {
           />
           
           <WorldsDropdown
-            label="Mundos"
+            label="MUNDOS"
             worlds={worlds}
             selectedIds={selectedWorldIds}
             onToggle={toggleWorldSelection}
@@ -703,7 +703,7 @@ export default function CatalogPage() {
           />
           
           <TypesDropdown
-            label="Categorias"
+            label="CATEGORIAS"
             types={categories}
             selectedSlugs={selectedTypes}
             onToggle={(slug) => {
@@ -726,7 +726,7 @@ export default function CatalogPage() {
           />
           
           <EpisodesDropdown
-            label="Episódios"
+            label="EPISÓDIOS"
             episodes={episodes.filter(e => e) as string[]}
             selectedEpisodes={selectedEpisodes}
             onToggle={(episode) => {

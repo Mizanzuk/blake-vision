@@ -15,6 +15,7 @@ import {
 import { Header } from "@/app/components/layout/Header";
 import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
 import { WorldsDropdown } from "@/app/components/ui/WorldsDropdown";
+import { ViewModeDropdown } from "@/app/components/ui/ViewModeDropdown";
 import FichaModal from "@/app/components/catalog/FichaModal";
 import FichaViewModal from "@/app/components/shared/FichaViewModal";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
@@ -370,7 +371,7 @@ export default function TimelinePage() {
           {/* Dropdowns e Busca na mesma linha */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <UniverseDropdown
-              label="Universo"
+              label="UNIVERSO"
               universes={universes}
               selectedId={selectedUniverseId}
               onSelect={(id) => handleUniverseChange(id)}
@@ -378,7 +379,7 @@ export default function TimelinePage() {
             />
             
             <WorldsDropdown
-              label="Mundos"
+              label="MUNDOS"
               worlds={worlds}
               selectedIds={selectedWorldId ? [selectedWorldId] : []}
               onToggle={(id) => setSelectedWorldId(id)}
@@ -388,19 +389,14 @@ export default function TimelinePage() {
               disabled={!selectedUniverseId}
             />
             
-            <Select
-              label="Visualização"
+            <ViewModeDropdown
+              label="VISUALIZAÇÃO"
               value={displayMode}
-              onChange={(e) => setDisplayMode(e.target.value as DisplayMode)}
-              fullWidth
-              disabled={!selectedUniverseId}
-            >
-              <option value="agrupado">Agrupado</option>
-              <option value="lista">Lista</option>
-            </Select>
+              onChange={(value) => setDisplayMode(value)}
+            />
             
             <Input
-              label="Buscar"
+              label="BUSCAR"
               type="text"
               placeholder="Buscar eventos..."
               value={searchTerm}
@@ -483,14 +479,14 @@ export default function TimelinePage() {
                       const isExpanded = displayMode === "lista" || expandedCards.has(event.id);
                       
                       return (
-                        <div key={event.id} className="relative pl-12 group">
-                          {/* Year Circle - 50% menor */}
-                          <div className="absolute left-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white text-xs font-bold shadow-lg">
+                        <div key={event.id} className="relative pl-12 group flex items-start">
+                          {/* Year Circle - 50% menor, centralizado com card */}
+                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white text-xs font-bold shadow-lg">
                             {year}
                           </div>
 
                           {/* Event Card - Lighter version */}
-                          <div className="py-2 px-3 rounded-lg hover:bg-light-raised dark:hover:bg-dark-raised transition-colors">
+                          <div className="flex-1 py-2 px-3 rounded-lg hover:bg-light-raised dark:hover:bg-dark-raised transition-colors">
                             {/* Título - sempre visível */}
                             <div 
                               className="flex items-start justify-between gap-4 cursor-pointer"

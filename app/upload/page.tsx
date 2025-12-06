@@ -11,7 +11,7 @@ import {
 } from "@/app/components/ui";
 import { Header } from "@/app/components/layout/Header";
 import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
-import { WorldsDropdown } from "@/app/components/ui/WorldsDropdown";
+import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import { EpisodesDropdown } from "@/app/components/ui/EpisodesDropdown";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
@@ -523,7 +523,7 @@ export default function UploadPage() {
           <div className="space-y-6">
             {/* Universo */}
             <UniverseDropdown
-              label="Universo"
+              label="UNIVERSO"
               universes={universes}
               selectedId={selectedUniverseId}
               onSelect={(id) => {
@@ -537,26 +537,23 @@ export default function UploadPage() {
 
             {/* Mundo */}
             {selectedUniverseId && (
-              <WorldsDropdown
-                label="Mundo de destino"
+              <WorldsDropdownSingle
+                label="MUNDO DE DESTINO"
                 worlds={worlds}
-                selectedIds={selectedWorldId ? [selectedWorldId] : []}
-                onToggle={(id) => {
+                selectedId={selectedWorldId}
+                onSelect={(id) => {
                   setSelectedWorldId(id);
-                  setUnitNumber("");
-                  setShowNewEpisodeInput(false);
                 }}
-                onEdit={() => {}}
-                onDelete={() => {}}
-                onCreate={() => setShowNewWorldModal(true)}
-                disabled={!selectedUniverseId}
+                onCreate={() => {
+                  setShowNewWorldModal(true);
+                }}
               />
             )}
 
             {/* Episódio */}
             {selectedWorldId && worldHasEpisodes && (
               <EpisodesDropdown
-                label="Episódios"
+                label="EPISÓDIOS"
                 episodes={existingEpisodes.filter(e => e) as string[]}
                 selectedEpisodes={unitNumber ? [unitNumber] : []}
                 onToggle={(episode) => {
