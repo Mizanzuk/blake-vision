@@ -73,9 +73,10 @@ export default function RichTextEditor({
         /* Toolbar - Botões menores e mais leves */
         .ql-toolbar {
           border: none !important;
-          border-bottom: 1px solid #e5e7eb !important;
-          padding: 8px !important;
+          background-color: #f5f1e8 !important;
+          padding: 12px 64px !important;
           flex-shrink: 0 !important;
+          margin-bottom: -12px !important;
         }
         
         .ql-toolbar button {
