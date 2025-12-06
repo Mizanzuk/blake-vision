@@ -39,12 +39,15 @@ export default function RichTextEditor({
         }
         
         .ql-editor {
-          padding: 48px 64px !important;
-          min-height: 200px;
+          padding: 48px 64px 120px 64px !important;
+          min-height: 400px;
+          max-height: 70vh;
+          overflow-y: auto;
+          scroll-behavior: smooth;
         }
         
         .ql-editor p {
-          margin-bottom: 21px !important;
+          margin-bottom: 14px !important;
           font-size: 14px !important;
           line-height: 1.5 !important;
         }
