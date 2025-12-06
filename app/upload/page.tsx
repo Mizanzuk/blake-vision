@@ -10,6 +10,9 @@ import {
   Select,
 } from "@/app/components/ui";
 import { Header } from "@/app/components/layout/Header";
+import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
+import { WorldsDropdown } from "@/app/components/ui/WorldsDropdown";
+import { EpisodesDropdown } from "@/app/components/ui/EpisodesDropdown";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
 import type { Universe, World } from "@/app/types";
@@ -519,69 +522,67 @@ export default function UploadPage() {
         <Card variant="elevated" padding="lg">
           <div className="space-y-6">
             {/* Universo */}
-            <div>
-              <Select
-                label="UNIVERSO"
-                value={selectedUniverseId}
-                onChange={handleUniverseChange}
-                fullWidth
-              >
-                <option value="">Selecione um universo</option>
-                {universes.map(u => (
-                  <option key={u.id} value={u.id}>{u.nome}</option>
-                ))}
-                <option value="create_new_universe">+ Novo Universo</option>
-              </Select>
-            </div>
+            <UniverseDropdown
+              label="Universo"
+              universes={universes}
+              selectedId={selectedUniverseId}
+              onSelect={(id) => {
+                setSelectedUniverseId(id);
+                localStorage.setItem("selectedUniverseId", id);
+                setSelectedWorldId("");
+                setUnitNumber("");
+              }}
+              onCreate={() => setShowNewUniverseModal(true)}
+            />
 
             {/* Mundo */}
             {selectedUniverseId && (
-              <div>
-                <Select
-                  label="MUNDO DE DESTINO"
-                  value={selectedWorldId}
-                  onChange={handleWorldChange}
-                  fullWidth
-                >
-                  <option value="">Selecione um mundo</option>
-                  {worlds.map(w => (
-                    <option key={w.id} value={w.id}>{w.nome}</option>
-                  ))}
-                  <option value="create_new">+ Novo Mundo</option>
-                </Select>
-              </div>
+              <WorldsDropdown
+                label="Mundo de destino"
+                worlds={worlds}
+                selectedIds={selectedWorldId ? [selectedWorldId] : []}
+                onToggle={(id) => {
+                  setSelectedWorldId(id);
+                  setUnitNumber("");
+                  setShowNewEpisodeInput(false);
+                }}
+                onEdit={() => {}}
+                onDelete={() => {}}
+                onCreate={() => setShowNewWorldModal(true)}
+                disabled={!selectedUniverseId}
+              />
             )}
 
             {/* Episódio */}
             {selectedWorldId && worldHasEpisodes && (
+              <EpisodesDropdown
+                label="Episódios"
+                episodes={existingEpisodes.filter(e => e) as string[]}
+                selectedEpisodes={unitNumber ? [unitNumber] : []}
+                onToggle={(episode) => {
+                  setUnitNumber(episode);
+                  setShowNewEpisodeInput(false);
+                }}
+                onCreate={() => {
+                  setShowNewEpisodeInput(true);
+                  setUnitNumber("");
+                }}
+              />
+            )}
+            
+            {/* Input para novo episódio */}
+            {showNewEpisodeInput && (
               <div>
-                {showNewEpisodeInput ? (
-                  <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wide text-text-light-tertiary dark:text-dark-tertiary mb-2">
-                      Episódio / Capítulo #
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full rounded-md bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default px-3 py-2 text-sm"
-                      value={unitNumber}
-                      onChange={(e) => setUnitNumber(e.target.value)}
-                      placeholder="Ex: 01, 02, 03..."
-                    />
-                  </div>
-                ) : (
-                  <Select
-                    label="EPISÓDIO / CAPÍTULO #"
-                    value={unitNumber}
-                    onChange={handleEpisodeChange}
-                    fullWidth
-                  >
-                    <option value="">Selecione ou crie novo</option>
-                    {existingEpisodes.map(ep => (
-                      <option key={ep} value={ep}>{ep}</option>
-                    ))}
-                    <option value="new_episode">+ Novo Episódio</option>
-                  </Select>
-                )}
+                <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
+                  Novo episódio / capítulo #
+                </label>
+                <input
+                  type="text"
+                  className="w-full rounded-md bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default px-3 py-2 text-sm"
+                  value={unitNumber}
+                  onChange={(e) => setUnitNumber(e.target.value)}
+                  placeholder="Ex: 01, 02, 03..."
+                />
               </div>
             )}
 

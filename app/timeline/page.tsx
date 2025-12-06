@@ -13,6 +13,8 @@ import {
   Loading,
 } from "@/app/components/ui";
 import { Header } from "@/app/components/layout/Header";
+import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
+import { WorldsDropdown } from "@/app/components/ui/WorldsDropdown";
 import FichaModal from "@/app/components/catalog/FichaModal";
 import FichaViewModal from "@/app/components/shared/FichaViewModal";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
@@ -365,57 +367,48 @@ export default function TimelinePage() {
 
           </div>
 
-          {/* Universe Selector */}
-          <div className="mb-4">
+          {/* Dropdowns e Busca na mesma linha */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <UniverseDropdown
+              label="Universo"
+              universes={universes}
+              selectedId={selectedUniverseId}
+              onSelect={(id) => handleUniverseChange(id)}
+              onCreate={() => setShowNewUniverseModal(true)}
+            />
+            
+            <WorldsDropdown
+              label="Mundos"
+              worlds={worlds}
+              selectedIds={selectedWorldId ? [selectedWorldId] : []}
+              onToggle={(id) => setSelectedWorldId(id)}
+              onEdit={() => {}}
+              onDelete={() => {}}
+              onCreate={() => {}}
+              disabled={!selectedUniverseId}
+            />
+            
             <Select
-              value={selectedUniverseId}
-              onChange={(e) => handleUniverseChange(e.target.value)}
+              label="Visualização"
+              value={displayMode}
+              onChange={(e) => setDisplayMode(e.target.value as DisplayMode)}
               fullWidth
+              disabled={!selectedUniverseId}
             >
-              <option value="">Selecione um universo</option>
-              {universes.map(universe => (
-                <option key={universe.id} value={universe.id}>
-                  {universe.nome}
-                </option>
-              ))}
-              <option value="create_new_universe">+ Novo Universo</option>
+              <option value="agrupado">Agrupado</option>
+              <option value="lista">Lista</option>
             </Select>
+            
+            <Input
+              label="Buscar"
+              type="text"
+              placeholder="Buscar eventos..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              fullWidth
+              disabled={!selectedUniverseId}
+            />
           </div>
-
-          {/* Filters */}
-          {selectedUniverseId && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Input
-                type="text"
-                placeholder="Buscar eventos..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                fullWidth
-              />
-              
-              <Select
-                value={selectedWorldId}
-                onChange={(e) => setSelectedWorldId(e.target.value)}
-                fullWidth
-              >
-                <option value="">Todos os mundos</option>
-                {worlds.map(world => (
-                  <option key={world.id} value={world.id}>
-                    {world.nome}
-                  </option>
-                ))}
-              </Select>
-
-              <Select
-                value={displayMode}
-                onChange={(e) => setDisplayMode(e.target.value as DisplayMode)}
-                fullWidth
-              >
-                <option value="agrupado">Agrupado</option>
-                <option value="lista">Lista</option>
-              </Select>
-            </div>
-          )}
 
           {/* Botão Expandir/Recolher Tudo */}
           {selectedUniverseId && displayMode === "agrupado" && filteredEvents.length > 0 && (
@@ -468,7 +461,7 @@ export default function TimelinePage() {
                 {/* Group Header */}
                 {displayMode === "agrupado" && (
                   <div className="sticky top-0 z-10 bg-light-base dark:bg-dark-base py-2">
-                    <h2 className="text-3xl font-bold text-text-light-primary dark:text-dark-primary">
+                    <h2 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
                       {groupKey}
                     </h2>
                     <div className="h-1 w-24 bg-gradient-to-r from-primary-500 to-primary-300 rounded-full mt-2" />
@@ -478,7 +471,7 @@ export default function TimelinePage() {
                 {/* Events in Group */}
                 <div className="relative">
                   {/* Timeline Line */}
-                  <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary-500 via-primary-400 to-primary-300" />
+                  <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary-500 via-primary-400 to-primary-300" />
 
                   {/* Events */}
                   <div className="space-y-8">
@@ -490,9 +483,9 @@ export default function TimelinePage() {
                       const isExpanded = displayMode === "lista" || expandedCards.has(event.id);
                       
                       return (
-                        <div key={event.id} className="relative pl-20 group">
-                          {/* Year Circle */}
-                          <div className="absolute left-0 w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white font-bold shadow-lg">
+                        <div key={event.id} className="relative pl-12 group">
+                          {/* Year Circle - 50% menor */}
+                          <div className="absolute left-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white text-xs font-bold shadow-lg">
                             {year}
                           </div>
 
