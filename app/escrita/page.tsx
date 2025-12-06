@@ -1414,7 +1414,7 @@ function EscritaPageContent() {
                     </button>
 
                     {/* Título */}
-                    <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary flex-1 mb-2">
+                    <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary flex-1">
                       {titulo || "Sem título"}
                     </h2>
                   </div>

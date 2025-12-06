@@ -94,21 +94,19 @@ export default function RichTextEditor({
           height: 14px !important;
         }
         
-        /* Container externo com borda visível (máscara) */
+        /* Container externo sem borda */
         .ql-container {
           flex: 1 !important;
           overflow: hidden !important;
-          border: 1px solid #d1d5db !important;
-          border-radius: 0 0 0.5rem 0.5rem !important;
+          border: none !important;
           position: relative !important;
-          max-height: calc(100vh - 32rem) !important;
-          padding-bottom: 100px !important;
+          max-height: calc(100vh - 24rem) !important;
         }
         
         /* Wrapper sem borda */
         .ql-snow {
           border: none !important;
-          max-height: calc(100vh - 32rem) !important;
+          max-height: calc(100vh - 24rem) !important;
           overflow: hidden !important;
           display: flex !important;
           flex-direction: column !important;
@@ -122,6 +120,11 @@ export default function RichTextEditor({
           overflow-y: auto !important;
           scroll-behavior: smooth !important;
           border: none !important;
+        }
+        
+        /* Remover linha rosa do foco */
+        .ql-editor:focus {
+          outline: none !important;
         }
         
         .ql-editor p {
