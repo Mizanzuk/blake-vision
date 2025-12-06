@@ -130,6 +130,14 @@ function EscritaPageContent() {
   const [assistantInput, setAssistantInput] = useState("");
   const [isAssistantLoading, setIsAssistantLoading] = useState(false);
   
+  // Estados para drag and drop e resize do chat
+  const [chatPosition, setChatPosition] = useState({ x: 0, y: 0 });
+  const [chatSize, setChatSize] = useState({ width: 384, height: 600 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  
   // Estados do Modo Foco
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [focusType, setFocusType] = useState<'off' | 'sentence' | 'paragraph'>('off');
@@ -227,6 +235,37 @@ function EscritaPageContent() {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [urthonaMessages, urizenMessages]);
+
+  // Handlers para drag and drop do chat
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        setChatPosition({
+          x: e.clientX - dragStart.x,
+          y: e.clientY - dragStart.y
+        });
+      }
+      if (isResizing) {
+        const newWidth = Math.max(300, resizeStart.width + (e.clientX - resizeStart.x));
+        const newHeight = Math.max(400, resizeStart.height + (e.clientY - resizeStart.y));
+        setChatSize({ width: newWidth, height: newHeight });
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      setIsResizing(false);
+    };
+
+    if (isDragging || isResizing) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, isResizing, dragStart, resizeStart]);
 
   // Fechar chat com ESC
   useEffect(() => {
@@ -1648,10 +1687,30 @@ function EscritaPageContent() {
 
         {/* Chat Lateral com Assistentes */}
         {(showUrthona || showUrizen) && (
-          <div className="w-96 h-full bg-light-base dark:bg-dark-base overflow-hidden flex flex-col">
-            <div ref={chatRef} className="flex flex-col h-full px-4 pt-4 pb-32">
-              {/* Header do Chat */}
-              <div className="flex justify-between items-center mb-4 pb-4">
+          <div 
+            className="fixed bg-light-base dark:bg-dark-base overflow-hidden flex flex-col shadow-2xl rounded-lg border border-gray-300 dark:border-gray-600"
+            style={{
+              left: chatPosition.x || 'auto',
+              top: chatPosition.y || 80,
+              right: chatPosition.x ? 'auto' : 16,
+              width: `${chatSize.width}px`,
+              height: `${chatSize.height}px`,
+              zIndex: 1000,
+              cursor: isDragging ? 'grabbing' : 'default'
+            }}
+          >
+            <div ref={chatRef} className="flex flex-col h-full px-4 pt-4 pb-4">
+              {/* Header do Chat (Draggable) */}
+              <div 
+                className="flex justify-between items-center mb-4 pb-4 cursor-grab active:cursor-grabbing"
+                onMouseDown={(e) => {
+                  setIsDragging(true);
+                  setDragStart({
+                    x: e.clientX - (chatPosition.x || (window.innerWidth - chatSize.width - 16)),
+                    y: e.clientY - (chatPosition.y || 80)
+                  });
+                }}
+              >
                 <div>
                   <h3 className="font-semibold text-text-light-primary dark:text-dark-primary">
                     {showUrthona ? "Urthona" : "Urizen"}
@@ -1686,7 +1745,7 @@ function EscritaPageContent() {
                   >
                     <div
                       className={clsx(
-                        "max-w-3xl rounded-2xl px-3 py-2 text-[11px]",
+                        "max-w-3xl rounded-2xl px-3 py-2 text-sm",
                         msg.role === "user"
                           ? "bg-primary-600 dark:bg-primary-500 text-white"
                           : "bg-transparent border border-border-light-default dark:border-border-dark-default text-text-light-secondary dark:text-dark-secondary"
@@ -1700,7 +1759,7 @@ function EscritaPageContent() {
                             : "prose-stone dark:prose-invert"
                         )}
                         style={{
-                          fontSize: '11px',
+                          fontSize: '14px',
                           lineHeight: '1.6'
                         }}
                       >
@@ -1732,9 +1791,10 @@ function EscritaPageContent() {
                   }}
                   placeholder="Mensagem..."
                   rows={1}
-                  className="flex-1 px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary placeholder:text-text-light-tertiary dark:placeholder:text-dark-tertiary outline-none focus:outline-none focus:border-primary-500 dark:focus:border-primary-400 text-sm resize-none max-h-24 overflow-y-auto"
+                  className="flex-1 px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary placeholder:text-text-light-tertiary dark:placeholder:text-dark-tertiary outline-none focus:outline-none focus:border-primary-500 dark:focus:border-primary-400 resize-none max-h-24 overflow-y-auto"
                   disabled={isAssistantLoading}
                   style={{
+                    fontSize: '14px',
                     height: 'auto',
                     minHeight: '40px',
                     maxHeight: '96px',
@@ -1764,6 +1824,26 @@ function EscritaPageContent() {
                   )}
                 </button>
               </div>
+            </div>
+            
+            {/* Resize Handle */}
+            <div
+              className="absolute bottom-0 right-0 w-6 h-6 cursor-nwse-resize flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                setIsResizing(true);
+                setResizeStart({
+                  x: e.clientX,
+                  y: e.clientY,
+                  width: chatSize.width,
+                  height: chatSize.height
+                });
+              }}
+              title="Redimensionar"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 15l-6 6M21 9l-12 12" strokeLinecap="round" />
+              </svg>
             </div>
           </div>
         )}
