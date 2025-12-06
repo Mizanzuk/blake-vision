@@ -31,6 +31,30 @@ export default function RichTextEditor({
 
   const formats = ['bold', 'italic'];
 
+  // Handler para injetar div de respiro no final do editor
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const editor = document.querySelector('.ql-editor');
+      if (editor) {
+        // Verificar se já existe a div de respiro
+        let spacer = editor.querySelector('.editor-bottom-spacer');
+        
+        if (!spacer) {
+          // Criar div de respiro
+          spacer = document.createElement('div');
+          spacer.className = 'editor-bottom-spacer';
+          spacer.style.height = '100px';
+          spacer.style.width = '100%';
+          spacer.style.pointerEvents = 'none';
+          spacer.setAttribute('contenteditable', 'false');
+          editor.appendChild(spacer);
+        }
+      }
+    }, 500);
+    
+    return () => clearInterval(interval);
+  }, []);
+
   // Handler para seleção de texto
   useEffect(() => {
     const handleSelection = () => {
