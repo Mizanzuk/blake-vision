@@ -129,6 +129,13 @@ function EscritaPageContent() {
   const [assistantInput, setAssistantInput] = useState("");
   const [isAssistantLoading, setIsAssistantLoading] = useState(false);
   
+  // Estados do Modo Foco
+  const [isFocusMode, setIsFocusMode] = useState(false);
+  const [focusType, setFocusType] = useState<'off' | 'sentence' | 'paragraph'>('off');
+  const [typewriterMode, setTypewriterMode] = useState(false);
+  const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
+  const [cursorPosition, setCursorPosition] = useState(0);
+  
   // Estados para seleção de texto
   const [selectedText, setSelectedText] = useState("");
   const [selectionMenuPosition, setSelectionMenuPosition] = useState<{x: number, y: number} | null>(null);
@@ -232,6 +239,155 @@ function EscritaPageContent() {
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
   }, [showUrthona, showUrizen]);
+
+  // Modo Foco: Fullscreen API
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && isFocusMode) {
+        // Saiu do fullscreen, desativar modo foco
+        setIsFocusMode(false);
+        setFocusType('off');
+        setTypewriterMode(false);
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, [isFocusMode]);
+
+  // Modo Foco: Auto-save a cada 30 segundos
+  useEffect(() => {
+    if (isFocusMode && conteudo && currentTextoId) {
+      const interval = setInterval(() => {
+        handleSave(true); // true = auto-save silencioso
+      }, 30000); // 30 segundos
+      return () => clearInterval(interval);
+    }
+  }, [isFocusMode, conteudo, currentTextoId]);
+
+  // Modo Foco: Atalhos de teclado
+  useEffect(() => {
+    const handleKeyboard = (e: KeyboardEvent) => {
+      if (!isFocusMode) return;
+      
+      // ESC: Sair do modo foco
+      if (e.key === 'Escape') {
+        exitFocusMode();
+        return;
+      }
+      
+      // Ctrl+Shift+F: Toggle sentence focus
+      if (e.ctrlKey && e.shiftKey && e.key === 'F') {
+        e.preventDefault();
+        setFocusType(prev => prev === 'sentence' ? 'off' : 'sentence');
+        return;
+      }
+      
+      // Ctrl+Shift+P: Toggle paragraph focus
+      if (e.ctrlKey && e.shiftKey && e.key === 'P') {
+        e.preventDefault();
+        setFocusType(prev => prev === 'paragraph' ? 'off' : 'paragraph');
+        return;
+      }
+      
+      // Ctrl+Shift+T: Toggle typewriter mode
+      if (e.ctrlKey && e.shiftKey && e.key === 'T') {
+        e.preventDefault();
+        setTypewriterMode(prev => !prev);
+        return;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyboard);
+    return () => window.removeEventListener('keydown', handleKeyboard);
+  }, [isFocusMode]);
+
+  // Funções do Modo Foco
+  async function enterFocusMode() {
+    try {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        await elem.requestFullscreen();
+        setIsFocusMode(true);
+      }
+    } catch (error) {
+      console.error('Erro ao entrar em fullscreen:', error);
+      toast.error('Não foi possível ativar o modo fullscreen');
+    }
+  }
+
+  async function exitFocusMode() {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      }
+      setIsFocusMode(false);
+      setFocusType('off');
+      setTypewriterMode(false);
+    } catch (error) {
+      console.error('Erro ao sair do fullscreen:', error);
+    }
+  }
+
+  // Funções de highlighting para Modo Foco
+  function getCurrentSentence(text: string, position: number): { start: number; end: number } {
+    // Encontrar início da sentença (após ., !, ? ou início do texto)
+    let start = position;
+    while (start > 0 && !/[.!?]\s/.test(text.substring(start - 2, start))) {
+      start--;
+    }
+    // Pular espaços após pontuação
+    while (start < text.length && /\s/.test(text[start])) {
+      start++;
+    }
+
+    // Encontrar fim da sentença
+    let end = position;
+    while (end < text.length && !/[.!?]/.test(text[end])) {
+      end++;
+    }
+    if (end < text.length) end++; // Incluir pontuação
+
+    return { start, end };
+  }
+
+  function getCurrentParagraph(text: string, position: number): { start: number; end: number } {
+    // Encontrar início do parágrafo (após \n\n ou início do texto)
+    let start = position;
+    while (start > 0 && text.substring(start - 2, start) !== '\n\n') {
+      start--;
+    }
+    // Pular quebras de linha
+    while (start < text.length && text[start] === '\n') {
+      start++;
+    }
+
+    // Encontrar fim do parágrafo
+    let end = position;
+    while (end < text.length - 1 && text.substring(end, end + 2) !== '\n\n') {
+      end++;
+    }
+
+    return { start, end };
+  }
+
+  function applyFocusHighlight(textarea: HTMLTextAreaElement) {
+    if (!isFocusMode || focusType === 'off') return;
+
+    const position = textarea.selectionStart;
+    const text = textarea.value;
+    
+    let range: { start: number; end: number };
+    if (focusType === 'sentence') {
+      range = getCurrentSentence(text, position);
+    } else {
+      range = getCurrentParagraph(text, position);
+    }
+
+    // Aplicar efeito visual usando CSS (implementação simplificada)
+    // Em uma implementação completa, usaríamos um editor rico como CodeMirror ou ProseMirror
+    // Por enquanto, o efeito será aplicado via CSS no textarea
+  }
 
   async function checkAuth() {
     try {
@@ -450,9 +606,9 @@ function EscritaPageContent() {
     router.push("/escrita");
   }
 
-  async function handleSave() {
+  async function handleSave(autoSave: boolean = false) {
     if (!titulo.trim()) {
-      toast.error("Por favor, adicione um título");
+      if (!autoSave) toast.error("Por favor, adicione um título");
       return;
     }
 
@@ -489,7 +645,11 @@ function EscritaPageContent() {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success(currentTextoId ? "Texto atualizado!" : "Texto criado!");
+        if (!autoSave) {
+          toast.success(currentTextoId ? "Texto atualizado!" : "Texto criado!");
+        } else {
+          setLastSaveTime(new Date());
+        }
         
         // Se é novo texto, atualizar ID
         if (!currentTextoId && data.texto) {
@@ -1084,8 +1244,29 @@ function EscritaPageContent() {
           <main className="overflow-y-auto transition-all duration-300 w-full">
           <div className="max-w-4xl mx-auto px-8 py-8 min-h-full">
             <div className="space-y-6 pb-3">
-              {/* Agentes */}
-              <div className="flex gap-4 justify-end items-center">
+              {/* Agentes e Modo Foco */}
+              <div className="flex gap-4 justify-between items-center">
+                {/* Botão Modo Foco */}
+                <button
+                  onClick={enterFocusMode}
+                  disabled={!isMetadataSaved}
+                  className={clsx(
+                    "flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300",
+                    isMetadataSaved
+                      ? "bg-primary-500 hover:bg-primary-600 text-white cursor-pointer"
+                      : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-50"
+                  )}
+                  title={isMetadataSaved ? "Ativar Modo Foco (Fullscreen)" : "Crie um texto para usar o Modo Foco"}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  <span className="text-sm font-medium">Modo Foco</span>
+                </button>
+
+                {/* Avatares dos Agentes */}
+                <div className="flex gap-4 items-center">
                 {/* Ordem dinâmica: agente ativo sempre à direita */}
                 {showUrizen ? (
                   <>
@@ -1189,6 +1370,7 @@ function EscritaPageContent() {
                     </div>
                   </>
                 )}
+                </div>
               </div>
 
               {/* Cabeçalho Colasável (quando metadados foram salvos) */}
@@ -1452,7 +1634,7 @@ function EscritaPageContent() {
                   {/* Botões Salvar e Publicar à direita */}
                   <div className="flex gap-3">
                   <Button
-                    onClick={handleSave}
+                    onClick={() => handleSave(false)}
                     disabled={isSaving || !titulo.trim()}
                     variant="secondary"
                     size="sm"
@@ -1807,6 +1989,239 @@ function EscritaPageContent() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Modo Foco - Fullscreen */}
+      {isFocusMode && (
+        <div className="fixed inset-0 z-50 bg-light-base dark:bg-dark-base flex flex-col">
+          {/* Header do Modo Foco */}
+          <div className="flex justify-between items-center px-8 py-4 border-b border-border-light-default dark:border-border-dark-default">
+            <h1 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
+              {titulo || "Sem título"}
+            </h1>
+            
+            <div className="flex items-center gap-4">
+              {/* Indicador de Auto-save */}
+              {lastSaveTime && (
+                <div className="text-xs text-text-light-tertiary dark:text-dark-tertiary">
+                  Salvo {lastSaveTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              )}
+              
+              {/* Controles de Foco */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setFocusType(prev => prev === 'sentence' ? 'off' : 'sentence')}
+                  className={clsx(
+                    "px-3 py-1.5 rounded text-xs font-medium transition-colors",
+                    focusType === 'sentence'
+                      ? "bg-primary-500 text-white"
+                      : "bg-light-overlay dark:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary hover:bg-light-raised dark:hover:bg-dark-raised"
+                  )}
+                  title="Foco em Sentença (Ctrl+Shift+F)"
+                >
+                  Sentença
+                </button>
+                <button
+                  onClick={() => setFocusType(prev => prev === 'paragraph' ? 'off' : 'paragraph')}
+                  className={clsx(
+                    "px-3 py-1.5 rounded text-xs font-medium transition-colors",
+                    focusType === 'paragraph'
+                      ? "bg-primary-500 text-white"
+                      : "bg-light-overlay dark:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary hover:bg-light-raised dark:hover:bg-dark-raised"
+                  )}
+                  title="Foco em Parágrafo (Ctrl+Shift+P)"
+                >
+                  Parágrafo
+                </button>
+                <button
+                  onClick={() => setTypewriterMode(prev => !prev)}
+                  className={clsx(
+                    "px-3 py-1.5 rounded text-xs font-medium transition-colors",
+                    typewriterMode
+                      ? "bg-primary-500 text-white"
+                      : "bg-light-overlay dark:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary hover:bg-light-raised dark:hover:bg-dark-raised"
+                  )}
+                  title="Modo Máquina de Escrever (Ctrl+Shift+T)"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
+              </div>
+              
+              {/* Avatares dos Assistentes */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowUrthona(!showUrthona);
+                    if (!showUrthona) setShowUrizen(false);
+                  }}
+                  className="w-10 h-10 rounded-full hover:ring-2 hover:ring-[#C85A54] transition-all"
+                  title="Urthona (Criativo)"
+                >
+                  <img src="/urthona-avatar.png" alt="Urthona" className="w-full h-full rounded-full" />
+                </button>
+                <button
+                  onClick={() => {
+                    setShowUrizen(!showUrizen);
+                    if (!showUrizen) setShowUrthona(false);
+                  }}
+                  className="w-10 h-10 rounded-full hover:ring-2 hover:ring-[#5B7C8D] transition-all"
+                  title="Urizen (Consulta)"
+                >
+                  <img src="/urizen-avatar.png" alt="Urizen" className="w-full h-full rounded-full" />
+                </button>
+              </div>
+              
+              {/* Botão Sair */}
+              <button
+                onClick={exitFocusMode}
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors"
+                title="Sair do Modo Foco (ESC)"
+              >
+                Sair
+              </button>
+            </div>
+          </div>
+          
+          {/* Editor em Fullscreen */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* Área do Editor */}
+            <div className={clsx(
+              "flex-1 overflow-y-auto transition-all duration-300",
+              (showUrthona || showUrizen) ? "mr-96" : ""
+            )}>
+              <div className="max-w-4xl mx-auto px-8 py-12">
+                <textarea
+                  ref={textareaRef}
+                  value={conteudo}
+                  onChange={(e) => {
+                    setConteudo(e.target.value);
+                    setCursorPosition(e.target.selectionStart);
+                  }}
+                  onKeyUp={(e) => {
+                    const target = e.currentTarget;
+                    setCursorPosition(target.selectionStart);
+                    applyFocusHighlight(target);
+                  }}
+                  onClick={(e) => {
+                    const target = e.currentTarget;
+                    setCursorPosition(target.selectionStart);
+                    applyFocusHighlight(target);
+                  }}
+                  placeholder="Escreva seu texto aqui..."
+                  className={clsx(
+                    "w-full min-h-[calc(100vh-12rem)] px-0 py-0 bg-transparent border-none text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none resize-none font-serif text-lg leading-relaxed transition-all",
+                    typewriterMode && "typewriter-mode",
+                    focusType === 'sentence' && "focus-sentence",
+                    focusType === 'paragraph' && "focus-paragraph"
+                  )}
+                  style={{
+                    caretColor: 'currentColor',
+                  }}
+                />
+              </div>
+            </div>
+            
+            {/* Chat Lateral com Assistentes no Modo Foco */}
+            {(showUrthona || showUrizen) && (
+              <div className="w-96 h-full bg-light-raised dark:bg-dark-raised border-l border-border-light-default dark:border-border-dark-default overflow-hidden flex flex-col">
+                <div className="flex flex-col h-full px-4 pt-4 pb-32">
+                  {/* Header do Chat */}
+                  <div className="flex justify-between items-center mb-4 pb-4 border-b border-border-light-default dark:border-border-dark-default">
+                    <div>
+                      <h3 className="font-semibold text-text-light-primary dark:text-dark-primary">
+                        {showUrthona ? "Urthona" : "Urizen"}
+                      </h3>
+                      <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary">
+                        {showUrthona ? "Criativo" : "Consulta"}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setShowUrthona(false);
+                        setShowUrizen(false);
+                      }}
+                      className="text-text-light-tertiary hover:text-text-light-primary dark:text-dark-tertiary dark:hover:text-dark-primary transition-colors p-2 rounded-lg hover:bg-light-overlay dark:hover:bg-dark-overlay"
+                      title="Fechar"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  
+                  {/* Mensagens */}
+                  <div className="flex-1 overflow-y-auto mb-4 space-y-3 pr-2">
+                    {(showUrthona ? urthonaMessages : urizenMessages).map((msg, idx) => (
+                      <div
+                        key={idx}
+                        className={clsx(
+                          "flex gap-2",
+                          msg.role === "user" ? "justify-end" : "justify-start"
+                        )}
+                      >
+                        <div
+                          className={clsx(
+                            "max-w-[85%] px-4 py-2 rounded-lg",
+                            msg.role === "user"
+                              ? "bg-primary-500 text-white"
+                              : "bg-light-overlay dark:bg-dark-overlay text-text-light-primary dark:text-dark-primary"
+                          )}
+                        >
+                          <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                        </div>
+                      </div>
+                    ))}
+                    <div ref={messagesEndRef} />
+                  </div>
+                  
+                  {/* Input */}
+                  <div className="fixed bottom-0 right-0 w-96 p-4 bg-light-raised dark:bg-dark-raised border-t border-border-light-default dark:border-border-dark-default">
+                    <div className="flex gap-2">
+                      <textarea
+                        value={assistantInput}
+                        onChange={(e) => setAssistantInput(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleAssistantMessage(showUrthona ? "urthona" : "urizen");
+                          }
+                        }}
+                        placeholder="Mensagem..."
+                        rows={1}
+                        className="flex-1 px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary placeholder:text-text-light-tertiary dark:placeholder:text-dark-tertiary outline-none focus:outline-none focus:border-primary-500 dark:focus:border-primary-400 text-sm resize-none max-h-24 overflow-y-auto"
+                        onInput={(e) => {
+                          const target = e.target as HTMLTextAreaElement;
+                          target.style.height = 'auto';
+                          const newHeight = Math.min(target.scrollHeight, 96);
+                          target.style.height = `${newHeight}px`;
+                        }}
+                      />
+                      <button
+                        onClick={() => handleAssistantMessage(showUrthona ? "urthona" : "urizen")}
+                        disabled={!assistantInput.trim() || isAssistantLoading}
+                        className="px-4 py-2 bg-primary-500 hover:bg-primary-600 disabled:bg-primary-300 dark:disabled:bg-primary-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2 flex-shrink-0"
+                      >
+                        {isAssistantLoading ? (
+                          <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                        ) : (
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
