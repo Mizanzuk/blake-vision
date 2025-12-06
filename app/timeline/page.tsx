@@ -486,49 +486,51 @@ export default function TimelinePage() {
                           </div>
 
                           {/* Event Card - Lighter version */}
-                          <div 
-                            className="flex-1 py-2 px-3 rounded-lg hover:bg-light-raised dark:hover:bg-dark-raised transition-colors cursor-pointer"
-                            onClick={() => displayMode === "agrupado" ? toggleCardExpansion(event.id) : openViewFichaModal(event)}
-                          >
-                            {/* Primeira linha: Seta + Badges */}
-                            <div className="flex items-center gap-2">
-                              {/* Arrow - sempre visível, à esquerda */}
-                              <div className="flex-shrink-0">
-                                <svg 
-                                  className="w-4 h-4 text-text-light-secondary dark:text-dark-secondary"
-                                  fill="none" 
-                                  stroke="currentColor" 
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
+                          <div className="flex-1">
+                            {/* Área clicável para toggle - Primeira linha + Título + Data */}
+                            <div 
+                              className="py-2 px-3 rounded-lg hover:bg-light-raised dark:hover:bg-dark-raised transition-colors cursor-pointer"
+                              onClick={() => displayMode === "agrupado" ? toggleCardExpansion(event.id) : openViewFichaModal(event)}
+                            >
+                              {/* Primeira linha: Seta + Badges */}
+                              <div className="flex items-center gap-2">
+                                {/* Arrow - sempre visível, à esquerda */}
+                                <div className="flex-shrink-0">
+                                  <svg 
+                                    className="w-4 h-4 text-text-light-secondary dark:text-dark-secondary"
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                  </svg>
+                                </div>
+                                
+                                {/* Badges */}
+                                {category && (
+                                  <Badge variant="primary" size="sm">
+                                    {category.label}
+                                  </Badge>
+                                )}
+                                {world && (
+                                  <Badge variant="default" size="sm">
+                                    {world.nome}
+                                  </Badge>
+                                )}
                               </div>
+
+                              {/* Título - com recuo */}
+                              <h3 className="text-base text-text-light-primary dark:text-dark-primary group-hover:underline ml-6 mt-1">
+                                {event.titulo}
+                              </h3>
                               
-                              {/* Badges */}
-                              {category && (
-                                <Badge variant="primary" size="sm">
-                                  {category.label}
-                                </Badge>
-                              )}
-                              {world && (
-                                <Badge variant="default" size="sm">
-                                  {world.nome}
-                                </Badge>
+                              {/* Data - com recuo */}
+                              {year && (
+                                <p className="text-sm text-gray-500 ml-6">
+                                  {year}
+                                </p>
                               )}
                             </div>
-
-                            {/* Título - com recuo */}
-                            <h3 className="text-base text-text-light-primary dark:text-dark-primary group-hover:underline ml-6 mt-1">
-                              {event.titulo}
-                            </h3>
-                            
-                            {/* Data - com recuo */}
-                            {year && (
-                              <p className="text-sm text-gray-500 ml-6">
-                                {year}
-                              </p>
-                            )}
-                          </div>
 
                           {/* Conteúdo - visível quando expandido */}
                           {isExpanded && displayMode === "agrupado" && (
@@ -570,6 +572,7 @@ export default function TimelinePage() {
                                 })()}
                             </div>
                           )}
+                          </div>
                         </div>
                       );
                     })}
