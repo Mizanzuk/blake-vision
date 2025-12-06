@@ -37,11 +37,11 @@ export default function RichTextEditor({
       const editor = document.querySelector('.ql-editor');
       if (editor) {
         // Verificar se já existe a div de respiro
-        let spacer = editor.querySelector('.editor-bottom-spacer');
+        let spacer = editor.querySelector('.editor-bottom-spacer') as HTMLDivElement;
         
         if (!spacer) {
           // Criar div de respiro
-          spacer = document.createElement('div');
+          spacer = document.createElement('div') as HTMLDivElement;
           spacer.className = 'editor-bottom-spacer';
           spacer.style.height = '100px';
           spacer.style.width = '100%';
