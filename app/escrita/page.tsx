@@ -16,6 +16,7 @@ import type { Universe, World, Category } from "@/app/types";
 import clsx from "clsx";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import getCaretCoordinates from "textarea-caret";
 
 interface Texto {
   id: string;
@@ -1417,11 +1418,15 @@ function EscritaPageContent() {
                       
                       if (text && text.length > 0) {
                         setSelectedText(text);
-                        // Posicionar acima do textarea, centralizado (estilo ChatGPT)
-                        const rect = textarea.getBoundingClientRect();
+                        
+                        // Calcular posição exata do início da seleção
+                        const textareaRect = textarea.getBoundingClientRect();
+                        const caretCoords = getCaretCoordinates(textarea, start);
+                        
+                        // Posicionar acima do texto selecionado
                         setSelectionMenuPosition({
-                          x: rect.left + (rect.width / 2),  // Centro horizontal do textarea
-                          y: rect.top - 70  // 70px acima do textarea
+                          x: textareaRect.left + caretCoords.left + (caretCoords.width || 0) / 2,
+                          y: textareaRect.top + caretCoords.top - 70  // 70px acima da linha
                         });
                       } else {
                         setSelectedText("");
