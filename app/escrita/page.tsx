@@ -1077,7 +1077,7 @@ function EscritaPageContent() {
 
         {/* Container flex para Editor + Chat */}
         <div className={clsx(
-          "flex-1 flex overflow-hidden transition-all duration-300",
+          "flex-1 flex gap-12 overflow-hidden transition-all duration-300",
           !isSidebarOpen && "ml-12 md:ml-12"
         )}>
           {/* Editor Principal */}
@@ -1480,7 +1480,7 @@ function EscritaPageContent() {
 
         {/* Chat Lateral com Assistentes */}
         {(showUrthona || showUrizen) && (
-          <div className="w-96 bg-light-base dark:bg-dark-base overflow-hidden flex flex-col">
+          <div className="w-96 h-full bg-light-base dark:bg-dark-base overflow-hidden flex flex-col">
             <div ref={chatRef} className="flex flex-col h-full px-4 pt-4 pb-32">
               {/* Header do Chat */}
               <div className="flex justify-between items-center mb-4 pb-4">
