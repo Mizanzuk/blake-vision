@@ -31,49 +31,7 @@ export default function RichTextEditor({
 
   const formats = ['bold', 'italic'];
 
-  // Handler para injetar div de respiro no final do editor
-  useEffect(() => {
-    const injectSpacer = () => {
-      const editor = document.querySelector('.ql-editor');
-      if (editor) {
-        // Verificar se já existe a div de respiro
-        let spacer = editor.querySelector('.editor-bottom-spacer') as HTMLDivElement;
-        
-        if (!spacer) {
-          // Criar div de respiro
-          spacer = document.createElement('div') as HTMLDivElement;
-          spacer.className = 'editor-bottom-spacer';
-          spacer.style.height = '100px';
-          spacer.style.width = '100%';
-          spacer.style.pointerEvents = 'none';
-          spacer.style.userSelect = 'none';
-          spacer.setAttribute('contenteditable', 'false');
-          spacer.setAttribute('data-spacer', 'true');
-          editor.appendChild(spacer);
-          console.log('Spacer injetado!');
-        }
-      }
-    };
 
-    // Injetar imediatamente
-    const initialTimer = setTimeout(injectSpacer, 100);
-    
-    // Continuar verificando periodicamente
-    const interval = setInterval(injectSpacer, 200);
-    
-    // Observar mudanças no DOM do editor
-    const observer = new MutationObserver(injectSpacer);
-    const editorElement = document.querySelector('.ql-editor');
-    if (editorElement) {
-      observer.observe(editorElement, { childList: true, subtree: true });
-    }
-    
-    return () => {
-      clearTimeout(initialTimer);
-      clearInterval(interval);
-      observer.disconnect();
-    };
-  }, []);
 
   // Handler para seleção de texto
   useEffect(() => {
@@ -155,12 +113,11 @@ export default function RichTextEditor({
         
         /* Editor com scroll interno */
         .ql-editor {
-          padding: 48px 64px 200px 64px !important;
-          min-height: 400px !important;
+          padding: 48px 64px 48px 64px !important;
+          min-height: calc(100% + 150px) !important;
           flex: 1 !important;
           overflow-y: auto !important;
           scroll-behavior: smooth !important;
-          scroll-padding-bottom: 200px !important;
           border: 1px solid #d1d5db !important;
           border-radius: 0.5rem !important;
         }
@@ -177,15 +134,7 @@ export default function RichTextEditor({
         }
         
         .ql-editor p:last-child {
-          margin-bottom: 0 !important;
-        }
-        
-        /* Respiro visual no final do editor */
-        .ql-editor::after {
-          content: '' !important;
-          display: block !important;
-          height: 100px !important;
-          width: 100% !important;
+          margin-bottom: 150px !important;
         }
       `}</style>
       <ReactQuill
