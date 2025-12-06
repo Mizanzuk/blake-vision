@@ -78,7 +78,7 @@ export default function RichTextEditor({
           padding: 12px 64px !important;
           flex-shrink: 0 !important;
           margin-bottom: 0 !important;
-          margin-top: -16px !important;
+          margin-top: -24px !important;
         }
         
         .ql-toolbar button {
