@@ -1609,7 +1609,7 @@ function EscritaPageContent() {
 
               {/* Ações (só aparecem após salvar metadados) */}
               {isMetadataSaved && (
-                <div className="flex justify-between items-center pt-8 mt-6">
+                <div className="flex justify-between items-center pt-10 mt-8">
                   {/* Botão Excluir à esquerda */}
                   <Button
                     onClick={() => currentTextoId && handleDelete(currentTextoId)}

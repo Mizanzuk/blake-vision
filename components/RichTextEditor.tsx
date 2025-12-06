@@ -61,9 +61,10 @@ export default function RichTextEditor({
         /* Container do Quill */
         .ql-container {
           font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
-          font-size: 14px !important;
+          font-size: 16px !important;
           line-height: 1.5 !important;
-          border: none !important;
+          border: 1px solid #d1d5db !important;
+          border-radius: 0 0 0.5rem 0.5rem !important;
           flex: 1 !important;
           overflow: hidden !important;
           display: flex !important;
@@ -76,7 +77,7 @@ export default function RichTextEditor({
           background-color: #f5f1e8 !important;
           padding: 12px 64px !important;
           flex-shrink: 0 !important;
-          margin-bottom: -12px !important;
+          margin-bottom: 0 !important;
         }
         
         .ql-toolbar button {
@@ -90,10 +91,9 @@ export default function RichTextEditor({
           height: 14px !important;
         }
         
-        /* Borda fina cinza externa no wrapper */
+        /* Wrapper sem borda */
         .ql-snow {
-          border: 1px solid #d1d5db !important;
-          border-radius: 0.5rem !important;
+          border: none !important;
           max-height: calc(100vh - 32rem) !important;
           overflow: hidden !important;
           display: flex !important;
@@ -112,7 +112,7 @@ export default function RichTextEditor({
         
         .ql-editor p {
           margin-bottom: 14px !important;
-          font-size: 14px !important;
+          font-size: 16px !important;
           line-height: 1.5 !important;
         }
         
