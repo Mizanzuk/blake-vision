@@ -116,6 +116,7 @@ export default function RichTextEditor({
           flex: 1 !important;
           overflow-y: auto !important;
           scroll-behavior: smooth !important;
+          scroll-padding-bottom: 200px !important;
           border: 1px solid #d1d5db !important;
           border-radius: 0.5rem !important;
         }
