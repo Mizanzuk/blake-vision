@@ -340,15 +340,11 @@ export default function TimelinePage() {
   });
 
   // Group if needed
-  const groupedEvents = viewMode === "list" ? { "all": filteredEvents } : groupEventsByPeriod(filteredEvents, viewMode);
-  const groupKeys = Object.keys(groupedEvents).sort((a, b) => {
-    if (viewMode === "list") return 0;
-    
-    // Extract numeric value for sorting
-    const numA = parseInt(a.replace(/\D/g, ''));
-    const numB = parseInt(b.replace(/\D/g, ''));
-    return numA - numB;
-  });
+  const groupedEvents = displayMode === "agrupado" 
+    ? groupEventsByPeriod(filteredEvents, viewMode)
+    : { all: filteredEvents };
+  
+  const groupKeys = Object.keys(groupedEvents);
 
   if (isLoading) {
     return (
@@ -363,7 +359,7 @@ export default function TimelinePage() {
       <Header showNav={true} currentPage="timeline" />
       
       {/* Header */}
-      <header className="border-b border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised">
+      <header className="bg-light-raised dark:bg-dark-raised">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
 
@@ -470,7 +466,7 @@ export default function TimelinePage() {
             {groupKeys.map(groupKey => (
               <div key={groupKey} className="space-y-6">
                 {/* Group Header */}
-                {viewMode !== "list" && (
+                {displayMode === "agrupado" && (
                   <div className="sticky top-0 z-10 bg-light-base dark:bg-dark-base py-2">
                     <h2 className="text-3xl font-bold text-text-light-primary dark:text-dark-primary">
                       {groupKey}
@@ -494,26 +490,21 @@ export default function TimelinePage() {
                       const isExpanded = displayMode === "lista" || expandedCards.has(event.id);
                       
                       return (
-                        <div key={event.id} className="relative pl-20">
+                        <div key={event.id} className="relative pl-20 group">
                           {/* Year Circle */}
                           <div className="absolute left-0 w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white font-bold shadow-lg">
                             {year}
                           </div>
 
-                          {/* Event Card */}
-                          <Card
-                            variant="outlined"
-                            padding="lg"
-                            hoverable={false}
-                            className=""
-                          >
+                          {/* Event Card - Lighter version */}
+                          <div className="py-2 px-3 rounded-lg hover:bg-light-raised dark:hover:bg-dark-raised transition-colors">
                             {/* Título - sempre visível */}
                             <div 
-                              className="flex items-start justify-between gap-4 cursor-pointer hover:bg-light-hover dark:hover:bg-dark-hover -m-4 p-4 rounded-lg transition-colors"
+                              className="flex items-start justify-between gap-4 cursor-pointer"
                               onClick={() => displayMode === "agrupado" ? toggleCardExpansion(event.id) : openViewFichaModal(event)}
                             >
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
+                              <div className="flex-1 space-y-1">
+                                <div className="flex items-center gap-2">
                                   {category && (
                                     <Badge variant="primary" size="sm">
                                       {category.label}
@@ -526,41 +517,44 @@ export default function TimelinePage() {
                                   )}
                                 </div>
 
-                                <h3 className="text-xl font-bold text-text-light-primary dark:text-dark-primary">
+                                <h3 className="text-base text-text-light-primary dark:text-dark-primary group-hover:underline">
                                   {event.titulo}
                                 </h3>
+                                
+                                {year && (
+                                  <p className="text-sm text-gray-500">
+                                    {year}
+                                  </p>
+                                )}
                               </div>
 
-                              {displayMode === "agrupado" && (
-                                <div className="flex-shrink-0">
-                                  <svg 
-                                    className={`w-6 h-6 text-text-light-secondary dark:text-dark-secondary transition-transform ${isExpanded ? 'rotate-90' : ''}`}
-                                    fill="none" 
-                                    stroke="currentColor" 
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                  </svg>
-                                </div>
-                              )}
+                              {/* Arrow - only on hover */}
+                              <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg 
+                                  className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary"
+                                  fill="none" 
+                                  stroke="currentColor" 
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                              </div>
                             </div>
 
                             {/* Conteúdo - visível quando expandido */}
-                            {isExpanded && (
+                            {isExpanded && displayMode === "agrupado" && (
                               <div 
-                                className="mt-4 cursor-pointer"
+                                className="mt-2 cursor-pointer space-y-2"
                                 onClick={() => openViewFichaModal(event)}
                               >
-                                <div className="hover:bg-light-hover dark:hover:bg-dark-hover -m-4 p-4 rounded-lg transition-colors">
-
                                 {event.resumo && (
-                                  <p className="text-sm text-text-light-secondary dark:text-dark-secondary mb-3">
+                                  <p className="text-sm text-text-light-secondary dark:text-dark-secondary">
                                     {event.resumo}
                                   </p>
                                 )}
 
                                 {event.descricao_data && (
-                                  <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary mb-3">
+                                  <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary">
                                     📅 {event.descricao_data}
                                   </p>
                                 )}
@@ -585,10 +579,9 @@ export default function TimelinePage() {
                                     </div>
                                   );
                                 })()}
-                                </div>
                               </div>
                             )}
-                          </Card>
+                          </div>
                         </div>
                       );
                     })}
@@ -604,89 +597,92 @@ export default function TimelinePage() {
       {showFichaModal && (
         <FichaModal
           isOpen={showFichaModal}
+          ficha={selectedFicha}
+          worlds={worlds}
+          categories={categories}
           onClose={() => {
             setShowFichaModal(false);
             setSelectedFicha(null);
           }}
           onSave={handleSaveFicha}
           onDelete={handleDeleteFicha}
-          ficha={selectedFicha}
-          worlds={worlds}
-          categories={categories}
         />
       )}
 
-      {/* Ficha View Modal */}
-      <FichaViewModal
-        isOpen={showViewModal}
-        onClose={handleCloseViewModal}
-        ficha={viewingFicha}
-        onEdit={handleEditFromView}
-        onNext={handleNextFicha}
-        onPrevious={handlePreviousFicha}
-        hasNext={viewingFicha ? events.findIndex(e => e.id === viewingFicha.id) < events.length - 1 : false}
-        hasPrevious={viewingFicha ? events.findIndex(e => e.id === viewingFicha.id) > 0 : false}
-      />
+      {/* View Modal */}
+      {showViewModal && viewingFicha && (
+        <FichaViewModal
+          isOpen={showViewModal}
+          ficha={viewingFicha}
+          onClose={handleCloseViewModal}
+          onEdit={handleEditFromView}
+          onNext={handleNextFicha}
+          onPrevious={handlePreviousFicha}
+          hasNext={events.findIndex(e => e.id === viewingFicha.id) < events.length - 1}
+          hasPrevious={events.findIndex(e => e.id === viewingFicha.id) > 0}
+        />
+      )}
 
-      {/* Modal Novo Universo */}
+      {/* Create Universe Modal */}
       {showNewUniverseModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-          onClick={() => setShowNewUniverseModal(false)}
-        >
-          <form
-            onSubmit={e => {
-              e.preventDefault();
-              handleCreateUniverse();
-            }}
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md border border-border-light-default dark:border-border-dark-default rounded-lg p-6 bg-light-base dark:bg-dark-base space-y-4 mx-4"
-          >
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold">Novo Universo</h3>
-              <button
-                type="button"
-                onClick={() => setShowNewUniverseModal(false)}
-                className="text-2xl leading-none"
-              >
-                &times;
-              </button>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-light-raised dark:bg-dark-raised rounded-lg shadow-xl max-w-md w-full p-6">
+            <h2 className="text-xl font-bold text-text-light-primary dark:text-dark-primary mb-4">
+              Criar Novo Universo
+            </h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-1">
+                  Nome do Universo *
+                </label>
+                <input
+                  type="text"
+                  value={newUniverseName}
+                  onChange={(e) => setNewUniverseName(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary"
+                  placeholder="Ex: Terra-616"
+                  autoFocus
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-1">
+                  Descrição (opcional)
+                </label>
+                <textarea
+                  value={newUniverseDescription}
+                  onChange={(e) => setNewUniverseDescription(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary"
+                  placeholder="Descrição breve do universo"
+                  rows={3}
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-semibold mb-2">Nome do Universo</label>
-              <Input
-                value={newUniverseName}
-                onChange={(e) => setNewUniverseName(e.target.value)}
-                placeholder="Ex: Antiverso"
-                fullWidth
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold mb-2">Descrição</label>
-              <textarea
-                className="w-full rounded-md bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default px-3 py-2 text-sm min-h-[100px]"
-                value={newUniverseDescription}
-                onChange={(e) => setNewUniverseDescription(e.target.value)}
-                placeholder="Resumo do Universo…"
-              />
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
+            
+            <div className="flex gap-3 mt-6">
               <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setShowNewUniverseModal(false)}
+                variant="secondary"
+                onClick={() => {
+                  setShowNewUniverseModal(false);
+                  setNewUniverseName("");
+                  setNewUniverseDescription("");
+                }}
+                fullWidth
+                disabled={isCreatingUniverse}
               >
                 Cancelar
               </Button>
               <Button
-                type="submit"
                 variant="primary"
-                disabled={isCreatingUniverse}
+                onClick={handleCreateUniverse}
+                fullWidth
+                disabled={isCreatingUniverse || !newUniverseName.trim()}
               >
-                {isCreatingUniverse ? "Criando..." : "Salvar"}
+                {isCreatingUniverse ? "Criando..." : "Criar"}
               </Button>
             </div>
-          </form>
+          </div>
         </div>
       )}
     </div>
