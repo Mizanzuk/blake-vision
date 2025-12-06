@@ -58,19 +58,34 @@ export default function RichTextEditor({
   return (
     <div className={className}>
       <style jsx global>{`
+        /* Remover TODAS as bordas do Quill */
         .ql-container {
           font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
           font-size: 14px !important;
           line-height: 1.5 !important;
           border: none !important;
+          height: auto !important;
         }
         
+        .ql-toolbar {
+          border: none !important;
+          border-bottom: 1px solid #e5e7eb !important;
+        }
+        
+        /* Borda cinza externa no wrapper */
+        .ql-snow {
+          border: 1px solid #d1d5db !important;
+          border-radius: 0.5rem !important;
+        }
+        
+        /* Limitar altura do editor e adicionar scroll */
         .ql-editor {
           padding: 48px 64px 120px 64px !important;
-          min-height: 400px;
-          max-height: 70vh;
-          overflow-y: auto;
-          scroll-behavior: smooth;
+          min-height: 400px !important;
+          max-height: calc(100vh - 32rem) !important;
+          overflow-y: auto !important;
+          scroll-behavior: smooth !important;
+          border: none !important;
         }
         
         .ql-editor p {

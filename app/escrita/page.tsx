@@ -1598,7 +1598,7 @@ function EscritaPageContent() {
                     value={conteudo}
                     onChange={(value) => setConteudo(value)}
                     placeholder="Escreva seu texto aqui..."
-                    className="w-full h-[calc(100vh-32rem)] rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised"
+                    className="w-full h-[calc(100vh-32rem)] rounded-lg bg-light-raised dark:bg-dark-raised"
                     onTextSelect={(text, position) => {
                       setSelectedText(text);
                       setSelectionMenuPosition(position);
