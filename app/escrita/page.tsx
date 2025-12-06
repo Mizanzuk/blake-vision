@@ -1593,7 +1593,7 @@ function EscritaPageContent() {
 
               {/* Conteúdo (só aparece após salvar metadados) */}
               {isMetadataSaved && (
-                <div className="border border-border-light-default dark:border-border-dark-default rounded-lg">
+                <div>
                   <RichTextEditor
                     value={conteudo}
                     onChange={(value) => setConteudo(value)}
