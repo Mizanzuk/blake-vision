@@ -271,9 +271,16 @@ function EscritaPageContent() {
     const handleKeyboard = (e: KeyboardEvent) => {
       if (!isFocusMode) return;
       
-      // ESC: Sair do modo foco
+      // ESC: Lógica hierárquica - fechar chat primeiro, depois modo foco
       if (e.key === 'Escape') {
-        exitFocusMode();
+        if (showUrthona || showUrizen) {
+          // Se há chat aberto, fechar o chat
+          setShowUrthona(false);
+          setShowUrizen(false);
+        } else {
+          // Se não há chat aberto, sair do modo foco
+          exitFocusMode();
+        }
         return;
       }
       
@@ -301,7 +308,7 @@ function EscritaPageContent() {
 
     window.addEventListener('keydown', handleKeyboard);
     return () => window.removeEventListener('keydown', handleKeyboard);
-  }, [isFocusMode]);
+  }, [isFocusMode, showUrthona, showUrizen]);
 
   // Funções do Modo Foco
   async function enterFocusMode() {
@@ -2069,34 +2076,12 @@ function EscritaPageContent() {
               "flex-1 overflow-y-auto transition-all duration-300",
               (showUrthona || showUrizen) ? "mr-96" : ""
             )}>
-              <div className="max-w-4xl mx-auto px-8 py-12">
-                <textarea
-                  ref={textareaRef}
+              <div className="max-w-4xl mx-auto px-16 py-12">
+                <RichTextEditor
                   value={conteudo}
-                  onChange={(e) => {
-                    setConteudo(e.target.value);
-                    setCursorPosition(e.target.selectionStart);
-                  }}
-                  onKeyUp={(e) => {
-                    const target = e.currentTarget;
-                    setCursorPosition(target.selectionStart);
-                    applyFocusHighlight(target);
-                  }}
-                  onClick={(e) => {
-                    const target = e.currentTarget;
-                    setCursorPosition(target.selectionStart);
-                    applyFocusHighlight(target);
-                  }}
+                  onChange={(value) => setConteudo(value)}
                   placeholder="Escreva seu texto aqui..."
-                  className={clsx(
-                    "w-full min-h-[calc(100vh-12rem)] px-0 py-0 bg-transparent border-none text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none resize-none font-serif text-lg leading-relaxed transition-all",
-                    typewriterMode && "typewriter-mode",
-                    focusType === 'sentence' && "focus-sentence",
-                    focusType === 'paragraph' && "focus-paragraph"
-                  )}
-                  style={{
-                    caretColor: 'currentColor',
-                  }}
+                  className="w-full min-h-[calc(100vh-12rem)] bg-transparent border-none"
                 />
               </div>
             </div>

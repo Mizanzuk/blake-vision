@@ -429,3 +429,106 @@
 .focus-mode-enter {
   animation: fadeInFocus 0.3s ease-out;
 }
+
+/* React-Quill Custom Styles */
+@layer components {
+  /* Editor container */
+  .ql-container {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+  }
+
+  /* Editor content */
+  .ql-editor {
+    padding: 12px 16px !important;
+    min-height: 200px;
+  }
+
+  /* Paragraphs */
+  .ql-editor p {
+    margin-bottom: 21px !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+  }
+
+  /* Remove last paragraph margin */
+  .ql-editor p:last-child {
+    margin-bottom: 0 !important;
+  }
+
+  /* Bold */
+  .ql-editor strong {
+    font-weight: 700 !important;
+  }
+
+  /* Italic */
+  .ql-editor em {
+    font-style: italic !important;
+  }
+
+  /* Toolbar */
+  .ql-toolbar {
+    border: none !important;
+    border-bottom: 1px solid rgb(var(--color-border-default)) !important;
+    background: rgb(var(--color-surface-overlay)) !important;
+    padding: 8px !important;
+  }
+
+  /* Toolbar buttons */
+  .ql-toolbar button {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .ql-toolbar button:hover {
+    background: rgb(var(--color-surface-raised)) !important;
+  }
+
+  .ql-toolbar button.ql-active {
+    background: rgb(var(--color-border-default)) !important;
+  }
+
+  /* Container border */
+  .ql-container {
+    border: none !important;
+  }
+
+  /* Placeholder */
+  .ql-editor.ql-blank::before {
+    color: rgb(var(--color-text-tertiary)) !important;
+    font-style: normal !important;
+  }
+
+  /* Focus state */
+  .ql-container.ql-snow {
+    border: none !important;
+  }
+
+  /* Dark mode adjustments */
+  .dark .ql-toolbar {
+    background: rgb(var(--color-surface-overlay)) !important;
+    border-bottom-color: rgb(var(--color-border-default)) !important;
+  }
+
+  .dark .ql-editor {
+    color: rgb(var(--color-text-primary)) !important;
+  }
+
+  .dark .ql-toolbar button:hover {
+    background: rgb(var(--color-surface-raised)) !important;
+  }
+
+  .dark .ql-toolbar button.ql-active {
+    background: rgb(var(--color-border-default)) !important;
+  }
+
+  /* SVG icons color */
+  .ql-toolbar button svg {
+    stroke: rgb(var(--color-text-primary)) !important;
+  }
+
+  .dark .ql-toolbar button svg {
+    stroke: rgb(var(--color-text-primary)) !important;
+  }
+}
