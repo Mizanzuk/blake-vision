@@ -103,7 +103,7 @@ export default function RichTextEditor({
         
         /* Editor com scroll interno */
         .ql-editor {
-          padding: 48px 64px 64px 64px !important;
+          padding: 48px 64px 120px 64px !important;
           min-height: 400px !important;
           flex: 1 !important;
           overflow-y: auto !important;
