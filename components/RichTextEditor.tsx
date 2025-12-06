@@ -33,7 +33,7 @@ export default function RichTextEditor({
     <div className={className}>
       <style jsx global>{`
         .ql-container {
-          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+          font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
           font-size: 14px !important;
           line-height: 1.5 !important;
         }
