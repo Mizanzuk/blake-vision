@@ -58,22 +58,38 @@ export default function RichTextEditor({
   return (
     <div className={className}>
       <style jsx global>{`
-        /* Remover TODAS as bordas do Quill */
+        /* Container do Quill */
         .ql-container {
           font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
           font-size: 14px !important;
           line-height: 1.5 !important;
           border: none !important;
-          max-height: calc(100vh - 32rem) !important;
+          flex: 1 !important;
           overflow: hidden !important;
+          display: flex !important;
+          flex-direction: column !important;
         }
         
+        /* Toolbar - Botões menores e mais leves */
         .ql-toolbar {
           border: none !important;
           border-bottom: 1px solid #e5e7eb !important;
+          padding: 8px !important;
+          flex-shrink: 0 !important;
         }
         
-        /* Borda cinza externa no wrapper */
+        .ql-toolbar button {
+          width: 28px !important;
+          height: 28px !important;
+          padding: 4px !important;
+        }
+        
+        .ql-toolbar button svg {
+          width: 14px !important;
+          height: 14px !important;
+        }
+        
+        /* Borda fina cinza externa no wrapper */
         .ql-snow {
           border: 1px solid #d1d5db !important;
           border-radius: 0.5rem !important;
@@ -83,11 +99,11 @@ export default function RichTextEditor({
           flex-direction: column !important;
         }
         
-        /* Limitar altura do editor e adicionar scroll */
+        /* Editor com scroll interno */
         .ql-editor {
           padding: 48px 64px 120px 64px !important;
           min-height: 400px !important;
-          max-height: calc(100vh - 32rem) !important;
+          flex: 1 !important;
           overflow-y: auto !important;
           scroll-behavior: smooth !important;
           border: none !important;
