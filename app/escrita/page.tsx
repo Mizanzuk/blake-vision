@@ -1077,15 +1077,12 @@ function EscritaPageContent() {
 
         {/* Container flex para Editor + Chat */}
         <div className={clsx(
-          "flex-1 flex gap-2 overflow-hidden transition-all duration-300",
+          "flex-1 flex gap-12 overflow-hidden transition-all duration-300 pr-8",
           !isSidebarOpen && "ml-12 md:ml-12"
         )}>
           {/* Editor Principal */}
-          <main className={clsx(
-            "overflow-y-auto transition-all duration-300",
-            (showUrthona || showUrizen) ? "flex-1" : "w-full"
-          )}>
-          <div className="max-w-4xl pl-8 pr-4 py-8 min-h-full">
+          <main className="overflow-y-auto transition-all duration-300 w-full">
+          <div className="max-w-4xl mx-auto px-8 py-8 min-h-full">
             <div className="space-y-6 pb-3">
               {/* Agentes */}
               <div className="flex gap-4 justify-end items-center">
