@@ -56,6 +56,9 @@ importers:
       sonner:
         specifier: ^1.4.0
         version: 1.7.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      textarea-caret:
+        specifier: ^3.1.0
+        version: 3.1.0
       zustand:
         specifier: ^4.5.0
         version: 4.5.7(@types/react@18.3.27)(react@18.3.1)
@@ -1118,6 +1121,9 @@ packages:
     resolution: {integrity: sha512-6A2rnmW5xZMdw11LYjhcI5846rt9pbLSabY5XPxo+XWdxwZaFEn47Go4NzFiHu9sNNmr/kXivP1vStfvMaK1GQ==}
     engines: {node: '>=14.0.0'}
     hasBin: true
+
+  textarea-caret@3.1.0:
+    resolution: {integrity: sha512-cXAvzO9pP5CGa6NKx0WYHl+8CHKZs8byMkt3PCJBCmq2a34YA9pO1NrQET5pzeqnBjBdToF5No4rrmkDUgQC2Q==}
 
   thenify-all@1.6.0:
     resolution: {integrity: sha512-RNxQH/qI8/t3thXJDwcstUO4zeqo64+Uy/+sNVRBx4Xn2OX+OZ9oP+iJnNFqplFra2ZUVeKCSa2oVWi3T4uVmA==}
@@ -2495,6 +2501,8 @@ snapshots:
     transitivePeerDependencies:
       - tsx
       - yaml
+
+  textarea-caret@3.1.0: {}
 
   thenify-all@1.6.0:
     dependencies:
