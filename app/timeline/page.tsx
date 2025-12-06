@@ -486,41 +486,16 @@ export default function TimelinePage() {
                           </div>
 
                           {/* Event Card - Lighter version */}
-                          <div className="flex-1 py-2 px-3 rounded-lg hover:bg-light-raised dark:hover:bg-dark-raised transition-colors">
-                            {/* Título - sempre visível */}
-                            <div 
-                              className="flex items-start justify-between gap-4 cursor-pointer"
-                              onClick={() => displayMode === "agrupado" ? toggleCardExpansion(event.id) : openViewFichaModal(event)}
-                            >
-                              <div className="flex-1 space-y-1">
-                                <div className="flex items-center gap-2">
-                                  {category && (
-                                    <Badge variant="primary" size="sm">
-                                      {category.label}
-                                    </Badge>
-                                  )}
-                                  {world && (
-                                    <Badge variant="default" size="sm">
-                                      {world.nome}
-                                    </Badge>
-                                  )}
-                                </div>
-
-                                <h3 className="text-base text-text-light-primary dark:text-dark-primary group-hover:underline">
-                                  {event.titulo}
-                                </h3>
-                                
-                                {year && (
-                                  <p className="text-sm text-gray-500">
-                                    {year}
-                                  </p>
-                                )}
-                              </div>
-
-                              {/* Arrow - only on hover */}
-                              <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div 
+                            className="flex-1 py-2 px-3 rounded-lg hover:bg-light-raised dark:hover:bg-dark-raised transition-colors cursor-pointer"
+                            onClick={() => displayMode === "agrupado" ? toggleCardExpansion(event.id) : openViewFichaModal(event)}
+                          >
+                            {/* Primeira linha: Seta + Badges */}
+                            <div className="flex items-center gap-2">
+                              {/* Arrow - sempre visível, à esquerda */}
+                              <div className="flex-shrink-0">
                                 <svg 
-                                  className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary"
+                                  className="w-4 h-4 text-text-light-secondary dark:text-dark-secondary"
                                   fill="none" 
                                   stroke="currentColor" 
                                   viewBox="0 0 24 24"
@@ -528,14 +503,39 @@ export default function TimelinePage() {
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                 </svg>
                               </div>
+                              
+                              {/* Badges */}
+                              {category && (
+                                <Badge variant="primary" size="sm">
+                                  {category.label}
+                                </Badge>
+                              )}
+                              {world && (
+                                <Badge variant="default" size="sm">
+                                  {world.nome}
+                                </Badge>
+                              )}
                             </div>
 
-                            {/* Conteúdo - visível quando expandido */}
-                            {isExpanded && displayMode === "agrupado" && (
-                              <div 
-                                className="mt-2 cursor-pointer space-y-2"
-                                onClick={() => openViewFichaModal(event)}
-                              >
+                            {/* Título - com recuo */}
+                            <h3 className="text-base text-text-light-primary dark:text-dark-primary group-hover:underline ml-6 mt-1">
+                              {event.titulo}
+                            </h3>
+                            
+                            {/* Data - com recuo */}
+                            {year && (
+                              <p className="text-sm text-gray-500 ml-6">
+                                {year}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Conteúdo - visível quando expandido */}
+                          {isExpanded && displayMode === "agrupado" && (
+                            <div 
+                              className="mt-2 cursor-pointer space-y-2 ml-3"
+                              onClick={() => openViewFichaModal(event)}
+                            >
                                 {event.resumo && (
                                   <p className="text-sm text-text-light-secondary dark:text-dark-secondary">
                                     {event.resumo}
@@ -568,9 +568,8 @@ export default function TimelinePage() {
                                     </div>
                                   );
                                 })()}
-                              </div>
-                            )}
-                          </div>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
