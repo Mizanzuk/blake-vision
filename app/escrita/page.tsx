@@ -138,6 +138,11 @@ function EscritaPageContent() {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
   
+  // Estados para modal de ficha
+  const [showFichaModal, setShowFichaModal] = useState(false);
+  const [fichaData, setFichaData] = useState<any>(null);
+  const [loadingFicha, setLoadingFicha] = useState(false);
+  
   // Estados do Modo Foco
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [focusType, setFocusType] = useState<'off' | 'sentence' | 'paragraph'>('off');
@@ -861,6 +866,30 @@ function EscritaPageContent() {
 
     setDraggedTextoId(null);
     setDragOverTextoId(null);
+  }
+
+  // Função para buscar e exibir ficha no modal
+  async function handleFichaClick(fichaSlug: string) {
+    setLoadingFicha(true);
+    setShowFichaModal(true);
+    
+    try {
+      const response = await fetch(`/api/fichas/${fichaSlug}`);
+      if (!response.ok) {
+        toast.error("Erro ao carregar ficha");
+        setShowFichaModal(false);
+        return;
+      }
+      
+      const data = await response.json();
+      setFichaData(data);
+    } catch (error) {
+      console.error("Erro ao buscar ficha:", error);
+      toast.error("Erro ao carregar ficha");
+      setShowFichaModal(false);
+    } finally {
+      setLoadingFicha(false);
+    }
   }
 
   // Função para conversar com assistentes
@@ -1764,7 +1793,42 @@ function EscritaPageContent() {
                         }}
                       >
                         {msg.role === "assistant" ? (
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          <ReactMarkdown 
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              a: ({ node, href, children, ...props }) => {
+                                // Interceptar links que apontam para fichas
+                                if (href && href.startsWith('/ficha/')) {
+                                  const fichaSlug = href.replace('/ficha/', '');
+                                  return (
+                                    <a
+                                      href="#"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        handleFichaClick(fichaSlug);
+                                      }}
+                                      className="text-primary-600 dark:text-primary-400 hover:underline cursor-pointer"
+                                      {...props}
+                                    >
+                                      {children}
+                                    </a>
+                                  );
+                                }
+                                // Links normais abrem em nova aba
+                                return (
+                                  <a
+                                    href={href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-primary-600 dark:text-primary-400 hover:underline"
+                                    {...props}
+                                  >
+                                    {children}
+                                  </a>
+                                );
+                              }
+                            }}
+                          >
                             {msg.content}
                           </ReactMarkdown>
                         ) : (
@@ -2271,6 +2335,106 @@ function EscritaPageContent() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+      
+      {/* Modal de Ficha */}
+      {showFichaModal && (
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-[2000]"
+          onClick={() => setShowFichaModal(false)}
+        >
+          <div 
+            className="bg-light-base dark:bg-dark-base rounded-lg shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto m-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header do Modal */}
+            <div className="sticky top-0 bg-light-base dark:bg-dark-base border-b border-border-light-default dark:border-border-dark-default px-6 py-4 flex justify-between items-center">
+              <h2 className="text-xl font-semibold text-text-light-primary dark:text-dark-primary">
+                {loadingFicha ? "Carregando..." : fichaData?.nome || "Ficha"}
+              </h2>
+              <button
+                onClick={() => setShowFichaModal(false)}
+                className="text-text-light-tertiary hover:text-text-light-primary dark:text-dark-tertiary dark:hover:text-dark-primary transition-colors p-2 rounded-lg hover:bg-light-overlay dark:hover:bg-dark-overlay"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            {/* Conteúdo do Modal */}
+            <div className="px-6 py-4">
+              {loadingFicha ? (
+                <div className="flex items-center justify-center py-12">
+                  <svg className="w-8 h-8 animate-spin text-primary-500" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </div>
+              ) : fichaData ? (
+                <div className="space-y-4">
+                  {/* Nome */}
+                  {fichaData.nome && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-text-light-tertiary dark:text-dark-tertiary mb-1">Nome</h3>
+                      <p className="text-text-light-primary dark:text-dark-primary">{fichaData.nome}</p>
+                    </div>
+                  )}
+                  
+                  {/* Tipo */}
+                  {fichaData.tipo && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-text-light-tertiary dark:text-dark-tertiary mb-1">Tipo</h3>
+                      <Badge variant="secondary">{fichaData.tipo}</Badge>
+                    </div>
+                  )}
+                  
+                  {/* Descrição */}
+                  {fichaData.descricao && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-text-light-tertiary dark:text-dark-tertiary mb-1">Descrição</h3>
+                      <p className="text-text-light-secondary dark:text-dark-secondary whitespace-pre-wrap">{fichaData.descricao}</p>
+                    </div>
+                  )}
+                  
+                  {/* Características */}
+                  {fichaData.caracteristicas && Object.keys(fichaData.caracteristicas).length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-text-light-tertiary dark:text-dark-tertiary mb-2">Características</h3>
+                      <div className="space-y-2">
+                        {Object.entries(fichaData.caracteristicas).map(([key, value]: [string, any]) => (
+                          <div key={key} className="flex gap-2">
+                            <span className="text-text-light-tertiary dark:text-dark-tertiary font-medium">{key}:</span>
+                            <span className="text-text-light-secondary dark:text-dark-secondary">{value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Botão para abrir ficha completa em nova aba */}
+                  <div className="pt-4 border-t border-border-light-default dark:border-border-dark-default">
+                    <a
+                      href={`/ficha/${fichaData.slug || fichaData.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:underline"
+                    >
+                      Ver ficha completa
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12 text-text-light-tertiary dark:text-dark-tertiary">
+                  Ficha não encontrada
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
