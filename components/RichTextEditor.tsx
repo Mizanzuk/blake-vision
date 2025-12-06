@@ -33,7 +33,7 @@ export default function RichTextEditor({
 
   // Handler para injetar div de respiro no final do editor
   useEffect(() => {
-    const interval = setInterval(() => {
+    const injectSpacer = () => {
       const editor = document.querySelector('.ql-editor');
       if (editor) {
         // Verificar se já existe a div de respiro
@@ -46,13 +46,33 @@ export default function RichTextEditor({
           spacer.style.height = '100px';
           spacer.style.width = '100%';
           spacer.style.pointerEvents = 'none';
+          spacer.style.userSelect = 'none';
           spacer.setAttribute('contenteditable', 'false');
+          spacer.setAttribute('data-spacer', 'true');
           editor.appendChild(spacer);
+          console.log('Spacer injetado!');
         }
       }
-    }, 500);
+    };
+
+    // Injetar imediatamente
+    const initialTimer = setTimeout(injectSpacer, 100);
     
-    return () => clearInterval(interval);
+    // Continuar verificando periodicamente
+    const interval = setInterval(injectSpacer, 200);
+    
+    // Observar mudanças no DOM do editor
+    const observer = new MutationObserver(injectSpacer);
+    const editorElement = document.querySelector('.ql-editor');
+    if (editorElement) {
+      observer.observe(editorElement, { childList: true, subtree: true });
+    }
+    
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(interval);
+      observer.disconnect();
+    };
   }, []);
 
   // Handler para seleção de texto
