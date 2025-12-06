@@ -92,13 +92,12 @@ export default function RichTextEditor({
           height: 14px !important;
         }
         
-        /* Container com borda e respiro inferior */
+        /* Container com borda */
         .ql-container {
           flex: 1 !important;
           overflow: hidden !important;
           border: 1px solid #d1d5db !important;
           border-radius: 0 0 0.5rem 0.5rem !important;
-          padding-bottom: 80px !important;
         }
         
         /* Wrapper sem borda */

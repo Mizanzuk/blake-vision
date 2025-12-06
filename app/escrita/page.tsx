@@ -1604,6 +1604,8 @@ function EscritaPageContent() {
                       setSelectionMenuPosition(position);
                     }}
                   />
+                  {/* Rodapé visual para respiro */}
+                  <div className="h-20 bg-light-raised dark:bg-dark-raised"></div>
                 </div>
               )}
 
