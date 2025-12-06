@@ -624,6 +624,7 @@ function EscritaPageContent() {
 
     try {
       const body = {
+        id: currentTextoId,
         titulo,
         conteudo,
         universe_id: universeId || null,
@@ -1598,6 +1599,10 @@ function EscritaPageContent() {
                     onChange={(value) => setConteudo(value)}
                     placeholder="Escreva seu texto aqui..."
                     className="w-full h-[calc(100vh-32rem)] rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised"
+                    onTextSelect={(text, position) => {
+                      setSelectedText(text);
+                      setSelectionMenuPosition(position);
+                    }}
                   />
                 </div>
               )}
@@ -2082,6 +2087,10 @@ function EscritaPageContent() {
                   onChange={(value) => setConteudo(value)}
                   placeholder="Escreva seu texto aqui..."
                   className="w-full min-h-[calc(100vh-12rem)] bg-transparent border-none"
+                  onTextSelect={(text, position) => {
+                    setSelectedText(text);
+                    setSelectionMenuPosition(position);
+                  }}
                 />
               </div>
             </div>

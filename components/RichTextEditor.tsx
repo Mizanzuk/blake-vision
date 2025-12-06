@@ -12,6 +12,7 @@ interface RichTextEditorProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  onTextSelect?: (text: string, position: { x: number; y: number }) => void;
 }
 
 export default function RichTextEditor({
@@ -19,6 +20,7 @@ export default function RichTextEditor({
   onChange,
   placeholder = 'Escreva seu texto aqui...',
   className = '',
+  onTextSelect,
 }: RichTextEditorProps) {
   // Configuração do toolbar (apenas negrito e itálico)
   const modules = {
@@ -29,6 +31,30 @@ export default function RichTextEditor({
 
   const formats = ['bold', 'italic'];
 
+  // Handler para seleção de texto
+  useEffect(() => {
+    const handleSelection = () => {
+      const selection = window.getSelection();
+      const selectedText = selection?.toString().trim();
+      
+      if (selectedText && selectedText.length > 0 && onTextSelect) {
+        const range = selection?.getRangeAt(0);
+        const rect = range?.getBoundingClientRect();
+        
+        if (rect) {
+          const position = {
+            x: rect.left + rect.width / 2,
+            y: rect.top - 10,
+          };
+          onTextSelect(selectedText, position);
+        }
+      }
+    };
+
+    document.addEventListener('mouseup', handleSelection);
+    return () => document.removeEventListener('mouseup', handleSelection);
+  }, [onTextSelect]);
+
   return (
     <div className={className}>
       <style jsx global>{`
@@ -36,6 +62,7 @@ export default function RichTextEditor({
           font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
           font-size: 14px !important;
           line-height: 1.5 !important;
+          border: none !important;
         }
         
         .ql-editor {
@@ -50,6 +77,10 @@ export default function RichTextEditor({
           margin-bottom: 14px !important;
           font-size: 14px !important;
           line-height: 1.5 !important;
+        }
+        
+        .ql-editor p + p {
+          margin-top: 14px !important;
         }
         
         .ql-editor p:last-child {
