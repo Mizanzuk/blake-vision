@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useRef, Suspense } from "react";
+console.log('[ESCRITA PAGE] Módulo carregado - timestamp:', Date.now());
+
+import React from 'react';e, useEffect, useRef, Suspense } from "react";
 import { flushSync } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
