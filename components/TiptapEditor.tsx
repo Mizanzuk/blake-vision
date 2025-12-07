@@ -22,6 +22,7 @@ interface TiptapEditorProps {
 }
 
 const suggestion: Omit<SuggestionOptions, 'editor'> = {
+  char: '@',
   items: async ({ query }) => {
     console.log('[TIPTAP] Mention triggered! Query:', query);
     // Buscar fichas da API
