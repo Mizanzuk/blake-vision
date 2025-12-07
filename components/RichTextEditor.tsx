@@ -44,7 +44,7 @@ export default function RichTextEditor({
         if (rect) {
           const position = {
             x: rect.left + rect.width / 2,
-            y: rect.top - 60, // Botões aparecem 60px acima da seleção
+            y: rect.top - 30, // Ajustado para -30 (menos acima)
           };
           onTextSelect(selectedText, position);
         }
@@ -142,14 +142,24 @@ export default function RichTextEditor({
           margin-bottom: 14px !important;
         }
 
-        /* NOVA FUNCIONALIDADE: Parágrafos vazios visíveis */
+        /* NOVA FUNCIONALIDADE: Parágrafos vazios visíveis e selecionáveis */
         .ql-editor p:empty {
           min-height: 1.5em !important;
+          background-color: transparent !important;
         }
 
         .ql-editor p:empty::before {
-          content: '\\200B';
-          display: inline-block;
+          content: '\\200B' !important;
+          display: inline-block !important;
+        }
+
+        /* Tornar parágrafos vazios visíveis quando selecionados */
+        .ql-editor p:empty::selection {
+          background-color: rgba(0, 123, 255, 0.2) !important;
+        }
+
+        .ql-editor p:empty::-moz-selection {
+          background-color: rgba(0, 123, 255, 0.2) !important;
         }
       `}</style>
       <ReactQuill
