@@ -68,8 +68,8 @@ export function EditorHeader({
     }
   };
   
-  const isBoldActive = editorRef.current?.isActive('bold') || false;
-  const isItalicActive = editorRef.current?.isActive('italic') || false;
+  const isBoldActive = () => editorRef.current?.isActive?.('bold') || false;
+  const isItalicActive = () => editorRef.current?.isActive?.('italic') || false;
   
   return (
     <div className="sticky top-0 z-20 bg-light-base dark:bg-dark-base">
@@ -329,7 +329,7 @@ export function EditorHeader({
               onClick={toggleBold}
               className={clsx(
                 "w-8 h-8 rounded border transition-colors font-bold",
-                isBoldActive
+                isBoldActive()
                   ? "bg-primary-500 text-white border-primary-500"
                   : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-light-bg-secondary dark:hover:bg-dark-bg-secondary"
               )}
@@ -341,7 +341,7 @@ export function EditorHeader({
               onClick={toggleItalic}
               className={clsx(
                 "w-8 h-8 rounded border transition-colors italic font-serif",
-                isItalicActive
+                isItalicActive()
                   ? "bg-primary-500 text-white border-primary-500"
                   : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-light-bg-secondary dark:hover:bg-dark-bg-secondary"
               )}
