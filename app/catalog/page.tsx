@@ -18,7 +18,7 @@ import {
   rectSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
 import {
   Button,
@@ -74,6 +74,7 @@ function SortableCard({ id, children, isDragging }: SortableCardProps) {
 
 export default function CatalogPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = useTranslation();
   const supabase = getSupabaseClient();
   
@@ -153,6 +154,22 @@ export default function CatalogPage() {
       loadCustomOrder();
     }
   }, [selectedUniverseId]);
+
+  // Abrir modal de ficha via parâmetro URL
+  useEffect(() => {
+    const fichaSlug = searchParams.get('ficha');
+    if (fichaSlug && fichas.length > 0 && !showViewModal) {
+      // Buscar ficha pelo slug
+      const ficha = fichas.find(f => {
+        const slug = f.titulo?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-');
+        return slug === fichaSlug;
+      });
+      
+      if (ficha) {
+        openViewFichaModal(ficha);
+      }
+    }
+  }, [searchParams, fichas, showViewModal]);
 
   async function checkAuth() {
     try {
