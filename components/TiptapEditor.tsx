@@ -6,7 +6,7 @@ import Mention from '@tiptap/extension-mention';
 import Placeholder from '@tiptap/extension-placeholder';
 import { useEffect } from 'react';
 import './TiptapEditor.css';
-import { FocusMode } from './TiptapFocusExtension';
+import { useFocusMode } from './useFocusMode';
 
 // Suggestion plugin para mentions
 import { ReactRenderer } from '@tiptap/react';
@@ -126,9 +126,7 @@ export default function TiptapEditor({
         },
         suggestion,
       }),
-      FocusMode.configure({
-        focusType: focusType,
-      }),
+
     ],
     content: value,
     onUpdate: ({ editor }) => {
@@ -190,27 +188,12 @@ export default function TiptapEditor({
     }
   }, [editor, editorRef]);
 
-  // Update focusType when prop changes
-  useEffect(() => {
-    const effectiveFocusType = focusType || 'off';
-    console.log('[DEBUG TiptapEditor] focusType mudou para:', effectiveFocusType);
-    
-    if (editor) {
-      // Update extension options
-      const focusExtension = editor.extensionManager.extensions.find(
-        (ext) => ext.name === 'focusMode'
-      );
-      
-      console.log('[DEBUG TiptapEditor] focusExtension encontrada:', !!focusExtension);
-      
-      if (focusExtension) {
-        console.log('[DEBUG TiptapEditor] Atualizando focusType para:', effectiveFocusType);
-        focusExtension.options.focusType = effectiveFocusType;
-        // Force plugin update by triggering a transaction
-        editor.view.dispatch(editor.state.tr);
-      }
-    }
-  }, [focusType, editor]);
+  // Use Focus Mode hook
+  useFocusMode({
+    editor,
+    focusType: focusType || 'off',
+    typewriterMode: typewriterMode || false,
+  });
 
   if (!editor) {
     return null;
