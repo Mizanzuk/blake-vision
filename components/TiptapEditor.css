@@ -44,9 +44,16 @@
   min-height: 400px;
   max-height: 600px;
   overflow-y: auto;
-  outline: none;
-  border: none;
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
   line-height: 1.6;
+}
+
+.ProseMirror:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .ProseMirror p.is-editor-empty:first-child::before {
