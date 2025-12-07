@@ -192,9 +192,17 @@ export default function TiptapEditor({
 
   // Update focusType when prop changes
   useEffect(() => {
-    if (editor) {
-      // Force plugin update
-      editor.view.updateState(editor.state);
+    if (editor && focusType) {
+      // Update extension options
+      const focusExtension = editor.extensionManager.extensions.find(
+        (ext) => ext.name === 'focusMode'
+      );
+      
+      if (focusExtension) {
+        focusExtension.options.focusType = focusType;
+        // Force plugin update by triggering a transaction
+        editor.view.dispatch(editor.state.tr);
+      }
     }
   }, [focusType, editor]);
 
