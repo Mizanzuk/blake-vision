@@ -128,11 +128,11 @@ export default function TiptapEditor({ value, onChange, placeholder, className, 
     }
   }, [value, editor]);
 
-  // Handle text selection for agent buttons
+  // Handle text selection for agent buttons (only on mouseup)
   useEffect(() => {
     if (!editor || !onTextSelect) return;
 
-    const handleSelectionChange = () => {
+    const handleMouseUp = () => {
       const { from, to } = editor.state.selection;
       const text = editor.state.doc.textBetween(from, to, ' ');
       
@@ -142,9 +142,11 @@ export default function TiptapEditor({ value, onChange, placeholder, className, 
       }
     };
 
-    editor.on('selectionUpdate', handleSelectionChange);
+    const editorElement = editor.view.dom;
+    editorElement.addEventListener('mouseup', handleMouseUp);
+    
     return () => {
-      editor.off('selectionUpdate', handleSelectionChange);
+      editorElement.removeEventListener('mouseup', handleMouseUp);
     };
   }, [editor, onTextSelect]);
 

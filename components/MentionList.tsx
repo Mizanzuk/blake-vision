@@ -68,7 +68,7 @@ const MentionList = forwardRef((props: MentionListProps, ref) => {
           </button>
         ))
       ) : (
-        <div className="mention-item">Nenhuma entidade encontrada</div>
+        <div className="mention-item empty">digite nome</div>
       )}
     </div>
   );
