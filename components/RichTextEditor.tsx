@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 
 // Importar React-Quill dinamicamente (client-side only)
@@ -23,35 +23,40 @@ export default function RichTextEditor({
   onTextSelect,
 }: RichTextEditorProps) {
   const quillRef = useRef<any>(null);
-  const mentionModuleRef = useRef<any>(null);
+  const [mentionReady, setMentionReady] = useState(false);
 
-  // Configurar quill-mention após o componente montar
+  // Configurar quill-mention ANTES de renderizar ReactQuill
   useEffect(() => {
-    if (typeof window === 'undefined' || mentionModuleRef.current) return;
+    if (typeof window === 'undefined' || mentionReady) return;
 
     const setupMention = async () => {
       try {
-        // Importar Quill e quill-mention
-        const Quill = (await import('react-quill')).Quill;
+        // Importar Quill do react-quill
+        const ReactQuillModule = await import('react-quill');
+        const Quill = ReactQuillModule.Quill;
         
         // Importar CSS do quill-mention
         await import('quill-mention/dist/quill.mention.css');
         
-        // Importar e registrar o módulo
-        const { default: QuillMention } = await import('quill-mention');
+        // Importar quill-mention
+        const QuillMention = (await import('quill-mention')).default;
         
+        // Registrar o módulo
         if (!Quill.imports['modules/mention']) {
           Quill.register('modules/mention', QuillMention);
-          mentionModuleRef.current = QuillMention;
-          console.log('quill-mention registrado com sucesso');
+          console.log('✅ quill-mention registrado com sucesso');
         }
+        
+        setMentionReady(true);
       } catch (error) {
-        console.error('Erro ao configurar quill-mention:', error);
+        console.error('❌ Erro ao configurar quill-mention:', error);
+        // Mesmo com erro, permitir renderizar o editor
+        setMentionReady(true);
       }
     };
 
     setupMention();
-  }, []);
+  }, [mentionReady]);
 
   // Função para buscar entidades
   const fetchEntities = async (searchTerm: string) => {
@@ -59,6 +64,7 @@ export default function RichTextEditor({
       const response = await fetch(`/api/entities/search?q=${encodeURIComponent(searchTerm)}`);
       if (!response.ok) return [];
       const data = await response.json();
+      console.log('Entidades encontradas:', data);
       return data;
     } catch (error) {
       console.error('Error fetching entities:', error);
@@ -67,7 +73,7 @@ export default function RichTextEditor({
   };
 
   // Configuração do toolbar e modules
-  const modules = {
+  const modules = mentionReady ? {
     toolbar: [
       ['bold', 'italic'],
     ],
@@ -75,12 +81,15 @@ export default function RichTextEditor({
       allowedChars: /^[A-Za-z\sÀ-ÿ0-9_]*$/,
       mentionDenotationChars: ['@'],
       source: async function (searchTerm: string, renderList: (matches: any[], searchTerm: string) => void) {
+        console.log('🔍 Buscando:', searchTerm);
+        
         if (searchTerm.length === 0) {
           renderList([], searchTerm);
           return;
         }
 
         const matches = await fetchEntities(searchTerm);
+        console.log('📋 Matches:', matches);
         renderList(matches, searchTerm);
       },
       renderItem: function (item: any, searchTerm: string) {
@@ -101,10 +110,14 @@ export default function RichTextEditor({
       },
       dataAttributes: ['id', 'value', 'type', 'link'],
       onSelect: function (item: any, insertItem: (item: any) => void) {
-        console.log('Entity mentioned:', item);
+        console.log('✅ Entity mentioned:', item);
         insertItem(item);
       },
     },
+  } : {
+    toolbar: [
+      ['bold', 'italic'],
+    ],
   };
 
   const formats = ['bold', 'italic', 'mention'];
@@ -132,6 +145,11 @@ export default function RichTextEditor({
     document.addEventListener('mouseup', handleSelection);
     return () => document.removeEventListener('mouseup', handleSelection);
   }, [onTextSelect]);
+
+  // Não renderizar até mention estar pronto
+  if (!mentionReady) {
+    return <div className={className}>Carregando editor...</div>;
+  }
 
   return (
     <div className={className}>
