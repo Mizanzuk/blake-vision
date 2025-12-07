@@ -192,8 +192,10 @@ export default function TiptapEditor({
 
   // Update focusType when prop changes
   useEffect(() => {
-    console.log('[DEBUG TiptapEditor] focusType mudou para:', focusType);
-    if (editor && focusType) {
+    const effectiveFocusType = focusType || 'off';
+    console.log('[DEBUG TiptapEditor] focusType mudou para:', effectiveFocusType);
+    
+    if (editor) {
       // Update extension options
       const focusExtension = editor.extensionManager.extensions.find(
         (ext) => ext.name === 'focusMode'
@@ -202,8 +204,8 @@ export default function TiptapEditor({
       console.log('[DEBUG TiptapEditor] focusExtension encontrada:', !!focusExtension);
       
       if (focusExtension) {
-        console.log('[DEBUG TiptapEditor] Atualizando focusType para:', focusType);
-        focusExtension.options.focusType = focusType;
+        console.log('[DEBUG TiptapEditor] Atualizando focusType para:', effectiveFocusType);
+        focusExtension.options.focusType = effectiveFocusType;
         // Force plugin update by triggering a transaction
         editor.view.dispatch(editor.state.tr);
       }
