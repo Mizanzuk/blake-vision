@@ -9,9 +9,14 @@ interface UseFocusModeProps {
 
 export function useFocusMode({ editor, focusType, typewriterMode }: UseFocusModeProps) {
   useEffect(() => {
-    if (!editor) return;
+    console.log('[useFocusMode] Hook executado, focusType:', focusType, 'editor:', !!editor);
+    if (!editor) {
+      console.log('[useFocusMode] Editor não existe, retornando');
+      return;
+    }
 
     const updateFocus = () => {
+      console.log('[useFocusMode] updateFocus chamado, focusType:', focusType);
       const { state } = editor;
       const { selection } = state;
       const { $from } = selection;
@@ -22,7 +27,12 @@ export function useFocusMode({ editor, focusType, typewriterMode }: UseFocusMode
         el.classList.remove('focus-active', 'focus-dimmed');
       });
 
-      if (focusType === 'off') return;
+      if (focusType === 'off') {
+        console.log('[useFocusMode] focusType é off, retornando');
+        return;
+      }
+      
+      console.log('[useFocusMode] Aplicando foco, tipo:', focusType);
 
       // Get all paragraphs
       const paragraphs = Array.from(proseMirror.querySelectorAll('p'));
