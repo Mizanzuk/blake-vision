@@ -165,6 +165,7 @@ function EscritaPageContent() {
   
   // Ref para controlar o editor externamente
   const editorRef = useRef<any>(null);
+  const loadedTextoIdRef = useRef<string | null>(null); // Rastrear qual texto já foi carregado
 
   // Estados para drag and drop
   const [draggedTextoId, setDraggedTextoId] = useState<string | null>(null);
@@ -193,13 +194,19 @@ function EscritaPageContent() {
     console.log('[DEBUG] useEffect loadTexto executado');
     const textoId = searchParams.get("id");
     console.log('[DEBUG] textoId da URL:', textoId, 'isLoading:', isLoading);
-    if (textoId && !isLoading) {
-      console.log('[DEBUG] Chamando loadTexto...');
+    
+    // CORREÇÃO: Evitar carregamento duplicado usando ref
+    if (textoId && !isLoading && textoId !== loadedTextoIdRef.current) {
+      console.log('[DEBUG] Chamando loadTexto... (primeira vez para este ID)');
+      loadedTextoIdRef.current = textoId; // Marcar como carregado
       try {
         loadTexto(textoId);
       } catch (error) {
         console.error('[DEBUG] ERRO no useEffect ao chamar loadTexto:', error);
+        loadedTextoIdRef.current = null; // Resetar em caso de erro
       }
+    } else if (textoId && textoId === loadedTextoIdRef.current) {
+      console.log('[DEBUG] Texto já foi carregado, ignorando...');
     }
   }, [searchParams, isLoading]);
 
@@ -574,6 +581,9 @@ function EscritaPageContent() {
   }
 
   function handleSelectTexto(texto: Texto) {
+    // Resetar ref para permitir carregamento do novo texto
+    loadedTextoIdRef.current = texto.id;
+    
     // CORREÇÃO: Setar conteúdo primeiro, depois mostrar editor
     flushSync(() => {
       setConteudo(texto.conteudo || "");
