@@ -31,8 +31,6 @@ export default function RichTextEditor({
 
   const formats = ['bold', 'italic'];
 
-
-
   // Handler para seleção de texto
   useEffect(() => {
     const handleSelection = () => {
@@ -46,7 +44,7 @@ export default function RichTextEditor({
         if (rect) {
           const position = {
             x: rect.left + rect.width / 2,
-            y: rect.top - 10,
+            y: rect.top - 60, // Botões aparecem 60px acima da seleção
           };
           onTextSelect(selectedText, position);
         }
@@ -59,6 +57,101 @@ export default function RichTextEditor({
 
   return (
     <div className={className}>
+      <style jsx global>{`
+        /* Remover todas as bordas */
+        .ql-container {
+          border: none !important;
+        }
+
+        .ql-snow {
+          border: none !important;
+          max-height: calc(100vh - 32rem) !important;
+          overflow: hidden !important;
+          display: flex !important;
+          flex-direction: column !important;
+        }
+
+        .ql-editor {
+          border: none !important;
+        }
+
+        .ql-editor:focus {
+          outline: none !important;
+        }
+
+        /* Toolbar styling */
+        .ql-toolbar {
+          border: none !important;
+          background-color: #f5f1e8 !important;
+          padding: 12px 64px !important;
+          flex-shrink: 0 !important;
+          margin-bottom: 0 !important;
+          margin-top: -28px !important;
+        }
+
+        .ql-toolbar button {
+          width: 28px !important;
+          height: 28px !important;
+          padding: 4px !important;
+        }
+
+        .ql-toolbar button svg {
+          width: 14px !important;
+          height: 14px !important;
+        }
+
+        /* Container e altura */
+        .ql-container {
+          flex: 1 !important;
+          overflow: hidden !important;
+          border: none !important;
+          position: relative !important;
+          max-height: calc(100vh - 32rem) !important;
+          display: flex !important;
+          flex-direction: column !important;
+        }
+
+        /* Editor padding e scroll */
+        .ql-editor {
+          padding: 48px 64px 48px 64px !important;
+          min-height: 400px !important;
+          height: 100% !important;
+          overflow-y: auto !important;
+          scroll-behavior: smooth !important;
+          border: none !important;
+        }
+
+        /* Tipografia */
+        .ql-container {
+          font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+          font-size: 16px !important;
+          line-height: 1.5 !important;
+        }
+
+        .ql-editor p {
+          margin-bottom: 14px !important;
+          font-size: 16px !important;
+          line-height: 1.5 !important;
+        }
+
+        .ql-editor p + p {
+          margin-top: 14px !important;
+        }
+
+        .ql-editor p:last-child {
+          margin-bottom: 14px !important;
+        }
+
+        /* NOVA FUNCIONALIDADE: Parágrafos vazios visíveis */
+        .ql-editor p:empty {
+          min-height: 1.5em !important;
+        }
+
+        .ql-editor p:empty::before {
+          content: '\\200B';
+          display: inline-block;
+        }
+      `}</style>
       <ReactQuill
         theme="snow"
         value={value}
