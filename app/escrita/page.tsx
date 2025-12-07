@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, Suspense } from "react";
+import React, { useState, useEffect, useRef, Suspense, flushSync } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
 import { Header } from "@/app/components/layout/Header";
@@ -531,14 +531,18 @@ function EscritaPageContent() {
       if (response.ok && data.texto) {
         const texto = data.texto;
         
-        // CORREÇÃO: Usar React.startTransition para agrupar todas as atualizações de estado
-        // Isso garante que apenas UMA re-renderização aconteça, evitando o erro #310
-        React.startTransition(() => {
+        // CORREÇÃO: Setar conteúdo PRIMEIRO com flushSync para garantir que está pronto
+        // antes de mostrar o editor (isMetadataSaved = true)
+        console.log('[DEBUG] Setando conteúdo, tamanho:', (texto.conteudo || '').length);
+        flushSync(() => {
+          setConteudo(texto.conteudo || "");
+        });
+        console.log('[DEBUG] Conteúdo setado com sucesso (flushSync)');
+        
+        // Depois setar todos os outros estados de uma vez
+        flushSync(() => {
           setCurrentTextoId(texto.id);
           setTitulo(texto.titulo || "");
-          console.log('[DEBUG] Setando conteúdo, tamanho:', (texto.conteudo || '').length);
-          setConteudo(texto.conteudo || "");
-          console.log('[DEBUG] Conteúdo setado com sucesso');
           setUniverseId(texto.universe_id || "");
           setWorldId(texto.world_id || "");
           setEpisodio(texto.episodio || "");
@@ -547,7 +551,7 @@ function EscritaPageContent() {
           
           // Configurar estados de controle
           setIsMetadataLocked(true);
-          setIsMetadataSaved(true);
+          setIsMetadataSaved(true); // ← Isso monta o TiptapEditor
           setIsHeaderExpanded(false);
           
           // Salvar snapshot dos metadados
@@ -569,11 +573,14 @@ function EscritaPageContent() {
   }
 
   function handleSelectTexto(texto: Texto) {
-    // CORREÇÃO: Usar React.startTransition para agrupar atualizações
-    React.startTransition(() => {
+    // CORREÇÃO: Setar conteúdo primeiro, depois mostrar editor
+    flushSync(() => {
+      setConteudo(texto.conteudo || "");
+    });
+    
+    flushSync(() => {
       setCurrentTextoId(texto.id);
       setTitulo(texto.titulo || "");
-      setConteudo(texto.conteudo || "");
       setUniverseId(texto.universe_id || "");
       setWorldId(texto.world_id || "");
       setEpisodio(texto.episodio || "");
@@ -595,7 +602,7 @@ function EscritaPageContent() {
       });
     });
     
-    // Atualizar URL (fora do startTransition)
+    // Atualizar URL
     router.push(`/escrita?id=${texto.id}`);
   }
 
