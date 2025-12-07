@@ -282,9 +282,9 @@ function EscritaPageContent() {
       
       observer.observe(proseMirror, {
         childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ['class']
+        subtree: true
+        // Removido attributes: true para evitar loop infinito
+        // quando updateFocus() modifica classes
       });
       
       console.log('[Focus Mode] MutationObserver ativado');
