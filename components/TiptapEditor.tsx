@@ -23,12 +23,14 @@ interface TiptapEditorProps {
 
 const suggestion: Omit<SuggestionOptions, 'editor'> = {
   items: async ({ query }) => {
+    console.log('[TIPTAP] Mention triggered! Query:', query);
     // Buscar fichas da API
     try {
       const response = await fetch(`/api/entities/search?q=${encodeURIComponent(query)}`);
       if (!response.ok) return [];
       
       const data = await response.json();
+      console.log('[TIPTAP] Entities found:', data.entities?.length || 0);
       return data.entities || [];
     } catch (error) {
       console.error('Erro ao buscar entidades:', error);
@@ -42,6 +44,7 @@ const suggestion: Omit<SuggestionOptions, 'editor'> = {
 
     return {
       onStart: (props: SuggestionProps) => {
+        console.log('[TIPTAP] Mention dropdown onStart');
         component = new ReactRenderer(MentionList, {
           props,
           editor: props.editor,
