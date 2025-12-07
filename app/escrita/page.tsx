@@ -39,6 +39,7 @@ interface Texto {
 }
 
 function EscritaPageContent() {
+  console.log('[DEBUG EscritaPage] Componente renderizado!');
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = getSupabaseClient();
