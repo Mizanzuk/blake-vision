@@ -20,6 +20,11 @@ export const FocusMode = Extension.create<FocusOptions>({
   addProseMirrorPlugins() {
     const extension = this;
     
+    // Verificar se está no ambiente cliente
+    if (typeof window === 'undefined') {
+      return [];
+    }
+    
     return [
       new Plugin({
         key: focusModePluginKey,
