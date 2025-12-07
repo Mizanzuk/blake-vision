@@ -6,7 +6,7 @@ import Mention from '@tiptap/extension-mention';
 import Placeholder from '@tiptap/extension-placeholder';
 import { useEffect } from 'react';
 import './TiptapEditor.css';
-import { useFocusMode } from './useFocusMode';
+
 
 // Suggestion plugin para mentions
 import { ReactRenderer } from '@tiptap/react';
@@ -188,12 +188,74 @@ export default function TiptapEditor({
     }
   }, [editor, editorRef]);
 
-  // Use Focus Mode hook
-  useFocusMode({
-    editor,
-    focusType: focusType || 'off',
-    typewriterMode: typewriterMode || false,
-  });
+  // Focus Mode implementation
+  useEffect(() => {
+    console.log('[Focus Mode] useEffect executado, focusType:', focusType, 'editor:', !!editor);
+    if (!editor) return;
+
+    const updateFocus = () => {
+      console.log('[Focus Mode] updateFocus chamado');
+      const proseMirror = editor.view.dom;
+      
+      // Remove all focus classes first
+      proseMirror.querySelectorAll('.focus-active, .focus-dimmed').forEach(el => {
+        el.classList.remove('focus-active', 'focus-dimmed');
+      });
+
+      if (!focusType || focusType === 'off') {
+        console.log('[Focus Mode] focusType é off, retornando');
+        return;
+      }
+
+      console.log('[Focus Mode] Aplicando foco, tipo:', focusType);
+
+      // Get all paragraphs
+      const paragraphs = Array.from(proseMirror.querySelectorAll('p'));
+      console.log('[Focus Mode] Encontrados', paragraphs.length, 'parágrafos');
+      
+      // Find current paragraph
+      let currentParagraph: Element | null = null;
+      let currentNode = proseMirror.ownerDocument.getSelection()?.anchorNode;
+      
+      while (currentNode && currentNode !== proseMirror) {
+        if (currentNode.nodeName === 'P') {
+          currentParagraph = currentNode as Element;
+          break;
+        }
+        currentNode = currentNode.parentNode;
+      }
+
+      if (!currentParagraph && paragraphs.length > 0) {
+        currentParagraph = paragraphs[0];
+      }
+
+      console.log('[Focus Mode] Parágrafo atual encontrado:', !!currentParagraph);
+
+      if (!currentParagraph) return;
+
+      // Apply focus classes
+      paragraphs.forEach(p => {
+        if (p === currentParagraph) {
+          p.classList.add('focus-active');
+          console.log('[Focus Mode] Classe focus-active adicionada');
+        } else {
+          p.classList.add('focus-dimmed');
+        }
+      });
+    };
+
+    // Update focus on selection change
+    editor.on('selectionUpdate', updateFocus);
+    editor.on('update', updateFocus);
+    
+    // Initial update
+    updateFocus();
+
+    return () => {
+      editor.off('selectionUpdate', updateFocus);
+      editor.off('update', updateFocus);
+    };
+  }, [editor, focusType]);
 
   if (!editor) {
     return null;
