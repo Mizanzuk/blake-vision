@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Merriweather } from "next/font/google";
+import Script from 'next/script';
 import "./styles/globals.css";
 import { Toaster } from "./components/ui";
 
@@ -55,7 +56,7 @@ export default function RootLayout({
       >
         {children}
         <Toaster />
-        <script src="/focus-mode.js" defer></script>
+        <Script src="/focus-mode.js" strategy="afterInteractive" />
       </body>
     </html>
   );
