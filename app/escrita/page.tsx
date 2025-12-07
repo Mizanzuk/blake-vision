@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import { flushSync } from "react-dom";
