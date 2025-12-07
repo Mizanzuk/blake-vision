@@ -17,7 +17,7 @@ import clsx from "clsx";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import getCaretCoordinates from "textarea-caret";
-import RichTextEditor from "@/components/RichTextEditor";
+import TiptapEditor from "@/components/TiptapEditor";
 
 interface Texto {
   id: string;
@@ -1663,7 +1663,7 @@ function EscritaPageContent() {
               {/* Conteúdo (só aparece após salvar metadados) */}
               {isMetadataSaved && (
                 <div className="-mt-4">
-                  <RichTextEditor
+                  <TiptapEditor
                     value={conteudo}
                     onChange={(value) => setConteudo(value)}
                     placeholder="Escreva seu texto aqui..."
@@ -2258,7 +2258,7 @@ function EscritaPageContent() {
               (showUrthona || showUrizen) ? "mr-96" : ""
             )}>
               <div className="max-w-4xl mx-auto px-16 py-12">
-                <RichTextEditor
+                <TiptapEditor
                   value={conteudo}
                   onChange={(value) => setConteudo(value)}
                   placeholder="Escreva seu texto aqui..."
