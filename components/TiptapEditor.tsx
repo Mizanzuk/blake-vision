@@ -125,9 +125,9 @@ export default function TiptapEditor({
         },
         suggestion,
       }),
-      FocusMode.configure({
-        focusType: focusType,
-      }),
+      // FocusMode.configure({
+      //   focusType: focusType,
+      // }),
     ],
     content: value,
     onUpdate: ({ editor }) => {
