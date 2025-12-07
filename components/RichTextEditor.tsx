@@ -55,6 +55,41 @@ export default function RichTextEditor({
     return () => document.removeEventListener('mouseup', handleSelection);
   }, [onTextSelect]);
 
+  // NOVA FUNCIONALIDADE: Adicionar ZWSP em parágrafos vazios
+  useEffect(() => {
+    const addZeroWidthSpaceToEmptyParagraphs = () => {
+      const editor = document.querySelector('.ql-editor');
+      if (!editor) return;
+
+      const paragraphs = editor.querySelectorAll('p');
+      paragraphs.forEach((p) => {
+        const children = p.childNodes;
+        // Se o parágrafo tem apenas um <br>, substituir por ZWSP + <br>
+        if (children.length === 1 && children[0].nodeName === 'BR') {
+          // Adicionar zero-width space antes do <br>
+          const textNode = document.createTextNode('\u200B');
+          p.insertBefore(textNode, children[0]);
+        }
+      });
+    };
+
+    // Executar após cada mudança no editor
+    const observer = new MutationObserver(addZeroWidthSpaceToEmptyParagraphs);
+    const editor = document.querySelector('.ql-editor');
+    
+    if (editor) {
+      observer.observe(editor, {
+        childList: true,
+        subtree: true,
+      });
+      
+      // Executar uma vez no início
+      addZeroWidthSpaceToEmptyParagraphs();
+    }
+
+    return () => observer.disconnect();
+  }, [value]);
+
   return (
     <div className={className}>
       <style jsx global>{`
@@ -143,22 +178,8 @@ export default function RichTextEditor({
         }
 
         /* NOVA FUNCIONALIDADE: Parágrafos vazios selecionáveis */
-        .ql-editor p:has(> br:only-child) {
+        .ql-editor p {
           min-height: 1.5em !important;
-        }
-
-        .ql-editor p:has(> br:only-child) br {
-          display: block !important;
-          content: '' !important;
-        }
-
-        /* Destaque quando selecionado */
-        .ql-editor p:has(> br:only-child)::selection {
-          background-color: rgba(0, 123, 255, 0.3) !important;
-        }
-
-        .ql-editor p:has(> br:only-child)::-moz-selection {
-          background-color: rgba(0, 123, 255, 0.3) !important;
         }
       `}</style>
       <ReactQuill
