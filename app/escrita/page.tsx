@@ -117,6 +117,8 @@ function EscritaPageContent() {
   // Estados de modais
   const [showNewEpisodeModal, setShowNewEpisodeModal] = useState(false);
   const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false);
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [showStatsModal, setShowStatsModal] = useState(false);
   
   // Estado da sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -1322,9 +1324,11 @@ function EscritaPageContent() {
           <main className="overflow-y-auto transition-all duration-300 w-full">
           <div className="max-w-4xl mx-auto px-8 py-8 min-h-full">
             <div className="space-y-6 pb-3">
-              {/* Agentes e Modo Foco */}
-              <div className="flex gap-4 justify-between items-center">
+              {/* Agentes e Modo Foco - STICKY HEADER */}
+              <div className="sticky top-0 z-10 bg-light-bg-primary dark:bg-dark-bg-primary py-4 -mx-8 px-8 mb-6 border-b border-border-light-default dark:border-border-dark-default">
+                <div className="flex gap-4 justify-between items-center">
                 {/* Botão Modo Foco */}
+                <div className="flex items-center gap-3">
                 <button
                   onClick={enterFocusMode}
                   disabled={!isMetadataSaved}
@@ -1342,6 +1346,60 @@ function EscritaPageContent() {
                   </svg>
                   <span className="text-sm font-medium">Modo Foco</span>
                 </button>
+
+                {/* Menu de Opções (3 pontos) */}
+                {isMetadataSaved && (
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowOptionsMenu(!showOptionsMenu)}
+                      className="p-2 rounded-lg hover:bg-light-bg-secondary dark:hover:bg-dark-bg-secondary transition-colors"
+                      title="Opções"
+                    >
+                      <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                      </svg>
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {showOptionsMenu && (
+                      <div className="absolute left-0 mt-2 w-56 rounded-lg shadow-lg bg-white dark:bg-dark-bg-secondary border border-border-light-default dark:border-border-dark-default z-50">
+                        <div className="py-2">
+                          {/* Estatísticas */}
+                          <button
+                            onClick={() => {
+                              setShowStatsModal(true);
+                              setShowOptionsMenu(false);
+                            }}
+                            className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-colors"
+                          >
+                            <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                            <span className="text-sm text-gray-700 dark:text-gray-200">Estatísticas</span>
+                          </button>
+
+                          {/* Separador */}
+                          <div className="my-2 border-t border-border-light-default dark:border-border-dark-default"></div>
+
+                          {/* Excluir */}
+                          <button
+                            onClick={() => {
+                              if (currentTextoId) handleDelete(currentTextoId);
+                              setShowOptionsMenu(false);
+                            }}
+                            className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                          >
+                            <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            <span className="text-sm text-red-600 dark:text-red-400">Excluir texto</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                </div>
 
                 {/* Avatares dos Agentes */}
                 <div className="flex gap-4 items-center">
@@ -1448,6 +1506,7 @@ function EscritaPageContent() {
                     </div>
                   </>
                 )}
+                </div>
                 </div>
               </div>
 
@@ -1676,39 +1735,44 @@ function EscritaPageContent() {
                 </div>
               )}
 
-              {/* Ações (só aparecem após salvar metadados) */}
+              {/* FAB (Floating Action Buttons) - Sempre visíveis */}
               {isMetadataSaved && (
-                <div className="flex justify-between items-center pt-6 mt-6 border-t border-border-light-default dark:border-border-dark-default">
-                  {/* Botão Excluir à esquerda */}
-                  <Button
-                    onClick={() => currentTextoId && handleDelete(currentTextoId)}
-                    variant="secondary"
-                    size="sm"
-                    className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                  >
-                    Excluir
-                  </Button>
-
-                  {/* Botões Salvar e Publicar à direita */}
-                  <div className="flex gap-3">
-                  <Button
+                <div className="fixed bottom-8 right-8 z-20 flex flex-col gap-3">
+                  {/* Botão Salvar */}
+                  <button
                     onClick={() => handleSave(false)}
                     disabled={isSaving || !titulo.trim()}
-                    variant="secondary"
-                    size="sm"
+                    className={clsx(
+                      "flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all duration-300",
+                      isSaving || !titulo.trim()
+                        ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                        : "bg-white dark:bg-dark-bg-secondary text-gray-700 dark:text-gray-200 hover:shadow-xl hover:scale-105 cursor-pointer"
+                    )}
+                    title="Salvar (Ctrl+S)"
                   >
-                    {isSaving ? "Salvando..." : "Salvar"}
-                  </Button>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                    </svg>
+                    <span className="text-sm font-medium">{isSaving ? "Salvando..." : "Salvar"}</span>
+                  </button>
 
-                  <Button
+                  {/* Botão Publicar */}
+                  <button
                     onClick={handlePublish}
                     disabled={isSaving || !titulo.trim()}
-                    variant="primary"
-                    size="sm"
+                    className={clsx(
+                      "flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all duration-300",
+                      isSaving || !titulo.trim()
+                        ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                        : "bg-primary-500 hover:bg-primary-600 text-white hover:shadow-xl hover:scale-105 cursor-pointer"
+                    )}
+                    title="Publicar"
                   >
-                    Publicar
-                  </Button>
-                  </div>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                    </svg>
+                    <span className="text-sm font-medium">Publicar</span>
+                  </button>
                 </div>
               )}
             </div>
@@ -2522,6 +2586,99 @@ function EscritaPageContent() {
                 Ficha não encontrada
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Estatísticas */}
+      {showStatsModal && (
+        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-dark-bg-secondary rounded-lg shadow-xl max-w-md w-full">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-border-light-default dark:border-border-dark-default">
+              <h2 className="text-xl font-semibold text-text-light-primary dark:text-dark-primary">Estatísticas do Texto</h2>
+              <button
+                onClick={() => setShowStatsModal(false)}
+                className="p-1 rounded-lg hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-colors"
+              >
+                <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Conteúdo */}
+            <div className="p-6 space-y-4">
+              {/* Palavras */}
+              <div className="flex items-center justify-between p-4 rounded-lg bg-light-bg-tertiary dark:bg-dark-bg-tertiary">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary-100 dark:bg-primary-900/30">
+                    <svg className="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <span className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary">Palavras</span>
+                </div>
+                <span className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
+                  {conteudo.trim() ? conteudo.trim().split(/\s+/).length : 0}
+                </span>
+              </div>
+
+              {/* Caracteres */}
+              <div className="flex items-center justify-between p-4 rounded-lg bg-light-bg-tertiary dark:bg-dark-bg-tertiary">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                    <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                    </svg>
+                  </div>
+                  <span className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary">Caracteres</span>
+                </div>
+                <span className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
+                  {conteudo.length}
+                </span>
+              </div>
+
+              {/* Parágrafos */}
+              <div className="flex items-center justify-between p-4 rounded-lg bg-light-bg-tertiary dark:bg-dark-bg-tertiary">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
+                    <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                  </div>
+                  <span className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary">Parágrafos</span>
+                </div>
+                <span className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
+                  {conteudo.trim() ? conteudo.trim().split(/\n\n+/).filter(p => p.trim()).length : 0}
+                </span>
+              </div>
+
+              {/* Tempo de Leitura */}
+              <div className="flex items-center justify-between p-4 rounded-lg bg-light-bg-tertiary dark:bg-dark-bg-tertiary">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                    <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <span className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary">Tempo de Leitura</span>
+                </div>
+                <span className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
+                  {Math.ceil((conteudo.trim() ? conteudo.trim().split(/\s+/).length : 0) / 200)} min
+                </span>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 border-t border-border-light-default dark:border-border-dark-default">
+              <button
+                onClick={() => setShowStatsModal(false)}
+                className="w-full px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors font-medium"
+              >
+                Fechar
+              </button>
+            </div>
           </div>
         </div>
       )}
