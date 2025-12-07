@@ -18,6 +18,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import getCaretCoordinates from "textarea-caret";
 import TiptapEditor from "@/components/TiptapEditor";
+import { exportText, type ExportFormat } from "@/lib/exportUtils";
 
 interface Texto {
   id: string;
@@ -119,6 +120,7 @@ function EscritaPageContent() {
   const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [showStatsModal, setShowStatsModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
   
   // Estado da sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -765,6 +767,31 @@ function EscritaPageContent() {
     }
   }
 
+  async function handleExport(format: ExportFormat) {
+    if (!titulo.trim()) {
+      toast.error("Adicione um título ao texto antes de exportar");
+      return;
+    }
+
+    if (!conteudo.trim()) {
+      toast.error("O texto está vazio");
+      return;
+    }
+
+    try {
+      await exportText({
+        title: titulo,
+        content: conteudo,
+        format,
+      });
+      toast.success(`Texto exportado como ${format.toUpperCase()}`);
+      setShowExportModal(false);
+    } catch (error) {
+      console.error("Erro ao exportar texto:", error);
+      toast.error("Erro ao exportar texto");
+    }
+  }
+
   async function handleEditTitle(id: string, currentTitle: string) {
     const newTitle = prompt("Digite o novo título:", currentTitle);
     
@@ -1364,6 +1391,20 @@ function EscritaPageContent() {
                     {showOptionsMenu && (
                       <div className="absolute left-0 mt-2 w-56 rounded-lg shadow-lg bg-white dark:bg-dark-bg-secondary border border-border-light-default dark:border-border-dark-default z-50">
                         <div className="py-2">
+                          {/* Exportar */}
+                          <button
+                            onClick={() => {
+                              setShowExportModal(true);
+                              setShowOptionsMenu(false);
+                            }}
+                            className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-colors"
+                          >
+                            <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            <span className="text-sm text-gray-700 dark:text-gray-200">Exportar</span>
+                          </button>
+
                           {/* Estatísticas */}
                           <button
                             onClick={() => {
@@ -2586,6 +2627,93 @@ function EscritaPageContent() {
                 Ficha não encontrada
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Exportação */}
+      {showExportModal && (
+        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-dark-bg-secondary rounded-lg shadow-xl max-w-md w-full">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-border-light-default dark:border-border-dark-default">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Exportar Texto</h3>
+              <button
+                onClick={() => setShowExportModal(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                Escolha o formato para exportar o texto "{titulo}":
+              </p>
+
+              <div className="space-y-3">
+                {/* PDF */}
+                <button
+                  onClick={() => handleExport('pdf')}
+                  className="w-full p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-primary-default dark:hover:border-primary-default hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-all flex items-center gap-4"
+                >
+                  <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="font-semibold text-gray-900 dark:text-white">PDF</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Documento portátil (recomendado)</div>
+                  </div>
+                </button>
+
+                {/* DOCX */}
+                <button
+                  onClick={() => handleExport('docx')}
+                  className="w-full p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-primary-default dark:hover:border-primary-default hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-all flex items-center gap-4"
+                >
+                  <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="font-semibold text-gray-900 dark:text-white">DOCX</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Microsoft Word (editável)</div>
+                  </div>
+                </button>
+
+                {/* TXT */}
+                <button
+                  onClick={() => handleExport('txt')}
+                  className="w-full p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-primary-default dark:hover:border-primary-default hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-all flex items-center gap-4"
+                >
+                  <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="font-semibold text-gray-900 dark:text-white">TXT</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Texto puro (sem formatação)</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 border-t border-border-light-default dark:border-border-dark-default">
+              <button
+                onClick={() => setShowExportModal(false)}
+                className="w-full px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium"
+              >
+                Cancelar
+              </button>
+            </div>
           </div>
         </div>
       )}
