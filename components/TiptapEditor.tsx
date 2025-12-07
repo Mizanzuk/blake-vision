@@ -191,16 +191,17 @@ export default function TiptapEditor({
     };
   }, [editor, onTextSelect]);
 
-  if (!editor) {
-    return null;
-  }
-
   // Expose editor instance to parent
+  // CORREÇÃO: Mover ANTES do return null para garantir mesma ordem de hooks
   useEffect(() => {
-    if (editorRef) {
+    if (editorRef && editor) {
       editorRef.current = editor;
     }
   }, [editor, editorRef]);
+
+  if (!editor) {
+    return null;
+  }
 
   return (
     <div className={`tiptap-editor ${className || ''}`}>
