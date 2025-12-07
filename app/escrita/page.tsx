@@ -530,29 +530,34 @@ function EscritaPageContent() {
       
       if (response.ok && data.texto) {
         const texto = data.texto;
-        setCurrentTextoId(texto.id);
-        setTitulo(texto.titulo || "");
-        console.log('[DEBUG] Setando conteúdo, tamanho:', (texto.conteudo || '').length);
-        setConteudo(texto.conteudo || "");
-        console.log('[DEBUG] Conteúdo setado com sucesso');
-        setUniverseId(texto.universe_id || "");
-        setWorldId(texto.world_id || "");
-        setEpisodio(texto.episodio || "");
-        setCategoria(texto.categoria || "");
-        setStatus(texto.status || "rascunho");
         
-        // Configurar estados de controle
-        setIsMetadataLocked(true);
-        setIsMetadataSaved(true);
-        setIsHeaderExpanded(false);
-        
-        // Salvar snapshot dos metadados
-        setSavedMetadataSnapshot({
-          titulo: texto.titulo || "",
-          universeId: texto.universe_id || "",
-          worldId: texto.world_id || "",
-          episodio: texto.episodio || "",
-          categoria: texto.categoria || ""
+        // CORREÇÃO: Usar React.startTransition para agrupar todas as atualizações de estado
+        // Isso garante que apenas UMA re-renderização aconteça, evitando o erro #310
+        React.startTransition(() => {
+          setCurrentTextoId(texto.id);
+          setTitulo(texto.titulo || "");
+          console.log('[DEBUG] Setando conteúdo, tamanho:', (texto.conteudo || '').length);
+          setConteudo(texto.conteudo || "");
+          console.log('[DEBUG] Conteúdo setado com sucesso');
+          setUniverseId(texto.universe_id || "");
+          setWorldId(texto.world_id || "");
+          setEpisodio(texto.episodio || "");
+          setCategoria(texto.categoria || "");
+          setStatus(texto.status || "rascunho");
+          
+          // Configurar estados de controle
+          setIsMetadataLocked(true);
+          setIsMetadataSaved(true);
+          setIsHeaderExpanded(false);
+          
+          // Salvar snapshot dos metadados
+          setSavedMetadataSnapshot({
+            titulo: texto.titulo || "",
+            universeId: texto.universe_id || "",
+            worldId: texto.world_id || "",
+            episodio: texto.episodio || "",
+            categoria: texto.categoria || ""
+          });
         });
       }
     } catch (error) {
@@ -564,30 +569,33 @@ function EscritaPageContent() {
   }
 
   function handleSelectTexto(texto: Texto) {
-    setCurrentTextoId(texto.id);
-    setTitulo(texto.titulo || "");
-    setConteudo(texto.conteudo || "");
-    setUniverseId(texto.universe_id || "");
-    setWorldId(texto.world_id || "");
-    setEpisodio(texto.episodio || "");
-    setCategoria(texto.categoria || "");
-    setStatus(texto.status || "rascunho");
-    
-    // Bloquear metadados ao carregar texto existente salvo
-    setIsMetadataLocked(true);
-    setIsMetadataSaved(true);
-    setIsHeaderExpanded(false); // Começar colapsado para textos existentes
-    
-    // Salvar snapshot dos metadados
-    setSavedMetadataSnapshot({
-      titulo: texto.titulo || "",
-      universeId: texto.universe_id || "",
-      worldId: texto.world_id || "",
-      episodio: texto.episodio || "",
-      categoria: texto.categoria || ""
+    // CORREÇÃO: Usar React.startTransition para agrupar atualizações
+    React.startTransition(() => {
+      setCurrentTextoId(texto.id);
+      setTitulo(texto.titulo || "");
+      setConteudo(texto.conteudo || "");
+      setUniverseId(texto.universe_id || "");
+      setWorldId(texto.world_id || "");
+      setEpisodio(texto.episodio || "");
+      setCategoria(texto.categoria || "");
+      setStatus(texto.status || "rascunho");
+      
+      // Bloquear metadados ao carregar texto existente salvo
+      setIsMetadataLocked(true);
+      setIsMetadataSaved(true);
+      setIsHeaderExpanded(false); // Começar colapsado para textos existentes
+      
+      // Salvar snapshot dos metadados
+      setSavedMetadataSnapshot({
+        titulo: texto.titulo || "",
+        universeId: texto.universe_id || "",
+        worldId: texto.world_id || "",
+        episodio: texto.episodio || "",
+        categoria: texto.categoria || ""
+      });
     });
     
-    // Atualizar URL
+    // Atualizar URL (fora do startTransition)
     router.push(`/escrita?id=${texto.id}`);
   }
 
