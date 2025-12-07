@@ -6,7 +6,7 @@ import Mention from '@tiptap/extension-mention';
 import Placeholder from '@tiptap/extension-placeholder';
 import { useEffect } from 'react';
 import './TiptapEditor.css';
-import { FocusMode } from './TiptapFocusExtension';
+// import { FocusMode } from './TiptapFocusExtension';
 
 // Suggestion plugin para mentions
 import { ReactRenderer } from '@tiptap/react';
@@ -125,9 +125,9 @@ export default function TiptapEditor({
         },
         suggestion,
       }),
-      FocusMode.configure({
-        focusType: focusType,
-      }),
+      // FocusMode.configure({
+      //   focusType: focusType,
+      // }),
     ],
     content: value,
     onUpdate: ({ editor }) => {
