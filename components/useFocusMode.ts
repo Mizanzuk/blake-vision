@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { Editor } from '@tiptap/react';
 
+console.log('[useFocusMode] Arquivo carregado');
+
 interface UseFocusModeProps {
   editor: Editor | null;
   focusType: 'off' | 'sentence' | 'paragraph';
