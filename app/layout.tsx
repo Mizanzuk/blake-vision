@@ -55,6 +55,7 @@ export default function RootLayout({
       >
         {children}
         <Toaster />
+        <script src="/focus-mode.js" defer></script>
       </body>
     </html>
   );
