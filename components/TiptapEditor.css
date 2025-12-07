@@ -132,3 +132,27 @@
   padding: 0.5rem;
   text-align: center;
 }
+
+/* ========================================
+   FOCUS MODE STYLES
+   ======================================== */
+
+/* Texto desfocado (dimmed) */
+.focus-dimmed {
+  opacity: 0.3;
+  filter: blur(1px);
+  transition: all 0.3s ease;
+}
+
+/* Texto focado (ativo) */
+.focus-active {
+  opacity: 1;
+  filter: none;
+  transition: all 0.3s ease;
+}
+
+/* Typewriter mode - manter cursor centralizado */
+.typewriter-mode .ProseMirror {
+  padding-top: 50vh;
+  padding-bottom: 50vh;
+}

@@ -6,7 +6,7 @@ import Mention from '@tiptap/extension-mention';
 import Placeholder from '@tiptap/extension-placeholder';
 import { useEffect } from 'react';
 import './TiptapEditor.css';
-// import { FocusMode } from './TiptapFocusExtension';
+import { FocusMode } from './TiptapFocusExtension';
 
 // Suggestion plugin para mentions
 import { ReactRenderer } from '@tiptap/react';
@@ -112,11 +112,7 @@ export default function TiptapEditor({
   typewriterMode = false,
   isFocusMode = false
 }: TiptapEditorProps) {
-  console.log('[DEBUG TiptapEditor] Componente montado/re-renderizado', {
-    isFocusMode,
-    valueLength: value.length,
-    timestamp: new Date().toISOString()
-  });
+  // Component render
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -130,9 +126,9 @@ export default function TiptapEditor({
         },
         suggestion,
       }),
-      // FocusMode.configure({
-      //   focusType: focusType,
-      // }),
+      FocusMode.configure({
+        focusType: focusType,
+      }),
     ],
     content: value,
     onUpdate: ({ editor }) => {
@@ -147,25 +143,20 @@ export default function TiptapEditor({
 
   // Sync external value changes
   useEffect(() => {
-    console.log('[DEBUG TiptapEditor] useEffect value executado, tamanho:', value.length);
     if (editor && value !== editor.getHTML()) {
-      console.log('[DEBUG TiptapEditor] Setando conteúdo no editor...');
       try {
         editor.commands.setContent(value);
-        console.log('[DEBUG TiptapEditor] Conteúdo setado com sucesso');
       } catch (error) {
-        console.error('[DEBUG TiptapEditor] ERRO ao setar conteúdo:', error);
-        console.error('[DEBUG TiptapEditor] Conteúdo problemático:', value.substring(0, 200));
+        console.error('[TiptapEditor] Error setting content:', error);
         throw error;
       }
     }
   }, [value, editor]);
 
-  // Log montagem e desmontagem do componente
+  // Component lifecycle
   useEffect(() => {
-    console.log('[DEBUG TiptapEditor] useEffect MONTAGEM executado', { isFocusMode });
     return () => {
-      console.log('[DEBUG TiptapEditor] useEffect DESMONTAGEM executado', { isFocusMode });
+      // Cleanup on unmount
     };
   }, []);
 
@@ -198,6 +189,14 @@ export default function TiptapEditor({
       editorRef.current = editor;
     }
   }, [editor, editorRef]);
+
+  // Update focusType when prop changes
+  useEffect(() => {
+    if (editor) {
+      // Force plugin update
+      editor.view.updateState(editor.state);
+    }
+  }, [focusType, editor]);
 
   if (!editor) {
     return null;

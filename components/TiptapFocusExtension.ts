@@ -20,11 +20,6 @@ export const FocusMode = Extension.create<FocusOptions>({
   addProseMirrorPlugins() {
     const extension = this;
     
-    // Verificar se está no ambiente cliente
-    if (typeof window === 'undefined') {
-      return [];
-    }
-    
     return [
       new Plugin({
         key: focusModePluginKey,
@@ -33,9 +28,6 @@ export const FocusMode = Extension.create<FocusOptions>({
           init: () => DecorationSet.empty,
           
           apply(tr, oldState, oldEditorState, newEditorState) {
-            // Log para debug
-            console.log('[FocusMode] apply() called, focusType:', extension.options.focusType);
-            
             const focusType = extension.options.focusType;
             
             if (focusType === 'off') {
@@ -66,9 +58,7 @@ export const FocusMode = Extension.create<FocusOptions>({
                 focusStart = 0;
                 focusEnd = newEditorState.doc.content.size;
               }
-              
-              console.log('[FocusMode] Paragraph range:', focusStart, '-', focusEnd);
-              
+
             } else if (focusType === 'sentence') {
               // Encontrar início e fim da sentença
               const text = newEditorState.doc.textBetween(0, newEditorState.doc.content.size, '\n', '\n');
@@ -105,8 +95,7 @@ export const FocusMode = Extension.create<FocusOptions>({
               
               focusStart = start;
               focusEnd = end;
-              
-              console.log('[FocusMode] Sentence range:', focusStart, '-', focusEnd);
+
             }
 
             const decorations: Decoration[] = [];
@@ -138,8 +127,6 @@ export const FocusMode = Extension.create<FocusOptions>({
               );
             }
 
-            console.log('[FocusMode] Created', decorations.length, 'decorations');
-            
             return DecorationSet.create(newEditorState.doc, decorations);
           },
         },

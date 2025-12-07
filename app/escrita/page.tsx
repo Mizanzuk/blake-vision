@@ -2321,11 +2321,18 @@ function EscritaPageContent() {
                   value={conteudo}
                   onChange={(value) => setConteudo(value)}
                   placeholder="Escreva seu texto aqui..."
-                  className="w-full min-h-[calc(100vh-12rem)] bg-transparent border-none"
+                  className={clsx(
+                    "w-full min-h-[calc(100vh-12rem)] bg-transparent border-none",
+                    typewriterMode && "typewriter-mode"
+                  )}
                   onTextSelect={(text, position) => {
                     setSelectedText(text);
                     setSelectionMenuPosition(position);
                   }}
+                  focusType={focusType}
+                  typewriterMode={typewriterMode}
+                  isFocusMode={true}
+                  showToolbar={false}
                 />
               </div>
             </div>
