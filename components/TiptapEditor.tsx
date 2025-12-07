@@ -6,19 +6,22 @@ import Mention from '@tiptap/extension-mention';
 import Placeholder from '@tiptap/extension-placeholder';
 import { useEffect } from 'react';
 import './TiptapEditor.css';
+import { FocusMode } from './TiptapFocusExtension';
 
 // Suggestion plugin para mentions
 import { ReactRenderer } from '@tiptap/react';
 import tippy, { Instance as TippyInstance } from 'tippy.js';
 import { SuggestionOptions, SuggestionProps } from '@tiptap/suggestion';
 import MentionList from './MentionList';
-
 interface TiptapEditorProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
   onTextSelect?: (text: string, position: { x: number; y: number }) => void;
+  focusType?: 'off' | 'sentence' | 'paragraph';
+  typewriterMode?: boolean;
+  isFocusMode?: boolean;
   showToolbar?: boolean;
   editorRef?: any;
 }
@@ -97,7 +100,18 @@ const suggestion: Omit<SuggestionOptions, 'editor'> = {
   },
 };
 
-export default function TiptapEditor({ value, onChange, placeholder, className, onTextSelect, showToolbar = true, editorRef }: TiptapEditorProps) {
+export default function TiptapEditor({ 
+  value, 
+  onChange, 
+  placeholder, 
+  className, 
+  onTextSelect, 
+  showToolbar = true, 
+  editorRef,
+  focusType = 'off',
+  typewriterMode = false,
+  isFocusMode = false
+}: TiptapEditorProps) {
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -111,6 +125,9 @@ export default function TiptapEditor({ value, onChange, placeholder, className, 
         },
         suggestion,
       }),
+      FocusMode.configure({
+        focusType: focusType,
+      }),
     ],
     content: value,
     onUpdate: ({ editor }) => {
@@ -121,7 +138,7 @@ export default function TiptapEditor({ value, onChange, placeholder, className, 
         class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none',
       },
     },
-  });
+  }, [focusType]); // Recriar editor quando focusType muda
 
   // Sync external value changes
   useEffect(() => {
