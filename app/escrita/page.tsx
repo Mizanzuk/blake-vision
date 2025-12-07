@@ -1834,49 +1834,53 @@ function EscritaPageContent() {
                 </div>
               )}
 
-              {/* FAB (Floating Action Buttons) - Sempre visíveis */}
-              {isMetadataSaved && (
-                <div className="fixed bottom-8 right-8 z-20 flex flex-col gap-3">
-                  {/* Botão Salvar */}
-                  <button
-                    onClick={() => handleSave(false)}
-                    disabled={isSaving || !titulo.trim()}
-                    className={clsx(
-                      "flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all duration-300",
-                      isSaving || !titulo.trim()
-                        ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                        : "bg-white dark:bg-dark-bg-secondary text-gray-700 dark:text-gray-200 hover:shadow-xl hover:scale-105 cursor-pointer"
-                    )}
-                    title="Salvar (Ctrl+S)"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                    </svg>
-                    <span className="text-sm font-medium">{isSaving ? "Salvando..." : "Salvar"}</span>
-                  </button>
 
-                  {/* Botão Publicar */}
-                  <button
-                    onClick={handlePublish}
-                    disabled={isSaving || !titulo.trim()}
-                    className={clsx(
-                      "flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all duration-300",
-                      isSaving || !titulo.trim()
-                        ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                        : "bg-primary-500 hover:bg-primary-600 text-white hover:shadow-xl hover:scale-105 cursor-pointer"
-                    )}
-                    title="Publicar"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                    </svg>
-                    <span className="text-sm font-medium">Publicar</span>
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </main>
+
+        {/* Footer Fixo com Botões Salvar e Publicar */}
+        {isMetadataSaved && (
+          <div className="fixed bottom-0 left-0 right-0 bg-light-bg-primary dark:bg-dark-bg-primary border-t border-border-light-default dark:border-border-dark-default py-4 z-10">
+            <div className="max-w-4xl mx-auto px-8 flex justify-end gap-3">
+              {/* Botão Salvar */}
+              <button
+                onClick={() => handleSave(false)}
+                disabled={isSaving || !titulo.trim()}
+                className={clsx(
+                  "flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300",
+                  isSaving || !titulo.trim()
+                    ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                    : "bg-white dark:bg-dark-bg-secondary text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary border border-border-light-default dark:border-border-dark-default cursor-pointer"
+                )}
+                title="Salvar (Ctrl+S)"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                </svg>
+                <span className="text-sm font-medium">{isSaving ? "Salvando..." : "Salvar"}</span>
+              </button>
+
+              {/* Botão Publicar */}
+              <button
+                onClick={handlePublish}
+                disabled={isSaving || !titulo.trim()}
+                className={clsx(
+                  "flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300",
+                  isSaving || !titulo.trim()
+                    ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                    : "bg-primary-500 hover:bg-primary-600 text-white cursor-pointer"
+                )}
+                title="Publicar"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                </svg>
+                <span className="text-sm font-medium">Publicar</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Chat Lateral com Assistentes */}
         {(showUrthona || showUrizen) && (
