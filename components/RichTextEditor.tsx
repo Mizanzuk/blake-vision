@@ -142,11 +142,23 @@ export default function RichTextEditor({
           margin-bottom: 14px !important;
         }
 
-        /* NOVA FUNCIONALIDADE: Parágrafos vazios visíveis */
+        /* NOVA FUNCIONALIDADE: Parágrafos vazios selecionáveis */
         .ql-editor p:has(> br:only-child) {
           min-height: 1.5em !important;
-          background-color: rgba(180, 180, 180, 0.15) !important;
-          border-radius: 2px !important;
+        }
+
+        .ql-editor p:has(> br:only-child) br {
+          display: block !important;
+          content: '' !important;
+        }
+
+        /* Destaque quando selecionado */
+        .ql-editor p:has(> br:only-child)::selection {
+          background-color: rgba(0, 123, 255, 0.3) !important;
+        }
+
+        .ql-editor p:has(> br:only-child)::-moz-selection {
+          background-color: rgba(0, 123, 255, 0.3) !important;
         }
       `}</style>
       <ReactQuill
