@@ -12,14 +12,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
-    const { searchParams } = new URL(req.url);
+    const { searchParams} = new URL(req.url);
     const query = searchParams.get("q");
+    
+    console.log('[ENTITIES API] Query recebida:', query);
 
     if (!query || query.length === 0) {
       return NextResponse.json([]);
     }
 
     // Buscar fichas (personagens, locais, eventos, objetos)
+    console.log('[ENTITIES API] Buscando fichas com query:', query);
     const { data: fichas, error } = await supabase
       .from("fichas")
       .select("id, titulo, tipo, slug")
@@ -35,6 +38,9 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    console.log('[ENTITIES API] Fichas encontradas:', fichas?.length || 0);
+    console.log('[ENTITIES API] Fichas:', fichas);
+    
     // Mapear para o formato esperado pelo quill-mention
     const entities = (fichas || []).map((ficha) => ({
       id: ficha.id,
