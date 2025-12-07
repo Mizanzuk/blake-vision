@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef, Suspense, flushSync } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
+import { flushSync } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
 import { Header } from "@/app/components/layout/Header";
