@@ -112,6 +112,11 @@ export default function TiptapEditor({
   typewriterMode = false,
   isFocusMode = false
 }: TiptapEditorProps) {
+  console.log('[DEBUG TiptapEditor] Componente montado/re-renderizado', {
+    isFocusMode,
+    valueLength: value.length,
+    timestamp: new Date().toISOString()
+  });
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -155,6 +160,14 @@ export default function TiptapEditor({
       }
     }
   }, [value, editor]);
+
+  // Log montagem e desmontagem do componente
+  useEffect(() => {
+    console.log('[DEBUG TiptapEditor] useEffect MONTAGEM executado', { isFocusMode });
+    return () => {
+      console.log('[DEBUG TiptapEditor] useEffect DESMONTAGEM executado', { isFocusMode });
+    };
+  }, []);
 
   // Handle text selection for agent buttons (only on mouseup)
   useEffect(() => {
