@@ -6,7 +6,6 @@ import dynamic from 'next/dynamic';
 // Importar React-Quill dinamicamente (client-side only)
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 import 'react-quill/dist/quill.snow.css';
-import 'quill-mention/dist/quill.mention.css';
 
 interface RichTextEditorProps {
   value: string;
@@ -24,18 +23,31 @@ export default function RichTextEditor({
   onTextSelect,
 }: RichTextEditorProps) {
   const quillRef = useRef<any>(null);
+  const mentionModuleRef = useRef<any>(null);
 
   // Configurar quill-mention após o componente montar
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || mentionModuleRef.current) return;
 
     const setupMention = async () => {
-      // Importar Quill e quill-mention
-      const Quill = (await import('quill')).default;
-      const QuillMention = (await import('quill-mention')).default;
-      
-      // Registrar o módulo
-      Quill.register('modules/mention', QuillMention);
+      try {
+        // Importar Quill e quill-mention
+        const Quill = (await import('react-quill')).Quill;
+        
+        // Importar CSS do quill-mention
+        await import('quill-mention/dist/quill.mention.css');
+        
+        // Importar e registrar o módulo
+        const { default: QuillMention } = await import('quill-mention');
+        
+        if (!Quill.imports['modules/mention']) {
+          Quill.register('modules/mention', QuillMention);
+          mentionModuleRef.current = QuillMention;
+          console.log('quill-mention registrado com sucesso');
+        }
+      } catch (error) {
+        console.error('Erro ao configurar quill-mention:', error);
+      }
     };
 
     setupMention();
@@ -214,66 +226,67 @@ export default function RichTextEditor({
 
         /* Quill Mention Styles */
         .ql-mention-list-container {
-          background-color: #ffffff;
-          border: 1px solid #e0e0e0;
-          border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-          max-height: 300px;
-          overflow-y: auto;
-          z-index: 9999;
+          background-color: #ffffff !important;
+          border: 1px solid #e0e0e0 !important;
+          border-radius: 8px !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+          max-height: 300px !important;
+          overflow-y: auto !important;
+          z-index: 9999 !important;
+          padding: 4px 0 !important;
         }
 
         .ql-mention-list {
-          list-style: none;
-          margin: 0;
-          padding: 4px 0;
+          list-style: none !important;
+          margin: 0 !important;
+          padding: 0 !important;
         }
 
         .ql-mention-list-item {
-          padding: 8px 12px;
-          cursor: pointer;
-          transition: background-color 0.2s;
+          padding: 8px 12px !important;
+          cursor: pointer !important;
+          transition: background-color 0.2s !important;
         }
 
         .ql-mention-list-item:hover,
         .ql-mention-list-item.selected {
-          background-color: #f5f1e8;
+          background-color: #f5f1e8 !important;
         }
 
         .mention-item {
-          display: flex;
-          align-items: center;
-          gap: 8px;
+          display: flex !important;
+          align-items: center !important;
+          gap: 8px !important;
         }
 
         .mention-icon {
-          font-size: 16px;
+          font-size: 16px !important;
         }
 
         .mention-name {
-          flex: 1;
-          font-weight: 500;
-          color: #333;
+          flex: 1 !important;
+          font-weight: 500 !important;
+          color: #333 !important;
         }
 
         .mention-type {
-          font-size: 12px;
-          color: #999;
-          text-transform: capitalize;
+          font-size: 12px !important;
+          color: #999 !important;
+          text-transform: capitalize !important;
         }
 
         /* Mention no texto */
         .mention {
-          background-color: #e8f4f8;
-          color: #0066cc;
-          padding: 2px 4px;
-          border-radius: 3px;
-          cursor: pointer;
-          transition: background-color 0.2s;
+          background-color: #e8f4f8 !important;
+          color: #0066cc !important;
+          padding: 2px 4px !important;
+          border-radius: 3px !important;
+          cursor: pointer !important;
+          transition: background-color 0.2s !important;
         }
 
         .mention:hover {
-          background-color: #d0e8f0;
+          background-color: #d0e8f0 !important;
         }
       `}</style>
       <ReactQuill
