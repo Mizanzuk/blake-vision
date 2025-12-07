@@ -21,7 +21,6 @@ import TiptapEditor from "@/components/TiptapEditor";
 import { EditorHeader } from "@/app/components/editor/EditorHeader";
 import { EditorFooter } from "@/app/components/editor/EditorFooter";
 import { ExportModal } from "@/app/components/modals/ExportModal";
-import { MobileOptionsMenu } from "@/app/components/mobile/MobileOptionsMenu";
 
 interface Texto {
   id: string;
@@ -1404,19 +1403,6 @@ function EscritaPageContent() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </button>
-            
-            {/* Botão Opções (Três Pontinhos) */}
-            {isMetadataSaved && (
-              <button
-                onClick={() => setShowMobileOptionsMenu(true)}
-                className="p-2 rounded-lg text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
-                title="Opções"
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
-                </svg>
-              </button>
-            )}
           </div>
         )}
 
@@ -1441,34 +1427,195 @@ function EscritaPageContent() {
           !isSidebarOpen && "ml-12 md:ml-12"
         )}>
           {/* Editor Principal */}
-          <main className="overflow-y-auto transition-all duration-300 w-full pb-24">
-            {/* NOVO HEADER FIXO */}
-            {isMetadataSaved && (
-              <EditorHeader
-                isMetadataSaved={isMetadataSaved}
-                enterFocusMode={enterFocusMode}
-                titulo={titulo}
-                isHeaderExpanded={isHeaderExpanded}
-                setIsHeaderExpanded={setIsHeaderExpanded}
-                hasUnsavedMetadataChanges={hasUnsavedMetadataChanges}
-                setShowUnsavedChangesModal={setShowUnsavedChangesModal}
-                showUrizen={showUrizen}
-                showUrthona={showUrthona}
-                setShowUrizen={setShowUrizen}
-                setShowUrthona={setShowUrthona}
-                showOptionsMenu={showOptionsMenu}
-                setShowOptionsMenu={setShowOptionsMenu}
-                setShowStatsModal={setShowStatsModal}
-                setShowExportModal={setShowExportModal}
-                handleDuplicate={handleDuplicate}
-                handleDelete={handleDelete}
-                currentTextoId={currentTextoId}
-                editorRef={editorRef}
-              />
-            )}
-            
-            <div className="max-w-4xl mx-auto px-8 py-8 min-h-full">
+          <main className="overflow-y-auto transition-all duration-300 w-full">
+          <div className="max-w-4xl mx-auto px-8 py-8 min-h-full">
             <div className="space-y-6 pb-3">
+              {/* Agentes e Modo Foco - STICKY HEADER */}
+              <div className="sticky top-0 z-10 bg-light-bg-primary dark:bg-dark-bg-primary py-4 -mx-8 px-8 mb-6 border-b border-border-light-default dark:border-border-dark-default">
+                <div className="flex gap-4 justify-between items-center">
+                {/* Botão Modo Foco */}
+                <div className="flex items-center gap-3">
+                <button
+                  onClick={enterFocusMode}
+                  disabled={!isMetadataSaved}
+                  className={clsx(
+                    "flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300",
+                    isMetadataSaved
+                      ? "bg-primary-500 hover:bg-primary-600 text-white cursor-pointer"
+                      : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-50"
+                  )}
+                  title={isMetadataSaved ? "Ativar Modo Foco (Fullscreen)" : "Crie um texto para usar o Modo Foco"}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  <span className="text-sm font-medium">Modo Foco</span>
+                </button>
+
+                {/* Menu de Opções (3 pontos) */}
+                {isMetadataSaved && (
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowOptionsMenu(!showOptionsMenu)}
+                      className="p-2 rounded-lg hover:bg-light-bg-secondary dark:hover:bg-dark-bg-secondary transition-colors"
+                      title="Opções"
+                    >
+                      <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                      </svg>
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {showOptionsMenu && (
+                      <div className="absolute left-0 mt-2 w-56 rounded-lg shadow-lg bg-white dark:bg-dark-bg-secondary border border-border-light-default dark:border-border-dark-default z-50">
+                        <div className="py-2">
+                          {/* Estatísticas */}
+                          <button
+                            onClick={() => {
+                              setShowStatsModal(true);
+                              setShowOptionsMenu(false);
+                            }}
+                            className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-colors"
+                          >
+                            <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                            <span className="text-sm text-gray-700 dark:text-gray-200">Estatísticas</span>
+                          </button>
+
+                          {/* Separador */}
+                          <div className="my-2 border-t border-border-light-default dark:border-border-dark-default"></div>
+
+                          {/* Excluir */}
+                          <button
+                            onClick={() => {
+                              if (currentTextoId) handleDelete(currentTextoId);
+                              setShowOptionsMenu(false);
+                            }}
+                            className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                          >
+                            <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            <span className="text-sm text-red-600 dark:text-red-400">Excluir texto</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                </div>
+
+                {/* Avatares dos Agentes */}
+                <div className="flex gap-4 items-center">
+                {/* Ordem dinâmica: agente ativo sempre à direita */}
+                {showUrizen ? (
+                  <>
+                    {/* Urthona - Inativo */}
+                    <div 
+                      onClick={() => {
+                        if (!isMetadataSaved) return;
+                        setShowUrthona(!showUrthona);
+                        if (!showUrthona) setShowUrizen(false);
+                      }}
+                      className={clsx(
+                        "relative group transition-all duration-300",
+                        isMetadataSaved ? "cursor-pointer" : "cursor-not-allowed",
+                        "opacity-30"
+                      )}
+                      title={isMetadataSaved ? "Urthona (Criativo)" : "Crie um texto para usar Urthona e Urizen"}
+                    >
+                      <img 
+                        src="/urthona-avatar.png" 
+                        alt="Urthona" 
+                        className={clsx(
+                          "w-12 h-12 rounded-full transition-all",
+                          !isMetadataSaved && "opacity-30",
+                          isMetadataSaved && "hover:ring-2 hover:ring-[#C85A54]/50"
+                        )}
+                      />
+                    </div>
+                    {/* Urizen - Ativo */}
+                    <div 
+                      onClick={() => {
+                        if (!isMetadataSaved) return;
+                        setShowUrizen(!showUrizen);
+                        if (!showUrizen) setShowUrthona(false);
+                      }}
+                      className={clsx(
+                        "relative group transition-all duration-300",
+                        isMetadataSaved ? "cursor-pointer" : "cursor-not-allowed"
+                      )}
+                      title={isMetadataSaved ? "Urizen (Consulta)" : "Crie um texto para usar Urthona e Urizen"}
+                    >
+                      <img 
+                        src="/urizen-avatar.png" 
+                        alt="Urizen" 
+                        className={clsx(
+                          "w-12 h-12 rounded-full transition-all",
+                          !isMetadataSaved && "opacity-30",
+                          isMetadataSaved && "ring-4 ring-[#5B7C8D]"
+                        )}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Urizen - Inativo */}
+                    <div 
+                      onClick={() => {
+                        if (!isMetadataSaved) return;
+                        setShowUrizen(!showUrizen);
+                        if (!showUrizen) setShowUrthona(false);
+                      }}
+                      className={clsx(
+                        "relative group transition-all duration-300",
+                        isMetadataSaved ? "cursor-pointer" : "cursor-not-allowed",
+                        !showUrthona && !showUrizen && "opacity-100",
+                        showUrthona && "opacity-30"
+                      )}
+                      title={isMetadataSaved ? "Urizen (Consulta)" : "Crie um texto para usar Urthona e Urizen"}
+                    >
+                      <img 
+                        src="/urizen-avatar.png" 
+                        alt="Urizen" 
+                        className={clsx(
+                          "w-12 h-12 rounded-full transition-all",
+                          !isMetadataSaved && "opacity-30",
+                          isMetadataSaved && !showUrthona && "hover:ring-2 hover:ring-[#5B7C8D]/50"
+                        )}
+                      />
+                    </div>
+                    {/* Urthona - Ativo ou Padrão */}
+                    <div 
+                      onClick={() => {
+                        if (!isMetadataSaved) return;
+                        setShowUrthona(!showUrthona);
+                        if (!showUrthona) setShowUrizen(false);
+                      }}
+                      className={clsx(
+                        "relative group transition-all duration-300",
+                        isMetadataSaved ? "cursor-pointer" : "cursor-not-allowed"
+                      )}
+                      title={isMetadataSaved ? "Urthona (Criativo)" : "Crie um texto para usar Urthona e Urizen"}
+                    >
+                      <img 
+                        src="/urthona-avatar.png" 
+                        alt="Urthona" 
+                        className={clsx(
+                          "w-12 h-12 rounded-full transition-all",
+                          !isMetadataSaved && "opacity-30",
+                          isMetadataSaved && (showUrthona ? "ring-4 ring-[#C85A54]" : "hover:ring-2 hover:ring-[#C85A54]/50")
+                        )}
+                      />
+                    </div>
+                  </>
+                )}
+                </div>
+                </div>
+              </div>
+
               {/* Cabeçalho Colasável (quando metadados foram salvos) */}
               {isMetadataSaved ? (
                 <div>
@@ -1690,48 +1837,53 @@ function EscritaPageContent() {
                       setSelectedText(text);
                       setSelectionMenuPosition(position);
                     }}
-                    showToolbar={false}
-                    editorRef={editorRef}
                   />
                 </div>
               )}
 
-              {/* FABs removidos - agora usando EditorFooter component */}
+              {/* FAB (Floating Action Buttons) - Sempre visíveis */}
+              {isMetadataSaved && (
+                <div className="fixed bottom-8 right-8 z-20 flex flex-col gap-3">
+                  {/* Botão Salvar */}
+                  <button
+                    onClick={() => handleSave(false)}
+                    disabled={isSaving || !titulo.trim()}
+                    className={clsx(
+                      "flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all duration-300",
+                      isSaving || !titulo.trim()
+                        ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                        : "bg-white dark:bg-dark-bg-secondary text-gray-700 dark:text-gray-200 hover:shadow-xl hover:scale-105 cursor-pointer"
+                    )}
+                    title="Salvar (Ctrl+S)"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                    </svg>
+                    <span className="text-sm font-medium">{isSaving ? "Salvando..." : "Salvar"}</span>
+                  </button>
+
+                  {/* Botão Publicar */}
+                  <button
+                    onClick={handlePublish}
+                    disabled={isSaving || !titulo.trim()}
+                    className={clsx(
+                      "flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all duration-300",
+                      isSaving || !titulo.trim()
+                        ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                        : "bg-primary-500 hover:bg-primary-600 text-white hover:shadow-xl hover:scale-105 cursor-pointer"
+                    )}
+                    title="Publicar"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                    </svg>
+                    <span className="text-sm font-medium">Publicar</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </main>
-        
-        {/* NOVO FOOTER FIXO */}
-        {isMetadataSaved && (
-          <EditorFooter
-            isSaving={isSaving}
-            titulo={titulo}
-            handleSave={handleSave}
-            handlePublish={handlePublish}
-          />
-        )}
-        
-        {/* MODAL DE EXPORTAÇÃO */}
-        <ExportModal
-          showExportModal={showExportModal}
-          setShowExportModal={setShowExportModal}
-          handleExport={handleExport}
-        />
-        
-        {/* MENU MOBILE DE OPÇÕES */}
-        <MobileOptionsMenu
-          showMobileOptionsMenu={showMobileOptionsMenu}
-          setShowMobileOptionsMenu={setShowMobileOptionsMenu}
-          handlePublish={handlePublish}
-          setShowUrizen={setShowUrizen}
-          setShowUrthona={setShowUrthona}
-          setShowExportModal={setShowExportModal}
-          handleDuplicate={handleDuplicate}
-          setShowStatsModal={setShowStatsModal}
-          handleDelete={handleDelete}
-          currentTextoId={currentTextoId}
-          isMetadataSaved={isMetadataSaved}
-        />
 
         {/* Chat Lateral com Assistentes */}
         {(showUrthona || showUrizen) && (

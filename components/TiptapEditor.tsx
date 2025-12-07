@@ -19,6 +19,8 @@ interface TiptapEditorProps {
   placeholder?: string;
   className?: string;
   onTextSelect?: (text: string, position: { x: number; y: number }) => void;
+  showToolbar?: boolean;
+  editorRef?: any;
 }
 
 const suggestion: Omit<SuggestionOptions, 'editor'> = {
@@ -95,7 +97,7 @@ const suggestion: Omit<SuggestionOptions, 'editor'> = {
   },
 };
 
-export default function TiptapEditor({ value, onChange, placeholder, className, onTextSelect }: TiptapEditorProps) {
+export default function TiptapEditor({ value, onChange, placeholder, className, onTextSelect, showToolbar = true, editorRef }: TiptapEditorProps) {
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -154,24 +156,33 @@ export default function TiptapEditor({ value, onChange, placeholder, className, 
     return null;
   }
 
+  // Expose editor instance to parent
+  useEffect(() => {
+    if (editorRef) {
+      editorRef.current = editor;
+    }
+  }, [editor, editorRef]);
+
   return (
     <div className={`tiptap-editor ${className || ''}`}>
-      <div className="toolbar">
-        <button
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          className={editor.isActive('bold') ? 'is-active' : ''}
-          type="button"
-        >
-          B
-        </button>
-        <button
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={editor.isActive('italic') ? 'is-active' : ''}
-          type="button"
-        >
-          I
-        </button>
-      </div>
+      {showToolbar && (
+        <div className="toolbar">
+          <button
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            className={editor.isActive('bold') ? 'is-active' : ''}
+            type="button"
+          >
+            B
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            className={editor.isActive('italic') ? 'is-active' : ''}
+            type="button"
+          >
+            I
+          </button>
+        </div>
+      )}
       <EditorContent editor={editor} />
     </div>
   );
