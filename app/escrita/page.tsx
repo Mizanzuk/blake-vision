@@ -220,8 +220,32 @@ function EscritaPageContent() {
     
     document.addEventListener('selectionchange', handleSelectionChange);
     
+    // MutationObserver para reaplicar classes quando Tiptap re-renderiza
+    const proseMirror = document.querySelector('.ProseMirror');
+    let observer: MutationObserver | null = null;
+    
+    if (proseMirror && focusType !== 'off') {
+      observer = new MutationObserver(() => {
+        console.log('[Focus Mode] DOM mutado, reaplicando focus...');
+        updateFocus();
+      });
+      
+      observer.observe(proseMirror, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['class']
+      });
+      
+      console.log('[Focus Mode] MutationObserver ativado');
+    }
+    
     return () => {
       document.removeEventListener('selectionchange', handleSelectionChange);
+      if (observer) {
+        observer.disconnect();
+        console.log('[Focus Mode] MutationObserver desativado');
+      }
     };
   }, [focusType]);
   
