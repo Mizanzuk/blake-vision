@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Mention from '@tiptap/extension-mention';
 import { Bold, Italic } from 'lucide-react';
+import tippy, { Instance as TippyInstance } from 'tippy.js';
+import 'tippy.js/dist/tippy.css';
 
 interface TiptapEditorProps {
   value: string;
@@ -15,6 +17,105 @@ interface TiptapEditorProps {
   onTextSelect?: (text: string, position: { x: number; y: number }) => void;
 }
 
+// Mention List Component
+class MentionList {
+  items: any[];
+  selectedIndex: number;
+  element: HTMLElement;
+  props: any;
+
+  constructor(props: any) {
+    this.items = props.items;
+    this.selectedIndex = 0;
+    this.props = props;
+
+    this.element = document.createElement('div');
+    this.element.className = 'mention-list';
+
+    this.render();
+  }
+
+  updateProps(props: any) {
+    this.props = props;
+    this.items = props.items;
+    this.selectedIndex = 0;
+    this.render();
+  }
+
+  onKeyDown({ event }: any) {
+    if (event.key === 'ArrowUp') {
+      this.upHandler();
+      return true;
+    }
+
+    if (event.key === 'ArrowDown') {
+      this.downHandler();
+      return true;
+    }
+
+    if (event.key === 'Enter') {
+      this.enterHandler();
+      return true;
+    }
+
+    return false;
+  }
+
+  upHandler() {
+    this.selectedIndex = ((this.selectedIndex + this.items.length) - 1) % this.items.length;
+    this.render();
+  }
+
+  downHandler() {
+    this.selectedIndex = (this.selectedIndex + 1) % this.items.length;
+    this.render();
+  }
+
+  enterHandler() {
+    this.selectItem(this.selectedIndex);
+  }
+
+  selectItem(index: number) {
+    const item = this.items[index];
+
+    if (item) {
+      this.props.command({ id: item.id, label: item.value });
+    }
+  }
+
+  render() {
+    const icons: Record<string, string> = {
+      character: '👤',
+      location: '📍',
+      event: '📅',
+      object: '🔷',
+    };
+
+    this.element.innerHTML = this.items
+      .map((item, index) => {
+        const icon = icons[item.type] || '🔹';
+        return `
+          <div class="mention-list-item ${index === this.selectedIndex ? 'is-selected' : ''}" data-index="${index}">
+            <span class="mention-icon">${icon}</span>
+            <span class="mention-name">${item.value}</span>
+            <span class="mention-type">${item.type}</span>
+          </div>
+        `;
+      })
+      .join('');
+
+    // Add click handlers
+    const items = this.element.querySelectorAll('.mention-list-item');
+    items.forEach((item, index) => {
+      item.addEventListener('click', () => this.selectItem(index));
+    });
+  }
+
+  destroy() {
+    this.element.remove();
+  }
+}
+
 export default function TiptapEditor({
   value,
   onChange,
@@ -22,8 +123,6 @@ export default function TiptapEditor({
   className = '',
   onTextSelect,
 }: TiptapEditorProps) {
-  const editorRef = useRef<HTMLDivElement>(null);
-
   // Função para buscar entidades
   const fetchEntities = async (query: string) => {
     try {
@@ -40,12 +139,12 @@ export default function TiptapEditor({
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        heading: false, // Desabilitar headings
-        blockquote: false, // Desabilitar blockquotes
-        codeBlock: false, // Desabilitar code blocks
-        horizontalRule: false, // Desabilitar horizontal rules
-        bulletList: false, // Desabilitar listas
-        orderedList: false, // Desabilitar listas ordenadas
+        heading: false,
+        blockquote: false,
+        codeBlock: false,
+        horizontalRule: false,
+        bulletList: false,
+        orderedList: false,
       }),
       Placeholder.configure({
         placeholder,
@@ -60,8 +159,8 @@ export default function TiptapEditor({
             return await fetchEntities(query);
           },
           render: () => {
-            let component: any;
-            let popup: any;
+            let component: MentionList;
+            let popup: TippyInstance[];
 
             return {
               onStart: (props: any) => {
@@ -165,7 +264,7 @@ export default function TiptapEditor({
   }
 
   return (
-    <div className={className} ref={editorRef}>
+    <div className={className}>
       <style jsx global>{`
         /* Container principal */
         .tiptap-editor-wrapper {
@@ -333,106 +432,3 @@ export default function TiptapEditor({
     </div>
   );
 }
-
-// Mention List Component
-class MentionList {
-  items: any[];
-  selectedIndex: number;
-  element: HTMLElement;
-  props: any;
-
-  constructor(props: any) {
-    this.items = props.items;
-    this.selectedIndex = 0;
-    this.props = props;
-
-    this.element = document.createElement('div');
-    this.element.className = 'mention-list';
-
-    this.render();
-  }
-
-  updateProps(props: any) {
-    this.props = props;
-    this.items = props.items;
-    this.selectedIndex = 0;
-    this.render();
-  }
-
-  onKeyDown({ event }: any) {
-    if (event.key === 'ArrowUp') {
-      this.upHandler();
-      return true;
-    }
-
-    if (event.key === 'ArrowDown') {
-      this.downHandler();
-      return true;
-    }
-
-    if (event.key === 'Enter') {
-      this.enterHandler();
-      return true;
-    }
-
-    return false;
-  }
-
-  upHandler() {
-    this.selectedIndex = ((this.selectedIndex + this.items.length) - 1) % this.items.length;
-    this.render();
-  }
-
-  downHandler() {
-    this.selectedIndex = (this.selectedIndex + 1) % this.items.length;
-    this.render();
-  }
-
-  enterHandler() {
-    this.selectItem(this.selectedIndex);
-  }
-
-  selectItem(index: number) {
-    const item = this.items[index];
-
-    if (item) {
-      this.props.command({ id: item.id, label: item.value });
-    }
-  }
-
-  render() {
-    const icons: Record<string, string> = {
-      character: '👤',
-      location: '📍',
-      event: '📅',
-      object: '🔷',
-    };
-
-    this.element.innerHTML = this.items
-      .map((item, index) => {
-        const icon = icons[item.type] || '🔹';
-        return `
-          <div class="mention-list-item ${index === this.selectedIndex ? 'is-selected' : ''}" data-index="${index}">
-            <span class="mention-icon">${icon}</span>
-            <span class="mention-name">${item.value}</span>
-            <span class="mention-type">${item.type}</span>
-          </div>
-        `;
-      })
-      .join('');
-
-    // Add click handlers
-    const items = this.element.querySelectorAll('.mention-list-item');
-    items.forEach((item, index) => {
-      item.addEventListener('click', () => this.selectItem(index));
-    });
-  }
-
-  destroy() {
-    this.element.remove();
-  }
-}
-
-// Tippy.js import (needed for mention dropdown)
-import tippy from 'tippy.js';
-import 'tippy.js/dist/tippy.css';
