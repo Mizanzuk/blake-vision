@@ -1667,7 +1667,7 @@ function EscritaPageContent() {
                     value={conteudo}
                     onChange={(value) => setConteudo(value)}
                     placeholder="Escreva seu texto aqui..."
-                    className="w-full h-[calc(100vh-32rem)] rounded-lg"
+                    className="w-full min-h-[400px] rounded-lg"
                     onTextSelect={(text, position) => {
                       setSelectedText(text);
                       setSelectionMenuPosition(position);
@@ -1678,7 +1678,7 @@ function EscritaPageContent() {
 
               {/* Ações (só aparecem após salvar metadados) */}
               {isMetadataSaved && (
-                <div className="flex justify-between items-center pt-10 mt-8">
+                <div className="flex justify-between items-center pt-6 mt-6 border-t border-border-light-default dark:border-border-dark-default">
                   {/* Botão Excluir à esquerda */}
                   <Button
                     onClick={() => currentTextoId && handleDelete(currentTextoId)}
