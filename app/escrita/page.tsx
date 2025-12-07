@@ -2505,6 +2505,8 @@ function EscritaPageContent() {
                   <div className="pt-4 border-t border-border-light-default dark:border-border-dark-default">
                     <a
                       href={`/catalog?ficha=${fichaData.slug || fichaData.titulo?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:underline font-medium"
                     >
                       Abrir ficha no Catálogo

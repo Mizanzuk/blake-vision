@@ -358,6 +358,11 @@ function CatalogContent() {
   function handleCloseViewModal() {
     setShowViewModal(false);
     setViewingFicha(null);
+    
+    // Remover parâmetro 'ficha' da URL para evitar reabrir o modal
+    const url = new URL(window.location.href);
+    url.searchParams.delete('ficha');
+    window.history.replaceState({}, '', url.toString());
   }
 
   function handleNextFicha() {
