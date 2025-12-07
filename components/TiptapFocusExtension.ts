@@ -29,10 +29,14 @@ export const FocusMode = Extension.create<FocusOptions>({
           
           apply(tr, oldState, oldEditorState, newEditorState) {
             const focusType = extension.options.focusType;
+            console.log('[DEBUG FocusExtension] apply() chamado, focusType:', focusType);
             
             if (focusType === 'off') {
+              console.log('[DEBUG FocusExtension] focusType é off, retornando DecorationSet vazio');
               return DecorationSet.empty;
             }
+            
+            console.log('[DEBUG FocusExtension] focusType ativo:', focusType);
 
             const { selection } = newEditorState;
             const { $from } = selection;
@@ -127,6 +131,7 @@ export const FocusMode = Extension.create<FocusOptions>({
               );
             }
 
+            console.log('[DEBUG FocusExtension] Criando', decorations.length, 'decorações');
             return DecorationSet.create(newEditorState.doc, decorations);
           },
         },
