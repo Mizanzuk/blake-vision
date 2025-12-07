@@ -121,6 +121,7 @@ function EscritaPageContent() {
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [showStatsModal, setShowStatsModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showMobileOptionsMenu, setShowMobileOptionsMenu] = useState(false);
   
   // Estado da sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -1369,6 +1370,19 @@ function EscritaPageContent() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </button>
+
+            {/* Botão Opções (3 pontos) */}
+            {isMetadataSaved && (
+              <button
+                onClick={() => setShowMobileOptionsMenu(true)}
+                className="p-2 rounded-lg text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
+                title="Opções"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                </svg>
+              </button>
+            )}
           </div>
         )}
 
@@ -1399,12 +1413,12 @@ function EscritaPageContent() {
               {/* Agentes e Modo Foco - STICKY HEADER */}
               <div className="sticky top-0 z-10 bg-light-bg-primary dark:bg-dark-bg-primary py-4 -mx-8 px-8 mb-6">
                 <div className="flex gap-4 justify-between items-center">
-                {/* Botão Modo Foco (esquerda) */}
+                {/* Botão Modo Foco (esquerda) - Esconder no mobile */}
                 <button
                   onClick={enterFocusMode}
                   disabled={!isMetadataSaved}
                   className={clsx(
-                    "flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300",
+                    "hidden md:flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300",
                     isMetadataSaved
                       ? "bg-primary-500 hover:bg-primary-600 text-white cursor-pointer"
                       : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-50"
@@ -1418,8 +1432,8 @@ function EscritaPageContent() {
                   <span className="text-sm font-medium">Modo Foco</span>
                 </button>
 
-                {/* Avatares + Menu (direita) */}
-                <div className="flex items-center gap-3">
+                {/* Avatares + Menu (direita) - Esconder no mobile */}
+                <div className="hidden md:flex items-center gap-3">
                 {/* Avatares dos Agentes */}
                 {/* Ordem dinâmica: agente ativo sempre à direita */}
                 {showUrizen ? (
@@ -1839,9 +1853,9 @@ function EscritaPageContent() {
           </div>
         </main>
 
-        {/* Footer Fixo com Botões Salvar e Publicar */}
+        {/* Footer Fixo com Botões Salvar e Publicar - Esconder no mobile */}
         {isMetadataSaved && (
-          <div className="fixed bottom-0 left-0 right-0 bg-light-bg-primary dark:bg-dark-bg-primary border-t border-border-light-default dark:border-border-dark-default py-4 z-10">
+          <div className="hidden md:block fixed bottom-0 left-0 right-0 bg-light-bg-primary dark:bg-dark-bg-primary border-t border-border-light-default dark:border-border-dark-default py-4 z-10">
             <div className="max-w-4xl mx-auto px-8 flex justify-end gap-3">
               {/* Botão Salvar */}
               <button
@@ -2867,6 +2881,147 @@ function EscritaPageContent() {
                 className="w-full px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors font-medium"
               >
                 Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Menu Lateral Mobile de Opções */}
+      {showMobileOptionsMenu && (
+        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 z-50" onClick={() => setShowMobileOptionsMenu(false)}>
+          <div 
+            className="fixed left-0 top-0 h-full w-80 bg-white dark:bg-dark-bg-secondary shadow-xl flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-border-light-default dark:border-border-dark-default">
+              <h3 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary">Opções</h3>
+              <button
+                onClick={() => setShowMobileOptionsMenu(false)}
+                className="p-2 rounded-lg hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-colors"
+              >
+                <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Menu Items */}
+            <div className="flex-1 overflow-y-auto py-4">
+              {/* Publicar */}
+              <button
+                onClick={() => {
+                  handlePublish();
+                  setShowMobileOptionsMenu(false);
+                }}
+                disabled={isSaving || !titulo.trim()}
+                className="w-full px-6 py-4 text-left flex items-center gap-4 hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="w-10 h-10 rounded-full bg-primary-500/10 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-200">Publicar</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Publicar este texto</div>
+                </div>
+              </button>
+
+              {/* Avatares */}
+              <button
+                onClick={() => setShowMobileOptionsMenu(false)}
+                className="w-full px-6 py-4 text-left flex items-center gap-4 hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-colors"
+              >
+                <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-200">Avatares</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Urizen e Urthona</div>
+                </div>
+              </button>
+
+              {/* Exportar */}
+              <button
+                onClick={() => {
+                  setShowExportModal(true);
+                  setShowMobileOptionsMenu(false);
+                }}
+                className="w-full px-6 py-4 text-left flex items-center gap-4 hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-colors"
+              >
+                <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-200">Exportar</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">PDF, DOCX ou TXT</div>
+                </div>
+              </button>
+
+              {/* Duplicar */}
+              <button
+                onClick={() => {
+                  handleDuplicate();
+                  setShowMobileOptionsMenu(false);
+                }}
+                className="w-full px-6 py-4 text-left flex items-center gap-4 hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-colors"
+              >
+                <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-200">Duplicar</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Criar uma cópia</div>
+                </div>
+              </button>
+
+              {/* Estatísticas */}
+              <button
+                onClick={() => {
+                  setShowStatsModal(true);
+                  setShowMobileOptionsMenu(false);
+                }}
+                className="w-full px-6 py-4 text-left flex items-center gap-4 hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-colors"
+              >
+                <div className="w-10 h-10 rounded-full bg-yellow-500/10 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-200">Estatísticas</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Palavras, caracteres, etc.</div>
+                </div>
+              </button>
+
+              {/* Separador */}
+              <div className="my-4 border-t border-border-light-default dark:border-border-dark-default"></div>
+
+              {/* Excluir */}
+              <button
+                onClick={() => {
+                  if (currentTextoId) handleDelete(currentTextoId);
+                  setShowMobileOptionsMenu(false);
+                }}
+                className="w-full px-6 py-4 text-left flex items-center gap-4 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              >
+                <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-red-600 dark:text-red-400">Excluir texto</div>
+                  <div className="text-xs text-red-500 dark:text-red-400">Esta ação não pode ser desfeita</div>
+                </div>
               </button>
             </div>
           </div>
