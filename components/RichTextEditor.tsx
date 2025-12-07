@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 
 // Importar React-Quill dinamicamente (client-side only)
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 import 'react-quill/dist/quill.snow.css';
+import 'quill-mention/dist/quill.mention.css';
 
 interface RichTextEditorProps {
   value: string;
@@ -22,14 +23,79 @@ export default function RichTextEditor({
   className = '',
   onTextSelect,
 }: RichTextEditorProps) {
-  // Configuração do toolbar (apenas negrito e itálico)
+  const quillRef = useRef<any>(null);
+
+  // Configurar quill-mention após o componente montar
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const setupMention = async () => {
+      // Importar Quill e quill-mention
+      const Quill = (await import('quill')).default;
+      const QuillMention = (await import('quill-mention')).default;
+      
+      // Registrar o módulo
+      Quill.register('modules/mention', QuillMention);
+    };
+
+    setupMention();
+  }, []);
+
+  // Função para buscar entidades
+  const fetchEntities = async (searchTerm: string) => {
+    try {
+      const response = await fetch(`/api/entities/search?q=${encodeURIComponent(searchTerm)}`);
+      if (!response.ok) return [];
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching entities:', error);
+      return [];
+    }
+  };
+
+  // Configuração do toolbar e modules
   const modules = {
     toolbar: [
       ['bold', 'italic'],
     ],
+    mention: {
+      allowedChars: /^[A-Za-z\sÀ-ÿ0-9_]*$/,
+      mentionDenotationChars: ['@'],
+      source: async function (searchTerm: string, renderList: (matches: any[], searchTerm: string) => void) {
+        if (searchTerm.length === 0) {
+          renderList([], searchTerm);
+          return;
+        }
+
+        const matches = await fetchEntities(searchTerm);
+        renderList(matches, searchTerm);
+      },
+      renderItem: function (item: any, searchTerm: string) {
+        // Ícones por tipo de entidade
+        const icons: Record<string, string> = {
+          character: '👤',
+          location: '📍',
+          event: '📅',
+          object: '🔷',
+        };
+        
+        const icon = icons[item.type] || '🔹';
+        return `<div class="mention-item">
+          <span class="mention-icon">${icon}</span>
+          <span class="mention-name">${item.value}</span>
+          <span class="mention-type">${item.type}</span>
+        </div>`;
+      },
+      dataAttributes: ['id', 'value', 'type', 'link'],
+      onSelect: function (item: any, insertItem: (item: any) => void) {
+        console.log('Entity mentioned:', item);
+        insertItem(item);
+      },
+    },
   };
 
-  const formats = ['bold', 'italic'];
+  const formats = ['bold', 'italic', 'mention'];
 
   // Handler para seleção de texto
   useEffect(() => {
@@ -44,7 +110,7 @@ export default function RichTextEditor({
         if (rect) {
           const position = {
             x: rect.left + rect.width / 2,
-            y: rect.top - 30, // Botões aparecem 30px acima da seleção
+            y: rect.top - 30,
           };
           onTextSelect(selectedText, position);
         }
@@ -54,41 +120,6 @@ export default function RichTextEditor({
     document.addEventListener('mouseup', handleSelection);
     return () => document.removeEventListener('mouseup', handleSelection);
   }, [onTextSelect]);
-
-  // NOVA FUNCIONALIDADE: Adicionar ZWSP em parágrafos vazios
-  useEffect(() => {
-    const addZeroWidthSpaceToEmptyParagraphs = () => {
-      const editor = document.querySelector('.ql-editor');
-      if (!editor) return;
-
-      const paragraphs = editor.querySelectorAll('p');
-      paragraphs.forEach((p) => {
-        const children = p.childNodes;
-        // Se o parágrafo tem apenas um <br>, substituir por ZWSP + <br>
-        if (children.length === 1 && children[0].nodeName === 'BR') {
-          // Adicionar zero-width space antes do <br>
-          const textNode = document.createTextNode('\u200B');
-          p.insertBefore(textNode, children[0]);
-        }
-      });
-    };
-
-    // Executar após cada mudança no editor
-    const observer = new MutationObserver(addZeroWidthSpaceToEmptyParagraphs);
-    const editor = document.querySelector('.ql-editor');
-    
-    if (editor) {
-      observer.observe(editor, {
-        childList: true,
-        subtree: true,
-      });
-      
-      // Executar uma vez no início
-      addZeroWidthSpaceToEmptyParagraphs();
-    }
-
-    return () => observer.disconnect();
-  }, [value]);
 
   return (
     <div className={className}>
@@ -177,12 +208,76 @@ export default function RichTextEditor({
           margin-bottom: 14px !important;
         }
 
-        /* NOVA FUNCIONALIDADE: Parágrafos vazios selecionáveis */
         .ql-editor p {
           min-height: 1.5em !important;
         }
+
+        /* Quill Mention Styles */
+        .ql-mention-list-container {
+          background-color: #ffffff;
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          max-height: 300px;
+          overflow-y: auto;
+          z-index: 9999;
+        }
+
+        .ql-mention-list {
+          list-style: none;
+          margin: 0;
+          padding: 4px 0;
+        }
+
+        .ql-mention-list-item {
+          padding: 8px 12px;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+
+        .ql-mention-list-item:hover,
+        .ql-mention-list-item.selected {
+          background-color: #f5f1e8;
+        }
+
+        .mention-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .mention-icon {
+          font-size: 16px;
+        }
+
+        .mention-name {
+          flex: 1;
+          font-weight: 500;
+          color: #333;
+        }
+
+        .mention-type {
+          font-size: 12px;
+          color: #999;
+          text-transform: capitalize;
+        }
+
+        /* Mention no texto */
+        .mention {
+          background-color: #e8f4f8;
+          color: #0066cc;
+          padding: 2px 4px;
+          border-radius: 3px;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+
+        .mention:hover {
+          background-color: #d0e8f0;
+        }
       `}</style>
       <ReactQuill
+        ref={quillRef}
         theme="snow"
         value={value}
         onChange={onChange}
