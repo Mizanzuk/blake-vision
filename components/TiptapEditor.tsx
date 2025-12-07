@@ -31,8 +31,8 @@ const suggestion: Omit<SuggestionOptions, 'editor'> = {
       if (!response.ok) return [];
       
       const data = await response.json();
-      console.log('[TIPTAP] Entities found:', data.entities?.length || 0);
-      return data.entities || [];
+      console.log('[TIPTAP] Entities found:', data.length || 0);
+      return data || [];
     } catch (error) {
       console.error('Erro ao buscar entidades:', error);
       return [];
