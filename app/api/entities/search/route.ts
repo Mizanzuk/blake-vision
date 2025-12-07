@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
     // Mapear para o formato esperado pelo quill-mention
     const entities = (fichas || []).map((ficha) => ({
       id: ficha.id,
-      value: ficha.titulo,
+      label: ficha.titulo,
       type: ficha.tipo || 'character',
       link: `/fichas/${ficha.slug}`,
     }));
