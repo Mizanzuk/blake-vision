@@ -52,6 +52,7 @@ export default function RichTextEditor({
       const response = await fetch(`/api/entities/search?q=${encodeURIComponent(searchTerm)}`);
       if (!response.ok) return [];
       const data = await response.json();
+      console.log('🔍 Entidades encontradas:', data);
       return data;
     } catch (error) {
       console.error('Error fetching entities:', error);
@@ -65,43 +66,46 @@ export default function RichTextEditor({
 
     const quill = quillRef.current.getEditor();
 
-    const handleTextChange = async () => {
+    const handleTextChange = async (delta: any, oldDelta: any, source: string) => {
+      if (source !== 'user') return; // Ignorar mudanças programáticas
+
       const selection = quill.getSelection();
       if (!selection) return;
 
       const cursorPosition = selection.index;
       const text = quill.getText(0, cursorPosition);
       
+      console.log('📝 Texto até cursor:', text.substring(Math.max(0, text.length - 20)));
+      
       // Procurar @ antes do cursor
       const lastAtIndex = text.lastIndexOf('@');
       
-      if (lastAtIndex !== -1) {
-        const textAfterAt = text.substring(lastAtIndex + 1);
+      if (lastAtIndex !== -1 && lastAtIndex >= cursorPosition - 20) {
+        const textAfterAt = text.substring(lastAtIndex + 1, cursorPosition);
         
-        // Verificar se não há espaço após @
+        console.log('🎯 Texto após @:', textAfterAt);
+        
+        // Verificar se não há espaço ou quebra de linha após @
         if (!textAfterAt.includes(' ') && !textAfterAt.includes('\n')) {
           setMentionSearch(textAfterAt);
           setMentionStartIndex(lastAtIndex);
           
           // Buscar entidades
-          if (textAfterAt.length > 0) {
-            const results = await fetchEntities(textAfterAt);
-            setEntities(results);
-            setSelectedIndex(0);
-          } else {
-            setEntities([]);
-          }
+          const results = await fetchEntities(textAfterAt);
+          setEntities(results);
+          setSelectedIndex(0);
           
           // Calcular posição do dropdown
           const bounds = quill.getBounds(cursorPosition);
           const editorRect = quill.root.getBoundingClientRect();
           
           setMentionPosition({
-            top: bounds.bottom + editorRect.top,
-            left: bounds.left + editorRect.left,
+            top: bounds.bottom + editorRect.top + window.scrollY,
+            left: bounds.left + editorRect.left + window.scrollX,
           });
           
           setShowMentions(true);
+          console.log('✅ Dropdown ativado');
           return;
         }
       }
@@ -110,11 +114,9 @@ export default function RichTextEditor({
     };
 
     quill.on('text-change', handleTextChange);
-    quill.on('selection-change', handleTextChange);
 
     return () => {
       quill.off('text-change', handleTextChange);
-      quill.off('selection-change', handleTextChange);
     };
   }, []);
 
@@ -149,6 +151,8 @@ export default function RichTextEditor({
     const quill = quillRef.current.getEditor();
     const selection = quill.getSelection();
     if (!selection) return;
+
+    console.log('📌 Inserindo mention:', entity);
 
     // Deletar @ e texto de busca
     const deleteLength = mentionSearch.length + 1; // +1 para o @
