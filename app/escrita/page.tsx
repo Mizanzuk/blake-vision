@@ -189,9 +189,16 @@ function EscritaPageContent() {
 
   // Carregar texto específico da URL
   useEffect(() => {
+    console.log('[DEBUG] useEffect loadTexto executado');
     const textoId = searchParams.get("id");
+    console.log('[DEBUG] textoId da URL:', textoId, 'isLoading:', isLoading);
     if (textoId && !isLoading) {
-      loadTexto(textoId);
+      console.log('[DEBUG] Chamando loadTexto...');
+      try {
+        loadTexto(textoId);
+      } catch (error) {
+        console.error('[DEBUG] ERRO no useEffect ao chamar loadTexto:', error);
+      }
     }
   }, [searchParams, isLoading]);
 
@@ -513,15 +520,21 @@ function EscritaPageContent() {
   }
 
   async function loadTexto(id: string) {
+    console.log('[DEBUG] loadTexto iniciado, ID:', id);
     try {
+      console.log('[DEBUG] Fazendo fetch da API...');
       const response = await fetch(`/api/textos?id=${id}`);
+      console.log('[DEBUG] Response recebida:', response.status);
       const data = await response.json();
+      console.log('[DEBUG] Data parseada:', data);
       
       if (response.ok && data.texto) {
         const texto = data.texto;
         setCurrentTextoId(texto.id);
         setTitulo(texto.titulo || "");
+        console.log('[DEBUG] Setando conteúdo, tamanho:', (texto.conteudo || '').length);
         setConteudo(texto.conteudo || "");
+        console.log('[DEBUG] Conteúdo setado com sucesso');
         setUniverseId(texto.universe_id || "");
         setWorldId(texto.world_id || "");
         setEpisodio(texto.episodio || "");
@@ -543,7 +556,9 @@ function EscritaPageContent() {
         });
       }
     } catch (error) {
-      console.error("Erro ao carregar texto:", error);
+      console.error('[DEBUG] ERRO CAPTURADO em loadTexto:', error);
+      console.error('[DEBUG] Stack trace:', error instanceof Error ? error.stack : 'N/A');
+      console.error('[DEBUG] Mensagem:', error instanceof Error ? error.message : String(error));
       toast.error("Erro ao carregar texto");
     }
   }

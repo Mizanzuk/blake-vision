@@ -142,8 +142,17 @@ export default function TiptapEditor({
 
   // Sync external value changes
   useEffect(() => {
+    console.log('[DEBUG TiptapEditor] useEffect value executado, tamanho:', value.length);
     if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value);
+      console.log('[DEBUG TiptapEditor] Setando conteúdo no editor...');
+      try {
+        editor.commands.setContent(value);
+        console.log('[DEBUG TiptapEditor] Conteúdo setado com sucesso');
+      } catch (error) {
+        console.error('[DEBUG TiptapEditor] ERRO ao setar conteúdo:', error);
+        console.error('[DEBUG TiptapEditor] Conteúdo problemático:', value.substring(0, 200));
+        throw error;
+      }
     }
   }, [value, editor]);
 
