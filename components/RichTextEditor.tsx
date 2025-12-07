@@ -141,6 +141,16 @@ export default function RichTextEditor({
         .ql-editor p:last-child {
           margin-bottom: 14px !important;
         }
+        
+        /* Parágrafos vazios visíveis quando selecionados */
+        .ql-editor p:empty {
+          min-height: 1.5em !important; /* Altura mínima para parágrafos vazios */
+        }
+        
+        .ql-editor p:empty::before {
+          content: '\200B'; /* Zero-width space para tornar selecionável */
+          display: inline-block;
+        }
       `}</style>
       <ReactQuill
         theme="snow"

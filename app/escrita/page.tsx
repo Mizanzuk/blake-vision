@@ -2091,7 +2091,7 @@ function EscritaPageContent() {
             className="fixed z-[9991] bg-light-base dark:bg-dark-base rounded-lg shadow-md border border-border-light-default dark:border-border-dark-default overflow-hidden"
             style={{
               left: `${selectionMenuPosition.x}px`,
-              top: `${selectionMenuPosition.y}px`,
+              top: `${selectionMenuPosition.y - 60}px`, // 60px acima da seleção
               transform: 'translateX(-50%)'
             }}
           >
