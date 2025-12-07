@@ -17,7 +17,7 @@ import clsx from "clsx";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import getCaretCoordinates from "textarea-caret";
-import RichTextEditor from "@/components/TiptapEditor";
+import RichTextEditor from "@/components/RichTextEditor";
 
 interface Texto {
   id: string;
