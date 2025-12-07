@@ -59,7 +59,7 @@ export default function RichTextEditor({
 
   return (
     <div className={className}>
-      <style dangerouslySetInnerHTML={{__html: `
+      <style>{`
         /* Container do Quill */
         .ql-container {
           font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
@@ -151,7 +151,7 @@ export default function RichTextEditor({
           content: '\200B'; /* Zero-width space para tornar selecionável */
           display: inline-block;
         }
-      `}} />
+      `}</style>
       <ReactQuill
         theme="snow"
         value={value}
