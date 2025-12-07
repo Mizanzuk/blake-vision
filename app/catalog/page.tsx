@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import {
   DndContext,
   closestCenter,
@@ -72,7 +72,8 @@ function SortableCard({ id, children, isDragging }: SortableCardProps) {
   );
 }
 
-export default function CatalogPage() {
+// Componente interno que usa searchParams
+function CatalogContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useTranslation();
@@ -1176,5 +1177,18 @@ export default function CatalogPage() {
         </div>
       )}
     </div>
+  );
+}
+
+// Componente principal com Suspense
+export default function CatalogPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-light-base dark:bg-dark-base flex items-center justify-center">
+        <Loading size="lg" />
+      </div>
+    }>
+      <CatalogContent />
+    </Suspense>
   );
 }
