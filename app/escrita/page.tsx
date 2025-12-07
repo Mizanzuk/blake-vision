@@ -2387,7 +2387,7 @@ function EscritaPageContent() {
                   {fichaData.tipo && (
                     <div>
                       <h3 className="text-sm font-semibold text-text-light-tertiary dark:text-dark-tertiary mb-1">Tipo</h3>
-                      <Badge variant="secondary">{fichaData.tipo}</Badge>
+                      <Badge variant="default">{fichaData.tipo}</Badge>
                     </div>
                   )}
                   
