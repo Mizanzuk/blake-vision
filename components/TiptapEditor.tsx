@@ -138,7 +138,7 @@ export default function TiptapEditor({
         class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none',
       },
     },
-  }, [focusType]); // Recriar editor quando focusType muda
+  }); // Sem dependências - editor criado apenas uma vez
 
   // Sync external value changes
   useEffect(() => {
