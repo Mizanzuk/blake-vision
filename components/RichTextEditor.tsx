@@ -314,7 +314,7 @@ export default function RichTextEditor({
       `}</style>
 
       <ReactQuill
-        ref={quillRef}
+        ref={quillRef as any}
         theme="snow"
         value={value}
         onChange={onChange}
