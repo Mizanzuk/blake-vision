@@ -2,10 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { registerQuillMention } from '@/app/lib/quill-setup';
 
 // Importar React-Quill dinamicamente (client-side only)
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 import 'react-quill/dist/quill.snow.css';
+import 'quill-mention/dist/quill.mention.css';
 
 interface RichTextEditorProps {
   value: string;
@@ -23,40 +25,16 @@ export default function RichTextEditor({
   onTextSelect,
 }: RichTextEditorProps) {
   const quillRef = useRef<any>(null);
-  const [mentionReady, setMentionReady] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
-  // Configurar quill-mention ANTES de renderizar ReactQuill
+  // Registrar quill-mention antes de renderizar
   useEffect(() => {
-    if (typeof window === 'undefined' || mentionReady) return;
+    if (typeof window === 'undefined') return;
 
-    const setupMention = async () => {
-      try {
-        // Importar Quill do react-quill
-        const ReactQuillModule = await import('react-quill');
-        const Quill = ReactQuillModule.Quill;
-        
-        // Importar CSS do quill-mention
-        await import('quill-mention/dist/quill.mention.css');
-        
-        // Importar quill-mention
-        const QuillMention = (await import('quill-mention')).default;
-        
-        // Registrar o módulo
-        if (!Quill.imports['modules/mention']) {
-          Quill.register('modules/mention', QuillMention);
-          console.log('✅ quill-mention registrado com sucesso');
-        }
-        
-        setMentionReady(true);
-      } catch (error) {
-        console.error('❌ Erro ao configurar quill-mention:', error);
-        // Mesmo com erro, permitir renderizar o editor
-        setMentionReady(true);
-      }
-    };
-
-    setupMention();
-  }, [mentionReady]);
+    registerQuillMention().then(() => {
+      setIsReady(true);
+    });
+  }, []);
 
   // Função para buscar entidades
   const fetchEntities = async (searchTerm: string) => {
@@ -73,7 +51,7 @@ export default function RichTextEditor({
   };
 
   // Configuração do toolbar e modules
-  const modules = mentionReady ? {
+  const modules = {
     toolbar: [
       ['bold', 'italic'],
     ],
@@ -92,7 +70,7 @@ export default function RichTextEditor({
         console.log('📋 Matches:', matches);
         renderList(matches, searchTerm);
       },
-      renderItem: function (item: any, searchTerm: string) {
+      renderItem: function (item: any) {
         // Ícones por tipo de entidade
         const icons: Record<string, string> = {
           character: '👤',
@@ -114,10 +92,6 @@ export default function RichTextEditor({
         insertItem(item);
       },
     },
-  } : {
-    toolbar: [
-      ['bold', 'italic'],
-    ],
   };
 
   const formats = ['bold', 'italic', 'mention'];
@@ -146,8 +120,8 @@ export default function RichTextEditor({
     return () => document.removeEventListener('mouseup', handleSelection);
   }, [onTextSelect]);
 
-  // Não renderizar até mention estar pronto
-  if (!mentionReady) {
+  // Não renderizar até estar pronto
+  if (!isReady) {
     return <div className={className}>Carregando editor...</div>;
   }
 
