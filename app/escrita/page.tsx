@@ -2374,85 +2374,140 @@ function EscritaPageContent() {
       {/* Modal de Ficha */}
       {showFichaModal && (
         <div 
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-[2000]"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[2000]"
           onClick={() => setShowFichaModal(false)}
         >
           <div 
-            className="bg-light-base dark:bg-dark-base rounded-lg shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto m-4"
+            className="bg-light-base dark:bg-dark-base rounded-lg shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden m-4"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header do Modal */}
-            <div className="sticky top-0 bg-light-base dark:bg-dark-base border-b border-border-light-default dark:border-border-dark-default px-6 py-4 flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-text-light-primary dark:text-dark-primary">
-                {loadingFicha ? "Carregando..." : fichaData?.nome || "Ficha"}
-              </h2>
-              <button
-                onClick={() => setShowFichaModal(false)}
-                className="text-text-light-tertiary hover:text-text-light-primary dark:text-dark-tertiary dark:hover:text-dark-primary transition-colors p-2 rounded-lg hover:bg-light-overlay dark:hover:bg-dark-overlay"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            {loadingFicha ? (
+              <div className="flex items-center justify-center py-24">
+                <svg className="w-8 h-8 animate-spin text-primary-500" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-              </button>
-            </div>
-            
-            {/* Conteúdo do Modal */}
-            <div className="px-6 py-4">
-              {loadingFicha ? (
-                <div className="flex items-center justify-center py-12">
-                  <svg className="w-8 h-8 animate-spin text-primary-500" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                </div>
-              ) : fichaData ? (
-                <div className="space-y-4">
-                  {/* Nome */}
-                  {fichaData.nome && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-text-light-tertiary dark:text-dark-tertiary mb-1">Nome</h3>
-                      <p className="text-text-light-primary dark:text-dark-primary">{fichaData.nome}</p>
+              </div>
+            ) : fichaData ? (
+              <div className="max-h-[80vh] overflow-y-auto px-6 py-6">
+                <div className="space-y-6">
+                  {/* Header com badge de tipo e botão fechar */}
+                  <div className="flex items-start justify-between border-b border-border-light-default dark:border-border-dark-default pb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Badge variant="primary" size="sm">
+                          {fichaData.tipo === 'episodio' ? 'Episódio' :
+                           fichaData.tipo === 'personagem' ? 'Personagem' :
+                           fichaData.tipo === 'local' ? 'Local' :
+                           fichaData.tipo === 'evento' ? 'Evento' :
+                           fichaData.tipo === 'conceito' ? 'Conceito' :
+                           fichaData.tipo === 'regra' ? 'Regra' :
+                           fichaData.tipo === 'objeto' ? 'Objeto' :
+                           fichaData.tipo}
+                        </Badge>
+                        {fichaData.codigo && (
+                          <Badge variant="default" size="sm">
+                            {fichaData.codigo}
+                          </Badge>
+                        )}
+                      </div>
+                      <h2 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
+                        {fichaData.titulo || fichaData.nome || 'Sem título'}
+                      </h2>
+                    </div>
+                    <button
+                      onClick={() => setShowFichaModal(false)}
+                      className="p-2 rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover transition-colors"
+                      aria-label="Fechar"
+                    >
+                      <svg className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* Imagem de capa */}
+                  {fichaData.imagem_capa && (
+                    <div className="rounded-lg overflow-hidden">
+                      <img
+                        src={fichaData.imagem_capa}
+                        alt={fichaData.titulo}
+                        className="w-full h-64 object-cover"
+                      />
                     </div>
                   )}
-                  
-                  {/* Tipo */}
-                  {fichaData.tipo && (
+
+                  {/* Resumo */}
+                  {fichaData.resumo && (
                     <div>
-                      <h3 className="text-sm font-semibold text-text-light-tertiary dark:text-dark-tertiary mb-1">Tipo</h3>
-                      <Badge variant="default">{fichaData.tipo}</Badge>
+                      <h3 className="text-sm font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-2">
+                        Resumo
+                      </h3>
+                      <p className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap">
+                        {fichaData.resumo}
+                      </p>
                     </div>
                   )}
-                  
+
                   {/* Descrição */}
                   {fichaData.descricao && (
                     <div>
-                      <h3 className="text-sm font-semibold text-text-light-tertiary dark:text-dark-tertiary mb-1">Descrição</h3>
-                      <p className="text-text-light-secondary dark:text-dark-secondary whitespace-pre-wrap">{fichaData.descricao}</p>
+                      <h3 className="text-sm font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-2">
+                        Descrição
+                      </h3>
+                      <p className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap">
+                        {fichaData.descricao}
+                      </p>
                     </div>
                   )}
-                  
-                  {/* Características */}
-                  {fichaData.caracteristicas && Object.keys(fichaData.caracteristicas).length > 0 && (
+
+                  {/* Conteúdo */}
+                  {fichaData.conteudo && (
                     <div>
-                      <h3 className="text-sm font-semibold text-text-light-tertiary dark:text-dark-tertiary mb-2">Características</h3>
-                      <div className="space-y-2">
-                        {Object.entries(fichaData.caracteristicas).map(([key, value]: [string, any]) => (
-                          <div key={key} className="flex gap-2">
-                            <span className="text-text-light-tertiary dark:text-dark-tertiary font-medium">{key}:</span>
-                            <span className="text-text-light-secondary dark:text-dark-secondary">{value}</span>
-                          </div>
+                      <h3 className="text-sm font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-2">
+                        Conteúdo
+                      </h3>
+                      <p className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap">
+                        {fichaData.conteudo}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Ano Diegese */}
+                  {fichaData.ano_diegese && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-2">
+                        Ano Diegese
+                      </h3>
+                      <p className="text-base text-text-light-primary dark:text-dark-primary">
+                        {fichaData.ano_diegese}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Tags */}
+                  {fichaData.tags && fichaData.tags.trim() !== '' && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-2">
+                        Tags
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {fichaData.tags.split(',').map((tag: string, index: number) => (
+                          <Badge key={index} variant="default" size="sm">
+                            {tag.trim()}
+                          </Badge>
                         ))}
                       </div>
                     </div>
                   )}
-                  
-                  {/* Botão para abrir ficha completa em nova aba */}
+
+                  {/* Botão Ver ficha completa */}
                   <div className="pt-4 border-t border-border-light-default dark:border-border-dark-default">
                     <a
                       href={`/ficha/${fichaData.slug || fichaData.id}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:underline"
+                      className="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:underline font-medium"
                     >
                       Ver ficha completa
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -2461,12 +2516,12 @@ function EscritaPageContent() {
                     </a>
                   </div>
                 </div>
-              ) : (
-                <div className="text-center py-12 text-text-light-tertiary dark:text-dark-tertiary">
-                  Ficha não encontrada
-                </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="text-center py-12 text-text-light-tertiary dark:text-dark-tertiary">
+                Ficha não encontrada
+              </div>
+            )}
           </div>
         </div>
       )}
