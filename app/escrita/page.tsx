@@ -18,6 +18,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import getCaretCoordinates from "textarea-caret";
 import TiptapEditor from "@/components/TiptapEditor";
+import { exportText, type ExportFormat } from "@/lib/exportUtils";
 
 interface Texto {
   id: string;
@@ -119,6 +120,8 @@ function EscritaPageContent() {
   const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [showStatsModal, setShowStatsModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [showMobileOptionsMenu, setShowMobileOptionsMenu] = useState(false);
   
   // Estado da sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -765,6 +768,76 @@ function EscritaPageContent() {
     }
   }
 
+  async function handleExport(format: ExportFormat) {
+    if (!titulo.trim()) {
+      toast.error("Adicione um título ao texto antes de exportar");
+      return;
+    }
+
+    if (!conteudo.trim()) {
+      toast.error("O texto está vazio");
+      return;
+    }
+
+    try {
+      await exportText({
+        title: titulo,
+        content: conteudo,
+        format,
+      });
+      toast.success(`Texto exportado como ${format.toUpperCase()}`);
+      setShowExportModal(false);
+    } catch (error) {
+      console.error("Erro ao exportar texto:", error);
+      toast.error("Erro ao exportar texto");
+    }
+  }
+
+  async function handleDuplicate() {
+    if (!currentTextoId) {
+      toast.error("Nenhum texto selecionado");
+      return;
+    }
+
+    if (!titulo.trim()) {
+      toast.error("Adicione um título ao texto antes de duplicar");
+      return;
+    }
+
+    try {
+      // Criar cópia do texto com "(Cópia)" no título
+      const response = await fetch("/api/textos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          titulo: `${titulo} (Cópia)`,
+          conteudo: conteudo,
+          universe_id: universeId,
+          world_id: worldId,
+          episodio: episodio,
+          categoria: categoria,
+          status: "rascunho",
+        }),
+      });
+
+      if (response.ok) {
+        const novoTexto = await response.json();
+        toast.success("Texto duplicado com sucesso");
+        
+        // Recarregar lista de textos
+        await loadTextos();
+        
+        // Abrir o texto duplicado
+        router.push(`/escrita?id=${novoTexto.id}`);
+      } else {
+        toast.error("Erro ao duplicar texto");
+      }
+    } catch (error) {
+      console.error("Erro ao duplicar texto:", error);
+      toast.error("Erro ao duplicar texto");
+    }
+  }
+
   async function handleEditTitle(id: string, currentTitle: string) {
     const newTitle = prompt("Digite o novo título:", currentTitle);
     
@@ -1297,6 +1370,19 @@ function EscritaPageContent() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </button>
+
+            {/* Botão Opções (3 pontos) */}
+            {isMetadataSaved && (
+              <button
+                onClick={() => setShowMobileOptionsMenu(true)}
+                className="p-2 rounded-lg text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
+                title="Opções"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                </svg>
+              </button>
+            )}
           </div>
         )}
 
@@ -1325,15 +1411,14 @@ function EscritaPageContent() {
           <div className="max-w-4xl mx-auto px-8 py-8 min-h-full">
             <div className="space-y-6 pb-3">
               {/* Agentes e Modo Foco - STICKY HEADER */}
-              <div className="sticky top-0 z-10 bg-light-bg-primary dark:bg-dark-bg-primary py-4 -mx-8 px-8 mb-6 border-b border-border-light-default dark:border-border-dark-default">
+              <div className="sticky top-0 z-10 bg-light-bg-primary dark:bg-dark-bg-primary py-4 -mx-8 px-8 mb-6">
                 <div className="flex gap-4 justify-between items-center">
-                {/* Botão Modo Foco */}
-                <div className="flex items-center gap-3">
+                {/* Botão Modo Foco (esquerda) - Esconder no mobile */}
                 <button
                   onClick={enterFocusMode}
                   disabled={!isMetadataSaved}
                   className={clsx(
-                    "flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300",
+                    "hidden md:flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300",
                     isMetadataSaved
                       ? "bg-primary-500 hover:bg-primary-600 text-white cursor-pointer"
                       : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-50"
@@ -1347,62 +1432,9 @@ function EscritaPageContent() {
                   <span className="text-sm font-medium">Modo Foco</span>
                 </button>
 
-                {/* Menu de Opções (3 pontos) */}
-                {isMetadataSaved && (
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowOptionsMenu(!showOptionsMenu)}
-                      className="p-2 rounded-lg hover:bg-light-bg-secondary dark:hover:bg-dark-bg-secondary transition-colors"
-                      title="Opções"
-                    >
-                      <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
-                      </svg>
-                    </button>
-
-                    {/* Dropdown Menu */}
-                    {showOptionsMenu && (
-                      <div className="absolute left-0 mt-2 w-56 rounded-lg shadow-lg bg-white dark:bg-dark-bg-secondary border border-border-light-default dark:border-border-dark-default z-50">
-                        <div className="py-2">
-                          {/* Estatísticas */}
-                          <button
-                            onClick={() => {
-                              setShowStatsModal(true);
-                              setShowOptionsMenu(false);
-                            }}
-                            className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-colors"
-                          >
-                            <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                            </svg>
-                            <span className="text-sm text-gray-700 dark:text-gray-200">Estatísticas</span>
-                          </button>
-
-                          {/* Separador */}
-                          <div className="my-2 border-t border-border-light-default dark:border-border-dark-default"></div>
-
-                          {/* Excluir */}
-                          <button
-                            onClick={() => {
-                              if (currentTextoId) handleDelete(currentTextoId);
-                              setShowOptionsMenu(false);
-                            }}
-                            className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                          >
-                            <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                            <span className="text-sm text-red-600 dark:text-red-400">Excluir texto</span>
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-                </div>
-
+                {/* Avatares + Menu (direita) - Esconder no mobile */}
+                <div className="hidden md:flex items-center gap-3">
                 {/* Avatares dos Agentes */}
-                <div className="flex gap-4 items-center">
                 {/* Ordem dinâmica: agente ativo sempre à direita */}
                 {showUrizen ? (
                   <>
@@ -1505,6 +1537,87 @@ function EscritaPageContent() {
                       />
                     </div>
                   </>
+                )}
+
+                {/* Menu de Opções (3 pontos) - Fora do max-w-4xl */}
+                {isMetadataSaved && (
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowOptionsMenu(!showOptionsMenu)}
+                      className="p-2 rounded-lg hover:bg-light-bg-secondary dark:hover:bg-dark-bg-secondary transition-colors"
+                      title="Opções"
+                    >
+                      <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                      </svg>
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {showOptionsMenu && (
+                      <div className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white dark:bg-dark-bg-secondary border border-border-light-default dark:border-border-dark-default z-50">
+                        <div className="py-2">
+                          {/* Exportar */}
+                          <button
+                            onClick={() => {
+                              setShowExportModal(true);
+                              setShowOptionsMenu(false);
+                            }}
+                            className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-colors"
+                          >
+                            <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            <span className="text-sm text-gray-700 dark:text-gray-200">Exportar</span>
+                          </button>
+
+                          {/* Duplicar */}
+                          <button
+                            onClick={() => {
+                              handleDuplicate();
+                              setShowOptionsMenu(false);
+                            }}
+                            className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-colors"
+                          >
+                            <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                            <span className="text-sm text-gray-700 dark:text-gray-200">Duplicar</span>
+                          </button>
+
+                          {/* Estatísticas */}
+                          <button
+                            onClick={() => {
+                              setShowStatsModal(true);
+                              setShowOptionsMenu(false);
+                            }}
+                            className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-colors"
+                          >
+                            <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                            <span className="text-sm text-gray-700 dark:text-gray-200">Estatísticas</span>
+                          </button>
+
+                          {/* Separador */}
+                          <div className="my-2 border-t border-border-light-default dark:border-border-dark-default"></div>
+
+                          {/* Excluir */}
+                          <button
+                            onClick={() => {
+                              if (currentTextoId) handleDelete(currentTextoId);
+                              setShowOptionsMenu(false);
+                            }}
+                            className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                          >
+                            <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            <span className="text-sm text-red-600 dark:text-red-400">Excluir texto</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
                 </div>
                 </div>
@@ -1735,49 +1848,53 @@ function EscritaPageContent() {
                 </div>
               )}
 
-              {/* FAB (Floating Action Buttons) - Sempre visíveis */}
-              {isMetadataSaved && (
-                <div className="fixed bottom-8 right-8 z-20 flex flex-col gap-3">
-                  {/* Botão Salvar */}
-                  <button
-                    onClick={() => handleSave(false)}
-                    disabled={isSaving || !titulo.trim()}
-                    className={clsx(
-                      "flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all duration-300",
-                      isSaving || !titulo.trim()
-                        ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                        : "bg-white dark:bg-dark-bg-secondary text-gray-700 dark:text-gray-200 hover:shadow-xl hover:scale-105 cursor-pointer"
-                    )}
-                    title="Salvar (Ctrl+S)"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                    </svg>
-                    <span className="text-sm font-medium">{isSaving ? "Salvando..." : "Salvar"}</span>
-                  </button>
 
-                  {/* Botão Publicar */}
-                  <button
-                    onClick={handlePublish}
-                    disabled={isSaving || !titulo.trim()}
-                    className={clsx(
-                      "flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all duration-300",
-                      isSaving || !titulo.trim()
-                        ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                        : "bg-primary-500 hover:bg-primary-600 text-white hover:shadow-xl hover:scale-105 cursor-pointer"
-                    )}
-                    title="Publicar"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                    </svg>
-                    <span className="text-sm font-medium">Publicar</span>
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </main>
+
+        {/* Footer Fixo com Botões Salvar e Publicar - Esconder no mobile */}
+        {isMetadataSaved && (
+          <div className="hidden md:block fixed bottom-0 left-0 right-0 bg-light-bg-primary dark:bg-dark-bg-primary border-t border-border-light-default dark:border-border-dark-default py-4 z-10">
+            <div className="max-w-4xl mx-auto px-8 flex justify-end gap-3">
+              {/* Botão Salvar */}
+              <button
+                onClick={() => handleSave(false)}
+                disabled={isSaving || !titulo.trim()}
+                className={clsx(
+                  "flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300",
+                  isSaving || !titulo.trim()
+                    ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                    : "bg-white dark:bg-dark-bg-secondary text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary border border-border-light-default dark:border-border-dark-default cursor-pointer"
+                )}
+                title="Salvar (Ctrl+S)"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                </svg>
+                <span className="text-sm font-medium">{isSaving ? "Salvando..." : "Salvar"}</span>
+              </button>
+
+              {/* Botão Publicar */}
+              <button
+                onClick={handlePublish}
+                disabled={isSaving || !titulo.trim()}
+                className={clsx(
+                  "flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300",
+                  isSaving || !titulo.trim()
+                    ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                    : "bg-primary-500 hover:bg-primary-600 text-white cursor-pointer"
+                )}
+                title="Publicar"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                </svg>
+                <span className="text-sm font-medium">Publicar</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Chat Lateral com Assistentes */}
         {(showUrthona || showUrizen) && (
@@ -2590,6 +2707,93 @@ function EscritaPageContent() {
         </div>
       )}
 
+      {/* Modal de Exportação */}
+      {showExportModal && (
+        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-dark-bg-secondary rounded-lg shadow-xl max-w-md w-full">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-border-light-default dark:border-border-dark-default">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Exportar Texto</h3>
+              <button
+                onClick={() => setShowExportModal(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                Escolha o formato para exportar o texto "{titulo}":
+              </p>
+
+              <div className="space-y-3">
+                {/* PDF */}
+                <button
+                  onClick={() => handleExport('pdf')}
+                  className="w-full p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-primary-default dark:hover:border-primary-default hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-all flex items-center gap-4"
+                >
+                  <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="font-semibold text-gray-900 dark:text-white">PDF</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Documento portátil (recomendado)</div>
+                  </div>
+                </button>
+
+                {/* DOCX */}
+                <button
+                  onClick={() => handleExport('docx')}
+                  className="w-full p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-primary-default dark:hover:border-primary-default hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-all flex items-center gap-4"
+                >
+                  <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="font-semibold text-gray-900 dark:text-white">DOCX</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Microsoft Word (editável)</div>
+                  </div>
+                </button>
+
+                {/* TXT */}
+                <button
+                  onClick={() => handleExport('txt')}
+                  className="w-full p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-primary-default dark:hover:border-primary-default hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-all flex items-center gap-4"
+                >
+                  <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="font-semibold text-gray-900 dark:text-white">TXT</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Texto puro (sem formatação)</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 border-t border-border-light-default dark:border-border-dark-default">
+              <button
+                onClick={() => setShowExportModal(false)}
+                className="w-full px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal de Estatísticas */}
       {showStatsModal && (
         <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
@@ -2677,6 +2881,147 @@ function EscritaPageContent() {
                 className="w-full px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors font-medium"
               >
                 Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Menu Lateral Mobile de Opções */}
+      {showMobileOptionsMenu && (
+        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 z-50" onClick={() => setShowMobileOptionsMenu(false)}>
+          <div 
+            className="fixed left-0 top-0 h-full w-80 bg-white dark:bg-dark-bg-secondary shadow-xl flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-border-light-default dark:border-border-dark-default">
+              <h3 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary">Opções</h3>
+              <button
+                onClick={() => setShowMobileOptionsMenu(false)}
+                className="p-2 rounded-lg hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-colors"
+              >
+                <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Menu Items */}
+            <div className="flex-1 overflow-y-auto py-4">
+              {/* Publicar */}
+              <button
+                onClick={() => {
+                  handlePublish();
+                  setShowMobileOptionsMenu(false);
+                }}
+                disabled={isSaving || !titulo.trim()}
+                className="w-full px-6 py-4 text-left flex items-center gap-4 hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="w-10 h-10 rounded-full bg-primary-500/10 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-200">Publicar</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Publicar este texto</div>
+                </div>
+              </button>
+
+              {/* Avatares */}
+              <button
+                onClick={() => setShowMobileOptionsMenu(false)}
+                className="w-full px-6 py-4 text-left flex items-center gap-4 hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-colors"
+              >
+                <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-200">Avatares</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Urizen e Urthona</div>
+                </div>
+              </button>
+
+              {/* Exportar */}
+              <button
+                onClick={() => {
+                  setShowExportModal(true);
+                  setShowMobileOptionsMenu(false);
+                }}
+                className="w-full px-6 py-4 text-left flex items-center gap-4 hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-colors"
+              >
+                <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-200">Exportar</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">PDF, DOCX ou TXT</div>
+                </div>
+              </button>
+
+              {/* Duplicar */}
+              <button
+                onClick={() => {
+                  handleDuplicate();
+                  setShowMobileOptionsMenu(false);
+                }}
+                className="w-full px-6 py-4 text-left flex items-center gap-4 hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-colors"
+              >
+                <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-200">Duplicar</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Criar uma cópia</div>
+                </div>
+              </button>
+
+              {/* Estatísticas */}
+              <button
+                onClick={() => {
+                  setShowStatsModal(true);
+                  setShowMobileOptionsMenu(false);
+                }}
+                className="w-full px-6 py-4 text-left flex items-center gap-4 hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-colors"
+              >
+                <div className="w-10 h-10 rounded-full bg-yellow-500/10 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-200">Estatísticas</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Palavras, caracteres, etc.</div>
+                </div>
+              </button>
+
+              {/* Separador */}
+              <div className="my-4 border-t border-border-light-default dark:border-border-dark-default"></div>
+
+              {/* Excluir */}
+              <button
+                onClick={() => {
+                  if (currentTextoId) handleDelete(currentTextoId);
+                  setShowMobileOptionsMenu(false);
+                }}
+                className="w-full px-6 py-4 text-left flex items-center gap-4 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              >
+                <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-red-600 dark:text-red-400">Excluir texto</div>
+                  <div className="text-xs text-red-500 dark:text-red-400">Esta ação não pode ser desfeita</div>
+                </div>
               </button>
             </div>
           </div>
