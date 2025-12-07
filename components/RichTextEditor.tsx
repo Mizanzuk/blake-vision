@@ -2,12 +2,17 @@
 
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { registerQuillMention } from '@/app/lib/quill-setup';
 
 // Importar React-Quill dinamicamente (client-side only)
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 import 'react-quill/dist/quill.snow.css';
-import 'quill-mention/dist/quill.mention.css';
+
+interface Entity {
+  id: string;
+  value: string;
+  type: string;
+  link?: string;
+}
 
 interface RichTextEditorProps {
   value: string;
@@ -25,24 +30,28 @@ export default function RichTextEditor({
   onTextSelect,
 }: RichTextEditorProps) {
   const quillRef = useRef<any>(null);
-  const [isReady, setIsReady] = useState(false);
+  const [showMentions, setShowMentions] = useState(false);
+  const [mentionSearch, setMentionSearch] = useState('');
+  const [mentionPosition, setMentionPosition] = useState({ top: 0, left: 0 });
+  const [entities, setEntities] = useState<Entity[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [mentionStartIndex, setMentionStartIndex] = useState(0);
 
-  // Registrar quill-mention antes de renderizar
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
+  // Configuração do toolbar
+  const modules = {
+    toolbar: [
+      ['bold', 'italic'],
+    ],
+  };
 
-    registerQuillMention().then(() => {
-      setIsReady(true);
-    });
-  }, []);
+  const formats = ['bold', 'italic', 'link'];
 
-  // Função para buscar entidades
+  // Buscar entidades
   const fetchEntities = async (searchTerm: string) => {
     try {
       const response = await fetch(`/api/entities/search?q=${encodeURIComponent(searchTerm)}`);
       if (!response.ok) return [];
       const data = await response.json();
-      console.log('Entidades encontradas:', data);
       return data;
     } catch (error) {
       console.error('Error fetching entities:', error);
@@ -50,53 +59,66 @@ export default function RichTextEditor({
     }
   };
 
-  // Configuração do toolbar e modules
-  const modules = {
-    toolbar: [
-      ['bold', 'italic'],
-    ],
-    mention: {
-      allowedChars: /^[A-Za-z\sÀ-ÿ0-9_]*$/,
-      mentionDenotationChars: ['@'],
-      source: async function (searchTerm: string, renderList: (matches: any[], searchTerm: string) => void) {
-        console.log('🔍 Buscando:', searchTerm);
+  // Detectar @ e mostrar dropdown
+  useEffect(() => {
+    if (!quillRef.current) return;
+
+    const quill = quillRef.current.getEditor();
+
+    const handleTextChange = async () => {
+      const selection = quill.getSelection();
+      if (!selection) return;
+
+      const cursorPosition = selection.index;
+      const text = quill.getText(0, cursorPosition);
+      
+      // Procurar @ antes do cursor
+      const lastAtIndex = text.lastIndexOf('@');
+      
+      if (lastAtIndex !== -1) {
+        const textAfterAt = text.substring(lastAtIndex + 1);
         
-        if (searchTerm.length === 0) {
-          renderList([], searchTerm);
+        // Verificar se não há espaço após @
+        if (!textAfterAt.includes(' ') && !textAfterAt.includes('\n')) {
+          setMentionSearch(textAfterAt);
+          setMentionStartIndex(lastAtIndex);
+          
+          // Buscar entidades
+          if (textAfterAt.length > 0) {
+            const results = await fetchEntities(textAfterAt);
+            setEntities(results);
+            setSelectedIndex(0);
+          } else {
+            setEntities([]);
+          }
+          
+          // Calcular posição do dropdown
+          const bounds = quill.getBounds(cursorPosition);
+          const editorRect = quill.root.getBoundingClientRect();
+          
+          setMentionPosition({
+            top: bounds.bottom + editorRect.top,
+            left: bounds.left + editorRect.left,
+          });
+          
+          setShowMentions(true);
           return;
         }
+      }
+      
+      setShowMentions(false);
+    };
 
-        const matches = await fetchEntities(searchTerm);
-        console.log('📋 Matches:', matches);
-        renderList(matches, searchTerm);
-      },
-      renderItem: function (item: any) {
-        // Ícones por tipo de entidade
-        const icons: Record<string, string> = {
-          character: '👤',
-          location: '📍',
-          event: '📅',
-          object: '🔷',
-        };
-        
-        const icon = icons[item.type] || '🔹';
-        return `<div class="mention-item">
-          <span class="mention-icon">${icon}</span>
-          <span class="mention-name">${item.value}</span>
-          <span class="mention-type">${item.type}</span>
-        </div>`;
-      },
-      dataAttributes: ['id', 'value', 'type', 'link'],
-      onSelect: function (item: any, insertItem: (item: any) => void) {
-        console.log('✅ Entity mentioned:', item);
-        insertItem(item);
-      },
-    },
-  };
+    quill.on('text-change', handleTextChange);
+    quill.on('selection-change', handleTextChange);
 
-  const formats = ['bold', 'italic', 'mention'];
+    return () => {
+      quill.off('text-change', handleTextChange);
+      quill.off('selection-change', handleTextChange);
+    };
+  }, []);
 
-  // Handler para seleção de texto
+  // Handler para seleção de texto (Urizen/Urthona)
   useEffect(() => {
     const handleSelection = () => {
       const selection = window.getSelection();
@@ -120,10 +142,65 @@ export default function RichTextEditor({
     return () => document.removeEventListener('mouseup', handleSelection);
   }, [onTextSelect]);
 
-  // Não renderizar até estar pronto
-  if (!isReady) {
-    return <div className={className}>Carregando editor...</div>;
-  }
+  // Inserir mention
+  const insertMention = (entity: Entity) => {
+    if (!quillRef.current) return;
+
+    const quill = quillRef.current.getEditor();
+    const selection = quill.getSelection();
+    if (!selection) return;
+
+    // Deletar @ e texto de busca
+    const deleteLength = mentionSearch.length + 1; // +1 para o @
+    quill.deleteText(mentionStartIndex, deleteLength);
+
+    // Inserir link com o nome da entidade
+    quill.insertText(mentionStartIndex, entity.value, 'link', entity.link || `#${entity.id}`);
+    quill.insertText(mentionStartIndex + entity.value.length, ' ');
+    
+    // Mover cursor para depois do espaço
+    quill.setSelection(mentionStartIndex + entity.value.length + 1);
+
+    setShowMentions(false);
+    setMentionSearch('');
+    setEntities([]);
+  };
+
+  // Navegação por teclado
+  useEffect(() => {
+    if (!showMentions) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!showMentions || entities.length === 0) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev + 1) % entities.length);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev - 1 + entities.length) % entities.length);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        insertMention(entities[selectedIndex]);
+      } else if (e.key === 'Escape') {
+        setShowMentions(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showMentions, entities, selectedIndex]);
+
+  // Ícones por tipo
+  const getIcon = (type: string) => {
+    const icons: Record<string, string> = {
+      character: '👤',
+      location: '📍',
+      event: '📅',
+      object: '🔷',
+    };
+    return icons[type] || '🔹';
+  };
 
   return (
     <div className={className}>
@@ -216,71 +293,22 @@ export default function RichTextEditor({
           min-height: 1.5em !important;
         }
 
-        /* Quill Mention Styles */
-        .ql-mention-list-container {
-          background-color: #ffffff !important;
-          border: 1px solid #e0e0e0 !important;
-          border-radius: 8px !important;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
-          max-height: 300px !important;
-          overflow-y: auto !important;
-          z-index: 9999 !important;
-          padding: 4px 0 !important;
-        }
-
-        .ql-mention-list {
-          list-style: none !important;
-          margin: 0 !important;
-          padding: 0 !important;
-        }
-
-        .ql-mention-list-item {
-          padding: 8px 12px !important;
-          cursor: pointer !important;
-          transition: background-color 0.2s !important;
-        }
-
-        .ql-mention-list-item:hover,
-        .ql-mention-list-item.selected {
-          background-color: #f5f1e8 !important;
-        }
-
-        .mention-item {
-          display: flex !important;
-          align-items: center !important;
-          gap: 8px !important;
-        }
-
-        .mention-icon {
-          font-size: 16px !important;
-        }
-
-        .mention-name {
-          flex: 1 !important;
-          font-weight: 500 !important;
-          color: #333 !important;
-        }
-
-        .mention-type {
-          font-size: 12px !important;
-          color: #999 !important;
-          text-transform: capitalize !important;
-        }
-
-        /* Mention no texto */
-        .mention {
+        /* Links (mentions) */
+        .ql-editor a {
           background-color: #e8f4f8 !important;
           color: #0066cc !important;
           padding: 2px 4px !important;
           border-radius: 3px !important;
+          text-decoration: none !important;
           cursor: pointer !important;
           transition: background-color 0.2s !important;
         }
 
-        .mention:hover {
+        .ql-editor a:hover {
           background-color: #d0e8f0 !important;
         }
       `}</style>
+
       <ReactQuill
         ref={quillRef}
         theme="snow"
@@ -290,6 +318,48 @@ export default function RichTextEditor({
         formats={formats}
         placeholder={placeholder}
       />
+
+      {/* Dropdown de Mentions */}
+      {showMentions && entities.length > 0 && (
+        <div
+          style={{
+            position: 'fixed',
+            top: `${mentionPosition.top}px`,
+            left: `${mentionPosition.left}px`,
+            zIndex: 9999,
+            backgroundColor: '#ffffff',
+            border: '1px solid #e0e0e0',
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+            maxHeight: '300px',
+            overflowY: 'auto',
+            padding: '4px 0',
+            minWidth: '250px',
+          }}
+        >
+          {entities.map((entity, index) => (
+            <div
+              key={entity.id}
+              onClick={() => insertMention(entity)}
+              style={{
+                padding: '8px 12px',
+                cursor: 'pointer',
+                backgroundColor: index === selectedIndex ? '#f5f1e8' : 'transparent',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+              onMouseEnter={() => setSelectedIndex(index)}
+            >
+              <span style={{ fontSize: '16px' }}>{getIcon(entity.type)}</span>
+              <span style={{ flex: 1, fontWeight: 500, color: '#333' }}>{entity.value}</span>
+              <span style={{ fontSize: '12px', color: '#999', textTransform: 'capitalize' }}>
+                {entity.type}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
