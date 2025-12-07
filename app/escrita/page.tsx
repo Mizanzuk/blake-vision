@@ -876,13 +876,14 @@ function EscritaPageContent() {
     try {
       const response = await fetch(`/api/fichas/${fichaSlug}`);
       if (!response.ok) {
-        toast.error("Erro ao carregar ficha");
+        toast.error("Ficha não encontrada");
         setShowFichaModal(false);
         return;
       }
       
       const data = await response.json();
-      setFichaData(data);
+      // A API retorna { ficha: {...} }
+      setFichaData(data.ficha);
     } catch (error) {
       console.error("Erro ao buscar ficha:", error);
       toast.error("Erro ao carregar ficha");
@@ -1814,6 +1815,37 @@ function EscritaPageContent() {
                                     </a>
                                   );
                                 }
+                                
+                                // FALLBACK: Links vazios com texto (ex: [Joaquim]())
+                                // Tentar usar o texto como slug
+                                if (!href || href === '' || href === '#') {
+                                  const childText = typeof children === 'string' ? children : 
+                                    (Array.isArray(children) && typeof children[0] === 'string' ? children[0] : '');
+                                  
+                                  if (childText) {
+                                    // Converter texto para slug (minúsculas, espaços para hífens)
+                                    const fichaSlug = childText.toLowerCase()
+                                      .normalize('NFD')
+                                      .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+                                      .replace(/\s+/g, '-') // Espaços para hífens
+                                      .replace(/[^a-z0-9-]/g, ''); // Remove caracteres especiais
+                                    
+                                    return (
+                                      <a
+                                        href="#"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          handleFichaClick(fichaSlug);
+                                        }}
+                                        className="text-primary-600 dark:text-primary-400 hover:underline cursor-pointer"
+                                        {...props}
+                                      >
+                                        {children}
+                                      </a>
+                                    );
+                                  }
+                                }
+                                
                                 // Links normais abrem em nova aba
                                 return (
                                   <a

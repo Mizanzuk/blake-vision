@@ -275,9 +275,11 @@ INSTRUÇÕES PARA MODO CONSULTA:
 - Identifique inconsistências se houver
 
 **FORMATO DE LINKS:**
-- OBRIGATÓRIO: Ao mencionar fichas, SEMPRE use [Nome da Ficha](ficha:ID_DA_FICHA)
-- Exemplo: [Incidente do sapo de plástico](ficha:${exampleFichaId})
-- NUNCA use links normais como [Texto](https://...)
+- OBRIGATÓRIO: Ao mencionar fichas, SEMPRE use [Nome da Ficha](/ficha/SLUG_DA_FICHA)
+- O slug deve ser o titulo da ficha em minúsculas, com espaços substituídos por hífens
+- Exemplo: Se a ficha se chama "Joaquim", use [Joaquim](/ficha/joaquim)
+- Exemplo: Se a ficha se chama "Incidente do Sapo", use [Incidente do Sapo](/ficha/incidente-do-sapo)
+- NUNCA use links vazios como [Texto]() ou links normais como [Texto](https://...)
 - Mencione TODAS as fichas relevantes encontradas, não apenas a primeira
 ` : `
 INSTRUÇÕES PARA MODO CRIATIVO:
@@ -286,9 +288,11 @@ INSTRUÇÕES PARA MODO CRIATIVO:
 - Mantenha coerência com o contexto estabelecido
 - Seja criativo mas consistente
 - Sugira novas possibilidades que enriqueçam o universo
-- OBRIGATÓRIO: Ao mencionar fichas existentes, SEMPRE use o formato [Nome da Ficha](ficha:ID_DA_FICHA)
-- Exemplo correto: [Incidente do sapo de plástico](ficha:${exampleFichaId})
-- NUNCA use links normais como [Texto](https://...), use APENAS o formato ficha:ID
+- OBRIGATÓRIO: Ao mencionar fichas existentes, SEMPRE use o formato [Nome da Ficha](/ficha/slug-da-ficha)
+- O slug deve ser o titulo da ficha em minúsculas, com espaços substituídos por hífens
+- Exemplo correto: [Joaquim](/ficha/joaquim)
+- Exemplo correto: [Incidente do Sapo](/ficha/incidente-do-sapo)
+- NUNCA use links vazios como [Texto]() ou links normais como [Texto](https://...)
 
 **CAPACIDADE ESPECIAL DE EDIÇÃO DIRETA:**
 Quando o usuário pedir para modificar o texto em edição (ex: "apague o primeiro parágrafo", "troque João por Miguel", "adicione uma descrição do cenário"), você deve:
