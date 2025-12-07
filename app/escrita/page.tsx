@@ -156,6 +156,53 @@ function EscritaPageContent() {
   // Estados do Modo Foco
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [focusType, setFocusType] = useState<'off' | 'sentence' | 'paragraph'>('off');
+
+  // Função para aplicar efeito de foco
+  const applyFocusEffect = (type: 'off' | 'sentence' | 'paragraph') => {
+    const proseMirror = document.querySelector('.ProseMirror');
+    if (!proseMirror) return;
+    
+    // Remove all focus classes
+    proseMirror.querySelectorAll('.focus-active, .focus-dimmed').forEach((el: Element) => {
+      el.classList.remove('focus-active', 'focus-dimmed');
+    });
+    
+    if (type === 'off') return;
+    
+    // Get all paragraphs
+    const paragraphs = Array.from(proseMirror.querySelectorAll('p'));
+    if (paragraphs.length === 0) return;
+    
+    // Find current paragraph
+    let currentParagraph = null;
+    const selection = window.getSelection();
+    
+    if (selection && selection.anchorNode) {
+      let node: Node | null = selection.anchorNode;
+      while (node && node !== proseMirror) {
+        if (node.nodeName === 'P') {
+          currentParagraph = node as HTMLElement;
+          break;
+        }
+        node = node.parentNode;
+      }
+    }
+    
+    if (!currentParagraph && paragraphs.length > 0) {
+      currentParagraph = paragraphs[0] as HTMLElement;
+    }
+    
+    if (!currentParagraph) return;
+    
+    // Apply focus classes
+    paragraphs.forEach(p => {
+      if (p === currentParagraph) {
+        p.classList.add('focus-active');
+      } else {
+        p.classList.add('focus-dimmed');
+      }
+    });
+  };
   const [typewriterMode, setTypewriterMode] = useState(false);
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
   const [cursorPosition, setCursorPosition] = useState(0);
@@ -2326,7 +2373,11 @@ function EscritaPageContent() {
               {/* Controles de Foco */}
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setFocusType(prev => prev === 'sentence' ? 'off' : 'sentence')}
+                  onClick={() => {
+                    const newType = focusType === 'sentence' ? 'off' : 'sentence';
+                    setFocusType(newType);
+                    setTimeout(() => applyFocusEffect(newType), 100);
+                  }}
                   className={clsx(
                     "px-3 py-1.5 rounded text-xs font-medium transition-colors",
                     focusType === 'sentence'
@@ -2338,7 +2389,11 @@ function EscritaPageContent() {
                   Sentença
                 </button>
                 <button
-                  onClick={() => setFocusType(prev => prev === 'paragraph' ? 'off' : 'paragraph')}
+                  onClick={() => {
+                    const newType = focusType === 'paragraph' ? 'off' : 'paragraph';
+                    setFocusType(newType);
+                    setTimeout(() => applyFocusEffect(newType), 100);
+                  }}
                   className={clsx(
                     "px-3 py-1.5 rounded text-xs font-medium transition-colors",
                     focusType === 'paragraph'
