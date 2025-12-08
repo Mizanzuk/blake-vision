@@ -213,31 +213,43 @@ export default function TiptapEditor({
       const container = editor.view.dom;
       const { from } = editor.state.selection;
       
+      console.log('[Focus Mode] updateFocus chamado, from:', from);
+      
       // Adicionar classe no container
       container.classList.remove('focus-mode-sentence', 'focus-mode-paragraph');
       container.classList.add(`focus-mode-${focusType}`);
+      console.log('[Focus Mode] Classe adicionada ao container:', `focus-mode-${focusType}`);
       
       // Encontrar elemento atual
       const domAtPos = editor.view.domAtPos(from);
       let currentElement = domAtPos.node as HTMLElement;
+      console.log('[Focus Mode] Elemento inicial:', currentElement.tagName, currentElement);
       
       // Navegar até o parágrafo
       while (currentElement && currentElement.tagName !== 'P' && currentElement !== container) {
         currentElement = currentElement.parentElement as HTMLElement;
       }
       
-      if (!currentElement || currentElement.tagName !== 'P') return;
+      console.log('[Focus Mode] Elemento final:', currentElement?.tagName, currentElement);
+      
+      if (!currentElement || currentElement.tagName !== 'P') {
+        console.warn('[Focus Mode] Parágrafo não encontrado! Abortando.');
+        return;
+      }
       
       // Aplicar classes em todos os parágrafos
       const paragraphs = container.querySelectorAll('p');
+      console.log('[Focus Mode] Total de parágrafos:', paragraphs.length);
       paragraphs.forEach(p => {
         p.classList.remove('focus-active', 'focus-dimmed');
         if (p === currentElement) {
           p.classList.add('focus-active');
+          console.log('[Focus Mode] Parágrafo ativo:', p);
         } else {
           p.classList.add('focus-dimmed');
         }
       });
+      console.log('[Focus Mode] Classes aplicadas com sucesso!');
     };
     
     // Atualizar imediatamente
