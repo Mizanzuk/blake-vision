@@ -271,3 +271,51 @@
 .focus-mode-dark * {
   transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
 }
+
+/* Compatibilidade: Modo Foco de Parágrafo + Modo Branco/Preto */
+/* Garante que o blur/opacity do foco de parágrafo funcione corretamente com os temas */
+
+.focus-mode-light .ProseMirror p:not(.has-focus),
+.focus-mode-dark .ProseMirror p:not(.has-focus) {
+  opacity: 0.3 !important;
+  transition: opacity 0.3s ease;
+}
+
+.focus-mode-light .ProseMirror p.has-focus,
+.focus-mode-dark .ProseMirror p.has-focus {
+  opacity: 1 !important;
+  transition: opacity 0.3s ease;
+}
+
+/* Também aplicar para outros elementos de bloco quando não focados */
+.focus-mode-light .ProseMirror h1:not(.has-focus),
+.focus-mode-light .ProseMirror h2:not(.has-focus),
+.focus-mode-light .ProseMirror h3:not(.has-focus),
+.focus-mode-light .ProseMirror h4:not(.has-focus),
+.focus-mode-light .ProseMirror h5:not(.has-focus),
+.focus-mode-light .ProseMirror h6:not(.has-focus),
+.focus-mode-dark .ProseMirror h1:not(.has-focus),
+.focus-mode-dark .ProseMirror h2:not(.has-focus),
+.focus-mode-dark .ProseMirror h3:not(.has-focus),
+.focus-mode-dark .ProseMirror h4:not(.has-focus),
+.focus-mode-dark .ProseMirror h5:not(.has-focus),
+.focus-mode-dark .ProseMirror h6:not(.has-focus) {
+  opacity: 0.3 !important;
+  transition: opacity 0.3s ease;
+}
+
+.focus-mode-light .ProseMirror h1.has-focus,
+.focus-mode-light .ProseMirror h2.has-focus,
+.focus-mode-light .ProseMirror h3.has-focus,
+.focus-mode-light .ProseMirror h4.has-focus,
+.focus-mode-light .ProseMirror h5.has-focus,
+.focus-mode-light .ProseMirror h6.has-focus,
+.focus-mode-dark .ProseMirror h1.has-focus,
+.focus-mode-dark .ProseMirror h2.has-focus,
+.focus-mode-dark .ProseMirror h3.has-focus,
+.focus-mode-dark .ProseMirror h4.has-focus,
+.focus-mode-dark .ProseMirror h5.has-focus,
+.focus-mode-dark .ProseMirror h6.has-focus {
+  opacity: 1 !important;
+  transition: opacity 0.3s ease;
+}
