@@ -59,25 +59,25 @@ export default function EscritaPage() {
           </div>
 
           {/* LINHA 2: Título + Botão Colapsar (A2) + Menu (C1) */}
-          <div className="py-3 border-b border-border-light-default dark:border-border-dark-default flex items-center relative">
+          <div className="py-3 border-b border-border-light-default dark:border-border-dark-default flex items-center relative px-4 md:px-8">
             
             {/* Célula A2 - Botão Colapsar (Flutuante para esquerda) */}
             <button
               onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
-              className="absolute -left-12 text-xl hover:opacity-70 transition-opacity"
+              className="absolute left-0 -translate-x-full pr-2 text-xl hover:opacity-70 transition-opacity"
             >
               {isHeaderExpanded ? '▼' : '▶'}
             </button>
             
             {/* Célula B2 - Título (Centro) */}
-            <div className="flex-1 px-4 md:px-8">
+            <div className="flex-1">
               <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary">
                 A Noite do Cão Misterioso (Cópia)
               </h2>
             </div>
             
             {/* Célula C1 - Três Pontinhos (Flutuante para direita) */}
-            <button className="absolute -right-12 text-xl hover:opacity-70 transition-opacity">
+            <button className="absolute right-0 translate-x-full pl-2 text-xl hover:opacity-70 transition-opacity">
               ⋮
             </button>
           </div>
