@@ -2,12 +2,12 @@
 
 console.log('[ESCRITA PAGE] Módulo carregado - timestamp:', Date.now());
 
-import React, { useState, useEffect, useRef, Suspense, useMemo } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { flushSync } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
 import { Header } from "@/app/components/layout/Header";
-import { Button, Badge, Loading } from "@/app/components/ui";
+import { Button, Card, Badge, EmptyState, Loading } from "@/app/components/ui";
 import { UniverseDropdown } from "@/app/components/ui";
 import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import { EpisodesDropdownSingle } from "@/app/components/ui/EpisodesDropdownSingle";
@@ -15,19 +15,17 @@ import { CategoryDropdownSingle } from "@/app/components/ui/CategoryDropdownSing
 import { TypesDropdown } from "@/app/components/ui/TypesDropdown";
 import { NewEpisodeModal } from "@/app/components/modals/NewEpisodeModal";
 import { toast } from "sonner";
-import { useConfirm } from "@/hooks/useConfirm";
 import type { Universe, World, Category } from "@/app/types";
 import clsx from "clsx";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import getCaretCoordinates from "textarea-caret";
 import TiptapEditor from "@/components/TiptapEditor";
-import { FontFamily } from "@/components/FontSelector";
 import { EditorHeader } from "@/app/components/editor/EditorHeader";
 import { EditorFooter } from "@/app/components/editor/EditorFooter";
 import { ExportModal } from "@/app/components/modals/ExportModal";
 import { MobileOptionsMenu } from "@/app/components/mobile/MobileOptionsMenu";
 
-// --- Definições de Tipos ---
 interface Texto {
   id: string;
   titulo: string;
@@ -41,55 +39,6 @@ interface Texto {
   created_at: string;
   updated_at: string;
 }
-
-// --- Funções Auxiliares (Fora do Componente) ---
-
-function getCategoryColor(categoria: string | null): string {
-  if (!categoria) return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
-  
-  const slug = categoria.toLowerCase();
-  
-  switch (slug) {
-    case "personagem":
-      return "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300";
-    case "local":
-      return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300";
-    case "evento":
-      return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300";
-    case "conceito":
-      return "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300";
-    case "regra":
-      return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300";
-    case "roteiro":
-      return "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300";
-    case "episodio":
-      return "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300";
-    default:
-      return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
-  }
-}
-
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-
-  if (diffMins < 1) return "Agora mesmo";
-  if (diffMins < 60) return `${diffMins} min atrás`;
-  if (diffHours < 24) return `${diffHours}h atrás`;
-  if (diffDays < 7) return `${diffDays}d atrás`;
-  
-  return date.toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric"
-  });
-}
-
-// --- Componente Principal ---
 
 function EscritaPageContent() {
   console.log('[DEBUG EscritaPage] Componente renderizado!');
@@ -120,10 +69,10 @@ function EscritaPageContent() {
   const [categoria, setCategoria] = useState<string>("");
   const [status, setStatus] = useState<"rascunho" | "publicado">("rascunho");
   const [isMetadataLocked, setIsMetadataLocked] = useState(false);
-  const [isMetadataSaved, setIsMetadataSaved] = useState(false);
-  const [isHeaderExpanded, setIsHeaderExpanded] = useState(true);
-  const [hasUnsavedMetadataChanges, setHasUnsavedMetadataChanges] = useState(false);
-  const [savedMetadataSnapshot, setSavedMetadataSnapshot] = useState<any>(null);
+  const [isMetadataSaved, setIsMetadataSaved] = useState(false); // Controla se metadados foram salvos
+  const [isHeaderExpanded, setIsHeaderExpanded] = useState(true); // Controla expansão do cabeçalho
+  const [hasUnsavedMetadataChanges, setHasUnsavedMetadataChanges] = useState(false); // Controla se há alterações não salvas
+  const [savedMetadataSnapshot, setSavedMetadataSnapshot] = useState<any>(null); // Snapshot dos metadados salvos
   
   // Detectar alterações nos metadados
   useEffect(() => {
@@ -147,7 +96,7 @@ function EscritaPageContent() {
   const [allFichas, setAllFichas] = useState<any[]>([]);
   
   // Categorias únicas dos textos (para filtro)
-  const textoCategorias = useMemo(() => {
+  const textoCategorias = React.useMemo(() => {
     const allTextos = [...rascunhos, ...publicados];
     const uniqueCategories = new Set(allTextos.map(t => t.categoria).filter(Boolean));
     const categoriasList = Array.from(uniqueCategories).map(slug => ({
@@ -158,6 +107,7 @@ function EscritaPageContent() {
       created_at: ""
     }));
     
+    // Adicionar "Texto Livre" se houver textos sem categoria
     const hasTextoLivre = allTextos.some(t => !t.categoria);
     if (hasTextoLivre) {
       categoriasList.push({
@@ -172,19 +122,19 @@ function EscritaPageContent() {
     return categoriasList;
   }, [rascunhos, publicados, categories]);
 
-  // Estados de modais e UI
+  // Estados de modais
   const [showNewEpisodeModal, setShowNewEpisodeModal] = useState(false);
   const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [showStatsModal, setShowStatsModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showMobileOptionsMenu, setShowMobileOptionsMenu] = useState(false);
-  const { confirm, ConfirmDialog } = useConfirm();
   
+  // Estado da sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   
-  // Chat Assistant States
+  // Estados do chat com assistentes
   const [showUrthona, setShowUrthona] = useState(false);
   const [showUrizen, setShowUrizen] = useState(false);
   const [urthonaMessages, setUrthonaMessages] = useState<any[]>([]);
@@ -192,7 +142,7 @@ function EscritaPageContent() {
   const [assistantInput, setAssistantInput] = useState("");
   const [isAssistantLoading, setIsAssistantLoading] = useState(false);
   
-  // Drag and Drop Chat
+  // Estados para drag and drop e resize do chat
   const [chatPosition, setChatPosition] = useState({ x: 0, y: 0 });
   const [chatSize, setChatSize] = useState({ width: 384, height: 600 });
   const [isDragging, setIsDragging] = useState(false);
@@ -200,38 +150,105 @@ function EscritaPageContent() {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
   
-  // Ficha Modal
+  // Estados para modal de ficha
   const [showFichaModal, setShowFichaModal] = useState(false);
   const [fichaData, setFichaData] = useState<any>(null);
   const [loadingFicha, setLoadingFicha] = useState(false);
   
-  // Focus Mode
+  // Estados do Modo Foco
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [focusType, setFocusType] = useState<'off' | 'sentence' | 'paragraph'>('off');
-  const [focusModeTheme, setFocusModeTheme] = useState<'light' | 'dark' | 'default'>('default');
+
+  // Função applyFocusEffect removida - agora usamos apenas updateFocus() no useEffect
   const [typewriterMode, setTypewriterMode] = useState(false);
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
+  const [cursorPosition, setCursorPosition] = useState(0);
   
-  // Selection
+  // Focus Mode - JavaScript inline
+  useEffect(() => {
+    console.log('[Focus Mode] useEffect executado, focusType:', focusType);
+    
+    function updateFocus() {
+      console.log('[Focus Mode] updateFocus chamado');
+      const proseMirror = document.querySelector('.ProseMirror');
+      if (!proseMirror) return;
+      
+      // Remove all focus classes
+      proseMirror.querySelectorAll('.focus-active, .focus-dimmed').forEach((el: Element) => {
+        el.classList.remove('focus-active', 'focus-dimmed');
+      });
+      
+      if (focusType === 'off') return;
+      
+      // Get all paragraphs
+      const paragraphs = Array.from(proseMirror.querySelectorAll('p'));
+      
+      // Find current paragraph
+      let currentParagraph = null;
+      const selection = window.getSelection();
+      
+      if (selection && selection.anchorNode) {
+        let node: Node | null = selection.anchorNode;
+        while (node && node !== proseMirror) {
+          if (node.nodeName === 'P') {
+            currentParagraph = node as HTMLElement;
+            break;
+          }
+          node = node.parentNode;
+        }
+      }
+      
+      if (!currentParagraph && paragraphs.length > 0) {
+        currentParagraph = paragraphs[0] as HTMLElement;
+      }
+      
+      if (!currentParagraph) return;
+      
+      // Apply focus classes
+      paragraphs.forEach(p => {
+        if (p === currentParagraph) {
+          p.classList.add('focus-active');
+        } else {
+          p.classList.add('focus-dimmed');
+        }
+      });
+    }
+    
+    updateFocus();
+    
+    // Listen to selection changes
+    const handleSelectionChange = () => {
+      if (focusType !== 'off') {
+        updateFocus();
+      }
+    };
+    
+    document.addEventListener('selectionchange', handleSelectionChange);
+    
+    return () => {
+      document.removeEventListener('selectionchange', handleSelectionChange);
+    };
+  }, [focusType]);
+  
+  // Estados para seleção de texto
   const [selectedText, setSelectedText] = useState("");
   const [selectionMenuPosition, setSelectionMenuPosition] = useState<{x: number, y: number} | null>(null);
   
-  // Typography
-  const [fontFamily, setFontFamily] = useState<FontFamily>('serif');
-  
-  // Drag and Drop Textos
+  // Ref para controlar o editor externamente
+  const editorRef = useRef<any>(null);
+  const loadedTextoIdRef = useRef<string | null>(null); // Rastrear qual texto já foi carregado
+
+  // Estados para drag and drop
   const [draggedTextoId, setDraggedTextoId] = useState<string | null>(null);
   const [dragOverTextoId, setDragOverTextoId] = useState<string | null>(null);
 
   // Refs
-  const editorRef = useRef<any>(null);
-  const loadedTextoIdRef = useRef<string | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
 
-  // --- Effects ---
-
+  // Carregar dados iniciais
   useEffect(() => {
     checkAuth();
   }, []);
@@ -243,39 +260,28 @@ function EscritaPageContent() {
     }
   }, [isLoading]);
 
-  // Load saved preferences
+  // Carregar texto específico da URL
   useEffect(() => {
-    const savedFont = localStorage.getItem('blake-vision-font-family');
-    if (savedFont && ['serif', 'sans', 'mono'].includes(savedFont)) {
-      setFontFamily(savedFont as FontFamily);
-    }
-    const savedTheme = localStorage.getItem('blake-vision-focus-mode-theme');
-    if (savedTheme && ['light', 'dark', 'default'].includes(savedTheme)) {
-      setFocusModeTheme(savedTheme as 'light' | 'dark' | 'default');
-    }
-  }, []);
-
-  useEffect(() => {
-    if (focusModeTheme !== 'default') {
-      localStorage.setItem('blake-vision-focus-mode-theme', focusModeTheme);
-    }
-  }, [focusModeTheme]);
-
-  // Load Texto from URL
-  useEffect(() => {
+    console.log('[DEBUG] useEffect loadTexto executado');
     const textoId = searchParams.get("id");
+    console.log('[DEBUG] textoId da URL:', textoId, 'isLoading:', isLoading);
+    
+    // CORREÇÃO: Evitar carregamento duplicado usando ref
     if (textoId && !isLoading && textoId !== loadedTextoIdRef.current) {
-      loadedTextoIdRef.current = textoId;
+      console.log('[DEBUG] Chamando loadTexto... (primeira vez para este ID)');
+      loadedTextoIdRef.current = textoId; // Marcar como carregado
       try {
         loadTexto(textoId);
       } catch (error) {
         console.error('[DEBUG] ERRO no useEffect ao chamar loadTexto:', error);
-        loadedTextoIdRef.current = null;
+        loadedTextoIdRef.current = null; // Resetar em caso de erro
       }
+    } else if (textoId && textoId === loadedTextoIdRef.current) {
+      console.log('[DEBUG] Texto já foi carregado, ignorando...');
     }
   }, [searchParams, isLoading]);
 
-  // Chat input resize
+  // Ajustar altura do textarea do chat quando assistantInput mudar
   useEffect(() => {
     if (chatInputRef.current) {
       chatInputRef.current.style.height = 'auto';
@@ -284,26 +290,31 @@ function EscritaPageContent() {
     }
   }, [assistantInput]);
 
-  // Load catalogs
+  // Carregar fichas quando universo muda
   useEffect(() => {
     if (universeId) {
       fetch(`/api/catalog?universeId=${universeId}`)
         .then(res => res.json())
         .then(data => {
-          if (data.fichas) setAllFichas(data.fichas);
+          if (data.fichas) {
+            setAllFichas(data.fichas);
+          }
         })
         .catch(error => console.error("Erro ao carregar fichas:", error));
       
+      // Carregar categorias
       fetch(`/api/categories?universeId=${universeId}`)
         .then(res => res.json())
         .then(data => {
-          if (data.categories) setCategories(data.categories);
+          if (data.categories) {
+            setCategories(data.categories);
+          }
         })
         .catch(error => console.error("Erro ao carregar categorias:", error));
     }
   }, [universeId]);
 
-  // Update episodes
+  // Atualizar episódios disponíveis quando mundo muda
   useEffect(() => {
     if (worldId && allFichas.length > 0) {
       const worldFichas = allFichas.filter(f => f.world_id === worldId);
@@ -320,14 +331,14 @@ function EscritaPageContent() {
     }
   }, [worldId, allFichas]);
 
-  // Chat scroll
+  // Scroll automático do chat quando novas mensagens chegam
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [urthonaMessages, urizenMessages]);
 
-  // Chat drag
+  // Handlers para drag and drop do chat
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging) {
@@ -342,6 +353,7 @@ function EscritaPageContent() {
         setChatSize({ width: newWidth, height: newHeight });
       }
     };
+
     const handleMouseUp = () => {
       setIsDragging(false);
       setIsResizing(false);
@@ -357,7 +369,7 @@ function EscritaPageContent() {
     }
   }, [isDragging, isResizing, dragStart, resizeStart]);
 
-  // Escape key
+  // Fechar chat com ESC
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && (showUrthona || showUrizen)) {
@@ -365,80 +377,81 @@ function EscritaPageContent() {
         setShowUrizen(false);
       }
     };
+
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
   }, [showUrthona, showUrizen]);
 
-  // Focus mode fullscreen
+  // Modo Foco: Fullscreen API
   useEffect(() => {
     const handleFullscreenChange = () => {
       if (!document.fullscreenElement && isFocusMode) {
+        // Saiu do fullscreen, desativar modo foco
         setIsFocusMode(false);
         setFocusType('off');
         setTypewriterMode(false);
       }
     };
+
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, [isFocusMode]);
 
-  // Auto-save in focus mode
+  // Modo Foco: Auto-save a cada 30 segundos
   useEffect(() => {
     if (isFocusMode && conteudo && currentTextoId) {
       const interval = setInterval(() => {
-        handleSave(true);
-      }, 30000);
+        handleSave(true); // true = auto-save silencioso
+      }, 30000); // 30 segundos
       return () => clearInterval(interval);
     }
   }, [isFocusMode, conteudo, currentTextoId]);
 
-  // Keyboard shortcuts
+  // Modo Foco: Atalhos de teclado
   useEffect(() => {
     const handleKeyboard = (e: KeyboardEvent) => {
       if (!isFocusMode) return;
       
+      // ESC: Lógica hierárquica - fechar chat primeiro, depois modo foco
       if (e.key === 'Escape') {
         if (showUrthona || showUrizen) {
+          // Se há chat aberto, fechar o chat
           setShowUrthona(false);
           setShowUrizen(false);
         } else {
+          // Se não há chat aberto, sair do modo foco
           exitFocusMode();
         }
         return;
       }
+      
+      // Ctrl+Shift+F: Toggle sentence focus
       if (e.ctrlKey && e.shiftKey && e.key === 'F') {
         e.preventDefault();
         setFocusType(prev => prev === 'sentence' ? 'off' : 'sentence');
         return;
       }
+      
+      // Ctrl+Shift+P: Toggle paragraph focus
       if (e.ctrlKey && e.shiftKey && e.key === 'P') {
         e.preventDefault();
         setFocusType(prev => prev === 'paragraph' ? 'off' : 'paragraph');
         return;
       }
+      
+      // Ctrl+Shift+T: Toggle typewriter mode
       if (e.ctrlKey && e.shiftKey && e.key === 'T') {
         e.preventDefault();
         setTypewriterMode(prev => !prev);
         return;
       }
     };
+
     window.addEventListener('keydown', handleKeyboard);
     return () => window.removeEventListener('keydown', handleKeyboard);
   }, [isFocusMode, showUrthona, showUrizen]);
 
-  // --- Handlers & Logic ---
-
-  const handleFontChange = (font: FontFamily) => {
-    setFontFamily(font);
-    localStorage.setItem('blake-vision-font-family', font);
-  };
-
-  function getCategoryLabel(categoria: string | null): string {
-    if (!categoria) return "";
-    const cat = categories.find(c => c.slug === categoria);
-    return cat?.label || categoria;
-  }
-
+  // Funções do Modo Foco
   async function enterFocusMode() {
     try {
       const elem = document.documentElement;
@@ -465,9 +478,70 @@ function EscritaPageContent() {
     }
   }
 
+  // Funções de highlighting para Modo Foco
+  function getCurrentSentence(text: string, position: number): { start: number; end: number } {
+    // Encontrar início da sentença (após ., !, ? ou início do texto)
+    let start = position;
+    while (start > 0 && !/[.!?]\s/.test(text.substring(start - 2, start))) {
+      start--;
+    }
+    // Pular espaços após pontuação
+    while (start < text.length && /\s/.test(text[start])) {
+      start++;
+    }
+
+    // Encontrar fim da sentença
+    let end = position;
+    while (end < text.length && !/[.!?]/.test(text[end])) {
+      end++;
+    }
+    if (end < text.length) end++; // Incluir pontuação
+
+    return { start, end };
+  }
+
+  function getCurrentParagraph(text: string, position: number): { start: number; end: number } {
+    // Encontrar início do parágrafo (após \n\n ou início do texto)
+    let start = position;
+    while (start > 0 && text.substring(start - 2, start) !== '\n\n') {
+      start--;
+    }
+    // Pular quebras de linha
+    while (start < text.length && text[start] === '\n') {
+      start++;
+    }
+
+    // Encontrar fim do parágrafo
+    let end = position;
+    while (end < text.length - 1 && text.substring(end, end + 2) !== '\n\n') {
+      end++;
+    }
+
+    return { start, end };
+  }
+
+  function applyFocusHighlight(textarea: HTMLTextAreaElement) {
+    if (!isFocusMode || focusType === 'off') return;
+
+    const position = textarea.selectionStart;
+    const text = textarea.value;
+    
+    let range: { start: number; end: number };
+    if (focusType === 'sentence') {
+      range = getCurrentSentence(text, position);
+    } else {
+      range = getCurrentParagraph(text, position);
+    }
+
+    // Aplicar efeito visual usando CSS (implementação simplificada)
+    // Em uma implementação completa, usaríamos um editor rico como CodeMirror ou ProseMirror
+    // Por enquanto, o efeito será aplicado via CSS no textarea
+  }
+
   async function checkAuth() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      
       if (!user) {
         router.push("/login");
         return;
@@ -481,13 +555,19 @@ function EscritaPageContent() {
 
   async function loadTextos() {
     try {
+      // Carregar rascunhos
       const responseRascunhos = await fetch("/api/textos?status=rascunho");
       const dataRascunhos = await responseRascunhos.json();
-      if (responseRascunhos.ok) setRascunhos(dataRascunhos.textos || []);
+      if (responseRascunhos.ok) {
+        setRascunhos(dataRascunhos.textos || []);
+      }
 
+      // Carregar publicados
       const responsePublicados = await fetch("/api/textos?status=publicado");
       const dataPublicados = await responsePublicados.json();
-      if (responsePublicados.ok) setPublicados(dataPublicados.textos || []);
+      if (responsePublicados.ok) {
+        setPublicados(dataPublicados.textos || []);
+      }
     } catch (error) {
       console.error("Erro ao carregar textos:", error);
       toast.error("Erro ao carregar textos");
@@ -498,8 +578,11 @@ function EscritaPageContent() {
     try {
       const response = await fetch("/api/universes");
       const data = await response.json();
+      
       if (response.ok && data.universes) {
         setUniverses(data.universes);
+        
+        // Carregar mundos de todos os universos
         const allWorlds: World[] = [];
         for (const universe of data.universes) {
           const worldsResponse = await fetch(`/api/worlds?universeId=${universe.id}`);
@@ -516,17 +599,26 @@ function EscritaPageContent() {
   }
 
   async function loadTexto(id: string) {
+    console.log('[DEBUG] loadTexto iniciado, ID:', id);
     try {
+      console.log('[DEBUG] Fazendo fetch da API...');
       const response = await fetch(`/api/textos?id=${id}`);
+      console.log('[DEBUG] Response recebida:', response.status);
       const data = await response.json();
+      console.log('[DEBUG] Data parseada:', data);
       
       if (response.ok && data.texto) {
         const texto = data.texto;
         
+        // CORREÇÃO: Setar conteúdo PRIMEIRO com flushSync para garantir que está pronto
+        // antes de mostrar o editor (isMetadataSaved = true)
+        console.log('[DEBUG] Setando conteúdo, tamanho:', (texto.conteudo || '').length);
         flushSync(() => {
           setConteudo(texto.conteudo || "");
         });
+        console.log('[DEBUG] Conteúdo setado com sucesso (flushSync)');
         
+        // Depois setar todos os outros estados de uma vez
         flushSync(() => {
           setCurrentTextoId(texto.id);
           setTitulo(texto.titulo || "");
@@ -536,10 +628,12 @@ function EscritaPageContent() {
           setCategoria(texto.categoria || "");
           setStatus(texto.status || "rascunho");
           
+          // Configurar estados de controle
           setIsMetadataLocked(true);
-          setIsMetadataSaved(true);
+          setIsMetadataSaved(true); // ← Isso monta o TiptapEditor
           setIsHeaderExpanded(false);
           
+          // Salvar snapshot dos metadados
           setSavedMetadataSnapshot({
             titulo: texto.titulo || "",
             universeId: texto.universe_id || "",
@@ -551,13 +645,17 @@ function EscritaPageContent() {
       }
     } catch (error) {
       console.error('[DEBUG] ERRO CAPTURADO em loadTexto:', error);
+      console.error('[DEBUG] Stack trace:', error instanceof Error ? error.stack : 'N/A');
+      console.error('[DEBUG] Mensagem:', error instanceof Error ? error.message : String(error));
       toast.error("Erro ao carregar texto");
     }
   }
 
   function handleSelectTexto(texto: Texto) {
+    // Resetar ref para permitir carregamento do novo texto
     loadedTextoIdRef.current = texto.id;
     
+    // CORREÇÃO: Setar conteúdo primeiro, depois mostrar editor
     flushSync(() => {
       setConteudo(texto.conteudo || "");
     });
@@ -571,10 +669,12 @@ function EscritaPageContent() {
       setCategoria(texto.categoria || "");
       setStatus(texto.status || "rascunho");
       
+      // Bloquear metadados ao carregar texto existente salvo
       setIsMetadataLocked(true);
       setIsMetadataSaved(true);
-      setIsHeaderExpanded(false);
+      setIsHeaderExpanded(false); // Começar colapsado para textos existentes
       
+      // Salvar snapshot dos metadados
       setSavedMetadataSnapshot({
         titulo: texto.titulo || "",
         universeId: texto.universe_id || "",
@@ -583,24 +683,29 @@ function EscritaPageContent() {
         categoria: texto.categoria || ""
       });
     });
+    
+    // Atualizar URL
     router.push(`/escrita?id=${texto.id}`);
   }
 
+  // Função para salvar apenas metadados (primeiro save)
   async function handleSaveMetadata() {
     if (!titulo.trim()) {
       toast.error("Por favor, adicione um título");
       return;
     }
+    
     if (!universeId) {
       toast.error("Por favor, selecione um universo");
       return;
     }
 
     setIsSaving(true);
+
     try {
       const body = {
         titulo,
-        conteudo: "",
+        conteudo: "", // Conteúdo vazio no primeiro save
         universe_id: universeId,
         world_id: worldId || null,
         episodio: episodio || null,
@@ -618,15 +723,23 @@ function EscritaPageContent() {
 
       if (response.ok) {
         toast.success("Metadados salvos! Agora você pode escrever.");
+        
+        // Atualizar ID do texto
         if (data.texto) {
           setCurrentTextoId(data.texto.id);
           router.push(`/escrita?id=${data.texto.id}`);
         }
+        
+        // Marcar metadados como salvos e bloquear
         setIsMetadataSaved(true);
         setIsMetadataLocked(true);
-        setIsHeaderExpanded(false);
+        setIsHeaderExpanded(false); // Colapsar cabeçalho
+        
+        // Salvar snapshot dos metadados e resetar flag de alterações
         setSavedMetadataSnapshot({ titulo, universeId, worldId, episodio, categoria });
         setHasUnsavedMetadataChanges(false);
+        
+        // Recarregar lista
         loadTextos();
       } else {
         toast.error(data.error || "Erro ao salvar metadados");
@@ -648,10 +761,14 @@ function EscritaPageContent() {
     setEpisodio("");
     setCategoria("");
     setStatus("rascunho");
+    
+    // Resetar estados de controle
     setIsMetadataLocked(false);
     setIsMetadataSaved(false);
     setIsHeaderExpanded(true);
     setHasUnsavedMetadataChanges(false);
+    
+    // Limpar snapshot
     setSavedMetadataSnapshot({
       titulo: "",
       universeId: "",
@@ -659,6 +776,8 @@ function EscritaPageContent() {
       episodio: "",
       categoria: ""
     });
+    
+    // Limpar URL
     router.push("/escrita");
   }
 
@@ -669,6 +788,7 @@ function EscritaPageContent() {
     }
 
     setIsSaving(true);
+
     try {
       const body = {
         id: currentTextoId,
@@ -683,12 +803,14 @@ function EscritaPageContent() {
 
       let response;
       if (currentTextoId) {
+        // Atualizar texto existente
         response = await fetch(`/api/textos?id=${currentTextoId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
       } else {
+        // Criar novo texto
         response = await fetch("/api/textos", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -699,14 +821,22 @@ function EscritaPageContent() {
       const data = await response.json();
 
       if (response.ok) {
-        if (!autoSave) toast.success(currentTextoId ? "Texto atualizado!" : "Texto criado!");
-        else setLastSaveTime(new Date());
+        if (!autoSave) {
+          toast.success(currentTextoId ? "Texto atualizado!" : "Texto criado!");
+        } else {
+          setLastSaveTime(new Date());
+        }
         
+        // Se é novo texto, atualizar ID
         if (!currentTextoId && data.texto) {
           setCurrentTextoId(data.texto.id);
           router.push(`/escrita?id=${data.texto.id}`);
         }
+        
+        // Bloquear metadados após salvar
         setIsMetadataLocked(true);
+        
+        // Recarregar lista
         loadTextos();
       } else {
         toast.error(data.error || "Erro ao salvar texto");
@@ -721,27 +851,31 @@ function EscritaPageContent() {
 
   async function handlePublish() {
     setStatus("publicado");
+    
+    // Aguardar atualização do estado e salvar
     setTimeout(() => {
       handleSave();
     }, 100);
   }
 
   async function handleDelete(id: string) {
-    const confirmed = await confirm({
-      title: "Confirmar Exclusão",
-      message: "Tem certeza que deseja deletar este texto? Esta ação não pode ser desfeita.",
-      confirmText: "Deletar",
-      cancelText: "Cancelar",
-      variant: "danger"
-    });
-
-    if (!confirmed) return;
+    if (!confirm("Tem certeza que deseja deletar este texto?")) {
+      return;
+    }
 
     try {
-      const response = await fetch(`/api/textos?id=${id}`, { method: "DELETE" });
+      const response = await fetch(`/api/textos?id=${id}`, {
+        method: "DELETE",
+      });
+
       if (response.ok) {
         toast.success("Texto deletado com sucesso");
-        if (id === currentTextoId) handleNewTexto();
+        
+        // Se é o texto atual, limpar editor
+        if (id === currentTextoId) {
+          handleNewTexto();
+        }
+        
         loadTextos();
       } else {
         toast.error("Erro ao deletar texto");
@@ -752,14 +886,17 @@ function EscritaPageContent() {
     }
   }
 
+  // Função para duplicar texto
   async function handleDuplicate() {
     if (!currentTextoId) {
       toast.error("Nenhum texto selecionado para duplicar");
       return;
     }
+
     try {
       const response = await fetch(`/api/textos?id=${currentTextoId}`);
       const data = await response.json();
+
       if (response.ok && data.texto) {
         const duplicatedTexto = {
           ...data.texto,
@@ -767,12 +904,15 @@ function EscritaPageContent() {
           titulo: `${data.texto.titulo} (Cópia)`,
           status: "rascunho" as const,
         };
+
         const createResponse = await fetch("/api/textos", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(duplicatedTexto),
         });
+
         const createData = await createResponse.json();
+
         if (createResponse.ok) {
           toast.success("Texto duplicado com sucesso!");
           loadTextos();
@@ -789,13 +929,16 @@ function EscritaPageContent() {
     }
   }
 
+  // Função para exportar texto
   async function handleExport(format: 'pdf' | 'docx' | 'txt') {
     if (!titulo.trim() || !conteudo.trim()) {
       toast.error("Texto vazio não pode ser exportado");
       return;
     }
+
     try {
       if (format === 'txt') {
+        // Exportar como TXT (direto no navegador)
         const blob = new Blob([`${titulo}\n\n${conteudo}`], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -807,11 +950,17 @@ function EscritaPageContent() {
         URL.revokeObjectURL(url);
         toast.success("Texto exportado como TXT!");
       } else if (format === 'pdf' || format === 'docx') {
+        // Exportar via API
         const response = await fetch('/api/export', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ titulo, conteudo, format }),
+          body: JSON.stringify({
+            titulo,
+            conteudo,
+            format,
+          }),
         });
+
         if (response.ok) {
           const blob = await response.blob();
           const url = URL.createObjectURL(blob);
@@ -831,21 +980,32 @@ function EscritaPageContent() {
       console.error("Erro ao exportar texto:", error);
       toast.error("Erro ao exportar texto");
     }
+
     setShowExportModal(false);
   }
 
   async function handleEditTitle(id: string, currentTitle: string) {
     const newTitle = prompt("Digite o novo título:", currentTitle);
-    if (!newTitle || newTitle === currentTitle) return;
+    
+    if (!newTitle || newTitle === currentTitle) {
+      return;
+    }
+
     try {
       const response = await fetch(`/api/textos?id=${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ titulo: newTitle }),
       });
+
       if (response.ok) {
         toast.success("Título atualizado com sucesso");
-        if (id === currentTextoId) setTitulo(newTitle);
+        
+        // Se é o texto atual, atualizar no editor
+        if (id === currentTextoId) {
+          setTitulo(newTitle);
+        }
+        
         loadTextos();
       } else {
         toast.error("Erro ao atualizar título");
@@ -857,28 +1017,41 @@ function EscritaPageContent() {
   }
 
   function handleDownload(texto: Texto) {
+    // Criar conteúdo do arquivo
     const content = `TÍTULO: ${texto.titulo}\n\nCONTEÚDO:\n${texto.conteudo}`;
+    
+    // Criar blob e URL
     const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
+    
+    // Criar link temporário e clicar
     const link = document.createElement("a");
     link.href = url;
     link.download = `${texto.titulo || "texto"}.txt`;
     document.body.appendChild(link);
     link.click();
+    
+    // Limpar
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    
     toast.success("Download iniciado");
   }
 
   function handleCreateNewEpisode(episodeNumber: string) {
     if (!episodeNumber.trim()) return;
+    
+    // Adicionar à lista se não existir
     if (!availableEpisodes.includes(episodeNumber)) {
       setAvailableEpisodes([...availableEpisodes, episodeNumber].sort());
     }
+    
+    // Selecionar automaticamente
     setEpisodio(episodeNumber);
     toast.success(`Episódio "${episodeNumber}" criado!`);
   }
 
+  // Handlers para drag and drop
   function handleDragStart(textoId: string) {
     setDraggedTextoId(textoId);
   }
@@ -894,22 +1067,33 @@ function EscritaPageContent() {
       setDragOverTextoId(null);
       return;
     }
+
+    // Reordenar lista
     const currentList = activeTab === "rascunhos" ? rascunhos : publicados;
     const draggedIndex = currentList.findIndex(t => t.id === draggedTextoId);
     const targetIndex = currentList.findIndex(t => t.id === dragOverTextoId);
+
     if (draggedIndex === -1 || targetIndex === -1) return;
+
     const newList = [...currentList];
     const [removed] = newList.splice(draggedIndex, 1);
     newList.splice(targetIndex, 0, removed);
-    if (activeTab === "rascunhos") setRascunhos(newList);
-    else setPublicados(newList);
+
+    if (activeTab === "rascunhos") {
+      setRascunhos(newList);
+    } else {
+      setPublicados(newList);
+    }
+
     setDraggedTextoId(null);
     setDragOverTextoId(null);
   }
 
+  // Função para buscar e exibir ficha no modal
   async function handleFichaClick(fichaSlug: string) {
     setLoadingFicha(true);
     setShowFichaModal(true);
+    
     try {
       const response = await fetch(`/api/fichas/${fichaSlug}`);
       if (!response.ok) {
@@ -917,7 +1101,9 @@ function EscritaPageContent() {
         setShowFichaModal(false);
         return;
       }
+      
       const data = await response.json();
+      // A API retorna { ficha: {...} }
       setFichaData(data.ficha);
     } catch (error) {
       console.error("Erro ao buscar ficha:", error);
@@ -928,12 +1114,19 @@ function EscritaPageContent() {
     }
   }
 
+  // Função para conversar com assistentes
   async function handleAssistantMessage(mode: "urthona" | "urizen") {
     if (!assistantInput.trim()) return;
+
     setIsAssistantLoading(true);
     const messages = mode === "urthona" ? urthonaMessages : urizenMessages;
     const setMessages = mode === "urthona" ? setUrthonaMessages : setUrizenMessages;
-    const newUserMessage = { role: "user", content: assistantInput };
+
+    const newUserMessage = {
+      role: "user",
+      content: assistantInput,
+    };
+
     setMessages([...messages, newUserMessage]);
     setAssistantInput("");
 
@@ -956,6 +1149,7 @@ function EscritaPageContent() {
         return;
       }
 
+      // Ler stream de resposta
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let assistantMessage = "";
@@ -966,16 +1160,29 @@ function EscritaPageContent() {
         return;
       }
 
-      setMessages([...messages, newUserMessage, { role: "assistant", content: "" }]);
+      // Adicionar mensagem do assistente vazia
+      const assistantMessageObj = {
+        role: "assistant" as const,
+        content: "",
+      };
+      setMessages([...messages, newUserMessage, assistantMessageObj]);
 
+      // Ler chunks do stream
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
+
         const chunk = decoder.decode(value, { stream: true });
         assistantMessage += chunk;
-        setMessages([...messages, newUserMessage, { role: "assistant", content: assistantMessage }]);
+
+        // Atualizar mensagem progressivamente
+        setMessages([...messages, newUserMessage, {
+          role: "assistant",
+          content: assistantMessage,
+        }]);
       }
 
+      // Detectar e aplicar EDIT_CONTENT (apenas para Urthona)
       if (mode === "urthona" && assistantMessage.includes('```EDIT_CONTENT')) {
         const editMatch = assistantMessage.match(/```EDIT_CONTENT\s*([\s\S]*?)```/);
         if (editMatch && editMatch[1]) {
@@ -984,6 +1191,7 @@ function EscritaPageContent() {
           toast.success("Texto atualizado por Urthona!");
         }
       }
+
     } catch (error: any) {
       console.error("Erro ao conversar com assistente:", error);
       toast.error(error.message || "Erro ao conversar com assistente");
@@ -992,29 +1200,91 @@ function EscritaPageContent() {
     }
   }
 
-  // --- Filter Logic using useMemo to prevent block errors ---
-  const filteredTextos = useMemo(() => {
-    const texts = activeTab === "rascunhos" ? rascunhos : publicados;
-    return texts.filter(texto => {
-      if (searchQuery && !texto.titulo.toLowerCase().includes(searchQuery.toLowerCase())) {
+  // Funções auxiliares para badges de categoria
+  function getCategoryColor(categoria: string | null): string {
+    if (!categoria) return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
+    
+    const slug = categoria.toLowerCase();
+    
+    switch (slug) {
+      case "personagem":
+        return "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300";
+      case "local":
+        return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300";
+      case "evento":
+        return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300";
+      case "conceito":
+        return "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300";
+      case "regra":
+        return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300";
+      case "roteiro":
+        return "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300";
+      case "episodio":
+        return "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300";
+      default:
+        return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
+    }
+  }
+
+  function getCategoryLabel(categoria: string | null): string {
+    if (!categoria) return "";
+    
+    const cat = categories.find(c => c.slug === categoria);
+    return cat?.label || categoria;
+  }
+
+  function formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Agora mesmo";
+    if (diffMins < 60) return `${diffMins} min atrás`;
+    if (diffHours < 24) return `${diffHours}h atrás`;
+    if (diffDays < 7) return `${diffDays}d atrás`;
+    
+    return date.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    });
+  }
+
+  // Filtrar textos
+  const textos = activeTab === "rascunhos" ? rascunhos : publicados;
+  const filteredTextos = textos.filter(texto => {
+    // Filtro de busca
+    if (searchQuery && !texto.titulo.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false;
+    }
+    
+    // Filtro de universo
+    if (filterUniverseId && texto.universe_id !== filterUniverseId) {
+      return false;
+    }
+    
+    // Filtro de mundo
+    if (filterWorldId && texto.world_id !== filterWorldId) {
+      return false;
+    }
+    
+    // Filtro de categorias (múltipla seleção)
+    if (filterCategorias.length > 0) {
+      // Se "texto-livre" estiver selecionado, incluir textos sem categoria
+      if (filterCategorias.includes("texto-livre") && !texto.categoria) {
+        return true;
+      }
+      // Caso contrário, verificar se a categoria do texto está na lista
+      if (!filterCategorias.includes(texto.categoria || "")) {
         return false;
       }
-      if (filterUniverseId && texto.universe_id !== filterUniverseId) {
-        return false;
-      }
-      if (filterWorldId && texto.world_id !== filterWorldId) {
-        return false;
-      }
-      if (filterCategorias.length > 0) {
-        if (filterCategorias.includes("texto-livre") && !texto.categoria) {
-          return true;
-        }
-        if (!filterCategorias.includes(texto.categoria || "")) {
-          return false;
-        }
-      }
-      return true;
-  }, [activeTab, rascunhos, publicados, searchQuery, filterUniverseId, filterWorldId, filterCategorias]);
+    }
+    
+    return true;
+  });
 
   if (isLoading) {
     return <Loading />;
@@ -1522,7 +1792,7 @@ function EscritaPageContent() {
 
               {/* Conteúdo (só aparece após salvar metadados) */}
               {isMetadataSaved && (
-                <div className={`-mt-4 font-${fontFamily}`}>
+                <div className="-mt-4">
                   <TiptapEditor
                     value={conteudo}
                     onChange={(value) => setConteudo(value)}
@@ -1532,13 +1802,8 @@ function EscritaPageContent() {
                       setSelectedText(text);
                       setSelectionMenuPosition(position);
                     }}
-                    showToolbar={true}
+                    showToolbar={false}
                     editorRef={editorRef}
-                    fontFamily={fontFamily}
-                    onFontChange={handleFontChange}
-                    isFocusMode={isFocusMode}
-                    focusType={focusType}
-                    typewriterMode={typewriterMode}
                   />
                 </div>
               )}
@@ -2023,12 +2288,7 @@ function EscritaPageContent() {
 
       {/* Modo Foco - Fullscreen */}
       {isFocusMode && (
-        <div className={clsx(
-          "fixed inset-0 z-50 flex flex-col",
-          focusModeTheme === 'light' ? 'focus-mode-light' :
-          focusModeTheme === 'dark' ? 'focus-mode-dark' :
-          'bg-light-base dark:bg-dark-base'
-        )}>
+        <div className="fixed inset-0 z-50 bg-light-base dark:bg-dark-base flex flex-col">
           {/* Header do Modo Foco */}
           <div className="flex justify-between items-center px-8 py-4 border-b border-border-light-default dark:border-border-dark-default">
             <h1 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
@@ -2043,8 +2303,22 @@ function EscritaPageContent() {
                 </div>
               )}
               
-              {/* Controles de Foco e Tema */}
+              {/* Controles de Foco */}
               <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setFocusType(prev => prev === 'sentence' ? 'off' : 'sentence');
+                  }}
+                  className={clsx(
+                    "px-3 py-1.5 rounded text-xs font-medium transition-colors",
+                    focusType === 'sentence'
+                      ? "bg-primary-500 text-white"
+                      : "bg-light-overlay dark:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary hover:bg-light-raised dark:hover:bg-dark-raised"
+                  )}
+                  title="Foco em Sentença (Ctrl+Shift+F)"
+                >
+                  Sentença
+                </button>
                 <button
                   onClick={() => {
                     setFocusType(prev => prev === 'paragraph' ? 'off' : 'paragraph');
@@ -2060,28 +2334,18 @@ function EscritaPageContent() {
                   Parágrafo
                 </button>
                 <button
-                  onClick={() => setFocusModeTheme('light')}
+                  onClick={() => setTypewriterMode(prev => !prev)}
                   className={clsx(
                     "px-3 py-1.5 rounded text-xs font-medium transition-colors",
-                    focusModeTheme === 'light'
+                    typewriterMode
                       ? "bg-primary-500 text-white"
                       : "bg-light-overlay dark:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary hover:bg-light-raised dark:hover:bg-dark-raised"
                   )}
-                  title="Modo Branco"
+                  title="Modo Máquina de Escrever (Ctrl+Shift+T)"
                 >
-                  ☀️ Branco
-                </button>
-                <button
-                  onClick={() => setFocusModeTheme('dark')}
-                  className={clsx(
-                    "px-3 py-1.5 rounded text-xs font-medium transition-colors",
-                    focusModeTheme === 'dark'
-                      ? "bg-primary-500 text-white"
-                      : "bg-light-overlay dark:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary hover:bg-light-raised dark:hover:bg-dark-raised"
-                  )}
-                  title="Modo Preto"
-                >
-                  🌙 Preto
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
                 </button>
               </div>
               
@@ -2127,7 +2391,7 @@ function EscritaPageContent() {
               "flex-1 overflow-y-auto transition-all duration-300",
               (showUrthona || showUrizen) ? "mr-96" : ""
             )}>
-              <div className={`max-w-4xl mx-auto px-16 py-12 font-${fontFamily}`}>
+              <div className="max-w-4xl mx-auto px-16 py-12">
                 <TiptapEditor
                   value={conteudo}
                   onChange={(value) => setConteudo(value)}
@@ -2144,8 +2408,6 @@ function EscritaPageContent() {
                   typewriterMode={typewriterMode}
                   isFocusMode={true}
                   showToolbar={false}
-                  fontFamily={fontFamily}
-                  onFontChange={handleFontChange}
                 />
               </div>
             </div>
@@ -2497,14 +2759,9 @@ function EscritaPageContent() {
           </div>
         </div>
       )}
-
-      {/* Modal de confirmação de delete */}
-      <ConfirmDialog />
     </div>
   );
 }
-
-// END OF COMPONENT
 
 export default function EscritaPage() {
   return (
