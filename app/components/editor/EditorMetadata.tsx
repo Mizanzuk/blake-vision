@@ -75,7 +75,7 @@ export function EditorMetadata({
   return (
     <EditorRow className="py-4 px-0 flex-col lg:flex-row">
       {/* COLUNA A - Vazio */}
-      <EditorRowColumn column="A" />
+      <EditorRowColumn column="A"></EditorRowColumn>
 
       {/* COLUNA B - Metadados */}
       <EditorRowColumn column="B" className="space-y-4 w-full">
@@ -175,7 +175,7 @@ export function EditorMetadata({
       </EditorRowColumn>
 
       {/* COLUNA C - Vazio */}
-      <EditorRowColumn column="C" />
+      <EditorRowColumn column="C"></EditorRowColumn>
     </EditorRow>
   );
 }
