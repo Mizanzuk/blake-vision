@@ -68,7 +68,7 @@ export function EditorTitleRow({
       </EditorRowColumn>
 
       {/* COLUNA C - Vazio */}
-      <EditorRowColumn column="C"></EditorRowColumn>
+      <EditorRowColumn column="C" />
     </EditorRow>
   );
 }

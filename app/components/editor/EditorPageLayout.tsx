@@ -72,7 +72,7 @@ export function EditorRow({ children, className, noBorder = false }: EditorRowPr
  * EditorRowColumn - Componente para cada coluna dentro de uma linha
  */
 interface EditorRowColumnProps {
-  children?: React.ReactNode;
+  children: React.ReactNode;
   column: 'A' | 'B' | 'C';
   className?: string;
 }
