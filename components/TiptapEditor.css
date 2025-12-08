@@ -320,6 +320,7 @@
 .ProseMirror.prose:focus-within {
   outline: none !important;
   border: none !important;
+  box-shadow: none !important;
 }
 
 /* Remove outline de todos os elementos dentro do ProseMirror */
