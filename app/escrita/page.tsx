@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -29,25 +28,26 @@ export default function EscritaPage() {
         </div>
       </header>
 
-      {/* CONTEÚDO PRINCIPAL */}
+      {/* GRID 6x3 - Estrutura Principal */}
       <div className="flex-1 flex overflow-hidden">
-        
-        {/* SIDEBAR - Biblioteca de Textos */}
-        <aside className="w-64 border-r border-border-light-default dark:border-border-dark-default bg-light-bg-secondary dark:bg-dark-bg-secondary overflow-y-auto hidden lg:block">
-          <div className="p-4">
-            <h2 className="text-sm font-semibold text-text-light-primary dark:text-dark-primary mb-4">Meus Textos</h2>
-            <div className="space-y-2">
-              <button className="w-full text-left px-3 py-2 rounded text-sm bg-primary text-white">A Noite do Cão Misterioso</button>
-              <button className="w-full text-left px-3 py-2 rounded text-sm text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay">O Segredo da Floresta</button>
-            </div>
+        {/* COLUNA A - Margem Esquerda (Vazia) */}
+        <div className="w-24 flex-shrink-0 border-r border-border-light-default dark:border-border-dark-default bg-light-bg-primary dark:bg-dark-bg-primary relative">
+          {/* Célula A2 - Botão Colapsar (Flutuante) */}
+          <div className="absolute top-[calc(60px+12px)] left-0 transform -translate-x-full pr-2">
+            <button
+              onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
+              className="text-xl hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary"
+            >
+              {isHeaderExpanded ? '▼' : '▶'}
+            </button>
           </div>
-        </aside>
+        </div>
 
-        {/* GRID 6x3 - Estrutura Principal */}
-        <div className="flex-1 flex flex-col relative">
+        {/* COLUNA B - Conteúdo Principal (6 Linhas) */}
+        <div className="flex-1 flex flex-col overflow-hidden">
           
           {/* LINHA 1: Modo Foco + Avatares */}
-          <div className="py-4 border-b border-border-light-default dark:border-border-dark-default flex items-center justify-between px-4 md:px-8">
+          <div className="h-16 border-b border-border-light-default dark:border-border-dark-default flex items-center justify-between px-8 flex-shrink-0">
             <button className="px-4 py-2 bg-pink-500 text-white rounded-full hover:bg-pink-600 transition-colors text-sm font-medium">
               👁 Modo Foco
             </button>
@@ -58,83 +58,81 @@ export default function EscritaPage() {
             </div>
           </div>
 
-          {/* LINHA 2: Título + Botão Colapsar (A2) + Menu (C1) */}
-          <div className="py-3 border-b border-border-light-default dark:border-border-dark-default flex items-center relative px-4 md:px-8">
-            
-            {/* Célula A2 - Botão Colapsar (Flutuante para esquerda) */}
-            <button
-              onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
-              className="absolute left-0 -translate-x-full pr-2 text-xl hover:opacity-70 transition-opacity"
-            >
-              {isHeaderExpanded ? '▼' : '▶'}
-            </button>
-            
-            {/* Célula B2 - Título (Centro) */}
-            <div className="flex-1">
-              <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary">
-                A Noite do Cão Misterioso (Cópia)
-              </h2>
-            </div>
-            
-            {/* Célula C1 - Três Pontinhos (Flutuante para direita) */}
-            <button className="absolute right-0 translate-x-full pl-2 text-xl hover:opacity-70 transition-opacity">
-              ⋮
-            </button>
+          {/* LINHA 2: Título */}
+          <div className="h-12 border-b border-border-light-default dark:border-border-dark-default flex items-center px-8 flex-shrink-0">
+            <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary">
+              A Noite do Cão Misterioso (Cópia)
+            </h2>
           </div>
 
           {/* LINHA 3: Metadados (Condicional) */}
           {isHeaderExpanded && (
-            <div className="space-y-4 py-4 border-b border-border-light-default dark:border-border-dark-default px-4 md:px-8">
-              <p>Metadados aqui...</p>
+            <div className="border-b border-border-light-default dark:border-border-dark-default px-8 py-4 flex-shrink-0 space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase">TÍTULO</label>
+                <p className="text-sm text-text-light-primary dark:text-dark-primary">A Noite do Cão Misterioso (Cópia)</p>
+              </div>
+              <div className="grid grid-cols-4 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase">UNIVERSO</label>
+                  <select className="w-full mt-1 px-2 py-1 text-sm border border-border-light-default dark:border-border-dark-default rounded bg-light-bg-primary dark:bg-dark-bg-primary text-text-light-primary dark:text-dark-primary">
+                    <option>U1</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase">MUNDO</label>
+                  <select className="w-full mt-1 px-2 py-1 text-sm border border-border-light-default dark:border-border-dark-default rounded bg-light-bg-primary dark:bg-dark-bg-primary text-text-light-primary dark:text-dark-primary">
+                    <option>T1</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase">EPISÓDIO</label>
+                  <select className="w-full mt-1 px-2 py-1 text-sm border border-border-light-default dark:border-border-dark-default rounded bg-light-bg-primary dark:bg-dark-bg-primary text-text-light-primary dark:text-dark-primary">
+                    <option>T3</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase">CATEGORIA</label>
+                  <select className="w-full mt-1 px-2 py-1 text-sm border border-border-light-default dark:border-border-dark-default rounded bg-light-bg-primary dark:bg-dark-bg-primary text-text-light-primary dark:text-dark-primary">
+                    <option>Texto Livre</option>
+                  </select>
+                </div>
+              </div>
             </div>
           )}
 
           {/* LINHA 4: Toolbar de Edição */}
-          <div className="py-3 border-b border-border-light-default dark:border-border-dark-default flex items-center gap-4 px-4 md:px-8">
-            <button className="text-sm font-medium hover:opacity-70 transition-opacity">B</button>
-            <button className="text-sm font-medium hover:opacity-70 transition-opacity">/</button>
-            <button className="text-sm font-medium hover:opacity-70 transition-opacity">Aa ▼</button>
+          <div className="h-12 border-b border-border-light-default dark:border-border-dark-default flex items-center gap-4 px-8 flex-shrink-0">
+            <button className="text-sm font-medium hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary">B</button>
+            <button className="text-sm font-medium hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary">/</button>
+            <button className="text-sm font-medium hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary">Aa ▼</button>
           </div>
 
           {/* LINHA 5: Conteúdo do Editor (Scrollável) */}
-          <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6">
-            <p>Conteúdo do editor aqui...</p>
+          <div className="flex-1 overflow-y-auto px-8 py-6">
+            <p className="text-text-light-primary dark:text-dark-primary leading-relaxed">
+              Em uma pequena cidade cercada por densas florestas, viviam dois amigos inseparáveis: Lucas e Pedro. Os dois eram conhecidos por suas aventuras noturnas, onde exploravam os arredores da cidade à procura de mistérios e lendas urbanas para desvendar. Teste.
+            </p>
+            <p className="text-text-light-primary dark:text-dark-primary leading-relaxed mt-4">
+              Certa noite, enquanto caminhavam por uma trilha pouco iluminada na floresta, Lucas e Pedro começaram a ouvir um som baixo e gutural. Curiosos, seguiram o ruído até que, entre as sombras das árvores, avistaram uma figura enorme e peluda. A luz da lua cheia iluminou a criatura, revelando olhos brilhantes e um corpo imponente. O susto foi imediato: ambos acreditaram estar diante de um lobisomem! Sem pensar duas vezes, os amigos correram de volta para a cidade, o coração disparado e a mente cheia de imagens sombrias. Ao chegarem, contaram a todos sobre o encontro sobrenatural. A notícia se espalhou rapidamente, e em pouco tempo, a cidade estava em alvoroço com a história do "lobisomem da floresta". No entanto, a curiosidade dos amigos não os deixava em paz. No dia seguinte, decidiram investigar a área à luz do dia. Armados com lanternas e coragem renovada, voltaram à floresta. Ao chegarem ao local do avistamento, encontraram pegadas enormes no solo. Seguiram as pistas pelas os levaram até uma clareira onde, para sua surpresa, encontraram um cachorro gigantesco, de pelagem escura e olhos penetrantes. O cachorro, embora imponente, era dócil. Aproximando-se devagar, os amigos descobriram que ele usava uma coleira com uma medalha, onde estava escrito o nome de seu dono. Compreendendo o mal-entendido, Lucas e Pedro riceberam que Max era o cachorro perdido de um fazendeiro da região, famoso por possuir uma presença intimidadora. Compreendendo o mal-entendido, Lucas e Pedro voltaram à cidade com Max, explicando a verdadeira história ao fazendeiro e aos moradores. O alívio tomou conta de todos, e o susto da noite anterior se transformou em uma divertida anedota para a comunidade. A partir daquele dia, Max se tornou uma mascote local, e Lucas e Pedro continuaram suas aventuras, agora prontos para desvendar qualquer mistério que a noite pudesse trazer. **"Moral da História:"** Às vezes, o que nos assusta no escuro se revela inofensivo à luz do dia. A coragem de enfrentar nossos medos pode transformar monstros em amigos.
+            </p>
           </div>
         </div>
 
-        {/* COLUNA C - Agentes (Sidebar Direita) */}
-        <aside className="w-64 border-l border-border-light-default dark:border-border-dark-default bg-light-bg-secondary dark:bg-dark-bg-secondary overflow-y-auto hidden lg:block">
-          <div className="p-4">
-            <h2 className="text-sm font-semibold text-text-light-primary dark:text-dark-primary mb-4">Agentes</h2>
-            
-            {/* Urizen */}
-            <button className="w-full text-left p-3 rounded border border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors mb-3">
-              <div className="flex items-center gap-2">
-                <img src="/avatars/urizen.jpg" alt="Urizen" className="w-6 h-6 rounded-full" />
-                <div>
-                  <p className="text-sm font-medium text-text-light-primary dark:text-dark-primary">Urizen</p>
-                  <p className="text-xs text-text-light-secondary dark:text-dark-secondary">A Lei</p>
-                </div>
-              </div>
-            </button>
-            
-            {/* Urthona */}
-            <button className="w-full text-left p-3 rounded border border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors">
-              <div className="flex items-center gap-2">
-                <img src="/avatars/urthona.jpg" alt="Urthona" className="w-6 h-6 rounded-full" />
-                <div>
-                  <p className="text-sm font-medium text-text-light-primary dark:text-dark-primary">Urthona</p>
-                  <p className="text-xs text-text-light-secondary dark:text-dark-secondary">O Fluxo</p>
-                </div>
-              </div>
+        {/* COLUNA C - Margem Direita (Vazia) */}
+        <div className="w-24 flex-shrink-0 border-l border-border-light-default dark:border-border-dark-default bg-light-bg-primary dark:bg-dark-bg-primary relative">
+          {/* Célula C1 - Três Pontinhos (Flutuante) */}
+          <div className="absolute top-[calc(60px+12px)] right-0 transform translate-x-full pl-2">
+            <button className="text-xl hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary">
+              ⋮
             </button>
           </div>
-        </aside>
+        </div>
       </div>
 
       {/* LINHA 6: Footer Fixo */}
-      <footer className="border-t border-border-light-default dark:border-border-dark-default bg-light-bg-primary dark:bg-dark-bg-primary py-4">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 flex justify-end gap-3">
+      <footer className="border-t border-border-light-default dark:border-border-dark-default bg-light-bg-primary dark:bg-dark-bg-primary py-4 flex-shrink-0">
+        <div className="flex justify-end gap-3 px-8">
           <button className="px-6 py-2 bg-light-overlay dark:bg-dark-overlay text-text-light-primary dark:text-dark-primary rounded hover:opacity-80 transition-opacity font-medium">
             Salvar
           </button>
