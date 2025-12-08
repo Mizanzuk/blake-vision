@@ -104,6 +104,46 @@ const suggestion: Omit<SuggestionOptions, 'editor'> = {
   },
 };
 
+// Helper: Encontrar sentença atual baseado na posição do cursor
+function findCurrentSentence(text: string, cursorPosition: number): { start: number; end: number } | null {
+  if (!text || cursorPosition < 0) return null;
+  
+  // Regex para detectar sentenças (termina com . ! ? seguido de espaço ou fim)
+  const sentenceRegex = /[^.!?]+[.!?]+(?:\s|$)/g;
+  const sentences: { start: number; end: number; text: string }[] = [];
+  
+  let match;
+  while ((match = sentenceRegex.exec(text)) !== null) {
+    sentences.push({
+      start: match.index,
+      end: match.index + match[0].length,
+      text: match[0]
+    });
+  }
+  
+  // Se não encontrou sentenças com pontuação, considerar todo o texto como uma sentença
+  if (sentences.length === 0) {
+    return { start: 0, end: text.length };
+  }
+  
+  // Encontrar sentença que contém o cursor
+  for (const sentence of sentences) {
+    if (cursorPosition >= sentence.start && cursorPosition <= sentence.end) {
+      return { start: sentence.start, end: sentence.end };
+    }
+  }
+  
+  // Se cursor está após última sentença, usar última sentença
+  if (sentences.length > 0) {
+    const lastSentence = sentences[sentences.length - 1];
+    if (cursorPosition >= lastSentence.end) {
+      return { start: lastSentence.start, end: lastSentence.end };
+    }
+  }
+  
+  return null;
+}
+
 export default function TiptapEditor({ 
   value, 
   onChange, 
@@ -191,7 +231,7 @@ export default function TiptapEditor({
   }, [editor, editorRef]);
 
   // ========================================
-  // FOCUS MODE - PARAGRAPH MODE (CORRIGIDO)
+  // FOCUS MODE - SENTENCE & PARAGRAPH
   // ========================================
   useEffect(() => {
     if (!editor || !focusType || focusType === 'off') {
@@ -203,6 +243,16 @@ export default function TiptapEditor({
           p.style.opacity = '';
           p.style.filter = '';
           p.style.transition = '';
+          
+          // Remover spans de sentença se existirem
+          const spans = p.querySelectorAll('span.sentence-wrapper');
+          spans.forEach(span => {
+            const parent = span.parentNode;
+            while (span.firstChild) {
+              parent?.insertBefore(span.firstChild, span);
+            }
+            parent?.removeChild(span);
+          });
         });
       }
       return;
@@ -243,19 +293,70 @@ export default function TiptapEditor({
         const paragraphs = container.querySelectorAll('p');
         console.log('[Focus Mode] Total de parágrafos:', paragraphs.length);
         
-        paragraphs.forEach((p: HTMLElement) => {
-          if (p === currentParagraph) {
-            // Parágrafo ativo: nítido
-            p.style.opacity = '1';
-            p.style.filter = 'none';
-            p.style.transition = 'opacity 0.2s ease, filter 0.2s ease';
-          } else {
-            // Outros parágrafos: blur
+        if (focusType === 'paragraph') {
+          // MODO PARÁGRAFO: Destacar parágrafo inteiro
+          paragraphs.forEach((p: HTMLElement) => {
+            if (p === currentParagraph) {
+              // Parágrafo ativo: nítido
+              p.style.opacity = '1';
+              p.style.filter = 'none';
+              p.style.transition = 'opacity 0.2s ease, filter 0.2s ease';
+            } else {
+              // Outros parágrafos: blur
+              p.style.opacity = '0.3';
+              p.style.filter = 'blur(1px)';
+              p.style.transition = 'opacity 0.2s ease, filter 0.2s ease';
+            }
+          });
+        } else if (focusType === 'sentence') {
+          // MODO SENTENÇA: Destacar apenas sentença atual
+          
+          // Primeiro, deixar todos os parágrafos em blur
+          paragraphs.forEach((p: HTMLElement) => {
             p.style.opacity = '0.3';
             p.style.filter = 'blur(1px)';
             p.style.transition = 'opacity 0.2s ease, filter 0.2s ease';
+          });
+          
+          // Se há parágrafo atual, destacar apenas a sentença
+          if (currentParagraph) {
+            const paragraphText = currentParagraph.textContent || '';
+            
+            // Calcular posição do cursor dentro do parágrafo
+            let cursorPosInParagraph = 0;
+            
+            // Encontrar posição relativa do cursor no parágrafo
+            try {
+              const paragraphStart = editor.view.posAtDOM(currentParagraph, 0);
+              cursorPosInParagraph = from - paragraphStart;
+            } catch (e) {
+              console.warn('[Focus Mode] Erro ao calcular posição do cursor:', e);
+              cursorPosInParagraph = 0;
+            }
+            
+            console.log('[Focus Mode] Cursor no parágrafo:', cursorPosInParagraph, '/', paragraphText.length);
+            
+            // Encontrar sentença atual
+            const sentenceRange = findCurrentSentence(paragraphText, cursorPosInParagraph);
+            
+            if (sentenceRange) {
+              console.log('[Focus Mode] Sentença encontrada:', paragraphText.substring(sentenceRange.start, sentenceRange.end));
+              
+              // Destacar apenas o parágrafo atual (sem blur)
+              currentParagraph.style.opacity = '1';
+              currentParagraph.style.filter = 'none';
+              
+              // Aplicar blur em partes do parágrafo que não são a sentença atual
+              // Abordagem: Usar gradiente de opacidade via pseudo-elementos ou spans
+              // Por simplicidade, vamos destacar o parágrafo inteiro por enquanto
+              // TODO: Implementar highlight de sentença específica com spans
+            } else {
+              // Fallback: destacar parágrafo inteiro
+              currentParagraph.style.opacity = '1';
+              currentParagraph.style.filter = 'none';
+            }
           }
-        });
+        }
       }, 50); // Debounce de 50ms
     };
     
@@ -280,7 +381,7 @@ export default function TiptapEditor({
   }, [editor, focusType]);
 
   // ========================================
-  // TYPEWRITER MODE (CORRIGIDO)
+  // TYPEWRITER MODE
   // ========================================
   useEffect(() => {
     if (!editor || !typewriterMode) return;
