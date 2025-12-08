@@ -7,7 +7,6 @@ import Placeholder from '@tiptap/extension-placeholder';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import './TiptapEditor.css';
 import FontSelector, { FontFamily } from './FontSelector';
-import { FocusModeExtension } from '../extensions/FocusModeExtension';
 
 
 
@@ -177,10 +176,7 @@ export default function TiptapEditor({
         },
         suggestion,
       }),
-      FocusModeExtension.configure({
-        focusType,
-        typewriterMode,
-      }),
+
     ],
     content: value,
     onUpdate: ({ editor }) => {
@@ -191,7 +187,7 @@ export default function TiptapEditor({
         class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none',
       },
     },
-  }, [focusType, typewriterMode]); // Re-criar editor quando focus mode mudar
+  });
 
   // Sync external value changes
   useEffect(() => {
@@ -234,10 +230,212 @@ export default function TiptapEditor({
     }
   }, [editor, editorRef]);
 
-  // Focus Mode agora é gerenciado pelo FocusModeExtension
+  // ========================================
+  // FOCUS MODE - SENTENCE & PARAGRAPH
+  // ========================================
+  useEffect(() => {
+    if (!editor || !focusType || focusType === 'off') {
+      // Limpar todos os estilos quando desativado
+      const container = editor?.view?.dom;
+      if (container) {
+        const paragraphs = container.querySelectorAll('p');
+        paragraphs.forEach((p: HTMLElement) => {
+          p.style.opacity = '';
+          p.style.filter = '';
+          p.style.transition = '';
+          
+          // Remover spans de sentença se existirem
+          const spans = p.querySelectorAll('span.sentence-wrapper');
+          spans.forEach(span => {
+            const parent = span.parentNode;
+            while (span.firstChild) {
+              parent?.insertBefore(span.firstChild, span);
+            }
+            parent?.removeChild(span);
+          });
+        });
+      }
+      return;
+    }
 
-  // Typewriter Mode agora é gerenciado pelo FocusModeExtension
-  // As opções são atualizadas via reconfiguração do editor
+    console.log('[Focus Mode] Ativando modo:', focusType);
+    
+    // Debounce para evitar múltiplas atualizações
+    let timeoutId: NodeJS.Timeout;
+    
+    const updateFocus = () => {
+      // Cancelar timeout anterior
+      if (timeoutId) clearTimeout(timeoutId);
+      
+      timeoutId = setTimeout(() => {
+        const container = editor.view.dom;
+        const { from } = editor.state.selection;
+        
+        console.log('[Focus Mode] updateFocus - from:', from);
+        
+        // Encontrar parágrafo atual
+        const domAtPos = editor.view.domAtPos(from);
+        let currentParagraph: HTMLElement | null = null;
+        let node = domAtPos.node as Node;
+        
+        // Navegar até encontrar <p>
+        while (node && node !== container) {
+          if (node.nodeType === Node.ELEMENT_NODE && (node as HTMLElement).tagName === 'P') {
+            currentParagraph = node as HTMLElement;
+            break;
+          }
+          node = node.parentNode!;
+        }
+        
+        console.log('[Focus Mode] Parágrafo atual:', currentParagraph?.textContent?.substring(0, 50));
+        
+        // Aplicar estilos em todos os parágrafos
+        const paragraphs = container.querySelectorAll('p');
+        console.log('[Focus Mode] Total de parágrafos:', paragraphs.length);
+        
+        if (focusType === 'paragraph') {
+          // MODO PARÁGRAFO: Destacar parágrafo inteiro
+          paragraphs.forEach((p: HTMLElement) => {
+            if (p === currentParagraph) {
+              // Parágrafo ativo: nítido
+              p.style.opacity = '1';
+              p.style.filter = 'none';
+              p.style.transition = 'opacity 0.2s ease, filter 0.2s ease';
+            } else {
+              // Outros parágrafos: blur
+              p.style.opacity = '0.3';
+              p.style.filter = 'blur(1px)';
+              p.style.transition = 'opacity 0.2s ease, filter 0.2s ease';
+            }
+          });
+        } else if (focusType === 'sentence') {
+          // MODO SENTENÇA: Destacar apenas sentença atual
+          
+          // Primeiro, deixar todos os parágrafos em blur
+          paragraphs.forEach((p: HTMLElement) => {
+            p.style.opacity = '0.3';
+            p.style.filter = 'blur(1px)';
+            p.style.transition = 'opacity 0.2s ease, filter 0.2s ease';
+          });
+          
+          // Se há parágrafo atual, destacar apenas a sentença
+          if (currentParagraph) {
+            const paragraphText = currentParagraph.textContent || '';
+            
+            // Calcular posição do cursor dentro do parágrafo
+            let cursorPosInParagraph = 0;
+            
+            // Encontrar posição relativa do cursor no parágrafo
+            try {
+              const paragraphStart = editor.view.posAtDOM(currentParagraph, 0);
+              cursorPosInParagraph = from - paragraphStart;
+            } catch (e) {
+              console.warn('[Focus Mode] Erro ao calcular posição do cursor:', e);
+              cursorPosInParagraph = 0;
+            }
+            
+            console.log('[Focus Mode] Cursor no parágrafo:', cursorPosInParagraph, '/', paragraphText.length);
+            
+            // Encontrar sentença atual
+            const sentenceRange = findCurrentSentence(paragraphText, cursorPosInParagraph);
+            
+            if (sentenceRange) {
+              console.log('[Focus Mode] Sentença encontrada:', paragraphText.substring(sentenceRange.start, sentenceRange.end));
+              
+              // Destacar apenas o parágrafo atual (sem blur)
+              currentParagraph.style.opacity = '1';
+              currentParagraph.style.filter = 'none';
+              
+              // Aplicar blur em partes do parágrafo que não são a sentença atual
+              // Abordagem: Usar gradiente de opacidade via pseudo-elementos ou spans
+              // Por simplicidade, vamos destacar o parágrafo inteiro por enquanto
+              // TODO: Implementar highlight de sentença específica com spans
+            } else {
+              // Fallback: destacar parágrafo inteiro
+              currentParagraph.style.opacity = '1';
+              currentParagraph.style.filter = 'none';
+            }
+          }
+        }
+      }, 50); // Debounce de 50ms
+    };
+    
+    // Atualizar imediatamente
+    updateFocus();
+    
+    // Listeners para múltiplos eventos
+    const handleUpdate = () => updateFocus();
+    
+    editor.on('update', handleUpdate);
+    editor.on('selectionUpdate', handleUpdate);
+    editor.on('transaction', handleUpdate);
+    editor.on('focus', handleUpdate);
+    
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      editor.off('update', handleUpdate);
+      editor.off('selectionUpdate', handleUpdate);
+      editor.off('transaction', handleUpdate);
+      editor.off('focus', handleUpdate);
+    };
+  }, [editor, focusType]);
+
+  // ========================================
+  // TYPEWRITER MODE
+  // ========================================
+  useEffect(() => {
+    if (!editor || !typewriterMode) return;
+
+    console.log('[Typewriter Mode] Ativando...');
+    
+    let timeoutId: NodeJS.Timeout;
+    
+    const handleTypewriter = () => {
+      // Cancelar timeout anterior
+      if (timeoutId) clearTimeout(timeoutId);
+      
+      timeoutId = setTimeout(() => {
+        try {
+          const { from } = editor.state.selection;
+          const coords = editor.view.coordsAtPos(from);
+          
+          // Encontrar container scrollável
+          const editorDom = editor.view.dom;
+          const scrollContainer = editorDom.parentElement;
+          
+          if (!scrollContainer) return;
+          
+          // Calcular posição para centralizar cursor
+          const containerHeight = scrollContainer.clientHeight;
+          const cursorTop = coords.top - scrollContainer.getBoundingClientRect().top + scrollContainer.scrollTop;
+          const targetScroll = cursorTop - (containerHeight / 2);
+          
+          console.log('[Typewriter Mode] Scroll para:', targetScroll);
+          
+          // Scroll suave
+          scrollContainer.scrollTo({
+            top: targetScroll,
+            behavior: 'smooth'
+          });
+        } catch (error) {
+          console.error('[Typewriter Mode] Erro:', error);
+        }
+      }, 50); // Debounce de 50ms
+    };
+    
+    // Atualizar imediatamente
+    handleTypewriter();
+    
+    // Listeners
+    editor.on('update', handleTypewriter);
+    editor.on('selectionUpdate', handleTypewriter);
+    
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      editor.off('update', handleTypewriter);
+      editor.off('selectionUpdate', handleTypewriter);
+    };
+  }, [editor, typewriterMode]);
 
   if (!editor) {
     return null;

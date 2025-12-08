@@ -180,10 +180,3 @@
   padding-top: 50vh;
   padding-bottom: 50vh;
 }
-
-/* Focus Mode: Blur effect (usado pelo plugin) */
-.ProseMirror p.focus-mode-blur {
-  opacity: 0.3 !important;
-  filter: blur(1px) !important;
-  transition: opacity 0.2s ease, filter 0.2s ease !important;
-}
