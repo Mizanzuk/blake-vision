@@ -6,6 +6,7 @@ import Mention from '@tiptap/extension-mention';
 import Placeholder from '@tiptap/extension-placeholder';
 import { useEffect } from 'react';
 import './TiptapEditor.css';
+import { FocusModeExtension } from './extensions/FocusModeExtension';
 
 
 // Suggestion plugin para mentions
@@ -131,7 +132,9 @@ export default function TiptapEditor({
         },
         suggestion,
       }),
-
+      FocusModeExtension.configure({
+        mode: focusType || 'off',
+      }),
     ],
     content: value,
     onUpdate: ({ editor }) => {
@@ -193,72 +196,25 @@ export default function TiptapEditor({
     }
   }, [editor, editorRef]);
 
-  // Focus Mode implementation - Nova abordagem robusta
+  // Focus Mode implementation - Usando Extension customizada
   useEffect(() => {
-    console.log('[Focus Mode] useEffect executado, focusType:', focusType, 'editor:', !!editor);
     if (!editor) return;
 
-    const proseMirror = editor.view.dom;
+    console.log('[Focus Mode] Atualizando modo para:', focusType);
     
-    // Aplicar classe no CONTAINER baseado no focusType
-    proseMirror.classList.remove('focus-mode-sentence', 'focus-mode-paragraph');
+    // Atualizar o modo da extension
+    const extension = editor.extensionManager.extensions.find(
+      (ext) => ext.name === 'focusMode'
+    );
     
-    if (focusType === 'sentence') {
-      proseMirror.classList.add('focus-mode-sentence');
-      console.log('[Focus Mode] Classe focus-mode-sentence aplicada no container');
-    } else if (focusType === 'paragraph') {
-      proseMirror.classList.add('focus-mode-paragraph');
-      console.log('[Focus Mode] Classe focus-mode-paragraph aplicada no container');
+    if (extension) {
+      extension.options.mode = focusType || 'off';
+      // Forçar atualização do editor
+      editor.view.updateState(editor.state);
+      console.log('[Focus Mode] Extension atualizada com sucesso');
+    } else {
+      console.error('[Focus Mode] Extension não encontrada!');
     }
-
-    const updateCurrentElement = () => {
-      // Remover marcação anterior
-      proseMirror.querySelectorAll('.current-focus').forEach(el => {
-        el.classList.remove('current-focus');
-      });
-
-      if (focusType === 'off') return;
-
-      // Encontrar elemento atual baseado na seleção
-      const selection = proseMirror.ownerDocument.getSelection();
-      if (!selection || !selection.anchorNode) return;
-
-      let currentNode: Node | null = selection.anchorNode;
-      let targetElement: Element | null = null;
-
-      // Procurar o elemento apropriado (p para parágrafo, ou sentence para sentença)
-      while (currentNode && currentNode !== proseMirror) {
-        if (currentNode.nodeType === Node.ELEMENT_NODE) {
-          const element = currentNode as Element;
-          if (element.nodeName === 'P') {
-            targetElement = element;
-            break;
-          }
-        }
-        currentNode = currentNode.parentNode;
-      }
-
-      if (targetElement) {
-        targetElement.classList.add('current-focus');
-        console.log('[Focus Mode] Elemento atual marcado');
-      }
-    };
-
-    // Atualizar quando seleção mudar
-    editor.on('selectionUpdate', updateCurrentElement);
-    editor.on('update', updateCurrentElement);
-    
-    // Atualização inicial
-    updateCurrentElement();
-
-    return () => {
-      editor.off('selectionUpdate', updateCurrentElement);
-      editor.off('update', updateCurrentElement);
-      proseMirror.classList.remove('focus-mode-sentence', 'focus-mode-paragraph');
-      proseMirror.querySelectorAll('.current-focus').forEach(el => {
-        el.classList.remove('current-focus');
-      });
-    };
   }, [editor, focusType]);
 
   if (!editor) {
