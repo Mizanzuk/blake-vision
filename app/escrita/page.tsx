@@ -1309,97 +1309,79 @@ function EscritaPageContent() {
               />
             )}
             
-            <div className="w-full">
-            {/* Grid 6x3 para o layout da página Escrita */}
-            <div className="grid grid-cols-[auto_1fr_auto] gap-0 lg:gap-8 w-full">
-              {/* COLUNA A - Margem Esquerda */}
-              <div className="hidden lg:block w-0 lg:w-12" />
-              
-              {/* COLUNA B - Conteúdo Principal */}
-              <div className="max-w-4xl mx-auto px-4 md:px-8 py-8 w-full">
-                <div className="space-y-0">
-                  {/* Cabeçalho Colasável (quando metadados foram salvos) */}
-                  {isMetadataSaved ? (
-                    <div>
-                      {/* LINHA 2: Título com botão de colapsar */}
-                      <div className="grid grid-cols-[auto_1fr_auto] gap-0 lg:gap-8 w-full py-3 px-0 border-b border-border-light-default dark:border-border-dark-default">
-                        {/* Coluna A - Botão Colapsar */}
-                        <div className="hidden lg:flex items-center justify-center w-0 lg:w-12 flex-shrink-0">
-                          <button
-                            onClick={() => {
-                              if (isHeaderExpanded && hasUnsavedMetadataChanges) {
-                                setShowUnsavedChangesModal(true);
-                              } else {
-                                setIsHeaderExpanded(!isHeaderExpanded);
-                              }
-                            }}
-                            className="p-1 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary transition-colors"
-                            title={isHeaderExpanded ? "Colapsar" : "Expandir"}
-                          >
-                            <svg 
-                              className={clsx(
-                                "w-5 h-5 transition-transform",
-                                isHeaderExpanded && "rotate-90"
-                              )} 
-                              fill="none" 
-                              viewBox="0 0 24 24" 
-                              stroke="currentColor"
-                            >
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                          </button>
-                        </div>
-                        
-                        {/* Coluna B - Título */}
-                        <div className="flex-1 min-w-0 w-full px-0">
-                          <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary truncate">
-                            {titulo || "Sem título"}
-                          </h2>
-                        </div>
-                        
-                        {/* Coluna C - Vazio */}
-                        <div className="hidden lg:block w-0 lg:w-12 flex-shrink-0" />
+            <div className="max-w-4xl mx-auto px-8 py-8 min-h-full">
+            <div className="space-y-6 pb-3">
+              {/* Cabeçalho Colasável (quando metadados foram salvos) */}
+              {isMetadataSaved ? (
+                <div>
+                  {/* Linha colapsada com título */}
+                  <div className="flex items-center gap-3">
+                    {/* Botão de expandir/colapsar */}
+                    <button
+                      onClick={() => {
+                        if (isHeaderExpanded && hasUnsavedMetadataChanges) {
+                          // Mostrar modal de confirmação
+                          setShowUnsavedChangesModal(true);
+                        } else {
+                          setIsHeaderExpanded(!isHeaderExpanded);
+                        }
+                      }}
+                      className="p-1 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary transition-colors"
+                      title={isHeaderExpanded ? "Colapsar" : "Expandir"}
+                    >
+                      <svg 
+                        className={clsx(
+                          "w-5 h-5 transition-transform",
+                          isHeaderExpanded && "rotate-90"
+                        )} 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+
+                    {/* Título */}
+                    <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary flex-1">
+                      {titulo || "Sem título"}
+                    </h2>
+                  </div>
+
+                  {/* Metadados expandidos */}
+                  {isHeaderExpanded && (
+                    <div className="mt-4 space-y-4">
+                      {/* Botão de editar (só aparece quando expandido) */}
+                      <div className="flex justify-end">
+                        <button
+                          onClick={() => setIsMetadataLocked(false)}
+                          className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                          title="Editar metadados"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                          Editar
+                        </button>
                       </div>
 
-                      {/* LINHA 3: Metadados expandidos (condicional) */}
-                      {isHeaderExpanded && (
-                        <div className="grid grid-cols-[auto_1fr_auto] gap-0 lg:gap-8 w-full py-4 px-0 border-b border-border-light-default dark:border-border-dark-default">
-                          {/* Coluna A - Vazio */}
-                          <div className="hidden lg:block w-0 lg:w-12 flex-shrink-0" />
-                          
-                          {/* Coluna B - Metadados */}
-                          <div className="flex-1 min-w-0 w-full space-y-4">
-                            {/* Botão de editar */}
-                            <div className="flex justify-end">
-                              <button
-                                onClick={() => setIsMetadataLocked(false)}
-                                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
-                                title="Editar metadados"
-                              >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                </svg>
-                                Editar
-                              </button>
-                            </div>
+                      {/* Título */}
+                      <div>
+                        <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
+                          TÍTULO
+                        </label>
+                        <input
+                          type="text"
+                          value={titulo}
+                          onChange={(e) => setTitulo(e.target.value)}
+                          placeholder="Digite o título do texto..."
+                          disabled={isMetadataLocked}
+                          className="w-full px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                        />
+                      </div>
 
-                            {/* Título */}
-                            <div>
-                              <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
-                                TÍTULO
-                              </label>
-                              <input
-                                type="text"
-                                value={titulo}
-                                onChange={(e) => setTitulo(e.target.value)}
-                                placeholder="Digite o título do texto..."
-                                disabled={isMetadataLocked}
-                                className="w-full px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-60 disabled:cursor-not-allowed"
-                              />
-                            </div>
-
-                            {/* Metadados Grid */}
-                            <div className="grid grid-cols-4 gap-4 mt-6">
+                      {/* Metadados */}
+                      <div className="grid grid-cols-4 gap-4 mt-6">
                         <UniverseDropdown
                           label="UNIVERSO"
                           universes={universes}
