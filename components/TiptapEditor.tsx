@@ -231,10 +231,10 @@ export default function TiptapEditor({
   }, [editor, editorRef]);
 
   // ========================================
-  // FOCUS MODE - SENTENCE & PARAGRAPH
+  // FOCUS MODE - PARAGRAPH ONLY (SIMPLIFIED)
   // ========================================
   useEffect(() => {
-    if (!editor || !focusType || focusType === 'off') {
+    if (!editor || focusType !== 'paragraph') {
       // Limpar todos os estilos quando desativado
       const container = editor?.view?.dom;
       if (container) {
@@ -243,31 +243,15 @@ export default function TiptapEditor({
           p.style.opacity = '';
           p.style.filter = '';
           p.style.transition = '';
-          
-          // Remover spans de sentença se existirem
-          const spans = p.querySelectorAll('span.sentence-wrapper');
-          spans.forEach(span => {
-            const parent = span.parentNode;
-            while (span.firstChild) {
-              parent?.insertBefore(span.firstChild, span);
-            }
-            parent?.removeChild(span);
-          });
         });
       }
       return;
     }
 
-    console.log('[Focus Mode] Ativando modo:', focusType);
-    
-    // Debounce para evitar múltiplas atualizações
-    let timeoutId: NodeJS.Timeout;
+    console.log('[Focus Mode] Ativando Modo Parágrafo');
     
     const updateFocus = () => {
-      // Cancelar timeout anterior
-      if (timeoutId) clearTimeout(timeoutId);
-      
-      timeoutId = setTimeout(() => {
+      try {
         const container = editor.view.dom;
         const { from } = editor.state.selection;
         
@@ -293,78 +277,36 @@ export default function TiptapEditor({
         const paragraphs = container.querySelectorAll('p');
         console.log('[Focus Mode] Total de parágrafos:', paragraphs.length);
         
-        if (focusType === 'paragraph') {
-          // MODO PARÁGRAFO: Destacar parágrafo inteiro
-          paragraphs.forEach((p: HTMLElement) => {
-            if (p === currentParagraph) {
-              // Parágrafo ativo: nítido
-              p.style.opacity = '1';
-              p.style.filter = 'none';
-              p.style.transition = 'opacity 0.2s ease, filter 0.2s ease';
-            } else {
-              // Outros parágrafos: blur
-              p.style.opacity = '0.3';
-              p.style.filter = 'blur(1px)';
-              p.style.transition = 'opacity 0.2s ease, filter 0.2s ease';
-            }
-          });
-        } else if (focusType === 'sentence') {
-          // MODO SENTENÇA: Destacar apenas sentença atual
-          
-          // Primeiro, deixar todos os parágrafos em blur
-          paragraphs.forEach((p: HTMLElement) => {
+        // MODO PARÁGRAFO: Destacar parágrafo inteiro
+        paragraphs.forEach((p: HTMLElement) => {
+          if (p === currentParagraph) {
+            // Parágrafo ativo: nítido
+            p.style.opacity = '1';
+            p.style.filter = 'none';
+            p.style.transition = 'opacity 0.2s ease, filter 0.2s ease';
+            console.log('[Focus Mode] Parágrafo ativo:', p.textContent?.substring(0, 30));
+          } else {
+            // Outros parágrafos: blur
             p.style.opacity = '0.3';
             p.style.filter = 'blur(1px)';
             p.style.transition = 'opacity 0.2s ease, filter 0.2s ease';
-          });
-          
-          // Se há parágrafo atual, destacar apenas a sentença
-          if (currentParagraph) {
-            const paragraphText = currentParagraph.textContent || '';
-            
-            // Calcular posição do cursor dentro do parágrafo
-            let cursorPosInParagraph = 0;
-            
-            // Encontrar posição relativa do cursor no parágrafo
-            try {
-              const paragraphStart = editor.view.posAtDOM(currentParagraph, 0);
-              cursorPosInParagraph = from - paragraphStart;
-            } catch (e) {
-              console.warn('[Focus Mode] Erro ao calcular posição do cursor:', e);
-              cursorPosInParagraph = 0;
-            }
-            
-            console.log('[Focus Mode] Cursor no parágrafo:', cursorPosInParagraph, '/', paragraphText.length);
-            
-            // Encontrar sentença atual
-            const sentenceRange = findCurrentSentence(paragraphText, cursorPosInParagraph);
-            
-            if (sentenceRange) {
-              console.log('[Focus Mode] Sentença encontrada:', paragraphText.substring(sentenceRange.start, sentenceRange.end));
-              
-              // Destacar apenas o parágrafo atual (sem blur)
-              currentParagraph.style.opacity = '1';
-              currentParagraph.style.filter = 'none';
-              
-              // Aplicar blur em partes do parágrafo que não são a sentença atual
-              // Abordagem: Usar gradiente de opacidade via pseudo-elementos ou spans
-              // Por simplicidade, vamos destacar o parágrafo inteiro por enquanto
-              // TODO: Implementar highlight de sentença específica com spans
-            } else {
-              // Fallback: destacar parágrafo inteiro
-              currentParagraph.style.opacity = '1';
-              currentParagraph.style.filter = 'none';
-            }
           }
-        }
-      }, 50); // Debounce de 50ms
+        });
+        
+        console.log('[Focus Mode] Estilos aplicados com sucesso!');
+      } catch (error) {
+        console.error('[Focus Mode] Erro ao aplicar estilos:', error);
+      }
     };
     
     // Atualizar imediatamente
     updateFocus();
     
-    // Listeners para múltiplos eventos
-    const handleUpdate = () => updateFocus();
+    // Listeners para eventos do editor
+    const handleUpdate = () => {
+      console.log('[Focus Mode] Evento disparado');
+      updateFocus();
+    };
     
     editor.on('update', handleUpdate);
     editor.on('selectionUpdate', handleUpdate);
@@ -372,7 +314,7 @@ export default function TiptapEditor({
     editor.on('focus', handleUpdate);
     
     return () => {
-      if (timeoutId) clearTimeout(timeoutId);
+      console.log('[Focus Mode] Limpando listeners');
       editor.off('update', handleUpdate);
       editor.off('selectionUpdate', handleUpdate);
       editor.off('transaction', handleUpdate);
