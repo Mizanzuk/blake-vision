@@ -30,18 +30,50 @@ export default function EscritaPage() {
 
       {/* GRID 6x3 - Estrutura Principal */}
       <div className="flex-1 flex overflow-hidden">
-        {/* COLUNA A - Margem Esquerda (Vazia) */}
-        <div className="w-24 flex-shrink-0 border-r border-border-light-default dark:border-border-dark-default bg-light-bg-primary dark:bg-dark-bg-primary relative">
-          {/* Célula A2 - Botão Colapsar (Flutuante) */}
-          <div className="absolute top-[calc(60px+12px)] left-0 transform -translate-x-full pr-2">
-            <button
-              onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
-              className="text-xl hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary"
-            >
-              {isHeaderExpanded ? '▼' : '▶'}
+        
+        {/* COLUNA A - Sidebar Esquerda (Biblioteca de Textos) */}
+        <aside className="w-64 border-r border-border-light-default dark:border-border-dark-default bg-light-bg-secondary dark:bg-dark-bg-secondary overflow-y-auto hidden lg:flex flex-col flex-shrink-0">
+          <div className="p-4 border-b border-border-light-default dark:border-border-dark-default">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-text-light-primary dark:text-dark-primary">Blake Vision</h2>
+              <button className="text-xs text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary">‹</button>
+            </div>
+            <button className="w-full px-4 py-2 bg-pink-500 text-white rounded-full hover:bg-pink-600 transition-colors text-sm font-medium">
+              + Novo Texto
             </button>
           </div>
-        </div>
+
+          {/* Abas */}
+          <div className="flex border-b border-border-light-default dark:border-border-dark-default px-4">
+            <button className="px-3 py-2 text-sm font-medium text-pink-500 border-b-2 border-pink-500">Rascunhos (1)</button>
+            <button className="px-3 py-2 text-sm text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary">Publicados (0)</button>
+          </div>
+
+          {/* Busca e Filtros */}
+          <div className="p-4 space-y-3 border-b border-border-light-default dark:border-border-dark-default">
+            <div className="relative">
+              <input 
+                type="text" 
+                placeholder="Buscar textos..." 
+                className="w-full px-3 py-2 text-sm border border-border-light-default dark:border-border-dark-default rounded bg-light-bg-primary dark:bg-dark-bg-primary text-text-light-primary dark:text-dark-primary placeholder-text-light-secondary dark:placeholder-dark-secondary"
+              />
+            </div>
+            <select className="w-full px-3 py-2 text-sm border border-border-light-default dark:border-border-dark-default rounded bg-light-bg-primary dark:bg-dark-bg-primary text-text-light-primary dark:text-dark-primary">
+              <option>Todos os tipos</option>
+            </select>
+          </div>
+
+          {/* Lista de Textos */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-2">
+            <div className="px-3 py-1 text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase">Texto Livre</div>
+            <button className="w-full text-left px-3 py-2 rounded text-sm bg-pink-500 text-white hover:bg-pink-600 transition-colors">
+              A Noite do Cão Misterioso
+            </button>
+            <button className="w-full text-left px-3 py-2 rounded text-sm text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors">
+              O Segredo da Floresta
+            </button>
+          </div>
+        </aside>
 
         {/* COLUNA B - Conteúdo Principal (6 Linhas) */}
         <div className="flex-1 flex flex-col overflow-hidden">
@@ -58,11 +90,25 @@ export default function EscritaPage() {
             </div>
           </div>
 
-          {/* LINHA 2: Título */}
-          <div className="h-12 border-b border-border-light-default dark:border-border-dark-default flex items-center px-8 flex-shrink-0">
+          {/* LINHA 2: Título + Botão Colapsar (A2) + Menu (C1) */}
+          <div className="h-12 border-b border-border-light-default dark:border-border-dark-default flex items-center px-8 flex-shrink-0 relative">
+            {/* Célula A2 - Botão Colapsar (Flutuante para esquerda) */}
+            <button
+              onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
+              className="absolute left-0 -translate-x-full pr-2 text-xl hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary"
+            >
+              {isHeaderExpanded ? '▼' : '▶'}
+            </button>
+            
+            {/* Célula B2 - Título (Centro) */}
             <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary">
               A Noite do Cão Misterioso (Cópia)
             </h2>
+            
+            {/* Célula C1 - Três Pontinhos (Flutuante para direita) */}
+            <button className="absolute right-0 translate-x-full pl-2 text-xl hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary">
+              ⋮
+            </button>
           </div>
 
           {/* LINHA 3: Metadados (Condicional) */}
@@ -120,14 +166,7 @@ export default function EscritaPage() {
         </div>
 
         {/* COLUNA C - Margem Direita (Vazia) */}
-        <div className="w-24 flex-shrink-0 border-l border-border-light-default dark:border-border-dark-default bg-light-bg-primary dark:bg-dark-bg-primary relative">
-          {/* Célula C1 - Três Pontinhos (Flutuante) */}
-          <div className="absolute top-[calc(60px+12px)] right-0 transform translate-x-full pl-2">
-            <button className="text-xl hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary">
-              ⋮
-            </button>
-          </div>
-        </div>
+        {/* Removida - Coluna C agora é vazia */}
       </div>
 
       {/* LINHA 6: Footer Fixo */}
