@@ -40,90 +40,23 @@ export default function EscritaPage() {
   const [episodio, setEpisodio] = useState('');
   const [categoria, setCategoria] = useState('');
   
-  // Estados de Dados
+  // Estados de UI
+  const [isHeaderExpanded, setIsHeaderExpanded] = useState(false);
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [isFocusMode, setIsFocusMode] = useState(false);
+  const [typewriterMode, setTypewriterMode] = useState(false);
+  const [focusType, setFocusType] = useState<'paragraph' | 'sentence' | 'word' | 'off'>('off');
+  const [showUrizen, setShowUrizen] = useState(false);
+  const [showUrthona, setShowUrthona] = useState(false);
+  const [hasUnsavedMetadataChanges, setHasUnsavedMetadataChanges] = useState(false);
+  
+  // Estados de dados
+  const [textos, setTextos] = useState<Texto[]>([]);
   const [universes, setUniverses] = useState<Universe[]>([]);
   const [worlds, setWorlds] = useState<World[]>([]);
   const [textoCategorias, setTextoCategorias] = useState<Category[]>([]);
-  const [textos, setTextos] = useState<Texto[]>([]);
   
-  // Estados de UI
-  const [isHeaderExpanded, setIsHeaderExpanded] = useState(false);
-  const [hasUnsavedMetadataChanges, setHasUnsavedMetadataChanges] = useState(false);
-  const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false);
-  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
-  const [showStatsModal, setShowStatsModal] = useState(false);
-  const [showExportModal, setShowExportModal] = useState(false);
-  
-  // Estados para Avatares
-  const [showUrizen, setShowUrizen] = useState(false);
-  const [showUrthona, setShowUrthona] = useState(false);
-  
-  // Estados para Modo Foco
-  const [isFocusMode, setIsFocusMode] = useState(false);
-  const [focusType, setFocusType] = useState<'off' | 'sentence' | 'paragraph'>('off');
-  const [typewriterMode, setTypewriterMode] = useState(false);
-  
-  // Refs
   const editorRef = useRef<any>(null);
-  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
-
-  // Modo Foco: Atualizar focus quando focusType muda
-  useEffect(() => {
-    if (!isFocusMode) return;
-    
-    const editorContent = document.querySelector('[data-testid="editor-content"]');
-    if (!editorContent) return;
-    
-    const paragraphs = Array.from(editorContent.querySelectorAll('p'));
-    
-    // Remover todas as classes de focus
-    paragraphs.forEach(p => {
-      p.classList.remove('focus-active', 'focus-dimmed');
-    });
-    
-    if (focusType === 'off') return;
-    
-    const updateFocus = () => {
-      const selection = window.getSelection();
-      if (!selection || selection.rangeCount === 0) return;
-      
-      const range = selection.getRangeAt(0);
-      let currentParagraph = range.commonAncestorContainer.parentElement;
-      
-      while (currentParagraph && currentParagraph !== editorContent) {
-        if (currentParagraph.tagName === 'P') break;
-        currentParagraph = currentParagraph.parentElement;
-      }
-      
-      if (!currentParagraph && paragraphs.length > 0) {
-        currentParagraph = paragraphs[0] as HTMLElement;
-      }
-      
-      if (!currentParagraph) return;
-      
-      paragraphs.forEach(p => {
-        if (p === currentParagraph) {
-          p.classList.add('focus-active');
-        } else {
-          p.classList.add('focus-dimmed');
-        }
-      });
-    }
-    
-    updateFocus();
-    
-    const handleSelectionChange = () => {
-      if ((focusType as any) !== 'off') {
-        updateFocus();
-      }
-    };
-    
-    document.addEventListener('selectionchange', handleSelectionChange);
-    
-    return () => {
-      document.removeEventListener('selectionchange', handleSelectionChange);
-    };
-  }, [isFocusMode, focusType]);
 
   // Carregar dados iniciais
   useEffect(() => {
@@ -182,57 +115,55 @@ export default function EscritaPage() {
     }
   };
 
-  const handleSaveMetadata = async () => {
+  const handleSaveText = async () => {
+    if (!user) return;
+    
     try {
-      if (!currentTextoId) return;
-      
-      await supabase
-        .from('textos')
-        .update({
-          universo_id: universeId,
-          mundo_id: worldId,
-          episodio,
-          categoria,
-          atualizado_em: new Date().toISOString(),
-        })
-        .eq('id', currentTextoId);
+      if (currentTextoId) {
+        await supabase
+          .from('textos')
+          .update({
+            titulo,
+            conteudo,
+            universo_id: universeId,
+            mundo_id: worldId,
+            episodio,
+            categoria,
+            atualizado_em: new Date().toISOString(),
+          })
+          .eq('id', currentTextoId);
+      } else {
+        await supabase
+          .from('textos')
+          .insert({
+            titulo,
+            conteudo,
+            universo_id: universeId,
+            mundo_id: worldId,
+            episodio,
+            categoria,
+            usuario_id: user.id,
+            publicado: false,
+          });
+      }
       
       setHasUnsavedMetadataChanges(false);
+      loadData();
     } catch (error) {
-      console.error('Erro ao salvar metadados:', error);
-    }
-  };
-
-  const handleSaveText = async () => {
-    try {
-      if (!currentTextoId) return;
-      
-      await supabase
-        .from('textos')
-        .update({
-          titulo,
-          conteudo,
-          atualizado_em: new Date().toISOString(),
-        })
-        .eq('id', currentTextoId);
-      
-    } catch (error) {
-      console.error('Erro ao salvar texto:', error);
+      console.error('Erro ao salvar:', error);
     }
   };
 
   const handlePublish = async () => {
+    if (!currentTextoId) return;
+    
     try {
-      if (!currentTextoId) return;
-      
       await supabase
         .from('textos')
-        .update({
-          publicado: true,
-          atualizado_em: new Date().toISOString(),
-        })
+        .update({ publicado: true })
         .eq('id', currentTextoId);
       
+      loadData();
     } catch (error) {
       console.error('Erro ao publicar:', error);
     }
@@ -262,20 +193,67 @@ export default function EscritaPage() {
   }
 
   return (
-    <div className="flex h-screen bg-light-bg-primary dark:bg-dark-bg-primary">
-      {/* SIDEBAR - Biblioteca de Textos (Placeholder) */}
+    <div className="flex flex-col h-screen bg-light-bg-primary dark:bg-dark-bg-primary">
+      {/* HEADER - Menu de Topo */}
+      <header className="border-b border-border-light-default dark:border-border-dark-default bg-light-bg-primary dark:bg-dark-bg-primary">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-8">
+            <h1 className="text-xl font-bold text-text-light-primary dark:text-dark-primary">Blake Vision</h1>
+            <nav className="hidden md:flex gap-6">
+              <a href="/" className="text-sm text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary">Home</a>
+              <a href="/projetos" className="text-sm text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary">Projetos</a>
+              <a href="/catalogo" className="text-sm text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary">Catálogo</a>
+              <a href="/escrita" className="text-sm font-semibold text-primary">Escrita</a>
+              <a href="/timeline" className="text-sm text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary">Timeline</a>
+              <a href="/upload" className="text-sm text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary">Upload</a>
+            </nav>
+          </div>
+          <div className="flex items-center gap-4">
+            <a href="#faq" className="text-sm text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary">FAQ</a>
+            <button className="w-8 h-8 rounded-full bg-light-overlay dark:bg-dark-overlay flex items-center justify-center">👤</button>
+          </div>
+        </div>
+      </header>
 
-      {/* GRID 6x3 */}
-      <div className="flex-1 flex flex-col">
+      {/* CONTEÚDO PRINCIPAL */}
+      <div className="flex-1 flex overflow-hidden">
         
-        {/* COLUNA A (Margem Esquerda) */}
-        <div className="w-12 bg-light-bg-secondary dark:bg-dark-bg-secondary hidden lg:block" />
+        {/* SIDEBAR - Biblioteca de Textos */}
+        <aside className="w-64 border-r border-border-light-default dark:border-border-dark-default bg-light-bg-secondary dark:bg-dark-bg-secondary overflow-y-auto hidden lg:block">
+          <div className="p-4">
+            <h2 className="text-sm font-semibold text-text-light-primary dark:text-dark-primary mb-4">Meus Textos</h2>
+            <div className="space-y-2">
+              {textos.map((texto) => (
+                <button
+                  key={texto.id}
+                  onClick={() => {
+                    setCurrentTextoId(texto.id);
+                    setTitulo(texto.titulo);
+                    setConteudo(texto.conteudo);
+                    setUniverseId(texto.universo_id);
+                    setWorldId(texto.mundo_id);
+                    setEpisodio(texto.episodio);
+                    setCategoria(texto.categoria);
+                    setIsHeaderExpanded(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${
+                    currentTextoId === texto.id
+                      ? 'bg-primary text-white'
+                      : 'text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay'
+                  }`}
+                >
+                  {texto.titulo || 'Sem Título'}
+                </button>
+              ))}
+            </div>
+          </div>
+        </aside>
 
-        {/* COLUNA B (Conteúdo Principal) */}
-        <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-4 md:px-8">
+        {/* GRID 6x3 - Estrutura Principal */}
+        <div className="flex-1 flex flex-col relative">
           
           {/* LINHA 1: Modo Foco + Avatares */}
-          <div className="py-4 border-b border-border-light-default dark:border-border-dark-default flex items-center justify-between">
+          <div className="py-4 border-b border-border-light-default dark:border-border-dark-default flex items-center justify-between px-4 md:px-8">
             <button
               onClick={() => setIsFocusMode(!isFocusMode)}
               className="px-4 py-2 bg-pink-500 text-white rounded-full hover:bg-pink-600 transition-colors text-sm font-medium"
@@ -301,22 +279,28 @@ export default function EscritaPage() {
             </div>
           </div>
 
-          {/* LINHA 2: Título + Botão Colapsar + Menu */}
-          <div className="py-3 border-b border-border-light-default dark:border-border-dark-default flex items-center gap-3">
+          {/* LINHA 2: Título + Botão Colapsar (A2) + Menu (C1) */}
+          <div className="py-3 border-b border-border-light-default dark:border-border-dark-default flex items-center relative">
+            
+            {/* Célula A2 - Botão Colapsar (Flutuante para esquerda) */}
             <button
               onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
-              className="text-xl hover:opacity-70 transition-opacity"
+              className="absolute -left-12 text-xl hover:opacity-70 transition-opacity"
             >
               {isHeaderExpanded ? '▼' : '▶'}
             </button>
             
-            <h2 className="flex-1 text-lg font-semibold text-text-light-primary dark:text-dark-primary">
-              {titulo || 'Sem Título'}
-            </h2>
+            {/* Célula B2 - Título (Centro) */}
+            <div className="flex-1 px-4 md:px-8">
+              <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary">
+                {titulo || 'Sem Título'}
+              </h2>
+            </div>
             
+            {/* Célula C1 - Três Pontinhos (Flutuante para direita) */}
             <button
               onClick={() => setShowOptionsMenu(!showOptionsMenu)}
-              className="text-xl hover:opacity-70 transition-opacity"
+              className="absolute -right-12 text-xl hover:opacity-70 transition-opacity"
             >
               ⋮
             </button>
@@ -324,7 +308,7 @@ export default function EscritaPage() {
 
           {/* LINHA 3: Metadados (Condicional) */}
           {isHeaderExpanded && (
-            <div className="space-y-4 py-4 border-b border-border-light-default dark:border-border-dark-default">
+            <div className="space-y-4 py-4 border-b border-border-light-default dark:border-border-dark-default px-4 md:px-8">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary">
                   TITULO
@@ -355,51 +339,38 @@ export default function EscritaPage() {
                   <WorldsDropdownSingle
                     selectedId={worldId}
                     onSelect={setWorldId}
-                    worlds={worlds.filter(w => !universeId || w.universe_id === universeId)}
+                    worlds={worlds}
                   />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary">Episódio</label>
                   <EpisodesDropdownSingle
-                    selectedEpisode={episodio}
+                    selectedId={episodio}
                     onSelect={setEpisodio}
-                    episodes={['T1', 'T2', 'T3']}
+                    episodes={[]}
                   />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary">Categoria</label>
                   <CategoryDropdownSingle
-                    selectedCategory={categoria}
+                    selectedId={categoria}
                     onSelect={setCategoria}
                     categories={textoCategorias}
                   />
                 </div>
               </div>
-
-              <button
-                onClick={handleSaveMetadata}
-                className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors text-sm font-medium"
-              >
-                Salvar Metadados
-              </button>
             </div>
           )}
 
           {/* LINHA 4: Toolbar de Edição */}
-          <div className="py-3 border-b border-border-light-default dark:border-border-dark-default flex items-center gap-2">
-            <button className="px-3 py-1 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors text-sm font-medium">
-              B
-            </button>
-            <button className="px-3 py-1 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors text-sm font-medium italic">
-              /
-            </button>
-            <button className="px-3 py-1 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors text-sm font-medium">
-              Aa ▼
-            </button>
+          <div className="py-3 border-b border-border-light-default dark:border-border-dark-default flex items-center gap-4 px-4 md:px-8">
+            <button className="text-sm font-medium hover:opacity-70 transition-opacity">B</button>
+            <button className="text-sm font-medium hover:opacity-70 transition-opacity">/</button>
+            <button className="text-sm font-medium hover:opacity-70 transition-opacity">Aa ▼</button>
           </div>
 
           {/* LINHA 5: Conteúdo do Editor (Scrollável) */}
-          <div className="flex-1 py-6 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6">
             <TiptapEditor
               value={conteudo}
               onChange={setConteudo}
@@ -412,13 +383,45 @@ export default function EscritaPage() {
           </div>
         </div>
 
-        {/* COLUNA C (Margem Direita) */}
-        <div className="w-12 bg-light-bg-secondary dark:bg-dark-bg-secondary hidden lg:block" />
+        {/* COLUNA C - Agentes (Sidebar Direita) */}
+        <aside className="w-64 border-l border-border-light-default dark:border-border-dark-default bg-light-bg-secondary dark:bg-dark-bg-secondary overflow-y-auto hidden lg:block">
+          <div className="p-4">
+            <h2 className="text-sm font-semibold text-text-light-primary dark:text-dark-primary mb-4">Agentes</h2>
+            
+            {/* Urizen */}
+            <button
+              onClick={() => setShowUrizen(!showUrizen)}
+              className="w-full text-left p-3 rounded border border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors mb-3"
+            >
+              <div className="flex items-center gap-2">
+                <img src="/avatars/urizen.jpg" alt="Urizen" className="w-6 h-6 rounded-full" />
+                <div>
+                  <p className="text-sm font-medium text-text-light-primary dark:text-dark-primary">Urizen</p>
+                  <p className="text-xs text-text-light-secondary dark:text-dark-secondary">A Lei</p>
+                </div>
+              </div>
+            </button>
+            
+            {/* Urthona */}
+            <button
+              onClick={() => setShowUrthona(!showUrthona)}
+              className="w-full text-left p-3 rounded border border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <img src="/avatars/urthona.jpg" alt="Urthona" className="w-6 h-6 rounded-full" />
+                <div>
+                  <p className="text-sm font-medium text-text-light-primary dark:text-dark-primary">Urthona</p>
+                  <p className="text-xs text-text-light-secondary dark:text-dark-secondary">O Fluxo</p>
+                </div>
+              </div>
+            </button>
+          </div>
+        </aside>
       </div>
 
       {/* LINHA 6: Footer Fixo */}
-      <div className="fixed bottom-0 left-0 right-0 py-6 border-t border-border-light-default dark:border-border-dark-default bg-light-bg-primary dark:bg-dark-bg-primary flex justify-center gap-3">
-        <div className="max-w-4xl mx-auto w-full px-4 md:px-8 flex gap-3">
+      <footer className="border-t border-border-light-default dark:border-border-dark-default bg-light-bg-primary dark:bg-dark-bg-primary py-4">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 flex justify-end gap-3">
           <button
             onClick={handleSaveText}
             className="px-6 py-2 bg-light-overlay dark:bg-dark-overlay text-text-light-primary dark:text-dark-primary rounded hover:opacity-80 transition-opacity font-medium"
@@ -427,15 +430,12 @@ export default function EscritaPage() {
           </button>
           <button
             onClick={handlePublish}
-            className="px-6 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors font-medium"
+            className="px-6 py-2 bg-pink-500 text-white rounded hover:bg-pink-600 transition-colors font-medium"
           >
             Publicar
           </button>
         </div>
-      </div>
-
-      {/* Padding para o footer fixo */}
-      <div className="h-24" />
+      </footer>
     </div>
   );
 }
