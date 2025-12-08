@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import clsx from 'clsx';
 
-export default function EscritaPage() {
+function EscritaPageContent() {
   // Estados do Header
   const [isHeaderExpanded, setIsHeaderExpanded] = useState(false);
   
@@ -488,5 +488,13 @@ export default function EscritaPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function EscritaPage() {
+  return (
+    <React.Suspense fallback={<div>Carregando...</div>}>
+      <EscritaPageContent />
+    </React.Suspense>
   );
 }
