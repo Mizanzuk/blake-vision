@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 @import './typography.css';
+@import './focus-mode-themes.css';
 
 @layer base {
   :root {

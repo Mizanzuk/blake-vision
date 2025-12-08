@@ -161,6 +161,7 @@ function EscritaPageContent() {
   // Estados do Modo Foco
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [focusType, setFocusType] = useState<'off' | 'sentence' | 'paragraph'>('off');
+  const [focusModeTheme, setFocusModeTheme] = useState<'light' | 'dark' | 'default'>('default');
 
   // Função applyFocusEffect removida - agora usamos apenas updateFocus() no useEffect
   const [typewriterMode, setTypewriterMode] = useState(false);
@@ -188,6 +189,21 @@ function EscritaPageContent() {
     setFontFamily(font);
     localStorage.setItem('blake-vision-font-family', font);
   };
+  
+  // Carregar preferência de tema do Focus Mode do localStorage
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('blake-vision-focus-mode-theme');
+    if (savedTheme && ['light', 'dark', 'default'].includes(savedTheme)) {
+      setFocusModeTheme(savedTheme as 'light' | 'dark' | 'default');
+    }
+  }, []);
+  
+  // Salvar preferência de tema do Focus Mode no localStorage
+  useEffect(() => {
+    if (focusModeTheme !== 'default') {
+      localStorage.setItem('blake-vision-focus-mode-theme', focusModeTheme);
+    }
+  }, [focusModeTheme]);
   const [selectionMenuPosition, setSelectionMenuPosition] = useState<{x: number, y: number} | null>(null);
   
   // Ref para controlar o editor externamente
@@ -2253,7 +2269,12 @@ function EscritaPageContent() {
 
       {/* Modo Foco - Fullscreen */}
       {isFocusMode && (
-        <div className="fixed inset-0 z-50 bg-light-base dark:bg-dark-base flex flex-col">
+        <div className={clsx(
+          "fixed inset-0 z-50 flex flex-col",
+          focusModeTheme === 'light' ? 'focus-mode-light' :
+          focusModeTheme === 'dark' ? 'focus-mode-dark' :
+          'bg-light-base dark:bg-dark-base'
+        )}>
           {/* Header do Modo Foco */}
           <div className="flex justify-between items-center px-8 py-4 border-b border-border-light-default dark:border-border-dark-default">
             <h1 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
@@ -2268,22 +2289,8 @@ function EscritaPageContent() {
                 </div>
               )}
               
-              {/* Controles de Foco */}
+              {/* Controles de Foco e Tema */}
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    setFocusType(prev => prev === 'sentence' ? 'off' : 'sentence');
-                  }}
-                  className={clsx(
-                    "px-3 py-1.5 rounded text-xs font-medium transition-colors",
-                    focusType === 'sentence'
-                      ? "bg-primary-500 text-white"
-                      : "bg-light-overlay dark:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary hover:bg-light-raised dark:hover:bg-dark-raised"
-                  )}
-                  title="Foco em Sentença (Ctrl+Shift+F)"
-                >
-                  Sentença
-                </button>
                 <button
                   onClick={() => {
                     setFocusType(prev => prev === 'paragraph' ? 'off' : 'paragraph');
@@ -2299,18 +2306,28 @@ function EscritaPageContent() {
                   Parágrafo
                 </button>
                 <button
-                  onClick={() => setTypewriterMode(prev => !prev)}
+                  onClick={() => setFocusModeTheme('light')}
                   className={clsx(
                     "px-3 py-1.5 rounded text-xs font-medium transition-colors",
-                    typewriterMode
+                    focusModeTheme === 'light'
                       ? "bg-primary-500 text-white"
                       : "bg-light-overlay dark:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary hover:bg-light-raised dark:hover:bg-dark-raised"
                   )}
-                  title="Modo Máquina de Escrever (Ctrl+Shift+T)"
+                  title="Modo Branco"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
+                  ☀️ Branco
+                </button>
+                <button
+                  onClick={() => setFocusModeTheme('dark')}
+                  className={clsx(
+                    "px-3 py-1.5 rounded text-xs font-medium transition-colors",
+                    focusModeTheme === 'dark'
+                      ? "bg-primary-500 text-white"
+                      : "bg-light-overlay dark:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary hover:bg-light-raised dark:hover:bg-dark-raised"
+                  )}
+                  title="Modo Preto"
+                >
+                  🌙 Preto
                 </button>
               </div>
               
