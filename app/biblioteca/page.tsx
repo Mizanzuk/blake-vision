@@ -6,6 +6,7 @@ import { getSupabaseClient } from "@/app/lib/supabase/client";
 import { Header } from "@/app/components/layout/Header";
 import { Button, Card, Badge, EmptyState, Loading } from "@/app/components/ui";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 import clsx from "clsx";
 
 interface Texto {
@@ -25,6 +26,7 @@ interface Texto {
 export default function BibliotecaPage() {
   const router = useRouter();
   const supabase = getSupabaseClient();
+  const { confirm, ConfirmDialog } = useConfirm();
   
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"rascunhos" | "publicados">("rascunhos");
@@ -80,9 +82,15 @@ export default function BibliotecaPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Tem certeza que deseja deletar este texto?")) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: "Confirmar Exclusão",
+      message: "Tem certeza que deseja deletar este texto? Esta ação não pode ser desfeita.",
+      confirmText: "Deletar",
+      cancelText: "Cancelar",
+      variant: "danger"
+    });
+
+    if (!confirmed) return;
 
     try {
       const response = await fetch(`/api/textos?id=${id}`, {
@@ -389,6 +397,9 @@ export default function BibliotecaPage() {
           </div>
         )}
       </div>
+
+      {/* Modal de confirmação */}
+      <ConfirmDialog />
     </div>
   );
 }
