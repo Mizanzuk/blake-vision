@@ -1,6 +1,9 @@
-"use client";
+'use client';
+
+console.log('[ESCRITA PAGE] Módulo carregado - timestamp:', Date.now());
 
 import React, { useState, useEffect, useRef, Suspense } from "react";
+import { flushSync } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
 import { Header } from "@/app/components/layout/Header";
@@ -12,12 +15,20 @@ import { CategoryDropdownSingle } from "@/app/components/ui/CategoryDropdownSing
 import { TypesDropdown } from "@/app/components/ui/TypesDropdown";
 import { NewEpisodeModal } from "@/app/components/modals/NewEpisodeModal";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 import type { Universe, World, Category } from "@/app/types";
 import clsx from "clsx";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import getCaretCoordinates from "textarea-caret";
 import TiptapEditor from "@/components/TiptapEditor";
+import { FontFamily } from "@/components/FontSelector";
+import { EditorHeader } from "@/app/components/editor/EditorHeader";
+import { EditorFooter } from "@/app/components/editor/EditorFooter";
+import { EditorTitleRow } from "@/app/components/editor/EditorTitleRow";
+import { EditorMetadata } from "@/app/components/editor/EditorMetadata";
+import { ExportModal } from "@/app/components/modals/ExportModal";
+import { MobileOptionsMenu } from "@/app/components/mobile/MobileOptionsMenu";
 
 interface Texto {
   id: string;
@@ -34,6 +45,7 @@ interface Texto {
 }
 
 function EscritaPageContent() {
+  console.log('[DEBUG EscritaPage] Componente renderizado!');
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = getSupabaseClient();
@@ -121,6 +133,7 @@ function EscritaPageContent() {
   const [showStatsModal, setShowStatsModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showMobileOptionsMenu, setShowMobileOptionsMenu] = useState(false);
+  const { confirm, ConfirmDialog } = useConfirm();
   
   // Estado da sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -150,16 +163,54 @@ function EscritaPageContent() {
   // Estados do Modo Foco
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [focusType, setFocusType] = useState<'off' | 'sentence' | 'paragraph'>('off');
+  const [focusModeTheme, setFocusModeTheme] = useState<'light' | 'dark' | 'default'>('default');
+
+  // Função applyFocusEffect removida - agora usamos apenas updateFocus() no useEffect
   const [typewriterMode, setTypewriterMode] = useState(false);
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
   const [cursorPosition, setCursorPosition] = useState(0);
   
+  // Focus Mode - implementação movida para TiptapEditor.tsx
+  
   // Estados para seleção de texto
   const [selectedText, setSelectedText] = useState("");
+  
+  // Estado de tipografia
+  const [fontFamily, setFontFamily] = useState<FontFamily>('serif');
+  
+  // Carregar preferência de fonte do localStorage
+  useEffect(() => {
+    const savedFont = localStorage.getItem('blake-vision-font-family');
+    if (savedFont && ['serif', 'sans', 'mono'].includes(savedFont)) {
+      setFontFamily(savedFont as FontFamily);
+    }
+  }, []);
+  
+  // Salvar preferência de fonte no localStorage
+  const handleFontChange = (font: FontFamily) => {
+    setFontFamily(font);
+    localStorage.setItem('blake-vision-font-family', font);
+  };
+  
+  // Carregar preferência de tema do Focus Mode do localStorage
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('blake-vision-focus-mode-theme');
+    if (savedTheme && ['light', 'dark', 'default'].includes(savedTheme)) {
+      setFocusModeTheme(savedTheme as 'light' | 'dark' | 'default');
+    }
+  }, []);
+  
+  // Salvar preferência de tema do Focus Mode no localStorage
+  useEffect(() => {
+    if (focusModeTheme !== 'default') {
+      localStorage.setItem('blake-vision-focus-mode-theme', focusModeTheme);
+    }
+  }, [focusModeTheme]);
   const [selectionMenuPosition, setSelectionMenuPosition] = useState<{x: number, y: number} | null>(null);
   
   // Ref para controlar o editor externamente
   const editorRef = useRef<any>(null);
+  const loadedTextoIdRef = useRef<string | null>(null); // Rastrear qual texto já foi carregado
 
   // Estados para drag and drop
   const [draggedTextoId, setDraggedTextoId] = useState<string | null>(null);
@@ -185,9 +236,22 @@ function EscritaPageContent() {
 
   // Carregar texto específico da URL
   useEffect(() => {
+    console.log('[DEBUG] useEffect loadTexto executado');
     const textoId = searchParams.get("id");
-    if (textoId && !isLoading) {
-      loadTexto(textoId);
+    console.log('[DEBUG] textoId da URL:', textoId, 'isLoading:', isLoading);
+    
+    // CORREÇÃO: Evitar carregamento duplicado usando ref
+    if (textoId && !isLoading && textoId !== loadedTextoIdRef.current) {
+      console.log('[DEBUG] Chamando loadTexto... (primeira vez para este ID)');
+      loadedTextoIdRef.current = textoId; // Marcar como carregado
+      try {
+        loadTexto(textoId);
+      } catch (error) {
+        console.error('[DEBUG] ERRO no useEffect ao chamar loadTexto:', error);
+        loadedTextoIdRef.current = null; // Resetar em caso de erro
+      }
+    } else if (textoId && textoId === loadedTextoIdRef.current) {
+      console.log('[DEBUG] Texto já foi carregado, ignorando...');
     }
   }, [searchParams, isLoading]);
 
@@ -509,63 +573,89 @@ function EscritaPageContent() {
   }
 
   async function loadTexto(id: string) {
+    console.log('[DEBUG] loadTexto iniciado, ID:', id);
     try {
+      console.log('[DEBUG] Fazendo fetch da API...');
       const response = await fetch(`/api/textos?id=${id}`);
+      console.log('[DEBUG] Response recebida:', response.status);
       const data = await response.json();
+      console.log('[DEBUG] Data parseada:', data);
       
       if (response.ok && data.texto) {
         const texto = data.texto;
-        setCurrentTextoId(texto.id);
-        setTitulo(texto.titulo || "");
-        setConteudo(texto.conteudo || "");
-        setUniverseId(texto.universe_id || "");
-        setWorldId(texto.world_id || "");
-        setEpisodio(texto.episodio || "");
-        setCategoria(texto.categoria || "");
-        setStatus(texto.status || "rascunho");
         
-        // Configurar estados de controle
-        setIsMetadataLocked(true);
-        setIsMetadataSaved(true);
-        setIsHeaderExpanded(false);
+        // CORREÇÃO: Setar conteúdo PRIMEIRO com flushSync para garantir que está pronto
+        // antes de mostrar o editor (isMetadataSaved = true)
+        console.log('[DEBUG] Setando conteúdo, tamanho:', (texto.conteudo || '').length);
+        flushSync(() => {
+          setConteudo(texto.conteudo || "");
+        });
+        console.log('[DEBUG] Conteúdo setado com sucesso (flushSync)');
         
-        // Salvar snapshot dos metadados
-        setSavedMetadataSnapshot({
-          titulo: texto.titulo || "",
-          universeId: texto.universe_id || "",
-          worldId: texto.world_id || "",
-          episodio: texto.episodio || "",
-          categoria: texto.categoria || ""
+        // Depois setar todos os outros estados de uma vez
+        flushSync(() => {
+          setCurrentTextoId(texto.id);
+          setTitulo(texto.titulo || "");
+          setUniverseId(texto.universe_id || "");
+          setWorldId(texto.world_id || "");
+          setEpisodio(texto.episodio || "");
+          setCategoria(texto.categoria || "");
+          setStatus(texto.status || "rascunho");
+          
+          // Configurar estados de controle
+          setIsMetadataLocked(true);
+          setIsMetadataSaved(true); // ← Isso monta o TiptapEditor
+          setIsHeaderExpanded(false);
+          
+          // Salvar snapshot dos metadados
+          setSavedMetadataSnapshot({
+            titulo: texto.titulo || "",
+            universeId: texto.universe_id || "",
+            worldId: texto.world_id || "",
+            episodio: texto.episodio || "",
+            categoria: texto.categoria || ""
+          });
         });
       }
     } catch (error) {
-      console.error("Erro ao carregar texto:", error);
+      console.error('[DEBUG] ERRO CAPTURADO em loadTexto:', error);
+      console.error('[DEBUG] Stack trace:', error instanceof Error ? error.stack : 'N/A');
+      console.error('[DEBUG] Mensagem:', error instanceof Error ? error.message : String(error));
       toast.error("Erro ao carregar texto");
     }
   }
 
   function handleSelectTexto(texto: Texto) {
-    setCurrentTextoId(texto.id);
-    setTitulo(texto.titulo || "");
-    setConteudo(texto.conteudo || "");
-    setUniverseId(texto.universe_id || "");
-    setWorldId(texto.world_id || "");
-    setEpisodio(texto.episodio || "");
-    setCategoria(texto.categoria || "");
-    setStatus(texto.status || "rascunho");
+    // Resetar ref para permitir carregamento do novo texto
+    loadedTextoIdRef.current = texto.id;
     
-    // Bloquear metadados ao carregar texto existente salvo
-    setIsMetadataLocked(true);
-    setIsMetadataSaved(true);
-    setIsHeaderExpanded(false); // Começar colapsado para textos existentes
+    // CORREÇÃO: Setar conteúdo primeiro, depois mostrar editor
+    flushSync(() => {
+      setConteudo(texto.conteudo || "");
+    });
     
-    // Salvar snapshot dos metadados
-    setSavedMetadataSnapshot({
-      titulo: texto.titulo || "",
-      universeId: texto.universe_id || "",
-      worldId: texto.world_id || "",
-      episodio: texto.episodio || "",
-      categoria: texto.categoria || ""
+    flushSync(() => {
+      setCurrentTextoId(texto.id);
+      setTitulo(texto.titulo || "");
+      setUniverseId(texto.universe_id || "");
+      setWorldId(texto.world_id || "");
+      setEpisodio(texto.episodio || "");
+      setCategoria(texto.categoria || "");
+      setStatus(texto.status || "rascunho");
+      
+      // Bloquear metadados ao carregar texto existente salvo
+      setIsMetadataLocked(true);
+      setIsMetadataSaved(true);
+      setIsHeaderExpanded(false); // Começar colapsado para textos existentes
+      
+      // Salvar snapshot dos metadados
+      setSavedMetadataSnapshot({
+        titulo: texto.titulo || "",
+        universeId: texto.universe_id || "",
+        worldId: texto.world_id || "",
+        episodio: texto.episodio || "",
+        categoria: texto.categoria || ""
+      });
     });
     
     // Atualizar URL
@@ -743,9 +833,15 @@ function EscritaPageContent() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Tem certeza que deseja deletar este texto?")) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: "Confirmar Exclusão",
+      message: "Tem certeza que deseja deletar este texto? Esta ação não pode ser desfeita.",
+      confirmText: "Deletar",
+      cancelText: "Cancelar",
+      variant: "danger"
+    });
+
+    if (!confirmed) return;
 
     try {
       const response = await fetch(`/api/textos?id=${id}`, {
@@ -754,6 +850,7 @@ function EscritaPageContent() {
 
       if (response.ok) {
         toast.success("Texto deletado com sucesso");
+
         
         // Se é o texto atual, limpar editor
         if (id === currentTextoId) {
@@ -1400,6 +1497,19 @@ function EscritaPageContent() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </button>
+            
+            {/* Botão Opções (Três Pontinhos) */}
+            {isMetadataSaved && (
+              <button
+                onClick={() => setShowMobileOptionsMenu(true)}
+                className="p-2 rounded-lg text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
+                title="Opções"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                </svg>
+              </button>
+            )}
           </div>
         )}
 
@@ -1424,195 +1534,34 @@ function EscritaPageContent() {
           !isSidebarOpen && "ml-12 md:ml-12"
         )}>
           {/* Editor Principal */}
-          <main className="overflow-y-auto transition-all duration-300 w-full">
-          <div className="max-w-4xl mx-auto px-8 py-8 min-h-full">
+          <main className="overflow-y-auto transition-all duration-300 w-full pb-24">
+            {/* NOVO HEADER FIXO */}
+            {isMetadataSaved && (
+              <EditorHeader
+                isMetadataSaved={isMetadataSaved}
+                enterFocusMode={enterFocusMode}
+                titulo={titulo}
+                isHeaderExpanded={isHeaderExpanded}
+                setIsHeaderExpanded={setIsHeaderExpanded}
+                hasUnsavedMetadataChanges={hasUnsavedMetadataChanges}
+                setShowUnsavedChangesModal={setShowUnsavedChangesModal}
+                showUrizen={showUrizen}
+                showUrthona={showUrthona}
+                setShowUrizen={setShowUrizen}
+                setShowUrthona={setShowUrthona}
+                showOptionsMenu={showOptionsMenu}
+                setShowOptionsMenu={setShowOptionsMenu}
+                setShowStatsModal={setShowStatsModal}
+                setShowExportModal={setShowExportModal}
+                handleDuplicate={handleDuplicate}
+                handleDelete={handleDelete}
+                currentTextoId={currentTextoId}
+                editorRef={editorRef}
+              />
+            )}
+            
+            <div className="max-w-4xl mx-auto px-8 py-8 min-h-full">
             <div className="space-y-6 pb-3">
-              {/* Agentes e Modo Foco - STICKY HEADER */}
-              <div className="sticky top-0 z-10 bg-light-bg-primary dark:bg-dark-bg-primary py-4 -mx-8 px-8 mb-6 border-b border-border-light-default dark:border-border-dark-default">
-                <div className="flex gap-4 justify-between items-center">
-                {/* Botão Modo Foco */}
-                <div className="flex items-center gap-3">
-                <button
-                  onClick={enterFocusMode}
-                  disabled={!isMetadataSaved}
-                  className={clsx(
-                    "flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300",
-                    isMetadataSaved
-                      ? "bg-primary-500 hover:bg-primary-600 text-white cursor-pointer"
-                      : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-50"
-                  )}
-                  title={isMetadataSaved ? "Ativar Modo Foco (Fullscreen)" : "Crie um texto para usar o Modo Foco"}
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                  <span className="text-sm font-medium">Modo Foco</span>
-                </button>
-
-                {/* Menu de Opções (3 pontos) */}
-                {isMetadataSaved && (
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowOptionsMenu(!showOptionsMenu)}
-                      className="p-2 rounded-lg hover:bg-light-bg-secondary dark:hover:bg-dark-bg-secondary transition-colors"
-                      title="Opções"
-                    >
-                      <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
-                      </svg>
-                    </button>
-
-                    {/* Dropdown Menu */}
-                    {showOptionsMenu && (
-                      <div className="absolute left-0 mt-2 w-56 rounded-lg shadow-lg bg-white dark:bg-dark-bg-secondary border border-border-light-default dark:border-border-dark-default z-50">
-                        <div className="py-2">
-                          {/* Estatísticas */}
-                          <button
-                            onClick={() => {
-                              setShowStatsModal(true);
-                              setShowOptionsMenu(false);
-                            }}
-                            className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-colors"
-                          >
-                            <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                            </svg>
-                            <span className="text-sm text-gray-700 dark:text-gray-200">Estatísticas</span>
-                          </button>
-
-                          {/* Separador */}
-                          <div className="my-2 border-t border-border-light-default dark:border-border-dark-default"></div>
-
-                          {/* Excluir */}
-                          <button
-                            onClick={() => {
-                              if (currentTextoId) handleDelete(currentTextoId);
-                              setShowOptionsMenu(false);
-                            }}
-                            className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                          >
-                            <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                            <span className="text-sm text-red-600 dark:text-red-400">Excluir texto</span>
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-                </div>
-
-                {/* Avatares dos Agentes */}
-                <div className="flex gap-4 items-center">
-                {/* Ordem dinâmica: agente ativo sempre à direita */}
-                {showUrizen ? (
-                  <>
-                    {/* Urthona - Inativo */}
-                    <div 
-                      onClick={() => {
-                        if (!isMetadataSaved) return;
-                        setShowUrthona(!showUrthona);
-                        if (!showUrthona) setShowUrizen(false);
-                      }}
-                      className={clsx(
-                        "relative group transition-all duration-300",
-                        isMetadataSaved ? "cursor-pointer" : "cursor-not-allowed",
-                        "opacity-30"
-                      )}
-                      title={isMetadataSaved ? "Urthona (Criativo)" : "Crie um texto para usar Urthona e Urizen"}
-                    >
-                      <img 
-                        src="/urthona-avatar.png" 
-                        alt="Urthona" 
-                        className={clsx(
-                          "w-12 h-12 rounded-full transition-all",
-                          !isMetadataSaved && "opacity-30",
-                          isMetadataSaved && "hover:ring-2 hover:ring-[#C85A54]/50"
-                        )}
-                      />
-                    </div>
-                    {/* Urizen - Ativo */}
-                    <div 
-                      onClick={() => {
-                        if (!isMetadataSaved) return;
-                        setShowUrizen(!showUrizen);
-                        if (!showUrizen) setShowUrthona(false);
-                      }}
-                      className={clsx(
-                        "relative group transition-all duration-300",
-                        isMetadataSaved ? "cursor-pointer" : "cursor-not-allowed"
-                      )}
-                      title={isMetadataSaved ? "Urizen (Consulta)" : "Crie um texto para usar Urthona e Urizen"}
-                    >
-                      <img 
-                        src="/urizen-avatar.png" 
-                        alt="Urizen" 
-                        className={clsx(
-                          "w-12 h-12 rounded-full transition-all",
-                          !isMetadataSaved && "opacity-30",
-                          isMetadataSaved && "ring-4 ring-[#5B7C8D]"
-                        )}
-                      />
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    {/* Urizen - Inativo */}
-                    <div 
-                      onClick={() => {
-                        if (!isMetadataSaved) return;
-                        setShowUrizen(!showUrizen);
-                        if (!showUrizen) setShowUrthona(false);
-                      }}
-                      className={clsx(
-                        "relative group transition-all duration-300",
-                        isMetadataSaved ? "cursor-pointer" : "cursor-not-allowed",
-                        !showUrthona && !showUrizen && "opacity-100",
-                        showUrthona && "opacity-30"
-                      )}
-                      title={isMetadataSaved ? "Urizen (Consulta)" : "Crie um texto para usar Urthona e Urizen"}
-                    >
-                      <img 
-                        src="/urizen-avatar.png" 
-                        alt="Urizen" 
-                        className={clsx(
-                          "w-12 h-12 rounded-full transition-all",
-                          !isMetadataSaved && "opacity-30",
-                          isMetadataSaved && !showUrthona && "hover:ring-2 hover:ring-[#5B7C8D]/50"
-                        )}
-                      />
-                    </div>
-                    {/* Urthona - Ativo ou Padrão */}
-                    <div 
-                      onClick={() => {
-                        if (!isMetadataSaved) return;
-                        setShowUrthona(!showUrthona);
-                        if (!showUrthona) setShowUrizen(false);
-                      }}
-                      className={clsx(
-                        "relative group transition-all duration-300",
-                        isMetadataSaved ? "cursor-pointer" : "cursor-not-allowed"
-                      )}
-                      title={isMetadataSaved ? "Urthona (Criativo)" : "Crie um texto para usar Urthona e Urizen"}
-                    >
-                      <img 
-                        src="/urthona-avatar.png" 
-                        alt="Urthona" 
-                        className={clsx(
-                          "w-12 h-12 rounded-full transition-all",
-                          !isMetadataSaved && "opacity-30",
-                          isMetadataSaved && (showUrthona ? "ring-4 ring-[#C85A54]" : "hover:ring-2 hover:ring-[#C85A54]/50")
-                        )}
-                      />
-                    </div>
-                  </>
-                )}
-                </div>
-                </div>
-              </div>
-
               {/* Cabeçalho Colasável (quando metadados foram salvos) */}
               {isMetadataSaved ? (
                 <div>
@@ -1824,7 +1773,7 @@ function EscritaPageContent() {
 
               {/* Conteúdo (só aparece após salvar metadados) */}
               {isMetadataSaved && (
-                <div className="-mt-4">
+                <div className={`-mt-4 font-${fontFamily}`}>
                   <TiptapEditor
                     value={conteudo}
                     onChange={(value) => setConteudo(value)}
@@ -1834,53 +1783,50 @@ function EscritaPageContent() {
                       setSelectedText(text);
                       setSelectionMenuPosition(position);
                     }}
+                    showToolbar={true}
+                    editorRef={editorRef}
+                    fontFamily={fontFamily}
+                    onFontChange={handleFontChange}
                   />
                 </div>
               )}
 
-              {/* FAB (Floating Action Buttons) - Sempre visíveis */}
-              {isMetadataSaved && (
-                <div className="fixed bottom-8 right-8 z-20 flex flex-col gap-3">
-                  {/* Botão Salvar */}
-                  <button
-                    onClick={() => handleSave(false)}
-                    disabled={isSaving || !titulo.trim()}
-                    className={clsx(
-                      "flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all duration-300",
-                      isSaving || !titulo.trim()
-                        ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                        : "bg-white dark:bg-dark-bg-secondary text-gray-700 dark:text-gray-200 hover:shadow-xl hover:scale-105 cursor-pointer"
-                    )}
-                    title="Salvar (Ctrl+S)"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                    </svg>
-                    <span className="text-sm font-medium">{isSaving ? "Salvando..." : "Salvar"}</span>
-                  </button>
-
-                  {/* Botão Publicar */}
-                  <button
-                    onClick={handlePublish}
-                    disabled={isSaving || !titulo.trim()}
-                    className={clsx(
-                      "flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all duration-300",
-                      isSaving || !titulo.trim()
-                        ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                        : "bg-primary-500 hover:bg-primary-600 text-white hover:shadow-xl hover:scale-105 cursor-pointer"
-                    )}
-                    title="Publicar"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                    </svg>
-                    <span className="text-sm font-medium">Publicar</span>
-                  </button>
-                </div>
-              )}
+              {/* FABs removidos - agora usando EditorFooter component */}
             </div>
           </div>
         </main>
+        
+        {/* NOVO FOOTER FIXO */}
+        {isMetadataSaved && (
+          <EditorFooter
+            isSaving={isSaving}
+            titulo={titulo}
+            handleSave={handleSave}
+            handlePublish={handlePublish}
+          />
+        )}
+        
+        {/* MODAL DE EXPORTAÇÃO */}
+        <ExportModal
+          showExportModal={showExportModal}
+          setShowExportModal={setShowExportModal}
+          handleExport={handleExport}
+        />
+        
+        {/* MENU MOBILE DE OPÇÕES */}
+        <MobileOptionsMenu
+          showMobileOptionsMenu={showMobileOptionsMenu}
+          setShowMobileOptionsMenu={setShowMobileOptionsMenu}
+          handlePublish={handlePublish}
+          setShowUrizen={setShowUrizen}
+          setShowUrthona={setShowUrthona}
+          setShowExportModal={setShowExportModal}
+          handleDuplicate={handleDuplicate}
+          setShowStatsModal={setShowStatsModal}
+          handleDelete={handleDelete}
+          currentTextoId={currentTextoId}
+          isMetadataSaved={isMetadataSaved}
+        />
 
         {/* Chat Lateral com Assistentes */}
         {(showUrthona || showUrizen) && (
@@ -2325,7 +2271,12 @@ function EscritaPageContent() {
 
       {/* Modo Foco - Fullscreen */}
       {isFocusMode && (
-        <div className="fixed inset-0 z-50 bg-light-base dark:bg-dark-base flex flex-col">
+        <div className={clsx(
+          "fixed inset-0 z-50 flex flex-col",
+          focusModeTheme === 'light' ? 'focus-mode-light' :
+          focusModeTheme === 'dark' ? 'focus-mode-dark' :
+          'bg-light-base dark:bg-dark-base'
+        )}>
           {/* Header do Modo Foco */}
           <div className="flex justify-between items-center px-8 py-4 border-b border-border-light-default dark:border-border-dark-default">
             <h1 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
@@ -2340,22 +2291,12 @@ function EscritaPageContent() {
                 </div>
               )}
               
-              {/* Controles de Foco */}
+              {/* Controles de Foco e Tema */}
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setFocusType(prev => prev === 'sentence' ? 'off' : 'sentence')}
-                  className={clsx(
-                    "px-3 py-1.5 rounded text-xs font-medium transition-colors",
-                    focusType === 'sentence'
-                      ? "bg-primary-500 text-white"
-                      : "bg-light-overlay dark:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary hover:bg-light-raised dark:hover:bg-dark-raised"
-                  )}
-                  title="Foco em Sentença (Ctrl+Shift+F)"
-                >
-                  Sentença
-                </button>
-                <button
-                  onClick={() => setFocusType(prev => prev === 'paragraph' ? 'off' : 'paragraph')}
+                  onClick={() => {
+                    setFocusType(prev => prev === 'paragraph' ? 'off' : 'paragraph');
+                  }}
                   className={clsx(
                     "px-3 py-1.5 rounded text-xs font-medium transition-colors",
                     focusType === 'paragraph'
@@ -2367,18 +2308,28 @@ function EscritaPageContent() {
                   Parágrafo
                 </button>
                 <button
-                  onClick={() => setTypewriterMode(prev => !prev)}
+                  onClick={() => setFocusModeTheme('light')}
                   className={clsx(
                     "px-3 py-1.5 rounded text-xs font-medium transition-colors",
-                    typewriterMode
+                    focusModeTheme === 'light'
                       ? "bg-primary-500 text-white"
                       : "bg-light-overlay dark:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary hover:bg-light-raised dark:hover:bg-dark-raised"
                   )}
-                  title="Modo Máquina de Escrever (Ctrl+Shift+T)"
+                  title="Modo Branco"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
+                  ☀️ Branco
+                </button>
+                <button
+                  onClick={() => setFocusModeTheme('dark')}
+                  className={clsx(
+                    "px-3 py-1.5 rounded text-xs font-medium transition-colors",
+                    focusModeTheme === 'dark'
+                      ? "bg-primary-500 text-white"
+                      : "bg-light-overlay dark:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary hover:bg-light-raised dark:hover:bg-dark-raised"
+                  )}
+                  title="Modo Preto"
+                >
+                  🌙 Preto
                 </button>
               </div>
               
@@ -2424,16 +2375,25 @@ function EscritaPageContent() {
               "flex-1 overflow-y-auto transition-all duration-300",
               (showUrthona || showUrizen) ? "mr-96" : ""
             )}>
-              <div className="max-w-4xl mx-auto px-16 py-12">
+              <div className={`max-w-4xl mx-auto px-16 py-12 font-${fontFamily}`}>
                 <TiptapEditor
                   value={conteudo}
                   onChange={(value) => setConteudo(value)}
                   placeholder="Escreva seu texto aqui..."
-                  className="w-full min-h-[calc(100vh-12rem)] bg-transparent border-none"
+                  className={clsx(
+                    "w-full min-h-[calc(100vh-12rem)] bg-transparent border-none",
+                    typewriterMode && "typewriter-mode"
+                  )}
                   onTextSelect={(text, position) => {
                     setSelectedText(text);
                     setSelectionMenuPosition(position);
                   }}
+                  focusType={focusType}
+                  typewriterMode={typewriterMode}
+                  isFocusMode={true}
+                  showToolbar={false}
+                  fontFamily={fontFamily}
+                  onFontChange={handleFontChange}
                 />
               </div>
             </div>
@@ -2785,6 +2745,9 @@ function EscritaPageContent() {
           </div>
         </div>
       )}
+
+      {/* Modal de confirmação de delete */}
+      <ConfirmDialog />
     </div>
   );
 }
