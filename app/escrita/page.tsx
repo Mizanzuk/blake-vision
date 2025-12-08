@@ -2,7 +2,7 @@
 
 console.log('[ESCRITA PAGE] Módulo carregado - timestamp:', Date.now());
 
-import React, { useState, useEffect, useRef, Suspense } from "react";
+import React, { useState, useEffect, useRef, Suspense, useMemo } from "react";
 import { flushSync } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
@@ -27,6 +27,7 @@ import { EditorFooter } from "@/app/components/editor/EditorFooter";
 import { ExportModal } from "@/app/components/modals/ExportModal";
 import { MobileOptionsMenu } from "@/app/components/mobile/MobileOptionsMenu";
 
+// --- Definições de Tipos ---
 interface Texto {
   id: string;
   titulo: string;
@@ -40,6 +41,55 @@ interface Texto {
   created_at: string;
   updated_at: string;
 }
+
+// --- Funções Auxiliares (Fora do Componente) ---
+
+function getCategoryColor(categoria: string | null): string {
+  if (!categoria) return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
+  
+  const slug = categoria.toLowerCase();
+  
+  switch (slug) {
+    case "personagem":
+      return "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300";
+    case "local":
+      return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300";
+    case "evento":
+      return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300";
+    case "conceito":
+      return "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300";
+    case "regra":
+      return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300";
+    case "roteiro":
+      return "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300";
+    case "episodio":
+      return "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300";
+    default:
+      return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
+  }
+}
+
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return "Agora mesmo";
+  if (diffMins < 60) return `${diffMins} min atrás`;
+  if (diffHours < 24) return `${diffHours}h atrás`;
+  if (diffDays < 7) return `${diffDays}d atrás`;
+  
+  return date.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
+  });
+}
+
+// --- Componente Principal ---
 
 function EscritaPageContent() {
   console.log('[DEBUG EscritaPage] Componente renderizado!');
@@ -70,10 +120,10 @@ function EscritaPageContent() {
   const [categoria, setCategoria] = useState<string>("");
   const [status, setStatus] = useState<"rascunho" | "publicado">("rascunho");
   const [isMetadataLocked, setIsMetadataLocked] = useState(false);
-  const [isMetadataSaved, setIsMetadataSaved] = useState(false); // Controla se metadados foram salvos
-  const [isHeaderExpanded, setIsHeaderExpanded] = useState(true); // Controla expansão do cabeçalho
-  const [hasUnsavedMetadataChanges, setHasUnsavedMetadataChanges] = useState(false); // Controla se há alterações não salvas
-  const [savedMetadataSnapshot, setSavedMetadataSnapshot] = useState<any>(null); // Snapshot dos metadados salvos
+  const [isMetadataSaved, setIsMetadataSaved] = useState(false);
+  const [isHeaderExpanded, setIsHeaderExpanded] = useState(true);
+  const [hasUnsavedMetadataChanges, setHasUnsavedMetadataChanges] = useState(false);
+  const [savedMetadataSnapshot, setSavedMetadataSnapshot] = useState<any>(null);
   
   // Detectar alterações nos metadados
   useEffect(() => {
@@ -97,7 +147,7 @@ function EscritaPageContent() {
   const [allFichas, setAllFichas] = useState<any[]>([]);
   
   // Categorias únicas dos textos (para filtro)
-  const textoCategorias = React.useMemo(() => {
+  const textoCategorias = useMemo(() => {
     const allTextos = [...rascunhos, ...publicados];
     const uniqueCategories = new Set(allTextos.map(t => t.categoria).filter(Boolean));
     const categoriasList = Array.from(uniqueCategories).map(slug => ({
@@ -108,7 +158,6 @@ function EscritaPageContent() {
       created_at: ""
     }));
     
-    // Adicionar "Texto Livre" se houver textos sem categoria
     const hasTextoLivre = allTextos.some(t => !t.categoria);
     if (hasTextoLivre) {
       categoriasList.push({
@@ -123,7 +172,7 @@ function EscritaPageContent() {
     return categoriasList;
   }, [rascunhos, publicados, categories]);
 
-  // Estados de modais
+  // Estados de modais e UI
   const [showNewEpisodeModal, setShowNewEpisodeModal] = useState(false);
   const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
@@ -132,11 +181,10 @@ function EscritaPageContent() {
   const [showMobileOptionsMenu, setShowMobileOptionsMenu] = useState(false);
   const { confirm, ConfirmDialog } = useConfirm();
   
-  // Estado da sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   
-  // Estados do chat com assistentes
+  // Chat Assistant States
   const [showUrthona, setShowUrthona] = useState(false);
   const [showUrizen, setShowUrizen] = useState(false);
   const [urthonaMessages, setUrthonaMessages] = useState<any[]>([]);
@@ -144,7 +192,7 @@ function EscritaPageContent() {
   const [assistantInput, setAssistantInput] = useState("");
   const [isAssistantLoading, setIsAssistantLoading] = useState(false);
   
-  // Estados para drag and drop e resize do chat
+  // Drag and Drop Chat
   const [chatPosition, setChatPosition] = useState({ x: 0, y: 0 });
   const [chatSize, setChatSize] = useState({ width: 384, height: 600 });
   const [isDragging, setIsDragging] = useState(false);
@@ -152,69 +200,38 @@ function EscritaPageContent() {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
   
-  // Estados para modal de ficha
+  // Ficha Modal
   const [showFichaModal, setShowFichaModal] = useState(false);
   const [fichaData, setFichaData] = useState<any>(null);
   const [loadingFicha, setLoadingFicha] = useState(false);
   
-  // Estados do Modo Foco
+  // Focus Mode
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [focusType, setFocusType] = useState<'off' | 'sentence' | 'paragraph'>('off');
   const [focusModeTheme, setFocusModeTheme] = useState<'light' | 'dark' | 'default'>('default');
-
   const [typewriterMode, setTypewriterMode] = useState(false);
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
   
-  // Estados para seleção de texto
+  // Selection
   const [selectedText, setSelectedText] = useState("");
-  
-  // Estado de tipografia
-  const [fontFamily, setFontFamily] = useState<FontFamily>('serif');
-  
-  // Carregar preferência de fonte do localStorage
-  useEffect(() => {
-    const savedFont = localStorage.getItem('blake-vision-font-family');
-    if (savedFont && ['serif', 'sans', 'mono'].includes(savedFont)) {
-      setFontFamily(savedFont as FontFamily);
-    }
-  }, []);
-  
-  // Salvar preferência de fonte no localStorage
-  const handleFontChange = (font: FontFamily) => {
-    setFontFamily(font);
-    localStorage.setItem('blake-vision-font-family', font);
-  };
-  
-  // Carregar preferência de tema do Focus Mode do localStorage
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('blake-vision-focus-mode-theme');
-    if (savedTheme && ['light', 'dark', 'default'].includes(savedTheme)) {
-      setFocusModeTheme(savedTheme as 'light' | 'dark' | 'default');
-    }
-  }, []);
-  
-  // Salvar preferência de tema do Focus Mode no localStorage
-  useEffect(() => {
-    if (focusModeTheme !== 'default') {
-      localStorage.setItem('blake-vision-focus-mode-theme', focusModeTheme);
-    }
-  }, [focusModeTheme]);
   const [selectionMenuPosition, setSelectionMenuPosition] = useState<{x: number, y: number} | null>(null);
   
-  // Ref para controlar o editor externamente
-  const editorRef = useRef<any>(null);
-  const loadedTextoIdRef = useRef<string | null>(null); // Rastrear qual texto já foi carregado
-
-  // Estados para drag and drop
+  // Typography
+  const [fontFamily, setFontFamily] = useState<FontFamily>('serif');
+  
+  // Drag and Drop Textos
   const [draggedTextoId, setDraggedTextoId] = useState<string | null>(null);
   const [dragOverTextoId, setDragOverTextoId] = useState<string | null>(null);
 
   // Refs
+  const editorRef = useRef<any>(null);
+  const loadedTextoIdRef = useRef<string | null>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Carregar dados iniciais
+  // --- Effects ---
+
   useEffect(() => {
     checkAuth();
   }, []);
@@ -226,28 +243,39 @@ function EscritaPageContent() {
     }
   }, [isLoading]);
 
-  // Carregar texto específico da URL
+  // Load saved preferences
   useEffect(() => {
-    console.log('[DEBUG] useEffect loadTexto executado');
+    const savedFont = localStorage.getItem('blake-vision-font-family');
+    if (savedFont && ['serif', 'sans', 'mono'].includes(savedFont)) {
+      setFontFamily(savedFont as FontFamily);
+    }
+    const savedTheme = localStorage.getItem('blake-vision-focus-mode-theme');
+    if (savedTheme && ['light', 'dark', 'default'].includes(savedTheme)) {
+      setFocusModeTheme(savedTheme as 'light' | 'dark' | 'default');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (focusModeTheme !== 'default') {
+      localStorage.setItem('blake-vision-focus-mode-theme', focusModeTheme);
+    }
+  }, [focusModeTheme]);
+
+  // Load Texto from URL
+  useEffect(() => {
     const textoId = searchParams.get("id");
-    console.log('[DEBUG] textoId da URL:', textoId, 'isLoading:', isLoading);
-    
-    // CORREÇÃO: Evitar carregamento duplicado usando ref
     if (textoId && !isLoading && textoId !== loadedTextoIdRef.current) {
-      console.log('[DEBUG] Chamando loadTexto... (primeira vez para este ID)');
-      loadedTextoIdRef.current = textoId; // Marcar como carregado
+      loadedTextoIdRef.current = textoId;
       try {
         loadTexto(textoId);
       } catch (error) {
         console.error('[DEBUG] ERRO no useEffect ao chamar loadTexto:', error);
-        loadedTextoIdRef.current = null; // Resetar em caso de erro
+        loadedTextoIdRef.current = null;
       }
-    } else if (textoId && textoId === loadedTextoIdRef.current) {
-      console.log('[DEBUG] Texto já foi carregado, ignorando...');
     }
   }, [searchParams, isLoading]);
 
-  // Ajustar altura do textarea do chat quando assistantInput mudar
+  // Chat input resize
   useEffect(() => {
     if (chatInputRef.current) {
       chatInputRef.current.style.height = 'auto';
@@ -256,31 +284,26 @@ function EscritaPageContent() {
     }
   }, [assistantInput]);
 
-  // Carregar fichas quando universo muda
+  // Load catalogs
   useEffect(() => {
     if (universeId) {
       fetch(`/api/catalog?universeId=${universeId}`)
         .then(res => res.json())
         .then(data => {
-          if (data.fichas) {
-            setAllFichas(data.fichas);
-          }
+          if (data.fichas) setAllFichas(data.fichas);
         })
         .catch(error => console.error("Erro ao carregar fichas:", error));
       
-      // Carregar categorias
       fetch(`/api/categories?universeId=${universeId}`)
         .then(res => res.json())
         .then(data => {
-          if (data.categories) {
-            setCategories(data.categories);
-          }
+          if (data.categories) setCategories(data.categories);
         })
         .catch(error => console.error("Erro ao carregar categorias:", error));
     }
   }, [universeId]);
 
-  // Atualizar episódios disponíveis quando mundo muda
+  // Update episodes
   useEffect(() => {
     if (worldId && allFichas.length > 0) {
       const worldFichas = allFichas.filter(f => f.world_id === worldId);
@@ -297,14 +320,14 @@ function EscritaPageContent() {
     }
   }, [worldId, allFichas]);
 
-  // Scroll automático do chat quando novas mensagens chegam
+  // Chat scroll
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [urthonaMessages, urizenMessages]);
 
-  // Handlers para drag and drop do chat
+  // Chat drag
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging) {
@@ -319,7 +342,6 @@ function EscritaPageContent() {
         setChatSize({ width: newWidth, height: newHeight });
       }
     };
-
     const handleMouseUp = () => {
       setIsDragging(false);
       setIsResizing(false);
@@ -335,7 +357,7 @@ function EscritaPageContent() {
     }
   }, [isDragging, isResizing, dragStart, resizeStart]);
 
-  // Fechar chat com ESC
+  // Escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && (showUrthona || showUrizen)) {
@@ -343,81 +365,80 @@ function EscritaPageContent() {
         setShowUrizen(false);
       }
     };
-
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
   }, [showUrthona, showUrizen]);
 
-  // Modo Foco: Fullscreen API
+  // Focus mode fullscreen
   useEffect(() => {
     const handleFullscreenChange = () => {
       if (!document.fullscreenElement && isFocusMode) {
-        // Saiu do fullscreen, desativar modo foco
         setIsFocusMode(false);
         setFocusType('off');
         setTypewriterMode(false);
       }
     };
-
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, [isFocusMode]);
 
-  // Modo Foco: Auto-save a cada 30 segundos
+  // Auto-save in focus mode
   useEffect(() => {
     if (isFocusMode && conteudo && currentTextoId) {
       const interval = setInterval(() => {
-        handleSave(true); // true = auto-save silencioso
-      }, 30000); // 30 segundos
+        handleSave(true);
+      }, 30000);
       return () => clearInterval(interval);
     }
   }, [isFocusMode, conteudo, currentTextoId]);
 
-  // Modo Foco: Atalhos de teclado
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyboard = (e: KeyboardEvent) => {
       if (!isFocusMode) return;
       
-      // ESC: Lógica hierárquica - fechar chat primeiro, depois modo foco
       if (e.key === 'Escape') {
         if (showUrthona || showUrizen) {
-          // Se há chat aberto, fechar o chat
           setShowUrthona(false);
           setShowUrizen(false);
         } else {
-          // Se não há chat aberto, sair do modo foco
           exitFocusMode();
         }
         return;
       }
-      
-      // Ctrl+Shift+F: Toggle sentence focus
       if (e.ctrlKey && e.shiftKey && e.key === 'F') {
         e.preventDefault();
         setFocusType(prev => prev === 'sentence' ? 'off' : 'sentence');
         return;
       }
-      
-      // Ctrl+Shift+P: Toggle paragraph focus
       if (e.ctrlKey && e.shiftKey && e.key === 'P') {
         e.preventDefault();
         setFocusType(prev => prev === 'paragraph' ? 'off' : 'paragraph');
         return;
       }
-      
-      // Ctrl+Shift+T: Toggle typewriter mode
       if (e.ctrlKey && e.shiftKey && e.key === 'T') {
         e.preventDefault();
         setTypewriterMode(prev => !prev);
         return;
       }
     };
-
     window.addEventListener('keydown', handleKeyboard);
     return () => window.removeEventListener('keydown', handleKeyboard);
   }, [isFocusMode, showUrthona, showUrizen]);
 
-  // Funções do Modo Foco
+  // --- Handlers & Logic ---
+
+  const handleFontChange = (font: FontFamily) => {
+    setFontFamily(font);
+    localStorage.setItem('blake-vision-font-family', font);
+  };
+
+  function getCategoryLabel(categoria: string | null): string {
+    if (!categoria) return "";
+    const cat = categories.find(c => c.slug === categoria);
+    return cat?.label || categoria;
+  }
+
   async function enterFocusMode() {
     try {
       const elem = document.documentElement;
@@ -447,7 +468,6 @@ function EscritaPageContent() {
   async function checkAuth() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
       if (!user) {
         router.push("/login");
         return;
@@ -461,19 +481,13 @@ function EscritaPageContent() {
 
   async function loadTextos() {
     try {
-      // Carregar rascunhos
       const responseRascunhos = await fetch("/api/textos?status=rascunho");
       const dataRascunhos = await responseRascunhos.json();
-      if (responseRascunhos.ok) {
-        setRascunhos(dataRascunhos.textos || []);
-      }
+      if (responseRascunhos.ok) setRascunhos(dataRascunhos.textos || []);
 
-      // Carregar publicados
       const responsePublicados = await fetch("/api/textos?status=publicado");
       const dataPublicados = await responsePublicados.json();
-      if (responsePublicados.ok) {
-        setPublicados(dataPublicados.textos || []);
-      }
+      if (responsePublicados.ok) setPublicados(dataPublicados.textos || []);
     } catch (error) {
       console.error("Erro ao carregar textos:", error);
       toast.error("Erro ao carregar textos");
@@ -484,11 +498,8 @@ function EscritaPageContent() {
     try {
       const response = await fetch("/api/universes");
       const data = await response.json();
-      
       if (response.ok && data.universes) {
         setUniverses(data.universes);
-        
-        // Carregar mundos de todos os universos
         const allWorlds: World[] = [];
         for (const universe of data.universes) {
           const worldsResponse = await fetch(`/api/worlds?universeId=${universe.id}`);
@@ -505,26 +516,17 @@ function EscritaPageContent() {
   }
 
   async function loadTexto(id: string) {
-    console.log('[DEBUG] loadTexto iniciado, ID:', id);
     try {
-      console.log('[DEBUG] Fazendo fetch da API...');
       const response = await fetch(`/api/textos?id=${id}`);
-      console.log('[DEBUG] Response recebida:', response.status);
       const data = await response.json();
-      console.log('[DEBUG] Data parseada:', data);
       
       if (response.ok && data.texto) {
         const texto = data.texto;
         
-        // CORREÇÃO: Setar conteúdo PRIMEIRO com flushSync para garantir que está pronto
-        // antes de mostrar o editor (isMetadataSaved = true)
-        console.log('[DEBUG] Setando conteúdo, tamanho:', (texto.conteudo || '').length);
         flushSync(() => {
           setConteudo(texto.conteudo || "");
         });
-        console.log('[DEBUG] Conteúdo setado com sucesso (flushSync)');
         
-        // Depois setar todos os outros estados de uma vez
         flushSync(() => {
           setCurrentTextoId(texto.id);
           setTitulo(texto.titulo || "");
@@ -534,12 +536,10 @@ function EscritaPageContent() {
           setCategoria(texto.categoria || "");
           setStatus(texto.status || "rascunho");
           
-          // Configurar estados de controle
           setIsMetadataLocked(true);
-          setIsMetadataSaved(true); // ← Isso monta o TiptapEditor
+          setIsMetadataSaved(true);
           setIsHeaderExpanded(false);
           
-          // Salvar snapshot dos metadados
           setSavedMetadataSnapshot({
             titulo: texto.titulo || "",
             universeId: texto.universe_id || "",
@@ -551,17 +551,13 @@ function EscritaPageContent() {
       }
     } catch (error) {
       console.error('[DEBUG] ERRO CAPTURADO em loadTexto:', error);
-      console.error('[DEBUG] Stack trace:', error instanceof Error ? error.stack : 'N/A');
-      console.error('[DEBUG] Mensagem:', error instanceof Error ? error.message : String(error));
       toast.error("Erro ao carregar texto");
     }
   }
 
   function handleSelectTexto(texto: Texto) {
-    // Resetar ref para permitir carregamento do novo texto
     loadedTextoIdRef.current = texto.id;
     
-    // CORREÇÃO: Setar conteúdo primeiro, depois mostrar editor
     flushSync(() => {
       setConteudo(texto.conteudo || "");
     });
@@ -575,12 +571,10 @@ function EscritaPageContent() {
       setCategoria(texto.categoria || "");
       setStatus(texto.status || "rascunho");
       
-      // Bloquear metadados ao carregar texto existente salvo
       setIsMetadataLocked(true);
       setIsMetadataSaved(true);
-      setIsHeaderExpanded(false); // Começar colapsado para textos existentes
+      setIsHeaderExpanded(false);
       
-      // Salvar snapshot dos metadados
       setSavedMetadataSnapshot({
         titulo: texto.titulo || "",
         universeId: texto.universe_id || "",
@@ -589,29 +583,24 @@ function EscritaPageContent() {
         categoria: texto.categoria || ""
       });
     });
-    
-    // Atualizar URL
     router.push(`/escrita?id=${texto.id}`);
   }
 
-  // Função para salvar apenas metadados (primeiro save)
   async function handleSaveMetadata() {
     if (!titulo.trim()) {
       toast.error("Por favor, adicione um título");
       return;
     }
-    
     if (!universeId) {
       toast.error("Por favor, selecione um universo");
       return;
     }
 
     setIsSaving(true);
-
     try {
       const body = {
         titulo,
-        conteudo: "", // Conteúdo vazio no primeiro save
+        conteudo: "",
         universe_id: universeId,
         world_id: worldId || null,
         episodio: episodio || null,
@@ -629,23 +618,15 @@ function EscritaPageContent() {
 
       if (response.ok) {
         toast.success("Metadados salvos! Agora você pode escrever.");
-        
-        // Atualizar ID do texto
         if (data.texto) {
           setCurrentTextoId(data.texto.id);
           router.push(`/escrita?id=${data.texto.id}`);
         }
-        
-        // Marcar metadados como salvos e bloquear
         setIsMetadataSaved(true);
         setIsMetadataLocked(true);
-        setIsHeaderExpanded(false); // Colapsar cabeçalho
-        
-        // Salvar snapshot dos metadados e resetar flag de alterações
+        setIsHeaderExpanded(false);
         setSavedMetadataSnapshot({ titulo, universeId, worldId, episodio, categoria });
         setHasUnsavedMetadataChanges(false);
-        
-        // Recarregar lista
         loadTextos();
       } else {
         toast.error(data.error || "Erro ao salvar metadados");
@@ -667,14 +648,10 @@ function EscritaPageContent() {
     setEpisodio("");
     setCategoria("");
     setStatus("rascunho");
-    
-    // Resetar estados de controle
     setIsMetadataLocked(false);
     setIsMetadataSaved(false);
     setIsHeaderExpanded(true);
     setHasUnsavedMetadataChanges(false);
-    
-    // Limpar snapshot
     setSavedMetadataSnapshot({
       titulo: "",
       universeId: "",
@@ -682,8 +659,6 @@ function EscritaPageContent() {
       episodio: "",
       categoria: ""
     });
-    
-    // Limpar URL
     router.push("/escrita");
   }
 
@@ -694,7 +669,6 @@ function EscritaPageContent() {
     }
 
     setIsSaving(true);
-
     try {
       const body = {
         id: currentTextoId,
@@ -709,14 +683,12 @@ function EscritaPageContent() {
 
       let response;
       if (currentTextoId) {
-        // Atualizar texto existente
         response = await fetch(`/api/textos?id=${currentTextoId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
       } else {
-        // Criar novo texto
         response = await fetch("/api/textos", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -727,22 +699,14 @@ function EscritaPageContent() {
       const data = await response.json();
 
       if (response.ok) {
-        if (!autoSave) {
-          toast.success(currentTextoId ? "Texto atualizado!" : "Texto criado!");
-        } else {
-          setLastSaveTime(new Date());
-        }
+        if (!autoSave) toast.success(currentTextoId ? "Texto atualizado!" : "Texto criado!");
+        else setLastSaveTime(new Date());
         
-        // Se é novo texto, atualizar ID
         if (!currentTextoId && data.texto) {
           setCurrentTextoId(data.texto.id);
           router.push(`/escrita?id=${data.texto.id}`);
         }
-        
-        // Bloquear metadados após salvar
         setIsMetadataLocked(true);
-        
-        // Recarregar lista
         loadTextos();
       } else {
         toast.error(data.error || "Erro ao salvar texto");
@@ -757,8 +721,6 @@ function EscritaPageContent() {
 
   async function handlePublish() {
     setStatus("publicado");
-    
-    // Aguardar atualização do estado e salvar
     setTimeout(() => {
       handleSave();
     }, 100);
@@ -776,19 +738,10 @@ function EscritaPageContent() {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(`/api/textos?id=${id}`, {
-        method: "DELETE",
-      });
-
+      const response = await fetch(`/api/textos?id=${id}`, { method: "DELETE" });
       if (response.ok) {
         toast.success("Texto deletado com sucesso");
-
-        
-        // Se é o texto atual, limpar editor
-        if (id === currentTextoId) {
-          handleNewTexto();
-        }
-        
+        if (id === currentTextoId) handleNewTexto();
         loadTextos();
       } else {
         toast.error("Erro ao deletar texto");
@@ -799,17 +752,14 @@ function EscritaPageContent() {
     }
   }
 
-  // Função para duplicar texto
   async function handleDuplicate() {
     if (!currentTextoId) {
       toast.error("Nenhum texto selecionado para duplicar");
       return;
     }
-
     try {
       const response = await fetch(`/api/textos?id=${currentTextoId}`);
       const data = await response.json();
-
       if (response.ok && data.texto) {
         const duplicatedTexto = {
           ...data.texto,
@@ -817,15 +767,12 @@ function EscritaPageContent() {
           titulo: `${data.texto.titulo} (Cópia)`,
           status: "rascunho" as const,
         };
-
         const createResponse = await fetch("/api/textos", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(duplicatedTexto),
         });
-
         const createData = await createResponse.json();
-
         if (createResponse.ok) {
           toast.success("Texto duplicado com sucesso!");
           loadTextos();
@@ -842,16 +789,13 @@ function EscritaPageContent() {
     }
   }
 
-  // Função para exportar texto
   async function handleExport(format: 'pdf' | 'docx' | 'txt') {
     if (!titulo.trim() || !conteudo.trim()) {
       toast.error("Texto vazio não pode ser exportado");
       return;
     }
-
     try {
       if (format === 'txt') {
-        // Exportar como TXT (direto no navegador)
         const blob = new Blob([`${titulo}\n\n${conteudo}`], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -863,17 +807,11 @@ function EscritaPageContent() {
         URL.revokeObjectURL(url);
         toast.success("Texto exportado como TXT!");
       } else if (format === 'pdf' || format === 'docx') {
-        // Exportar via API
         const response = await fetch('/api/export', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            titulo,
-            conteudo,
-            format,
-          }),
+          body: JSON.stringify({ titulo, conteudo, format }),
         });
-
         if (response.ok) {
           const blob = await response.blob();
           const url = URL.createObjectURL(blob);
@@ -893,32 +831,21 @@ function EscritaPageContent() {
       console.error("Erro ao exportar texto:", error);
       toast.error("Erro ao exportar texto");
     }
-
     setShowExportModal(false);
   }
 
   async function handleEditTitle(id: string, currentTitle: string) {
     const newTitle = prompt("Digite o novo título:", currentTitle);
-    
-    if (!newTitle || newTitle === currentTitle) {
-      return;
-    }
-
+    if (!newTitle || newTitle === currentTitle) return;
     try {
       const response = await fetch(`/api/textos?id=${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ titulo: newTitle }),
       });
-
       if (response.ok) {
         toast.success("Título atualizado com sucesso");
-        
-        // Se é o texto atual, atualizar no editor
-        if (id === currentTextoId) {
-          setTitulo(newTitle);
-        }
-        
+        if (id === currentTextoId) setTitulo(newTitle);
         loadTextos();
       } else {
         toast.error("Erro ao atualizar título");
@@ -930,41 +857,28 @@ function EscritaPageContent() {
   }
 
   function handleDownload(texto: Texto) {
-    // Criar conteúdo do arquivo
     const content = `TÍTULO: ${texto.titulo}\n\nCONTEÚDO:\n${texto.conteudo}`;
-    
-    // Criar blob e URL
     const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
-    
-    // Criar link temporário e clicar
     const link = document.createElement("a");
     link.href = url;
     link.download = `${texto.titulo || "texto"}.txt`;
     document.body.appendChild(link);
     link.click();
-    
-    // Limpar
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    
     toast.success("Download iniciado");
   }
 
   function handleCreateNewEpisode(episodeNumber: string) {
     if (!episodeNumber.trim()) return;
-    
-    // Adicionar à lista se não existir
     if (!availableEpisodes.includes(episodeNumber)) {
       setAvailableEpisodes([...availableEpisodes, episodeNumber].sort());
     }
-    
-    // Selecionar automaticamente
     setEpisodio(episodeNumber);
     toast.success(`Episódio "${episodeNumber}" criado!`);
   }
 
-  // Handlers para drag and drop
   function handleDragStart(textoId: string) {
     setDraggedTextoId(textoId);
   }
@@ -980,33 +894,22 @@ function EscritaPageContent() {
       setDragOverTextoId(null);
       return;
     }
-
-    // Reordenar lista
     const currentList = activeTab === "rascunhos" ? rascunhos : publicados;
     const draggedIndex = currentList.findIndex(t => t.id === draggedTextoId);
     const targetIndex = currentList.findIndex(t => t.id === dragOverTextoId);
-
     if (draggedIndex === -1 || targetIndex === -1) return;
-
     const newList = [...currentList];
     const [removed] = newList.splice(draggedIndex, 1);
     newList.splice(targetIndex, 0, removed);
-
-    if (activeTab === "rascunhos") {
-      setRascunhos(newList);
-    } else {
-      setPublicados(newList);
-    }
-
+    if (activeTab === "rascunhos") setRascunhos(newList);
+    else setPublicados(newList);
     setDraggedTextoId(null);
     setDragOverTextoId(null);
   }
 
-  // Função para buscar e exibir ficha no modal
   async function handleFichaClick(fichaSlug: string) {
     setLoadingFicha(true);
     setShowFichaModal(true);
-    
     try {
       const response = await fetch(`/api/fichas/${fichaSlug}`);
       if (!response.ok) {
@@ -1014,9 +917,7 @@ function EscritaPageContent() {
         setShowFichaModal(false);
         return;
       }
-      
       const data = await response.json();
-      // A API retorna { ficha: {...} }
       setFichaData(data.ficha);
     } catch (error) {
       console.error("Erro ao buscar ficha:", error);
@@ -1027,19 +928,12 @@ function EscritaPageContent() {
     }
   }
 
-  // Função para conversar com assistentes
   async function handleAssistantMessage(mode: "urthona" | "urizen") {
     if (!assistantInput.trim()) return;
-
     setIsAssistantLoading(true);
     const messages = mode === "urthona" ? urthonaMessages : urizenMessages;
     const setMessages = mode === "urthona" ? setUrthonaMessages : setUrizenMessages;
-
-    const newUserMessage = {
-      role: "user",
-      content: assistantInput,
-    };
-
+    const newUserMessage = { role: "user", content: assistantInput };
     setMessages([...messages, newUserMessage]);
     setAssistantInput("");
 
@@ -1062,7 +956,6 @@ function EscritaPageContent() {
         return;
       }
 
-      // Ler stream de resposta
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let assistantMessage = "";
@@ -1073,29 +966,16 @@ function EscritaPageContent() {
         return;
       }
 
-      // Adicionar mensagem do assistente vazia
-      const assistantMessageObj = {
-        role: "assistant" as const,
-        content: "",
-      };
-      setMessages([...messages, newUserMessage, assistantMessageObj]);
+      setMessages([...messages, newUserMessage, { role: "assistant", content: "" }]);
 
-      // Ler chunks do stream
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-
         const chunk = decoder.decode(value, { stream: true });
         assistantMessage += chunk;
-
-        // Atualizar mensagem progressivamente
-        setMessages([...messages, newUserMessage, {
-          role: "assistant",
-          content: assistantMessage,
-        }]);
+        setMessages([...messages, newUserMessage, { role: "assistant", content: assistantMessage }]);
       }
 
-      // Detectar e aplicar EDIT_CONTENT (apenas para Urthona)
       if (mode === "urthona" && assistantMessage.includes('```EDIT_CONTENT')) {
         const editMatch = assistantMessage.match(/```EDIT_CONTENT\s*([\s\S]*?)```/);
         if (editMatch && editMatch[1]) {
@@ -1104,7 +984,6 @@ function EscritaPageContent() {
           toast.success("Texto atualizado por Urthona!");
         }
       }
-
     } catch (error: any) {
       console.error("Erro ao conversar com assistente:", error);
       toast.error(error.message || "Erro ao conversar com assistente");
@@ -1113,91 +992,30 @@ function EscritaPageContent() {
     }
   }
 
-  // Funções auxiliares para badges de categoria
-  function getCategoryColor(categoria: string | null): string {
-    if (!categoria) return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
-    
-    const slug = categoria.toLowerCase();
-    
-    switch (slug) {
-      case "personagem":
-        return "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300";
-      case "local":
-        return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300";
-      case "evento":
-        return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300";
-      case "conceito":
-        return "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300";
-      case "regra":
-        return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300";
-      case "roteiro":
-        return "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300";
-      case "episodio":
-        return "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300";
-      default:
-        return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
-    }
-  }
-
-  function getCategoryLabel(categoria: string | null): string {
-    if (!categoria) return "";
-    
-    const cat = categories.find(c => c.slug === categoria);
-    return cat?.label || categoria;
-  }
-
-  function formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return "Agora mesmo";
-    if (diffMins < 60) return `${diffMins} min atrás`;
-    if (diffHours < 24) return `${diffHours}h atrás`;
-    if (diffDays < 7) return `${diffDays}d atrás`;
-    
-    return date.toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric"
-    });
-  }
-
-  // Filtrar textos
-  const textos = activeTab === "rascunhos" ? rascunhos : publicados;
-  const filteredTextos = textos.filter(texto => {
-    // Filtro de busca
-    if (searchQuery && !texto.titulo.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
-    }
-    
-    // Filtro de universo
-    if (filterUniverseId && texto.universe_id !== filterUniverseId) {
-      return false;
-    }
-    
-    // Filtro de mundo
-    if (filterWorldId && texto.world_id !== filterWorldId) {
-      return false;
-    }
-    
-    // Filtro de categorias (múltipla seleção)
-    if (filterCategorias.length > 0) {
-      // Se "texto-livre" estiver selecionado, incluir textos sem categoria
-      if (filterCategorias.includes("texto-livre") && !texto.categoria) {
-        return true;
-      }
-      // Caso contrário, verificar se a categoria do texto está na lista
-      if (!filterCategorias.includes(texto.categoria || "")) {
+  // --- Filter Logic using useMemo to prevent block errors ---
+  const filteredTextos = useMemo(() => {
+    const texts = activeTab === "rascunhos" ? rascunhos : publicados;
+    return texts.filter(texto => {
+      if (searchQuery && !texto.titulo.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
-    }
-    
-    return true;
-  });
+      if (filterUniverseId && texto.universe_id !== filterUniverseId) {
+        return false;
+      }
+      if (filterWorldId && texto.world_id !== filterWorldId) {
+        return false;
+      }
+      if (filterCategorias.length > 0) {
+        if (filterCategorias.includes("texto-livre") && !texto.categoria) {
+          return true;
+        }
+        if (!filterCategorias.includes(texto.categoria || "")) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [activeTab, rascunhos, publicados, searchQuery, filterUniverseId, filterWorldId, filterCategorias]);
 
   if (isLoading) {
     return <Loading />;
@@ -2704,6 +2522,8 @@ function EscritaPageContent() {
     </div>
   );
 }
+
+// END OF COMPONENT
 
 export default function EscritaPage() {
   return (
