@@ -471,3 +471,4 @@ export default function TiptapEditor({
     </div>
   );
 }
+// Force rebuild: Sun Dec  7 23:41:27 EST 2025
