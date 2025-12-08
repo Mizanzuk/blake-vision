@@ -1014,7 +1014,6 @@ function EscritaPageContent() {
         }
       }
       return true;
-    });
   }, [activeTab, rascunhos, publicados, searchQuery, filterUniverseId, filterWorldId, filterCategorias]);
 
   if (isLoading) {
