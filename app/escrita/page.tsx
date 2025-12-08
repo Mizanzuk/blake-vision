@@ -162,7 +162,6 @@ function EscritaPageContent() {
   const [focusType, setFocusType] = useState<'off' | 'sentence' | 'paragraph'>('off');
   const [focusModeTheme, setFocusModeTheme] = useState<'light' | 'dark' | 'default'>('default');
 
-  // Função applyFocusEffect removida - agora usamos apenas updateFocus() no useEffect
   const [typewriterMode, setTypewriterMode] = useState(false);
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
   
