@@ -190,72 +190,71 @@ export default function TiptapEditor({
     }
   }, [editor, editorRef]);
 
-  // Focus Mode implementation
+  // Focus Mode implementation - Nova abordagem robusta
   useEffect(() => {
     console.log('[Focus Mode] useEffect executado, focusType:', focusType, 'editor:', !!editor);
     if (!editor) return;
 
-    const updateFocus = () => {
-      console.log('[Focus Mode] updateFocus chamado');
-      const proseMirror = editor.view.dom;
-      
-      // Remove all focus classes first
-      proseMirror.querySelectorAll('.focus-active, .focus-dimmed').forEach(el => {
-        el.classList.remove('focus-active', 'focus-dimmed');
+    const proseMirror = editor.view.dom;
+    
+    // Aplicar classe no CONTAINER baseado no focusType
+    proseMirror.classList.remove('focus-mode-sentence', 'focus-mode-paragraph');
+    
+    if (focusType === 'sentence') {
+      proseMirror.classList.add('focus-mode-sentence');
+      console.log('[Focus Mode] Classe focus-mode-sentence aplicada no container');
+    } else if (focusType === 'paragraph') {
+      proseMirror.classList.add('focus-mode-paragraph');
+      console.log('[Focus Mode] Classe focus-mode-paragraph aplicada no container');
+    }
+
+    const updateCurrentElement = () => {
+      // Remover marcação anterior
+      proseMirror.querySelectorAll('.current-focus').forEach(el => {
+        el.classList.remove('current-focus');
       });
 
-      if (!focusType || focusType === 'off') {
-        console.log('[Focus Mode] focusType é off, retornando');
-        return;
-      }
+      if (focusType === 'off') return;
 
-      console.log('[Focus Mode] Aplicando foco, tipo:', focusType);
+      // Encontrar elemento atual baseado na seleção
+      const selection = proseMirror.ownerDocument.getSelection();
+      if (!selection || !selection.anchorNode) return;
 
-      // Get all paragraphs
-      const paragraphs = Array.from(proseMirror.querySelectorAll('p'));
-      console.log('[Focus Mode] Encontrados', paragraphs.length, 'parágrafos');
-      
-      // Find current paragraph
-      let currentParagraph: Element | null = null;
-      let currentNode = proseMirror.ownerDocument.getSelection()?.anchorNode;
-      
+      let currentNode: Node | null = selection.anchorNode;
+      let targetElement: Element | null = null;
+
+      // Procurar o elemento apropriado (p para parágrafo, ou sentence para sentença)
       while (currentNode && currentNode !== proseMirror) {
-        if (currentNode.nodeName === 'P') {
-          currentParagraph = currentNode as Element;
-          break;
+        if (currentNode.nodeType === Node.ELEMENT_NODE) {
+          const element = currentNode as Element;
+          if (element.nodeName === 'P') {
+            targetElement = element;
+            break;
+          }
         }
         currentNode = currentNode.parentNode;
       }
 
-      if (!currentParagraph && paragraphs.length > 0) {
-        currentParagraph = paragraphs[0];
+      if (targetElement) {
+        targetElement.classList.add('current-focus');
+        console.log('[Focus Mode] Elemento atual marcado');
       }
-
-      console.log('[Focus Mode] Parágrafo atual encontrado:', !!currentParagraph);
-
-      if (!currentParagraph) return;
-
-      // Apply focus classes
-      paragraphs.forEach(p => {
-        if (p === currentParagraph) {
-          p.classList.add('focus-active');
-          console.log('[Focus Mode] Classe focus-active adicionada');
-        } else {
-          p.classList.add('focus-dimmed');
-        }
-      });
     };
 
-    // Update focus on selection change
-    editor.on('selectionUpdate', updateFocus);
-    editor.on('update', updateFocus);
+    // Atualizar quando seleção mudar
+    editor.on('selectionUpdate', updateCurrentElement);
+    editor.on('update', updateCurrentElement);
     
-    // Initial update
-    updateFocus();
+    // Atualização inicial
+    updateCurrentElement();
 
     return () => {
-      editor.off('selectionUpdate', updateFocus);
-      editor.off('update', updateFocus);
+      editor.off('selectionUpdate', updateCurrentElement);
+      editor.off('update', updateCurrentElement);
+      proseMirror.classList.remove('focus-mode-sentence', 'focus-mode-paragraph');
+      proseMirror.querySelectorAll('.current-focus').forEach(el => {
+        el.classList.remove('current-focus');
+      });
     };
   }, [editor, focusType]);
 

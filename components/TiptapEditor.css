@@ -134,17 +134,32 @@
 }
 
 /* ========================================
-   FOCUS MODE STYLES
+   FOCUS MODE STYLES - Nova abordagem robusta
    ======================================== */
 
-/* Texto desfocado (dimmed) */
+/* Modo Foco - todos os parágrafos dimmed por padrão */
+.focus-mode-sentence p,
+.focus-mode-paragraph p {
+  opacity: 0.3;
+  filter: blur(1px);
+  transition: all 0.3s ease;
+}
+
+/* Parágrafo atual fica em destaque */
+.focus-mode-sentence p.current-focus,
+.focus-mode-paragraph p.current-focus {
+  opacity: 1;
+  filter: none;
+  transition: all 0.3s ease;
+}
+
+/* Classes antigas mantidas para compatibilidade */
 .focus-dimmed {
   opacity: 0.3;
   filter: blur(1px);
   transition: all 0.3s ease;
 }
 
-/* Texto focado (ativo) */
 .focus-active {
   opacity: 1;
   filter: none;
