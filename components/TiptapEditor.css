@@ -8,11 +8,20 @@
 /* Toolbar - alinhada com título, fundo igual ao site, sem bordas */
 .toolbar {
   display: flex;
+  align-items: center;
   gap: 0.25rem;
   padding: 0;
   margin-bottom: 1rem;
   border: none;
   background: transparent;
+}
+
+/* Divider na toolbar */
+.toolbar-divider {
+  width: 1px;
+  height: 1.25rem;
+  background: #e5e7eb;
+  margin: 0 0.25rem;
 }
 
 /* Botões B/I - menores, sem bordas */

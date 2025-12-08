@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Merriweather } from "next/font/google";
+import { Inter, Merriweather, Source_Sans_3, JetBrains_Mono } from "next/font/google";
 import Script from 'next/script';
 import "./styles/globals.css";
 import { Toaster } from "./components/ui";
@@ -14,6 +14,18 @@ const merriweather = Merriweather({
   subsets: ["latin"],
   weight: ["300", "400", "700", "900"],
   variable: "--font-merriweather",
+  display: "swap",
+});
+
+const sourceSans = Source_Sans_3({
+  subsets: ["latin"],
+  variable: "--font-source-sans",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
   display: "swap",
 });
 
@@ -52,7 +64,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${merriweather.variable} antialiased`}
+        className={`${inter.variable} ${merriweather.variable} ${sourceSans.variable} ${jetbrainsMono.variable} antialiased`}
       >
         {children}
         <Toaster />

@@ -1,0 +1,49 @@
+/* Typography Styles - Font Families */
+
+/* Serif (Merriweather) - Padrão */
+.font-serif .ProseMirror {
+  font-family: var(--font-merriweather), Georgia, serif;
+  font-size: 18px;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+/* Sans-serif (Source Sans 3) */
+.font-sans .ProseMirror {
+  font-family: var(--font-source-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 17px;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+/* Monospace (JetBrains Mono) */
+.font-mono .ProseMirror {
+  font-family: var(--font-jetbrains-mono), "Courier New", monospace;
+  font-size: 16px;
+  line-height: 1.7;
+  font-weight: 400;
+}
+
+/* Configurações comuns para todas as fontes */
+.font-serif .ProseMirror,
+.font-sans .ProseMirror,
+.font-mono .ProseMirror {
+  text-align: left;
+  color: #2B1810;
+  max-width: 680px;
+}
+
+/* Espaçamento entre parágrafos */
+.font-serif .ProseMirror p,
+.font-sans .ProseMirror p,
+.font-mono .ProseMirror p {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+/* Último parágrafo sem margem inferior */
+.font-serif .ProseMirror p:last-child,
+.font-sans .ProseMirror p:last-child,
+.font-mono .ProseMirror p:last-child {
+  margin-bottom: 0;
+}

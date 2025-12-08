@@ -4,8 +4,9 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Mention from '@tiptap/extension-mention';
 import Placeholder from '@tiptap/extension-placeholder';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import './TiptapEditor.css';
+import FontSelector, { FontFamily } from './FontSelector';
 
 
 
@@ -25,6 +26,8 @@ interface TiptapEditorProps {
   isFocusMode?: boolean;
   showToolbar?: boolean;
   editorRef?: any;
+  fontFamily?: FontFamily;
+  onFontChange?: (font: FontFamily) => void;
 }
 
 const suggestion: Omit<SuggestionOptions, 'editor'> = {
@@ -111,7 +114,9 @@ export default function TiptapEditor({
   editorRef,
   focusType = 'off',
   typewriterMode = false,
-  isFocusMode = false
+  isFocusMode = false,
+  fontFamily = 'serif',
+  onFontChange
 }: TiptapEditorProps) {
   // Component render - LOG SEMPRE EXECUTA
   console.log('========================================');
@@ -301,6 +306,12 @@ export default function TiptapEditor({
           >
             I
           </button>
+          {onFontChange && (
+            <>
+              <div className="toolbar-divider" />
+              <FontSelector value={fontFamily} onChange={onFontChange} />
+            </>
+          )}
         </div>
       )}
       <EditorContent editor={editor} />

@@ -22,6 +22,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import getCaretCoordinates from "textarea-caret";
 import TiptapEditor from "@/components/TiptapEditor";
+import { FontFamily } from "@/components/FontSelector";
 import { EditorHeader } from "@/app/components/editor/EditorHeader";
 import { EditorFooter } from "@/app/components/editor/EditorFooter";
 import { ExportModal } from "@/app/components/modals/ExportModal";
@@ -170,6 +171,23 @@ function EscritaPageContent() {
   
   // Estados para seleção de texto
   const [selectedText, setSelectedText] = useState("");
+  
+  // Estado de tipografia
+  const [fontFamily, setFontFamily] = useState<FontFamily>('serif');
+  
+  // Carregar preferência de fonte do localStorage
+  useEffect(() => {
+    const savedFont = localStorage.getItem('blake-vision-font-family');
+    if (savedFont && ['serif', 'sans', 'mono'].includes(savedFont)) {
+      setFontFamily(savedFont as FontFamily);
+    }
+  }, []);
+  
+  // Salvar preferência de fonte no localStorage
+  const handleFontChange = (font: FontFamily) => {
+    setFontFamily(font);
+    localStorage.setItem('blake-vision-font-family', font);
+  };
   const [selectionMenuPosition, setSelectionMenuPosition] = useState<{x: number, y: number} | null>(null);
   
   // Ref para controlar o editor externamente
@@ -1737,7 +1755,7 @@ function EscritaPageContent() {
 
               {/* Conteúdo (só aparece após salvar metadados) */}
               {isMetadataSaved && (
-                <div className="-mt-4">
+                <div className={`-mt-4 font-${fontFamily}`}>
                   <TiptapEditor
                     value={conteudo}
                     onChange={(value) => setConteudo(value)}
@@ -1747,8 +1765,10 @@ function EscritaPageContent() {
                       setSelectedText(text);
                       setSelectionMenuPosition(position);
                     }}
-                    showToolbar={false}
+                    showToolbar={true}
                     editorRef={editorRef}
+                    fontFamily={fontFamily}
+                    onFontChange={handleFontChange}
                   />
                 </div>
               )}
@@ -2336,7 +2356,7 @@ function EscritaPageContent() {
               "flex-1 overflow-y-auto transition-all duration-300",
               (showUrthona || showUrizen) ? "mr-96" : ""
             )}>
-              <div className="max-w-4xl mx-auto px-16 py-12">
+              <div className={`max-w-4xl mx-auto px-16 py-12 font-${fontFamily}`}>
                 <TiptapEditor
                   value={conteudo}
                   onChange={(value) => setConteudo(value)}
@@ -2353,6 +2373,8 @@ function EscritaPageContent() {
                   typewriterMode={typewriterMode}
                   isFocusMode={true}
                   showToolbar={false}
+                  fontFamily={fontFamily}
+                  onFontChange={handleFontChange}
                 />
               </div>
             </div>
