@@ -156,3 +156,118 @@
   padding-top: 50vh;
   padding-bottom: 50vh;
 }
+
+/* ========================================
+   FOCUS MODE THEMES - LIGHT & DARK
+   ======================================== */
+
+/* Modo Branco - Tema claro otimizado para leitura/escrita prolongada */
+.focus-mode-light {
+  background-color: #FAFAFA !important;
+  color: #1A1A1A !important;
+}
+
+.focus-mode-light .ProseMirror {
+  color: #1A1A1A !important;
+}
+
+.focus-mode-light h1,
+.focus-mode-light h2,
+.focus-mode-light h3,
+.focus-mode-light h4,
+.focus-mode-light h5,
+.focus-mode-light h6 {
+  color: #1A1A1A !important;
+}
+
+.focus-mode-light .border-border-light-default {
+  border-color: #E0E0E0 !important;
+}
+
+.focus-mode-light .text-text-light-primary {
+  color: #1A1A1A !important;
+}
+
+.focus-mode-light .text-text-light-secondary {
+  color: #4A4A4A !important;
+}
+
+.focus-mode-light .text-text-light-tertiary {
+  color: #6A6A6A !important;
+}
+
+.focus-mode-light .bg-light-overlay {
+  background-color: #F0F0F0 !important;
+}
+
+.focus-mode-light .bg-light-raised {
+  background-color: #FFFFFF !important;
+}
+
+.focus-mode-light button:not(.bg-primary-500) {
+  color: #1A1A1A !important;
+}
+
+/* Modo Preto - Tema escuro otimizado para leitura/escrita prolongada */
+.focus-mode-dark {
+  background-color: #1A1A1A !important;
+  color: #E8E8E8 !important;
+}
+
+.focus-mode-dark .ProseMirror {
+  color: #E8E8E8 !important;
+}
+
+.focus-mode-dark h1,
+.focus-mode-dark h2,
+.focus-mode-dark h3,
+.focus-mode-dark h4,
+.focus-mode-dark h5,
+.focus-mode-dark h6 {
+  color: #E8E8E8 !important;
+}
+
+.focus-mode-dark .border-border-light-default,
+.focus-mode-dark .border-border-dark-default {
+  border-color: #333333 !important;
+}
+
+.focus-mode-dark .text-text-light-primary,
+.focus-mode-dark .text-dark-primary {
+  color: #E8E8E8 !important;
+}
+
+.focus-mode-dark .text-text-light-secondary,
+.focus-mode-dark .text-dark-secondary {
+  color: #B8B8B8 !important;
+}
+
+.focus-mode-dark .text-text-light-tertiary,
+.focus-mode-dark .text-dark-tertiary {
+  color: #888888 !important;
+}
+
+.focus-mode-dark .bg-light-overlay,
+.focus-mode-dark .bg-dark-overlay {
+  background-color: #2A2A2A !important;
+}
+
+.focus-mode-dark .bg-light-raised,
+.focus-mode-dark .bg-dark-raised {
+  background-color: #252525 !important;
+}
+
+.focus-mode-dark button:not(.bg-primary-500) {
+  color: #E8E8E8 !important;
+}
+
+/* Transições suaves entre temas */
+.focus-mode-light,
+.focus-mode-dark {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.focus-mode-light *,
+.focus-mode-dark * {
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+}
