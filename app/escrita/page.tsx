@@ -15,6 +15,7 @@ import { CategoryDropdownSingle } from "@/app/components/ui/CategoryDropdownSing
 import { TypesDropdown } from "@/app/components/ui/TypesDropdown";
 import { NewEpisodeModal } from "@/app/components/modals/NewEpisodeModal";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 import type { Universe, World, Category } from "@/app/types";
 import clsx from "clsx";
 import ReactMarkdown from "react-markdown";
@@ -129,6 +130,7 @@ function EscritaPageContent() {
   const [showStatsModal, setShowStatsModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showMobileOptionsMenu, setShowMobileOptionsMenu] = useState(false);
+  const { confirm, ConfirmDialog } = useConfirm();
   
   // Estado da sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -795,9 +797,15 @@ function EscritaPageContent() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Tem certeza que deseja deletar este texto?")) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: "Confirmar Exclusão",
+      message: "Tem certeza que deseja deletar este texto? Esta ação não pode ser desfeita.",
+      confirmText: "Deletar",
+      cancelText: "Cancelar",
+      variant: "danger"
+    });
+
+    if (!confirmed) return;
 
     try {
       const response = await fetch(`/api/textos?id=${id}`, {
@@ -806,6 +814,7 @@ function EscritaPageContent() {
 
       if (response.ok) {
         toast.success("Texto deletado com sucesso");
+
         
         // Se é o texto atual, limpar editor
         if (id === currentTextoId) {
@@ -2695,6 +2704,9 @@ function EscritaPageContent() {
           </div>
         </div>
       )}
+
+      {/* Modal de confirmação de delete */}
+      <ConfirmDialog />
     </div>
   );
 }
