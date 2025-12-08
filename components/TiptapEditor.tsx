@@ -6,7 +6,7 @@ import Mention from '@tiptap/extension-mention';
 import Placeholder from '@tiptap/extension-placeholder';
 import { useEffect } from 'react';
 import './TiptapEditor.css';
-import { FocusModeExtension } from './extensions/FocusModeExtension';
+
 
 
 // Suggestion plugin para mentions
@@ -132,9 +132,7 @@ export default function TiptapEditor({
         },
         suggestion,
       }),
-      FocusModeExtension.configure({
-        mode: focusType || 'off',
-      }),
+
     ],
     content: value,
     onUpdate: ({ editor }) => {
@@ -196,25 +194,64 @@ export default function TiptapEditor({
     }
   }, [editor, editorRef]);
 
-  // Focus Mode implementation - Usando Extension customizada
+  // Focus Mode implementation - Abordagem CSS direta e robusta
   useEffect(() => {
-    if (!editor) return;
-
-    console.log('[Focus Mode] Atualizando modo para:', focusType);
-    
-    // Atualizar o modo da extension
-    const extension = editor.extensionManager.extensions.find(
-      (ext) => ext.name === 'focusMode'
-    );
-    
-    if (extension) {
-      extension.options.mode = focusType || 'off';
-      // Forçar atualização do editor
-      editor.view.updateState(editor.state);
-      console.log('[Focus Mode] Extension atualizada com sucesso');
-    } else {
-      console.error('[Focus Mode] Extension não encontrada!');
+    if (!editor || !focusType || focusType === 'off') {
+      // Remover classes quando desativado
+      const container = editor?.view?.dom;
+      if (container) {
+        container.classList.remove('focus-mode-sentence', 'focus-mode-paragraph');
+        const paragraphs = container.querySelectorAll('p');
+        paragraphs.forEach(p => p.classList.remove('focus-active', 'focus-dimmed'));
+      }
+      return;
     }
+
+    console.log('[Focus Mode] Ativando modo:', focusType);
+    
+    const updateFocus = () => {
+      const container = editor.view.dom;
+      const { from } = editor.state.selection;
+      
+      // Adicionar classe no container
+      container.classList.remove('focus-mode-sentence', 'focus-mode-paragraph');
+      container.classList.add(`focus-mode-${focusType}`);
+      
+      // Encontrar elemento atual
+      const domAtPos = editor.view.domAtPos(from);
+      let currentElement = domAtPos.node as HTMLElement;
+      
+      // Navegar até o parágrafo
+      while (currentElement && currentElement.tagName !== 'P' && currentElement !== container) {
+        currentElement = currentElement.parentElement as HTMLElement;
+      }
+      
+      if (!currentElement || currentElement.tagName !== 'P') return;
+      
+      // Aplicar classes em todos os parágrafos
+      const paragraphs = container.querySelectorAll('p');
+      paragraphs.forEach(p => {
+        p.classList.remove('focus-active', 'focus-dimmed');
+        if (p === currentElement) {
+          p.classList.add('focus-active');
+        } else {
+          p.classList.add('focus-dimmed');
+        }
+      });
+    };
+    
+    // Atualizar imediatamente
+    updateFocus();
+    
+    // Atualizar quando a seleção mudar
+    const handleUpdate = () => updateFocus();
+    editor.on('selectionUpdate', handleUpdate);
+    editor.on('update', handleUpdate);
+    
+    return () => {
+      editor.off('selectionUpdate', handleUpdate);
+      editor.off('update', handleUpdate);
+    };
   }, [editor, focusType]);
 
   if (!editor) {
