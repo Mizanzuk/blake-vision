@@ -25,8 +25,6 @@ import TiptapEditor from "@/components/TiptapEditor";
 import { FontFamily } from "@/components/FontSelector";
 import { EditorHeader } from "@/app/components/editor/EditorHeader";
 import { EditorFooter } from "@/app/components/editor/EditorFooter";
-import { EditorTitleRow } from "@/app/components/editor/EditorTitleRow";
-import { EditorMetadata } from "@/app/components/editor/EditorMetadata";
 import { ExportModal } from "@/app/components/modals/ExportModal";
 import { MobileOptionsMenu } from "@/app/components/mobile/MobileOptionsMenu";
 
@@ -1560,53 +1558,139 @@ function EscritaPageContent() {
               />
             )}
             
-            <div className="w-full max-w-4xl mx-auto px-4 md:px-8 py-8 min-h-full">
-            <div className="space-y-0 pb-3">
-              {/* NOVO LAYOUT COM GRID 6x3 */}
+            <div className="max-w-4xl mx-auto px-8 py-8 min-h-full">
+            <div className="space-y-6 pb-3">
+              {/* Cabeçalho Colasável (quando metadados foram salvos) */}
               {isMetadataSaved ? (
-                <>
-                  {/* LINHA 2: Título com botão de colapsar */}
-                  <EditorTitleRow
-                    titulo={titulo}
-                    isExpanded={isHeaderExpanded}
-                    hasUnsavedChanges={hasUnsavedMetadataChanges}
-                    onToggleExpand={() => setIsHeaderExpanded(!isHeaderExpanded)}
-                    onConfirmCollapse={() => setShowUnsavedChangesModal(true)}
-                  />
+                <div>
+                  {/* Linha colapsada com título */}
+                  <div className="flex items-center gap-3">
+                    {/* Botão de expandir/colapsar */}
+                    <button
+                      onClick={() => {
+                        if (isHeaderExpanded && hasUnsavedMetadataChanges) {
+                          // Mostrar modal de confirmação
+                          setShowUnsavedChangesModal(true);
+                        } else {
+                          setIsHeaderExpanded(!isHeaderExpanded);
+                        }
+                      }}
+                      className="p-1 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary transition-colors"
+                      title={isHeaderExpanded ? "Colapsar" : "Expandir"}
+                    >
+                      <svg 
+                        className={clsx(
+                          "w-5 h-5 transition-transform",
+                          isHeaderExpanded && "rotate-90"
+                        )} 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
 
-                  {/* LINHA 3: Metadados (condicional) */}
+                    {/* Título */}
+                    <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary flex-1">
+                      {titulo || "Sem título"}
+                    </h2>
+                  </div>
+
+                  {/* Metadados expandidos */}
                   {isHeaderExpanded && (
-                    <EditorMetadata
-                      isExpanded={isHeaderExpanded}
-                      isLocked={isMetadataLocked}
-                      hasUnsavedChanges={hasUnsavedMetadataChanges}
-                      titulo={titulo}
-                      universeId={universeId}
-                      worldId={worldId}
-                      episodio={episodio}
-                      categoria={categoria}
-                      onTituloChange={setTitulo}
-                      onUniverseChange={(id) => {
-                        setUniverseId(id);
-                        setWorldId("");
-                      }}
-                      onWorldChange={setWorldId}
-                      onEpisodioChange={setEpisodio}
-                      onCategoriaChange={setCategoria}
-                      onEdit={() => setIsMetadataLocked(false)}
-                      onSave={handleSaveMetadata}
-                      onCancel={() => {
-                        setIsMetadataLocked(true);
-                        setHasUnsavedMetadataChanges(false);
-                      }}
-                      universes={universes}
-                      worlds={worlds.filter(w => w.universe_id === universeId)}
-                      availableEpisodes={availableEpisodes}
-                      categories={categories}
-                      isSaving={isSaving}
-                    />
+                    <div className="mt-4 space-y-4">
+                      {/* Botão de editar (só aparece quando expandido) */}
+                      <div className="flex justify-end">
+                        <button
+                          onClick={() => setIsMetadataLocked(false)}
+                          className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                          title="Editar metadados"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                          Editar
+                        </button>
+                      </div>
+
+                      {/* Título */}
+                      <div>
+                        <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
+                          TÍTULO
+                        </label>
+                        <input
+                          type="text"
+                          value={titulo}
+                          onChange={(e) => setTitulo(e.target.value)}
+                          placeholder="Digite o título do texto..."
+                          disabled={isMetadataLocked}
+                          className="w-full px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                        />
+                      </div>
+
+                      {/* Metadados */}
+                      <div className="grid grid-cols-4 gap-4 mt-6">
+                        <UniverseDropdown
+                          label="UNIVERSO"
+                          universes={universes}
+                          selectedId={universeId}
+                          onSelect={(id) => {
+                            setUniverseId(id);
+                            setWorldId("");
+                          }}
+                          onCreate={() => {
+                            console.log("Criar novo universo");
+                          }}
+                          disabled={isMetadataLocked}
+                        />
+
+                        <WorldsDropdownSingle
+                          label="MUNDO"
+                          worlds={worlds.filter(w => w.universe_id === universeId)}
+                          selectedId={worldId}
+                          onSelect={(id) => setWorldId(id)}
+                          disabled={!universeId || isMetadataLocked}
+                          onCreate={() => {
+                            console.log("Criar novo mundo");
+                          }}
+                        />
+
+                        <EpisodesDropdownSingle
+                          label="EPISÓDIO"
+                          episodes={availableEpisodes}
+                          selectedEpisode={episodio}
+                          onSelect={setEpisodio}
+                          onCreate={() => setShowNewEpisodeModal(true)}
+                          disabled={!worldId || isMetadataLocked}
+                        />
+
+                        <CategoryDropdownSingle
+                          label="CATEGORIA"
+                          categories={categories}
+                          selectedCategory={categoria}
+                          onSelect={setCategoria}
+                          worldId={worldId}
+                          disabled={!universeId || isMetadataLocked}
+                        />
+                      </div>
+
+                      {/* Botão Salvar (só aparece quando está editando) */}
+                      {!isMetadataLocked && (
+                        <div className="flex justify-center">
+                          <Button
+                            onClick={handleSaveMetadata}
+                            disabled={isSaving || !titulo.trim() || !universeId}
+                            variant="primary"
+                            size="sm"
+                          >
+                            {isSaving ? "Salvando..." : "Salvar"}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   )}
-                </>
+                </div>
               ) : (
                 // Formulário inicial de metadados (antes de salvar)
                 <div className="space-y-4">
