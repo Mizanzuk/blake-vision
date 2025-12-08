@@ -272,50 +272,41 @@
   transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
 }
 
-/* Compatibilidade: Modo Foco de Parágrafo + Modo Branco/Preto */
-/* Garante que o blur/opacity do foco de parágrafo funcione corretamente com os temas */
+/* ========================================
+   MODO FOCO DE PARÁGRAFO
+   Camada independente dos temas (Branco/Preto)
+   Aplica blur aos parágrafos não focados
+   ======================================== */
 
-.focus-mode-light .ProseMirror p:not(.has-focus),
-.focus-mode-dark .ProseMirror p:not(.has-focus) {
-  opacity: 0.3 !important;
+/* Quando o Modo Foco de Parágrafo está ativo, aplicar blur a todos os parágrafos */
+.focus-mode-active .ProseMirror p {
+  opacity: 0.3;
   transition: opacity 0.3s ease;
 }
 
-.focus-mode-light .ProseMirror p.has-focus,
-.focus-mode-dark .ProseMirror p.has-focus {
+/* Parágrafo com a classe has-focus fica visível */
+.focus-mode-active .ProseMirror p.has-focus {
   opacity: 1 !important;
   transition: opacity 0.3s ease;
 }
 
-/* Também aplicar para outros elementos de bloco quando não focados */
-.focus-mode-light .ProseMirror h1:not(.has-focus),
-.focus-mode-light .ProseMirror h2:not(.has-focus),
-.focus-mode-light .ProseMirror h3:not(.has-focus),
-.focus-mode-light .ProseMirror h4:not(.has-focus),
-.focus-mode-light .ProseMirror h5:not(.has-focus),
-.focus-mode-light .ProseMirror h6:not(.has-focus),
-.focus-mode-dark .ProseMirror h1:not(.has-focus),
-.focus-mode-dark .ProseMirror h2:not(.has-focus),
-.focus-mode-dark .ProseMirror h3:not(.has-focus),
-.focus-mode-dark .ProseMirror h4:not(.has-focus),
-.focus-mode-dark .ProseMirror h5:not(.has-focus),
-.focus-mode-dark .ProseMirror h6:not(.has-focus) {
-  opacity: 0.3 !important;
+/* Também aplicar para títulos */
+.focus-mode-active .ProseMirror h1,
+.focus-mode-active .ProseMirror h2,
+.focus-mode-active .ProseMirror h3,
+.focus-mode-active .ProseMirror h4,
+.focus-mode-active .ProseMirror h5,
+.focus-mode-active .ProseMirror h6 {
+  opacity: 0.3;
   transition: opacity 0.3s ease;
 }
 
-.focus-mode-light .ProseMirror h1.has-focus,
-.focus-mode-light .ProseMirror h2.has-focus,
-.focus-mode-light .ProseMirror h3.has-focus,
-.focus-mode-light .ProseMirror h4.has-focus,
-.focus-mode-light .ProseMirror h5.has-focus,
-.focus-mode-light .ProseMirror h6.has-focus,
-.focus-mode-dark .ProseMirror h1.has-focus,
-.focus-mode-dark .ProseMirror h2.has-focus,
-.focus-mode-dark .ProseMirror h3.has-focus,
-.focus-mode-dark .ProseMirror h4.has-focus,
-.focus-mode-dark .ProseMirror h5.has-focus,
-.focus-mode-dark .ProseMirror h6.has-focus {
+.focus-mode-active .ProseMirror h1.has-focus,
+.focus-mode-active .ProseMirror h2.has-focus,
+.focus-mode-active .ProseMirror h3.has-focus,
+.focus-mode-active .ProseMirror h4.has-focus,
+.focus-mode-active .ProseMirror h5.has-focus,
+.focus-mode-active .ProseMirror h6.has-focus {
   opacity: 1 !important;
   transition: opacity 0.3s ease;
 }
