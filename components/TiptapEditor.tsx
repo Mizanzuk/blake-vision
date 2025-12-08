@@ -247,16 +247,22 @@ export default function TiptapEditor({
         currentElement = paragraphs[0] as HTMLElement;
       }
       
-      paragraphs.forEach(p => {
-        p.classList.remove('focus-active', 'focus-dimmed');
+      // Aplicar estilos inline (mais robusto que classes CSS)
+      paragraphs.forEach((p: HTMLElement) => {
         if (p === currentElement) {
-          p.classList.add('focus-active');
-          console.log('[Focus Mode] Parágrafo ativo:', p);
+          // Parágrafo ativo: opacidade total, sem blur
+          p.style.opacity = '1';
+          p.style.filter = 'none';
+          p.style.transition = 'opacity 0.3s ease, filter 0.3s ease';
+          console.log('[Focus Mode] Parágrafo ativo:', p.textContent?.substring(0, 50));
         } else {
-          p.classList.add('focus-dimmed');
+          // Parágrafos dimmed: opacidade reduzida, blur aplicado
+          p.style.opacity = '0.3';
+          p.style.filter = 'blur(1px)';
+          p.style.transition = 'opacity 0.3s ease, filter 0.3s ease';
         }
       });
-      console.log('[Focus Mode] Classes aplicadas com sucesso!');
+      console.log('[Focus Mode] Estilos inline aplicados com sucesso!');
     };
     
     // Atualizar imediatamente
