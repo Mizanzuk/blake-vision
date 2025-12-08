@@ -310,3 +310,19 @@
   opacity: 1 !important;
   transition: opacity 0.3s ease;
 }
+
+/* ========================================
+   FIX: Remove borda rosa do Tailwind Typography
+   ======================================== */
+
+.ProseMirror.prose:focus,
+.ProseMirror.prose:focus-visible,
+.ProseMirror.prose:focus-within {
+  outline: none !important;
+  border: none !important;
+}
+
+/* Remove outline de todos os elementos dentro do ProseMirror */
+.ProseMirror * {
+  outline: none !important;
+}
