@@ -4,7 +4,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Mention from '@tiptap/extension-mention';
 import Placeholder from '@tiptap/extension-placeholder';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import './TiptapEditor.css';
 import FontSelector, { FontFamily } from './FontSelector';
 
@@ -118,10 +118,9 @@ export default function TiptapEditor({
   fontFamily = 'serif',
   onFontChange
 }: TiptapEditorProps) {
-  // Component render - LOG SEMPRE EXECUTA
   console.log('========================================');
   console.log('[TiptapEditor] RENDER - focusType:', focusType);
-  console.log('[TiptapEditor] RENDER - isFocusMode:', isFocusMode);
+  console.log('[TiptapEditor] RENDER - typewriterMode:', typewriterMode);
   console.log('========================================');
   
   const editor = useEditor({
@@ -148,7 +147,7 @@ export default function TiptapEditor({
         class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none',
       },
     },
-  }); // Sem dependências - editor criado apenas uma vez
+  });
 
   // Sync external value changes
   useEffect(() => {
@@ -162,14 +161,7 @@ export default function TiptapEditor({
     }
   }, [value, editor]);
 
-  // Component lifecycle
-  useEffect(() => {
-    return () => {
-      // Cleanup on unmount
-    };
-  }, []);
-
-  // Handle text selection for agent buttons (only on mouseup)
+  // Handle text selection for agent buttons
   useEffect(() => {
     if (!editor || !onTextSelect) return;
 
@@ -192,97 +184,157 @@ export default function TiptapEditor({
   }, [editor, onTextSelect]);
 
   // Expose editor instance to parent
-  // CORREÇÃO: Mover ANTES do return null para garantir mesma ordem de hooks
   useEffect(() => {
     if (editorRef && editor) {
       editorRef.current = editor;
     }
   }, [editor, editorRef]);
 
-  // Focus Mode implementation - Abordagem CSS direta e robusta
+  // ========================================
+  // FOCUS MODE - PARAGRAPH MODE (CORRIGIDO)
+  // ========================================
   useEffect(() => {
     if (!editor || !focusType || focusType === 'off') {
-      // Remover classes quando desativado
+      // Limpar todos os estilos quando desativado
       const container = editor?.view?.dom;
       if (container) {
-        container.classList.remove('focus-mode-sentence', 'focus-mode-paragraph');
         const paragraphs = container.querySelectorAll('p');
-        paragraphs.forEach(p => p.classList.remove('focus-active', 'focus-dimmed'));
+        paragraphs.forEach((p: HTMLElement) => {
+          p.style.opacity = '';
+          p.style.filter = '';
+          p.style.transition = '';
+        });
       }
       return;
     }
 
     console.log('[Focus Mode] Ativando modo:', focusType);
     
+    // Debounce para evitar múltiplas atualizações
+    let timeoutId: NodeJS.Timeout;
+    
     const updateFocus = () => {
-      const container = editor.view.dom;
-      const { from } = editor.state.selection;
+      // Cancelar timeout anterior
+      if (timeoutId) clearTimeout(timeoutId);
       
-      console.log('[Focus Mode] updateFocus chamado, from:', from);
-      
-      // Adicionar classe no container
-      container.classList.remove('focus-mode-sentence', 'focus-mode-paragraph');
-      container.classList.add(`focus-mode-${focusType}`);
-      console.log('[Focus Mode] Classe adicionada ao container:', `focus-mode-${focusType}`);
-      
-      // Encontrar elemento atual
-      const domAtPos = editor.view.domAtPos(from);
-      let currentElement = domAtPos.node as HTMLElement;
-      console.log('[Focus Mode] Elemento inicial:', currentElement.tagName, currentElement);
-      
-      // Navegar até o parágrafo
-      while (currentElement && currentElement.tagName !== 'P' && currentElement !== container) {
-        currentElement = currentElement.parentElement as HTMLElement;
-      }
-      
-      console.log('[Focus Mode] Elemento final:', currentElement?.tagName, currentElement);
-      
-      // Aplicar classes em todos os parágrafos
-      const paragraphs = container.querySelectorAll('p');
-      console.log('[Focus Mode] Total de parágrafos:', paragraphs.length);
-      
-      if (paragraphs.length === 0) {
-        console.warn('[Focus Mode] Nenhum parágrafo encontrado!');
-        return;
-      }
-      
-      // Se não encontrou o parágrafo atual, usar o primeiro
-      if (!currentElement || currentElement.tagName !== 'P') {
-        console.warn('[Focus Mode] Parágrafo atual não encontrado, usando primeiro parágrafo');
-        currentElement = paragraphs[0] as HTMLElement;
-      }
-      
-      // Aplicar estilos inline (mais robusto que classes CSS)
-      paragraphs.forEach((p: HTMLElement) => {
-        if (p === currentElement) {
-          // Parágrafo ativo: opacidade total, sem blur
-          p.style.opacity = '1';
-          p.style.filter = 'none';
-          p.style.transition = 'opacity 0.3s ease, filter 0.3s ease';
-          console.log('[Focus Mode] Parágrafo ativo:', p.textContent?.substring(0, 50));
-        } else {
-          // Parágrafos dimmed: opacidade reduzida, blur aplicado
-          p.style.opacity = '0.3';
-          p.style.filter = 'blur(1px)';
-          p.style.transition = 'opacity 0.3s ease, filter 0.3s ease';
+      timeoutId = setTimeout(() => {
+        const container = editor.view.dom;
+        const { from } = editor.state.selection;
+        
+        console.log('[Focus Mode] updateFocus - from:', from);
+        
+        // Encontrar parágrafo atual
+        const domAtPos = editor.view.domAtPos(from);
+        let currentParagraph: HTMLElement | null = null;
+        let node = domAtPos.node as Node;
+        
+        // Navegar até encontrar <p>
+        while (node && node !== container) {
+          if (node.nodeType === Node.ELEMENT_NODE && (node as HTMLElement).tagName === 'P') {
+            currentParagraph = node as HTMLElement;
+            break;
+          }
+          node = node.parentNode!;
         }
-      });
-      console.log('[Focus Mode] Estilos inline aplicados com sucesso!');
+        
+        console.log('[Focus Mode] Parágrafo atual:', currentParagraph?.textContent?.substring(0, 50));
+        
+        // Aplicar estilos em todos os parágrafos
+        const paragraphs = container.querySelectorAll('p');
+        console.log('[Focus Mode] Total de parágrafos:', paragraphs.length);
+        
+        paragraphs.forEach((p: HTMLElement) => {
+          if (p === currentParagraph) {
+            // Parágrafo ativo: nítido
+            p.style.opacity = '1';
+            p.style.filter = 'none';
+            p.style.transition = 'opacity 0.2s ease, filter 0.2s ease';
+          } else {
+            // Outros parágrafos: blur
+            p.style.opacity = '0.3';
+            p.style.filter = 'blur(1px)';
+            p.style.transition = 'opacity 0.2s ease, filter 0.2s ease';
+          }
+        });
+      }, 50); // Debounce de 50ms
     };
     
     // Atualizar imediatamente
     updateFocus();
     
-    // Atualizar quando a seleção mudar
+    // Listeners para múltiplos eventos
     const handleUpdate = () => updateFocus();
-    editor.on('selectionUpdate', handleUpdate);
+    
     editor.on('update', handleUpdate);
+    editor.on('selectionUpdate', handleUpdate);
+    editor.on('transaction', handleUpdate);
+    editor.on('focus', handleUpdate);
     
     return () => {
-      editor.off('selectionUpdate', handleUpdate);
+      if (timeoutId) clearTimeout(timeoutId);
       editor.off('update', handleUpdate);
+      editor.off('selectionUpdate', handleUpdate);
+      editor.off('transaction', handleUpdate);
+      editor.off('focus', handleUpdate);
     };
   }, [editor, focusType]);
+
+  // ========================================
+  // TYPEWRITER MODE (CORRIGIDO)
+  // ========================================
+  useEffect(() => {
+    if (!editor || !typewriterMode) return;
+
+    console.log('[Typewriter Mode] Ativando...');
+    
+    let timeoutId: NodeJS.Timeout;
+    
+    const handleTypewriter = () => {
+      // Cancelar timeout anterior
+      if (timeoutId) clearTimeout(timeoutId);
+      
+      timeoutId = setTimeout(() => {
+        try {
+          const { from } = editor.state.selection;
+          const coords = editor.view.coordsAtPos(from);
+          
+          // Encontrar container scrollável
+          const editorDom = editor.view.dom;
+          const scrollContainer = editorDom.parentElement;
+          
+          if (!scrollContainer) return;
+          
+          // Calcular posição para centralizar cursor
+          const containerHeight = scrollContainer.clientHeight;
+          const cursorTop = coords.top - scrollContainer.getBoundingClientRect().top + scrollContainer.scrollTop;
+          const targetScroll = cursorTop - (containerHeight / 2);
+          
+          console.log('[Typewriter Mode] Scroll para:', targetScroll);
+          
+          // Scroll suave
+          scrollContainer.scrollTo({
+            top: targetScroll,
+            behavior: 'smooth'
+          });
+        } catch (error) {
+          console.error('[Typewriter Mode] Erro:', error);
+        }
+      }, 50); // Debounce de 50ms
+    };
+    
+    // Atualizar imediatamente
+    handleTypewriter();
+    
+    // Listeners
+    editor.on('update', handleTypewriter);
+    editor.on('selectionUpdate', handleTypewriter);
+    
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      editor.off('update', handleTypewriter);
+      editor.off('selectionUpdate', handleTypewriter);
+    };
+  }, [editor, typewriterMode]);
 
   if (!editor) {
     return null;
