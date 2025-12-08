@@ -17,6 +17,7 @@
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.39.0",
     "@tiptap/core": "^3.13.0",
+    "@tiptap/extension-focus": "^3.13.0",
     "@tiptap/extension-mention": "^3.13.0",
     "@tiptap/extension-placeholder": "^3.13.0",
     "@tiptap/pm": "^3.13.0",

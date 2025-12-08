@@ -1,6 +1,7 @@
 'use client';
 
 import { useEditor, EditorContent } from '@tiptap/react';
+import Focus from '@tiptap/extension-focus';
 import StarterKit from '@tiptap/starter-kit';
 import Mention from '@tiptap/extension-mention';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -104,45 +105,7 @@ const suggestion: Omit<SuggestionOptions, 'editor'> = {
   },
 };
 
-// Helper: Encontrar sentença atual baseado na posição do cursor
-function findCurrentSentence(text: string, cursorPosition: number): { start: number; end: number } | null {
-  if (!text || cursorPosition < 0) return null;
-  
-  // Regex para detectar sentenças (termina com . ! ? seguido de espaço ou fim)
-  const sentenceRegex = /[^.!?]+[.!?]+(?:\s|$)/g;
-  const sentences: { start: number; end: number; text: string }[] = [];
-  
-  let match;
-  while ((match = sentenceRegex.exec(text)) !== null) {
-    sentences.push({
-      start: match.index,
-      end: match.index + match[0].length,
-      text: match[0]
-    });
-  }
-  
-  // Se não encontrou sentenças com pontuação, considerar todo o texto como uma sentença
-  if (sentences.length === 0) {
-    return { start: 0, end: text.length };
-  }
-  
-  // Encontrar sentença que contém o cursor
-  for (const sentence of sentences) {
-    if (cursorPosition >= sentence.start && cursorPosition <= sentence.end) {
-      return { start: sentence.start, end: sentence.end };
-    }
-  }
-  
-  // Se cursor está após última sentença, usar última sentença
-  if (sentences.length > 0) {
-    const lastSentence = sentences[sentences.length - 1];
-    if (cursorPosition >= lastSentence.end) {
-      return { start: lastSentence.start, end: lastSentence.end };
-    }
-  }
-  
-  return null;
-}
+
 
 export default function TiptapEditor({ 
   value, 
@@ -176,7 +139,10 @@ export default function TiptapEditor({
         },
         suggestion,
       }),
-
+      Focus.configure({
+        className: 'has-focus',
+        mode: 'deepest',
+      }),
     ],
     content: value,
     onUpdate: ({ editor }) => {
@@ -230,97 +196,7 @@ export default function TiptapEditor({
     }
   }, [editor, editorRef]);
 
-  // ========================================
-  // FOCUS MODE - PARAGRAPH ONLY (SIMPLIFIED)
-  // ========================================
-  useEffect(() => {
-    if (!editor || focusType !== 'paragraph') {
-      // Limpar todos os estilos quando desativado
-      const container = editor?.view?.dom;
-      if (container) {
-        const paragraphs = container.querySelectorAll('p');
-        paragraphs.forEach((p: HTMLElement) => {
-          p.style.opacity = '';
-          p.style.filter = '';
-          p.style.transition = '';
-        });
-      }
-      return;
-    }
 
-    console.log('[Focus Mode] Ativando Modo Parágrafo');
-    
-    const updateFocus = () => {
-      try {
-        const container = editor.view.dom;
-        const { from } = editor.state.selection;
-        
-        console.log('[Focus Mode] updateFocus - from:', from);
-        
-        // Encontrar parágrafo atual
-        const domAtPos = editor.view.domAtPos(from);
-        let currentParagraph: HTMLElement | null = null;
-        let node = domAtPos.node as Node;
-        
-        // Navegar até encontrar <p>
-        while (node && node !== container) {
-          if (node.nodeType === Node.ELEMENT_NODE && (node as HTMLElement).tagName === 'P') {
-            currentParagraph = node as HTMLElement;
-            break;
-          }
-          node = node.parentNode!;
-        }
-        
-        console.log('[Focus Mode] Parágrafo atual:', currentParagraph?.textContent?.substring(0, 50));
-        
-        // Aplicar estilos em todos os parágrafos
-        const paragraphs = container.querySelectorAll('p');
-        console.log('[Focus Mode] Total de parágrafos:', paragraphs.length);
-        
-        // MODO PARÁGRAFO: Destacar parágrafo inteiro
-        paragraphs.forEach((p: HTMLElement) => {
-          if (p === currentParagraph) {
-            // Parágrafo ativo: nítido
-            p.style.opacity = '1';
-            p.style.filter = 'none';
-            p.style.transition = 'opacity 0.2s ease, filter 0.2s ease';
-            console.log('[Focus Mode] Parágrafo ativo:', p.textContent?.substring(0, 30));
-          } else {
-            // Outros parágrafos: blur
-            p.style.opacity = '0.3';
-            p.style.filter = 'blur(1px)';
-            p.style.transition = 'opacity 0.2s ease, filter 0.2s ease';
-          }
-        });
-        
-        console.log('[Focus Mode] Estilos aplicados com sucesso!');
-      } catch (error) {
-        console.error('[Focus Mode] Erro ao aplicar estilos:', error);
-      }
-    };
-    
-    // Atualizar imediatamente
-    updateFocus();
-    
-    // Listeners para eventos do editor
-    const handleUpdate = () => {
-      console.log('[Focus Mode] Evento disparado');
-      updateFocus();
-    };
-    
-    editor.on('update', handleUpdate);
-    editor.on('selectionUpdate', handleUpdate);
-    editor.on('transaction', handleUpdate);
-    editor.on('focus', handleUpdate);
-    
-    return () => {
-      console.log('[Focus Mode] Limpando listeners');
-      editor.off('update', handleUpdate);
-      editor.off('selectionUpdate', handleUpdate);
-      editor.off('transaction', handleUpdate);
-      editor.off('focus', handleUpdate);
-    };
-  }, [editor, focusType]);
 
   // ========================================
   // TYPEWRITER MODE
@@ -384,7 +260,7 @@ export default function TiptapEditor({
   }
 
   return (
-    <div className={`tiptap-editor ${className || ''}`}>
+    <div className={`tiptap-editor ${className || ''} ${focusType && focusType !== 'off' ? 'focus-mode-active' : ''}`}>
       {showToolbar && (
         <div className="toolbar">
           <button
