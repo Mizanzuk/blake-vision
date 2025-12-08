@@ -113,6 +113,8 @@ export default function TiptapEditor({
   isFocusMode = false
 }: TiptapEditorProps) {
   // Component render
+  console.log('[TiptapEditor] Renderizando com focusType:', focusType);
+  
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
