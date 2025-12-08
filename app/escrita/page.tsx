@@ -32,7 +32,7 @@ export default function EscritaPage() {
       <div className="flex-1 flex overflow-hidden">
         
         {/* COLUNA A - Sidebar Esquerda (Biblioteca de Textos) */}
-        <aside className="w-64 border-r border-border-light-default dark:border-border-dark-default bg-light-bg-secondary dark:bg-dark-bg-secondary overflow-y-auto hidden lg:flex flex-col flex-shrink-0">
+        <aside className="w-64 border-r border-border-light-default dark:border-border-dark-default bg-light-bg-secondary dark:bg-dark-bg-secondary overflow-y-auto flex flex-col flex-shrink-0">
           <div className="p-4 border-b border-border-light-default dark:border-border-dark-default">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-text-light-primary dark:text-dark-primary">Blake Vision</h2>
