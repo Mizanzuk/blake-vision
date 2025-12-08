@@ -1,14 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+// Helper function to get Supabase client
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error("Supabase credentials not configured");
+  }
+
+  return createClient(supabaseUrl, supabaseServiceKey);
+}
 
 // GET - List relations for a ficha
 export async function GET(request: NextRequest) {
   try {
+    const supabase = getSupabaseClient();
+    
     const { searchParams } = new URL(request.url);
     const fichaId = searchParams.get("fichaId");
 
@@ -55,6 +64,8 @@ export async function GET(request: NextRequest) {
 // POST - Create a new relation
 export async function POST(request: NextRequest) {
   try {
+    const supabase = getSupabaseClient();
+    
     const body = await request.json();
     const { source_id, target_id, relation_type, description } = body;
 
@@ -130,6 +141,8 @@ export async function POST(request: NextRequest) {
 // DELETE - Delete a relation
 export async function DELETE(request: NextRequest) {
   try {
+    const supabase = getSupabaseClient();
+    
     const { searchParams } = new URL(request.url);
     const relationId = searchParams.get("id");
 
@@ -166,6 +179,8 @@ export async function DELETE(request: NextRequest) {
 // PUT - Update a relation
 export async function PUT(request: NextRequest) {
   try {
+    const supabase = getSupabaseClient();
+    
     const body = await request.json();
     const { id, relation_type, description } = body;
 
