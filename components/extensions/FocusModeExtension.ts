@@ -118,12 +118,11 @@ export const FocusModeExtension = Extension.create<FocusModeOptions>({
     return {
       setFocusMode:
         (mode: 'off' | 'sentence' | 'paragraph') =>
-        ({ commands }) => {
+        () => {
           this.options.mode = mode;
-          // Forçar atualização do editor
-          return commands.focus();
+          return true;
         },
-    };
+    } as any;
   },
 
   // Adicionar CSS global para as decorações
