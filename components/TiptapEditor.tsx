@@ -232,14 +232,21 @@ export default function TiptapEditor({
       
       console.log('[Focus Mode] Elemento final:', currentElement?.tagName, currentElement);
       
-      if (!currentElement || currentElement.tagName !== 'P') {
-        console.warn('[Focus Mode] Parágrafo não encontrado! Abortando.');
-        return;
-      }
-      
       // Aplicar classes em todos os parágrafos
       const paragraphs = container.querySelectorAll('p');
       console.log('[Focus Mode] Total de parágrafos:', paragraphs.length);
+      
+      if (paragraphs.length === 0) {
+        console.warn('[Focus Mode] Nenhum parágrafo encontrado!');
+        return;
+      }
+      
+      // Se não encontrou o parágrafo atual, usar o primeiro
+      if (!currentElement || currentElement.tagName !== 'P') {
+        console.warn('[Focus Mode] Parágrafo atual não encontrado, usando primeiro parágrafo');
+        currentElement = paragraphs[0] as HTMLElement;
+      }
+      
       paragraphs.forEach(p => {
         p.classList.remove('focus-active', 'focus-dimmed');
         if (p === currentElement) {
