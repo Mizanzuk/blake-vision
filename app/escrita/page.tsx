@@ -7,7 +7,7 @@ import { flushSync } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
 import { Header } from "@/app/components/layout/Header";
-import { Button, Card, Badge, EmptyState, Loading } from "@/app/components/ui";
+import { Button, Badge, Loading } from "@/app/components/ui";
 import { UniverseDropdown } from "@/app/components/ui";
 import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import { EpisodesDropdownSingle } from "@/app/components/ui/EpisodesDropdownSingle";
@@ -20,7 +20,6 @@ import type { Universe, World, Category } from "@/app/types";
 import clsx from "clsx";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import getCaretCoordinates from "textarea-caret";
 import TiptapEditor from "@/components/TiptapEditor";
 import { FontFamily } from "@/components/FontSelector";
 import { EditorHeader } from "@/app/components/editor/EditorHeader";
@@ -166,9 +165,6 @@ function EscritaPageContent() {
   // Função applyFocusEffect removida - agora usamos apenas updateFocus() no useEffect
   const [typewriterMode, setTypewriterMode] = useState(false);
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
-  const [cursorPosition, setCursorPosition] = useState(0);
-  
-  // Focus Mode - implementação movida para TiptapEditor.tsx
   
   // Estados para seleção de texto
   const [selectedText, setSelectedText] = useState("");
@@ -215,7 +211,6 @@ function EscritaPageContent() {
   const [dragOverTextoId, setDragOverTextoId] = useState<string | null>(null);
 
   // Refs
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
@@ -448,66 +443,6 @@ function EscritaPageContent() {
     } catch (error) {
       console.error('Erro ao sair do fullscreen:', error);
     }
-  }
-
-  // Funções de highlighting para Modo Foco
-  function getCurrentSentence(text: string, position: number): { start: number; end: number } {
-    // Encontrar início da sentença (após ., !, ? ou início do texto)
-    let start = position;
-    while (start > 0 && !/[.!?]\s/.test(text.substring(start - 2, start))) {
-      start--;
-    }
-    // Pular espaços após pontuação
-    while (start < text.length && /\s/.test(text[start])) {
-      start++;
-    }
-
-    // Encontrar fim da sentença
-    let end = position;
-    while (end < text.length && !/[.!?]/.test(text[end])) {
-      end++;
-    }
-    if (end < text.length) end++; // Incluir pontuação
-
-    return { start, end };
-  }
-
-  function getCurrentParagraph(text: string, position: number): { start: number; end: number } {
-    // Encontrar início do parágrafo (após \n\n ou início do texto)
-    let start = position;
-    while (start > 0 && text.substring(start - 2, start) !== '\n\n') {
-      start--;
-    }
-    // Pular quebras de linha
-    while (start < text.length && text[start] === '\n') {
-      start++;
-    }
-
-    // Encontrar fim do parágrafo
-    let end = position;
-    while (end < text.length - 1 && text.substring(end, end + 2) !== '\n\n') {
-      end++;
-    }
-
-    return { start, end };
-  }
-
-  function applyFocusHighlight(textarea: HTMLTextAreaElement) {
-    if (!isFocusMode || focusType === 'off') return;
-
-    const position = textarea.selectionStart;
-    const text = textarea.value;
-    
-    let range: { start: number; end: number };
-    if (focusType === 'sentence') {
-      range = getCurrentSentence(text, position);
-    } else {
-      range = getCurrentParagraph(text, position);
-    }
-
-    // Aplicar efeito visual usando CSS (implementação simplificada)
-    // Em uma implementação completa, usaríamos um editor rico como CodeMirror ou ProseMirror
-    // Por enquanto, o efeito será aplicado via CSS no textarea
   }
 
   async function checkAuth() {
@@ -1803,6 +1738,9 @@ function EscritaPageContent() {
                     editorRef={editorRef}
                     fontFamily={fontFamily}
                     onFontChange={handleFontChange}
+                    isFocusMode={isFocusMode}
+                    focusType={focusType}
+                    typewriterMode={typewriterMode}
                   />
                 </div>
               )}
