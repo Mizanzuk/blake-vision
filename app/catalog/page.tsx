@@ -41,6 +41,7 @@ import FichaCard from "@/app/components/shared/FichaCard";
 import FichaViewModal from "@/app/components/shared/FichaViewModal";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 import type { Universe, World, Ficha, Category } from "@/app/types";
 
 // Sortable Card Component
@@ -78,6 +79,7 @@ function CatalogContent() {
   const searchParams = useSearchParams();
   const { t } = useTranslation();
   const supabase = getSupabaseClient();
+  const { confirm, ConfirmDialog } = useConfirm();
   
   const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
@@ -312,9 +314,15 @@ function CatalogContent() {
   }
 
   async function handleDeleteUniverse(universeId: string, universeName: string) {
-    if (!confirm(`Tem certeza que deseja deletar o universo "${universeName}"? Todos os mundos e fichas associados serão deletados também.`)) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: "Confirmar Exclusão de Universo",
+      message: `Tem certeza que deseja deletar o universo "${universeName}"? Todos os mundos e fichas associados serão deletados também. Esta ação não pode ser desfeita.`,
+      confirmText: "Deletar Universo",
+      cancelText: "Cancelar",
+      variant: "danger"
+    });
+
+    if (!confirmed) return;
 
     try {
       const { error } = await supabase
@@ -536,9 +544,15 @@ function CatalogContent() {
   async function resetCustomOrder() {
     if (!selectedUniverseId) return;
     
-    if (!confirm("Tem certeza que deseja resetar a ordem das fichas?")) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: "Resetar Ordem",
+      message: "Tem certeza que deseja resetar a ordem das fichas? Todas as fichas voltarão à ordem padrão.",
+      confirmText: "Resetar",
+      cancelText: "Cancelar",
+      variant: "warning"
+    });
+    
+    if (!confirmed) return;
     
     try {
       const response = await fetch(`/api/card-order?universe_id=${selectedUniverseId}`, {
@@ -740,8 +754,15 @@ function CatalogContent() {
               setSelectedCategory(category);
               setShowCategoryModal(true);
             }}
-            onDelete={(slug, nome) => {
-              if (confirm(`Tem certeza que deseja apagar a categoria "${nome}"?`)) {
+            onDelete={async (slug, nome) => {
+              const confirmed = await confirm({
+                title: "Confirmar Exclusão de Categoria",
+                message: `Tem certeza que deseja apagar a categoria "${nome}"? Esta ação não pode ser desfeita.`,
+                confirmText: "Deletar",
+                cancelText: "Cancelar",
+                variant: "danger"
+              });
+              if (confirmed) {
                 handleDeleteCategory(slug);
               }
             }}
@@ -909,7 +930,14 @@ function CatalogContent() {
                       variant="ghost"
                       size="sm"
                       onClick={async () => {
-                        if (confirm(`Tem certeza que deseja apagar ${selectedFichaIds.length} fichas?`)) {
+                        const confirmed = await confirm({
+                          title: "Confirmar Exclusão Múltipla",
+                          message: `Tem certeza que deseja apagar ${selectedFichaIds.length} fichas? Esta ação não pode ser desfeita.`,
+                          confirmText: "Deletar Todas",
+                          cancelText: "Cancelar",
+                          variant: "danger"
+                        });
+                        if (confirmed) {
                           for (const id of selectedFichaIds) {
                             await handleDeleteFicha(id);
                           }
@@ -1181,6 +1209,9 @@ function CatalogContent() {
           </form>
         </div>
       )}
+
+      {/* Modal de confirmação */}
+      <ConfirmDialog />
     </div>
   );
 }
