@@ -164,71 +164,7 @@ function EscritaPageContent() {
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
   const [cursorPosition, setCursorPosition] = useState(0);
   
-  // Focus Mode - JavaScript inline
-  useEffect(() => {
-    console.log('[Focus Mode] useEffect executado, focusType:', focusType);
-    
-    function updateFocus() {
-      console.log('[Focus Mode] updateFocus chamado');
-      const proseMirror = document.querySelector('.ProseMirror');
-      if (!proseMirror) return;
-      
-      // Remove all focus classes
-      proseMirror.querySelectorAll('.focus-active, .focus-dimmed').forEach((el: Element) => {
-        el.classList.remove('focus-active', 'focus-dimmed');
-      });
-      
-      if (focusType === 'off') return;
-      
-      // Get all paragraphs
-      const paragraphs = Array.from(proseMirror.querySelectorAll('p'));
-      
-      // Find current paragraph
-      let currentParagraph = null;
-      const selection = window.getSelection();
-      
-      if (selection && selection.anchorNode) {
-        let node: Node | null = selection.anchorNode;
-        while (node && node !== proseMirror) {
-          if (node.nodeName === 'P') {
-            currentParagraph = node as HTMLElement;
-            break;
-          }
-          node = node.parentNode;
-        }
-      }
-      
-      if (!currentParagraph && paragraphs.length > 0) {
-        currentParagraph = paragraphs[0] as HTMLElement;
-      }
-      
-      if (!currentParagraph) return;
-      
-      // Apply focus classes
-      paragraphs.forEach(p => {
-        if (p === currentParagraph) {
-          p.classList.add('focus-active');
-        } else {
-          p.classList.add('focus-dimmed');
-        }
-      });
-    }
-    
-    updateFocus();
-    
-    // Listen to selection changes
-    const handleSelectionChange = () => {
-      if (focusType !== 'off') {
-        updateFocus();
-      }
-    };
-    
-    document.addEventListener('selectionchange', handleSelectionChange);
-    
-    return () => {
-      document.removeEventListener('selectionchange', handleSelectionChange);
-    };
-  }, [focusType]);
+  // Focus Mode - implementação movida para TiptapEditor.tsx
   
   // Estados para seleção de texto
   const [selectedText, setSelectedText] = useState("");
