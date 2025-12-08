@@ -2,6 +2,7 @@
 
 import React from 'react';
 import clsx from 'clsx';
+import { EditorRow, EditorRowColumn } from './EditorPageLayout';
 
 interface EditorTitleRowProps {
   titulo: string;
@@ -9,12 +10,15 @@ interface EditorTitleRowProps {
   hasUnsavedChanges: boolean;
   onToggleExpand: () => void;
   onConfirmCollapse?: () => void;
-  showConfirmModal?: boolean;
 }
 
 /**
- * EditorTitleRow - Componente para a linha 2 do grid
- * Contém o botão de colapsar/expandir (Coluna A) e o título (Coluna B)
+ * EditorTitleRow - Linha 2 do grid (Título + Botão colapsar)
+ * 
+ * Estrutura:
+ * - Coluna A: Botão de colapsar/expandir (▼)
+ * - Coluna B: Título do texto
+ * - Coluna C: Vazio
  */
 export function EditorTitleRow({
   titulo,
@@ -22,33 +26,29 @@ export function EditorTitleRow({
   hasUnsavedChanges,
   onToggleExpand,
   onConfirmCollapse,
-  showConfirmModal = false
 }: EditorTitleRowProps) {
   
   const handleClick = () => {
-    if (isExpanded && hasUnsavedChanges) {
-      // Se há alterações não salvas, mostrar modal de confirmação
-      if (onConfirmCollapse) {
-        onConfirmCollapse();
-      }
+    if (isExpanded && hasUnsavedChanges && onConfirmCollapse) {
+      onConfirmCollapse();
     } else {
-      // Caso contrário, apenas colapsar/expandir
       onToggleExpand();
     }
   };
 
   return (
-    <div className="grid grid-cols-[auto_1fr_auto] gap-4 items-center w-full py-4 border-b border-border-light-default dark:border-border-dark-default">
-      {/* COLUNA A - Botão de Colapsar/Expandir */}
-      <div className="w-16 md:w-20 flex items-center justify-center">
+    <EditorRow className="py-3 px-0">
+      {/* COLUNA A - Botão Colapsar */}
+      <EditorRowColumn column="A" className="flex items-center justify-center">
         <button
           onClick={handleClick}
           className="p-1 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary transition-colors"
           title={isExpanded ? "Colapsar metadados" : "Expandir metadados"}
+          aria-label={isExpanded ? "Colapsar metadados" : "Expandir metadados"}
         >
           <svg 
             className={clsx(
-              "w-5 h-5 transition-transform",
+              "w-5 h-5 transition-transform duration-200",
               isExpanded && "rotate-90"
             )} 
             fill="none" 
@@ -58,17 +58,17 @@ export function EditorTitleRow({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
-      </div>
+      </EditorRowColumn>
 
       {/* COLUNA B - Título */}
-      <div className="flex-1 min-w-0">
+      <EditorRowColumn column="B" className="flex-1 min-w-0 px-0">
         <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary truncate">
           {titulo || "Sem título"}
         </h2>
-      </div>
+      </EditorRowColumn>
 
-      {/* COLUNA C - Espaço vazio */}
-      <div className="w-16 md:w-20" />
-    </div>
+      {/* COLUNA C - Vazio */}
+      <EditorRowColumn column="C" />
+    </EditorRow>
   );
 }

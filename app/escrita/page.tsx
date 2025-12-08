@@ -24,9 +24,9 @@ import getCaretCoordinates from "textarea-caret";
 import TiptapEditor from "@/components/TiptapEditor";
 import { FontFamily } from "@/components/FontSelector";
 import { EditorHeader } from "@/app/components/editor/EditorHeader";
-import { EditorFooter } from "@/app/components/editor/EditorFooter";
 import { EditorTitleRow } from "@/app/components/editor/EditorTitleRow";
 import { EditorMetadata } from "@/app/components/editor/EditorMetadata";
+import { EditorFooter } from "@/app/components/editor/EditorFooter";
 import { ExportModal } from "@/app/components/modals/ExportModal";
 import { MobileOptionsMenu } from "@/app/components/mobile/MobileOptionsMenu";
 
