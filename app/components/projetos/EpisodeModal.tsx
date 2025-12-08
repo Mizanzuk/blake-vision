@@ -6,6 +6,7 @@ import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
 import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import type { Ficha, Universe, World } from "@/app/types";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 
 interface EpisodeModalProps {
   episode: Ficha | null;
@@ -24,6 +25,7 @@ export default function EpisodeModal({
   onDelete,
   onClose,
 }: EpisodeModalProps) {
+  const { confirm, ConfirmDialog } = useConfirm();
   const [hasChanges, setHasChanges] = useState(false);
   const [numeroEpisodio, setNumeroEpisodio] = useState<string>("");
   const [titulo, setTitulo] = useState("");
@@ -129,11 +131,15 @@ export default function EpisodeModal({
     setHasChanges(true);
   }
 
-  function handleClose() {
+  async function handleClose() {
     if (hasChanges) {
-      const confirmed = window.confirm(
-        "Você tem alterações não salvas. Deseja realmente fechar sem salvar?"
-      );
+      const confirmed = await confirm({
+        title: "Alterações Não Salvas",
+        message: "Você tem alterações não salvas. Deseja realmente fechar sem salvar?",
+        confirmText: "Fechar sem Salvar",
+        cancelText: "Continuar Editando",
+        variant: "danger"
+      });
       if (!confirmed) return;
     }
     onClose();
@@ -221,12 +227,16 @@ export default function EpisodeModal({
     setHasChanges(false);
   }
 
-  function handleDelete() {
+  async function handleDelete() {
     if (!episode?.id) return;
 
-    const confirmed = window.confirm(
-      "Tem certeza que deseja deletar este episódio? Esta ação não pode ser desfeita."
-    );
+    const confirmed = await confirm({
+      title: "Confirmar Exclusão de Episódio",
+      message: "Tem certeza que deseja deletar este episódio? Esta ação não pode ser desfeita.",
+      confirmText: "Deletar",
+      cancelText: "Cancelar",
+      variant: "danger"
+    });
 
     if (confirmed) {
       onDelete(episode.id);
@@ -234,6 +244,7 @@ export default function EpisodeModal({
   }
 
   return (
+    <>
     <Modal
       isOpen={true}
       onClose={handleClose}
@@ -371,5 +382,7 @@ export default function EpisodeModal({
         </div>
       </div>
     </Modal>
+    <ConfirmDialog />
+    </>
   );
 }

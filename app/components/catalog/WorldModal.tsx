@@ -3,6 +3,7 @@
 import { useState, useEffect, FormEvent } from "react";
 import { Modal, Input, Textarea, Button } from "@/app/components/ui";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
+import { useConfirm } from "@/hooks/useConfirm";
 import type { World } from "@/app/types";
 
 interface WorldModalProps {
@@ -21,6 +22,7 @@ export default function WorldModal({
   onDelete,
 }: WorldModalProps) {
   const { t } = useTranslation();
+  const { confirm, ConfirmDialog } = useConfirm();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   
@@ -69,9 +71,15 @@ export default function WorldModal({
   async function handleDelete() {
     if (!world?.id || !onDelete) return;
     
-    if (!confirm("Tem certeza que deseja excluir este mundo? Todas as fichas associadas serão perdidas.")) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: "Confirmar Exclusão de Mundo",
+      message: "Tem certeza que deseja excluir este mundo? Todas as fichas associadas serão perdidas.",
+      confirmText: "Deletar",
+      cancelText: "Cancelar",
+      variant: "danger"
+    });
+
+    if (!confirmed) return;
 
     setIsDeleting(true);
 
@@ -86,6 +94,7 @@ export default function WorldModal({
   }
 
   return (
+    <>
     <Modal
       isOpen={isOpen}
       onClose={onClose}
@@ -153,5 +162,7 @@ export default function WorldModal({
         </label>
       </form>
     </Modal>
+    <ConfirmDialog />
+    </>
   );
 }

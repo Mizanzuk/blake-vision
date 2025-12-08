@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Modal, Input, Button, Select } from "@/app/components/ui";
 import type { Ficha, Universe, World } from "@/app/types";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 
 interface ConceptRuleModalProps {
   item: Ficha | null;
@@ -28,6 +29,7 @@ export default function ConceptRuleModal({
   onDelete,
   onClose,
 }: ConceptRuleModalProps) {
+  const { confirm, ConfirmDialog } = useConfirm();
   const [hasChanges, setHasChanges] = useState(false);
   const [selectedUniverseId, setSelectedUniverseId] = useState<string>(preSelectedUniverseId);
   const [selectedWorldId, setSelectedWorldId] = useState<string>(preSelectedWorldId);
@@ -64,11 +66,15 @@ export default function ConceptRuleModal({
     setHasChanges(true);
   }
 
-  function handleClose() {
+  async function handleClose() {
     if (hasChanges) {
-      const confirmed = window.confirm(
-        "Você tem alterações não salvas. Deseja realmente fechar sem salvar?"
-      );
+      const confirmed = await confirm({
+        title: "Alterações Não Salvas",
+        message: "Você tem alterações não salvas. Deseja realmente fechar sem salvar?",
+        confirmText: "Fechar sem Salvar",
+        cancelText: "Continuar Editando",
+        variant: "danger"
+      });
       if (!confirmed) return;
     }
     onClose();
@@ -104,12 +110,16 @@ export default function ConceptRuleModal({
     setHasChanges(false);
   }
 
-  function handleDelete() {
+  async function handleDelete() {
     if (!item?.id || !onDelete) return;
 
-    const confirmed = window.confirm(
-      `Tem certeza que deseja deletar este ${tipo}? Esta ação não pode ser desfeita.`
-    );
+    const confirmed = await confirm({
+      title: `Confirmar Exclusão de ${tipo === 'conceito' ? 'Conceito' : 'Regra'}`,
+      message: `Tem certeza que deseja deletar este ${tipo}? Esta ação não pode ser desfeita.`,
+      confirmText: "Deletar",
+      cancelText: "Cancelar",
+      variant: "danger"
+    });
 
     if (confirmed) {
       onDelete(item.id);
@@ -138,6 +148,7 @@ export default function ConceptRuleModal({
     : `Novo ${tipo === "conceito" ? "Conceito" : "Regra"}`;
 
   return (
+    <>
     <Modal
       isOpen={true}
       onClose={handleClose}
@@ -272,5 +283,7 @@ export default function ConceptRuleModal({
         </div>
       </div>
     </Modal>
+    <ConfirmDialog />
+    </>
   );
 }

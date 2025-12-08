@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Modal, Input, Button } from "@/app/components/ui";
 import type { World } from "@/app/types";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 
 interface WorldModalProps {
   world: World | null;
@@ -20,6 +21,7 @@ export default function WorldModal({
   onDelete,
   onClose,
 }: WorldModalProps) {
+  const { confirm, ConfirmDialog } = useConfirm();
   const [hasChanges, setHasChanges] = useState(false);
   const [nome, setNome] = useState("");
   const [descricao, setDescricao] = useState("");
@@ -42,11 +44,15 @@ export default function WorldModal({
     setHasChanges(true);
   }
 
-  function handleClose() {
+  async function handleClose() {
     if (hasChanges) {
-      const confirmed = window.confirm(
-        "Você tem alterações não salvas. Deseja realmente fechar sem salvar?"
-      );
+      const confirmed = await confirm({
+        title: "Alterações Não Salvas",
+        message: "Você tem alterações não salvas. Deseja realmente fechar sem salvar?",
+        confirmText: "Fechar sem Salvar",
+        cancelText: "Continuar Editando",
+        variant: "danger"
+      });
       if (!confirmed) return;
     }
     onClose();
@@ -71,12 +77,16 @@ export default function WorldModal({
     setHasChanges(false);
   }
 
-  function handleDelete() {
+  async function handleDelete() {
     if (!world?.id || !onDelete) return;
 
-    const confirmed = window.confirm(
-      "Tem certeza que deseja deletar este mundo? Esta ação não pode ser desfeita."
-    );
+    const confirmed = await confirm({
+      title: "Confirmar Exclusão de Mundo",
+      message: "Tem certeza que deseja deletar este mundo? Esta ação não pode ser desfeita.",
+      confirmText: "Deletar",
+      cancelText: "Cancelar",
+      variant: "danger"
+    });
 
     if (confirmed) {
       onDelete(world.id);
@@ -84,6 +94,7 @@ export default function WorldModal({
   }
 
   return (
+    <>
     <Modal
       isOpen={true}
       onClose={handleClose}
@@ -181,5 +192,7 @@ export default function WorldModal({
         </div>
       </div>
     </Modal>
+    <ConfirmDialog />
+    </>
   );
 }

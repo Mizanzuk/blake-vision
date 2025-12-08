@@ -4,6 +4,7 @@ import { useState, useEffect, FormEvent } from "react";
 import { Modal, Input, Textarea, Select, Button, Badge, MentionTextarea } from "@/app/components/ui";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 import type { World, Category, Ficha } from "@/app/types";
 import RelationsTab from "./RelationsTab";
 
@@ -29,6 +30,7 @@ export default function FichaModal({
   onDelete,
 }: FichaModalProps) {
   const { t } = useTranslation();
+  const { confirm, ConfirmDialog } = useConfirm();
   const [activeTab, setActiveTab] = useState<TabType>("basic");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -212,9 +214,13 @@ export default function FichaModal({
   async function handleDelete() {
     if (!ficha?.id || !onDelete) return;
 
-    const confirmed = window.confirm(
-      "Tem certeza que deseja excluir esta ficha? Esta ação não pode ser desfeita."
-    );
+    const confirmed = await confirm({
+      title: "Confirmar Exclusão de Ficha",
+      message: "Tem certeza que deseja excluir esta ficha? Esta ação não pode ser desfeita.",
+      confirmText: "Deletar",
+      cancelText: "Cancelar",
+      variant: "danger"
+    });
 
     if (!confirmed) return;
 
@@ -232,6 +238,7 @@ export default function FichaModal({
   }
 
   return (
+    <>
     <Modal
       isOpen={isOpen}
       onClose={onClose}
@@ -636,5 +643,7 @@ export default function FichaModal({
         )}
       </form>
     </Modal>
+    <ConfirmDialog />
+    </>
   );
 }
