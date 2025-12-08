@@ -141,7 +141,7 @@ export default function TiptapEditor({
       }),
       Focus.configure({
         className: 'has-focus',
-        mode: 'deepest',
+        mode: 'all',
       }),
     ],
     content: value,
