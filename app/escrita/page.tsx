@@ -7,8 +7,8 @@ import { Header } from '@/app/components/layout/Header';
 import TiptapEditor from '@/components/TiptapEditor';
 import { FontFamily } from '@/components/FontSelector';
 import { createClient } from '@/app/lib/supabase/client';
-import { toast } from 'sonner';
-import { Toaster } from '@/app/components/ui/Toaster';
+import { toast, Toaster } from 'sonner';
+import { ConfirmDialog } from '@/app/components/ui/Modal';
 
 function EscritaPageContent() {
   console.log('✅ COMPONENTE ESCRITA MONTADO - Build:', Date.now());
@@ -45,6 +45,11 @@ function EscritaPageContent() {
   const [temaFoco, setTemaFoco] = useState<'light' | 'dark'>('light');
   const optionsMenuRef = useRef<HTMLDivElement>(null);
   const stylesDropdownRef = useRef<HTMLDivElement>(null);
+  
+  // Estados do Modal de Confirmação
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [textoToDelete, setTextoToDelete] = useState<{id: string, titulo: string} | null>(null);
+  const [isDeletingTexto, setIsDeletingTexto] = useState(false);
   
   // Estados dos Agentes Flutuantes
   const [showUrthona, setShowUrthona] = useState(false);
@@ -200,38 +205,42 @@ function EscritaPageContent() {
     router.push("/escrita");
   };
   
-  // Função para apagar texto
-  const handleDelete = async (id: string) => {
-    // Criar promise para toast.promise
-    const deletePromise = new Promise(async (resolve, reject) => {
-      try {
-        const response = await fetch(`/api/textos?id=${id}`, {
-          method: "DELETE",
-        });
+  // Função para abrir modal de confirmação de delete
+  const handleDelete = (id: string, titulo: string) => {
+    setTextoToDelete({ id, titulo });
+    setShowDeleteConfirm(true);
+  };
+  
+  // Função para confirmar delete
+  const confirmDelete = async () => {
+    if (!textoToDelete) return;
+    
+    setIsDeletingTexto(true);
+    
+    try {
+      const response = await fetch(`/api/textos?id=${textoToDelete.id}`, {
+        method: "DELETE",
+      });
 
-        if (response.ok) {
-          // Se é o texto atual, limpar editor
-          if (id === currentTextId) {
-            handleNewTexto();
-          }
-          
-          loadTextos();
-          resolve(true);
-        } else {
-          reject(new Error("Erro ao deletar texto"));
+      if (response.ok) {
+        // Se é o texto atual, limpar editor
+        if (textoToDelete.id === currentTextId) {
+          handleNewTexto();
         }
-      } catch (error) {
-        console.error("Erro ao deletar texto:", error);
-        reject(error);
+        
+        loadTextos();
+        toast.success('Texto apagado com sucesso!');
+        setShowDeleteConfirm(false);
+        setTextoToDelete(null);
+      } else {
+        toast.error('Erro ao deletar texto');
       }
-    });
-
-    // Usar toast.promise para mostrar loading, success e error
-    toast.promise(deletePromise, {
-      loading: 'Apagando texto...',
-      success: 'Texto apagado com sucesso!',
-      error: 'Erro ao deletar texto',
-    });
+    } catch (error) {
+      console.error("Erro ao deletar texto:", error);
+      toast.error('Erro ao deletar texto');
+    } finally {
+      setIsDeletingTexto(false);
+    }
   };
   
   // Função para editar título
@@ -652,7 +661,7 @@ function EscritaPageContent() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDelete(texto.id);
+                            handleDelete(texto.id, texto.titulo);
                           }}
                           className="p-1 rounded hover:bg-error-light/10 text-error-light"
                           title="Apagar"
@@ -1266,6 +1275,22 @@ function EscritaPageContent() {
           </div>
         </div>
       )}
+      
+      {/* Modal de Confirmação de Delete */}
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => {
+          setShowDeleteConfirm(false);
+          setTextoToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        title="Apagar texto"
+        description={`Tem certeza que deseja apagar "${textoToDelete?.titulo}"?`}
+        confirmText="Apagar"
+        cancelText="Cancelar"
+        confirmVariant="danger"
+        isLoading={isDeletingTexto}
+      />
     </div>
     </>
   );
