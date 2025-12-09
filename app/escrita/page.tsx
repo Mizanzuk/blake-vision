@@ -486,7 +486,9 @@ function EscritaPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-light-base dark:bg-dark-base flex flex-col">
+    <>
+      <Toaster />
+      <div className="min-h-screen bg-light-base dark:bg-dark-base flex flex-col">
       <Header showNav={true} currentPage="escrita" />
 
       {/* MAIN CONTENT */}
@@ -1262,16 +1264,15 @@ function EscritaPageContent() {
               </div>
             </div>
           </div>
-        </div>
-      )}
+        </div>      )}}
     </div>
+    </>
   );
 }
 
 export default function EscritaPage() {
   return (
     <React.Suspense fallback={<div>Carregando...</div>}>
-      <Toaster />
       <EscritaPageContent />
     </React.Suspense>
   );
