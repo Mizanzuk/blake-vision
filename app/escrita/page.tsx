@@ -447,11 +447,9 @@ function EscritaPageContent() {
             {/* Célula C5 - Vazia */}
             <div></div>
           </div>
-        </main>
-      </div>
 
-      {/* LINHA 6: Grid 3 colunas - Vazio (A6) + Botões (B6) + Vazio (C6) */}
-      <footer className="border-t border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base py-4 flex-shrink-0">
+          {/* LINHA 6: Grid 3 colunas - Vazio (A6) + Botões (B6) + Vazio (C6) */}
+          <footer className="border-t border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base py-4 flex-shrink-0 max-w-[1328px] mx-auto w-full">
         <div className="grid grid-cols-[48px_1fr_48px] gap-0 px-4 max-w-[1328px] mx-auto w-full">
           {/* Célula A6 - Vazia */}
           <div></div>
@@ -472,6 +470,8 @@ function EscritaPageContent() {
           <div></div>
         </div>
       </footer>
+        </main>
+      </div>
 
       {/* Chat Lateral com Assistentes */}
       {(showUrthona || showUrizen) && (
