@@ -18,6 +18,12 @@ function EscritaPageContent() {
   const [fontFamily, setFontFamily] = useState<FontFamily>('serif');
   const editorRef = useRef<any>(null);
   
+  // Estados do Menu Três Pontos e Modo Foco
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [modoFoco, setModoFoco] = useState(false);
+  const [temaFoco, setTemaFoco] = useState<'light' | 'dark'>('light');
+  const optionsMenuRef = useRef<HTMLDivElement>(null);
+  
   // Estados dos Agentes Flutuantes
   const [showUrthona, setShowUrthona] = useState(false);
   const [showUrizen, setShowUrizen] = useState(false);
@@ -75,6 +81,20 @@ function EscritaPageContent() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [urthonaMessages, urizenMessages]);
+  
+  // Fechar menu de opções ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (optionsMenuRef.current && !optionsMenuRef.current.contains(event.target as Node)) {
+        setShowOptionsMenu(false);
+      }
+    };
+    
+    if (showOptionsMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showOptionsMenu]);
   
   // Handlers
   const handleAssistantMessage = (agent: 'urthona' | 'urizen') => {
@@ -189,7 +209,10 @@ function EscritaPageContent() {
           
           {/* LINHA 1: Modo Foco + Avatares */}
           <div className="h-16 border-b border-border-light-default dark:border-border-dark-default flex items-center justify-between px-8 flex-shrink-0">
-            <button className="px-4 py-2 bg-primary-600 dark:bg-primary-500 text-white rounded-full hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors text-sm font-medium">
+            <button 
+              onClick={() => setModoFoco(true)}
+              className="px-4 py-2 bg-primary-600 dark:bg-primary-500 text-white rounded-full hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors text-sm font-medium"
+            >
               👁 Modo Foco
             </button>
             
@@ -244,9 +267,82 @@ function EscritaPageContent() {
             </h2>
             
             {/* Célula C1 - Três Pontinhos (Flutuante para direita) */}
-            <button className="absolute right-0 translate-x-full pl-2 text-xl hover:opacity-70 transition-opacity text-text-light-secondary dark:text-dark-secondary">
-              ⋮
-            </button>
+            <div className="absolute right-0 translate-x-full pl-2" ref={optionsMenuRef}>
+              <button 
+                onClick={() => setShowOptionsMenu(!showOptionsMenu)}
+                className="text-xl hover:opacity-70 transition-opacity text-text-light-secondary dark:text-dark-secondary"
+              >
+                ⋮
+              </button>
+              
+              {/* Dropdown Menu */}
+              {showOptionsMenu && (
+                <div className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default z-50">
+                  <div className="py-2">
+                    {/* Duplicar */}
+                    <button
+                      onClick={() => {
+                        alert('Duplicar texto');
+                        setShowOptionsMenu(false);
+                      }}
+                      className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
+                    >
+                      <svg className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-sm text-text-light-primary dark:text-dark-primary">Duplicar</span>
+                    </button>
+
+                    {/* Estatísticas */}
+                    <button
+                      onClick={() => {
+                        alert('Estatísticas do texto');
+                        setShowOptionsMenu(false);
+                      }}
+                      className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
+                    >
+                      <svg className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                      <span className="text-sm text-text-light-primary dark:text-dark-primary">Estatísticas</span>
+                    </button>
+
+                    {/* Exportar */}
+                    <button
+                      onClick={() => {
+                        alert('Exportar texto');
+                        setShowOptionsMenu(false);
+                      }}
+                      className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
+                    >
+                      <svg className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <span className="text-sm text-text-light-primary dark:text-dark-primary">Exportar</span>
+                    </button>
+
+                    {/* Separador */}
+                    <div className="my-2 border-t border-border-light-default dark:border-border-dark-default"></div>
+
+                    {/* Excluir */}
+                    <button
+                      onClick={() => {
+                        if (confirm('Tem certeza que deseja excluir este texto?')) {
+                          alert('Texto excluído');
+                        }
+                        setShowOptionsMenu(false);
+                      }}
+                      className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                    >
+                      <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      <span className="text-sm text-red-600 dark:text-red-400">Excluir texto</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* LINHA 3: Metadados (Condicional) */}
@@ -476,6 +572,115 @@ function EscritaPageContent() {
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21 15l-6 6M21 9l-12 12" strokeLinecap="round" />
               </svg>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Modo Foco - Fullscreen */}
+      {modoFoco && (
+        <div className={clsx(
+          "fixed inset-0 z-50 flex flex-col",
+          temaFoco === 'light' ? 'bg-white' : 'bg-gray-900'
+        )}>
+          {/* Header do Modo Foco */}
+          <div className={clsx(
+            "flex justify-between items-center px-8 py-4 border-b",
+            temaFoco === 'light' ? 'border-gray-200 bg-white' : 'border-gray-700 bg-gray-900'
+          )}>
+            <h1 className={clsx(
+              "text-2xl font-bold",
+              temaFoco === 'light' ? 'text-gray-900' : 'text-white'
+            )}>
+              A Noite do Cão Misterioso (Cópia)
+            </h1>
+            
+            <div className="flex items-center gap-4">
+              {/* Controles de Tema */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setTemaFoco('light')}
+                  className={clsx(
+                    "px-3 py-1.5 rounded text-xs font-medium transition-colors",
+                    temaFoco === 'light'
+                      ? "bg-primary-500 text-white"
+                      : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                  )}
+                  title="Modo Branco"
+                >
+                  ☀️ Branco
+                </button>
+                <button
+                  onClick={() => setTemaFoco('dark')}
+                  className={clsx(
+                    "px-3 py-1.5 rounded text-xs font-medium transition-colors",
+                    temaFoco === 'dark'
+                      ? "bg-primary-500 text-white"
+                      : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                  )}
+                  title="Modo Preto"
+                >
+                  🌙 Preto
+                </button>
+              </div>
+              
+              {/* Avatares dos Assistentes */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowUrthona(!showUrthona);
+                    if (!showUrthona) setShowUrizen(false);
+                  }}
+                  className="w-10 h-10 rounded-full hover:ring-2 hover:ring-[#C85A54] transition-all"
+                  title="Urthona (Criativo)"
+                >
+                  <img src="/urthona-avatar.png" alt="Urthona" className="w-full h-full rounded-full" />
+                </button>
+                <button
+                  onClick={() => {
+                    setShowUrizen(!showUrizen);
+                    if (!showUrizen) setShowUrthona(false);
+                  }}
+                  className="w-10 h-10 rounded-full hover:ring-2 hover:ring-[#5B7C8D] transition-all"
+                  title="Urizen (Consulta)"
+                >
+                  <img src="/urizen-avatar.png" alt="Urizen" className="w-full h-full rounded-full" />
+                </button>
+              </div>
+              
+              {/* Botão Sair */}
+              <button
+                onClick={() => setModoFoco(false)}
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors"
+                title="Sair do Modo Foco (ESC)"
+              >
+                Sair
+              </button>
+            </div>
+          </div>
+          
+          {/* Editor em Fullscreen */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* Área do Editor */}
+            <div className={clsx(
+              "flex-1 overflow-y-auto transition-all duration-300",
+              (showUrthona || showUrizen) ? "mr-96" : ""
+            )}>
+              <div className={`max-w-4xl mx-auto px-16 py-12 font-${fontFamily}`}>
+                <TiptapEditor
+                  value={conteudo}
+                  onChange={(value) => setConteudo(value)}
+                  placeholder="Escreva seu texto aqui..."
+                  className={clsx(
+                    "w-full min-h-[calc(100vh-12rem)] bg-transparent border-none",
+                    temaFoco === 'light' ? 'text-gray-900' : 'text-white'
+                  )}
+                  showToolbar={false}
+                  editorRef={editorRef}
+                  fontFamily={fontFamily}
+                  onFontChange={(font) => setFontFamily(font)}
+                />
+              </div>
             </div>
           </div>
         </div>
