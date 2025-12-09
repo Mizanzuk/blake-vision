@@ -11,6 +11,7 @@ import { toast, Toaster } from 'sonner';
 import { Modal } from '@/app/components/ui/Modal';
 import { Button } from '@/app/components/ui/Button';
 import { Badge } from '@/app/components/ui/Badge';
+import { UniverseDropdown } from '@/app/components/ui';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -41,6 +42,7 @@ function EscritaPageContent() {
   // Estados do Editor
   const [conteudo, setConteudo] = useState("Em uma pequena cidade cercada por densas florestas, viviam dois amigos inseparáveis: Lucas e Pedro. Os dois eram conhecidos por suas aventuras noturnas, onde exploravam os arredores da cidade à procura de mistérios e lendas urbanas para desvendar. Teste.\n\nCerta noite, enquanto caminhavam por uma trilha pouco iluminada na floresta, Lucas e Pedro começaram a ouvir um som baixo e gutural. Curiosos, seguiram o ruído até que, entre as sombras das árvores, avistaram uma figura enorme e peluda. A luz da lua cheia iluminou a criatura, revelando olhos brilhantes e um corpo imponente. O susto foi imediato: ambos acreditaram estar diante de um lobisomem! Sem pensar duas vezes, os amigos correram de volta para a cidade, o coração disparado e a mente cheia de imagens sombrias. Ao chegarem, contaram a todos sobre o encontro sobrenatural. A notícia se espalhou rapidamente, e em pouco tempo, a cidade estava em alvoroço com a história do \"lobisomem da floresta\". No entanto, a curiosidade dos amigos não os deixava em paz. No dia seguinte, decidiram investigar a área à luz do dia. Armados com lanternas e coragem renovada, voltaram à floresta. Ao chegarem ao local do avistamento, encontraram pegadas enormes no solo. Seguiram as pistas pelas os levaram até uma clareira onde, para sua surpresa, encontraram um cachorro gigantesco, de pelagem escura e olhos penetrantes. O cachorro, embora imponente, era dócil. Aproximando-se devagar, os amigos descobriram que ele usava uma coleira com uma medalha, onde estava escrito o nome de seu dono. Compreendendo o mal-entendido, Lucas e Pedro riceberam que Max era o cachorro perdido de um fazendeiro da região, famoso por possuir uma presença intimidadora. Compreendendo o mal-entendido, Lucas e Pedro voltaram à cidade com Max, explicando a verdadeira história ao fazendeiro e aos moradores. O alívio tomou conta de todos, e o susto da noite anterior se transformou em uma divertida anedota para a comunidade. A partir daquele dia, Max se tornou uma mascote local, e Lucas e Pedro continuaram suas aventuras, agora prontos para desvendar qualquer mistério que a noite pudesse trazer. **\"Moral da História:\"** Às vezes, o que nos assusta no escuro se revela inofensivo à luz do dia. A coragem de enfrentar nossos medos pode transformar monstros em amigos.");
   const [universeId, setUniverseId] = useState<string>("");
+  const [universes, setUniverses] = useState<any[]>([]); // Lista de universos disponíveis
   const [fontFamily, setFontFamily] = useState<FontFamily>('serif');
   const editorRef = useRef<any>(null);
   
@@ -209,9 +211,10 @@ function EscritaPageContent() {
     }
   }, [showBubbleMenu]);
   
-  // Carregar lista de textos ao montar componente
+  // Carregar lista de textos e universos ao montar componente
   useEffect(() => {
     loadTextos();
+    loadUniversesAndWorlds();
   }, []);
   
   // Carregar texto específico da URL
@@ -276,6 +279,20 @@ function EscritaPageContent() {
       }
     } catch (error) {
       console.error("Erro ao carregar textos:", error);
+    }
+  };
+  
+  // Função para carregar universos
+  const loadUniversesAndWorlds = async () => {
+    try {
+      const response = await fetch("/api/universes");
+      const data = await response.json();
+      
+      if (response.ok && data.universes) {
+        setUniverses(data.universes);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar universos:", error);
     }
   };
   
@@ -1042,14 +1059,15 @@ function EscritaPageContent() {
 
               {/* Metadados Grid */}
               <div className="grid grid-cols-4 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
-                    UNIVERSO
-                  </label>
-                  <select className="w-full px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary focus:outline-none focus:ring-2 focus:ring-primary-500">
-                    <option>U1</option>
-                  </select>
-                </div>
+                <UniverseDropdown
+                  label="UNIVERSO"
+                  universes={universes}
+                  selectedId={universeId}
+                  onSelect={(id) => {
+                    setUniverseId(id);
+                  }}
+                  disabled={false}
+                />
                 <div>
                   <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
                     MUNDO
