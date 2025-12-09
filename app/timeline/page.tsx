@@ -63,6 +63,22 @@ export default function TimelinePage() {
   const [newUniverseName, setNewUniverseName] = useState("");
   const [newUniverseDescription, setNewUniverseDescription] = useState("");
   const [isCreatingUniverse, setIsCreatingUniverse] = useState(false);
+  
+  // Fechar modal com ESC
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showNewUniverseModal && !isCreatingUniverse) {
+        setShowNewUniverseModal(false);
+        setNewUniverseName('');
+        setNewUniverseDescription('');
+      }
+    };
+    
+    if (showNewUniverseModal) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [showNewUniverseModal, isCreatingUniverse]);
 
   useEffect(() => {
     checkAuth();

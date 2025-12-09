@@ -135,6 +135,26 @@ function CatalogContent() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewingFicha, setViewingFicha] = useState<Ficha | null>(null);
+  
+  // Fechar modais com ESC
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (showNewUniverseModal && !isCreatingUniverse) {
+          setShowNewUniverseModal(false);
+          setNewUniverseName('');
+          setNewUniverseDescription('');
+        } else if (showManageCategoriesModal) {
+          setShowManageCategoriesModal(false);
+        }
+      }
+    };
+    
+    if (showNewUniverseModal || showManageCategoriesModal) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [showNewUniverseModal, showManageCategoriesModal, isCreatingUniverse]);
 
   useEffect(() => {
     checkAuth();

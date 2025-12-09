@@ -44,6 +44,20 @@ export default function BibliotecaPage() {
       loadTextos();
     }
   }, [isLoading]);
+  
+  // Fechar modal com ESC
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedTexto) {
+        setSelectedTexto(null);
+      }
+    };
+    
+    if (selectedTexto) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [selectedTexto]);
 
   async function checkAuth() {
     try {

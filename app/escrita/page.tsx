@@ -125,6 +125,25 @@ function EscritaPageContent() {
     return () => clearInterval(autoSaveInterval);
   }, [conteudo, currentTextId]);
   
+  // Fechar modais com ESC
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (showSuccessModal) {
+          setShowSuccessModal(false);
+        } else if (showDeleteConfirm && !isDeletingTexto) {
+          setShowDeleteConfirm(false);
+          setTextoToDelete(null);
+        }
+      }
+    };
+    
+    if (showDeleteConfirm || showSuccessModal) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [showDeleteConfirm, showSuccessModal, isDeletingTexto]);
+  
   // Fechar menu de opções ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

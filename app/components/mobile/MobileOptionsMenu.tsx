@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import clsx from 'clsx';
 
 interface MobileOptionsMenuProps {
@@ -30,6 +30,20 @@ export function MobileOptionsMenu({
   currentTextoId,
   isMetadataSaved,
 }: MobileOptionsMenuProps) {
+  // Fechar menu com ESC
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showMobileOptionsMenu) {
+        setShowMobileOptionsMenu(false);
+      }
+    };
+    
+    if (showMobileOptionsMenu) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [showMobileOptionsMenu, setShowMobileOptionsMenu]);
+  
   if (!showMobileOptionsMenu || !isMetadataSaved) return null;
 
   return (

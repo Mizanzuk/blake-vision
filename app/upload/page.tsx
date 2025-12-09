@@ -74,6 +74,29 @@ export default function UploadPage() {
   const [newWorldDescription, setNewWorldDescription] = useState("");
   const [newWorldHasEpisodes, setNewWorldHasEpisodes] = useState(true);
   const [isCreatingWorld, setIsCreatingWorld] = useState(false);
+  
+  // Fechar modais com ESC
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (showNewUniverseModal && !isCreatingUniverse) {
+          setShowNewUniverseModal(false);
+          setNewUniverseName('');
+          setNewUniverseDescription('');
+        } else if (showNewWorldModal && !isCreatingWorld) {
+          setShowNewWorldModal(false);
+          setNewWorldName('');
+          setNewWorldDescription('');
+          setNewWorldHasEpisodes(true);
+        }
+      }
+    };
+    
+    if (showNewUniverseModal || showNewWorldModal) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [showNewUniverseModal, showNewWorldModal, isCreatingUniverse, isCreatingWorld]);
 
   useEffect(() => {
     checkAuth();

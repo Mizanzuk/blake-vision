@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 
 interface ExportModalProps {
   showExportModal: boolean;
@@ -13,6 +13,20 @@ export function ExportModal({
   setShowExportModal,
   handleExport,
 }: ExportModalProps) {
+  // Fechar modal com ESC
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showExportModal) {
+        setShowExportModal(false);
+      }
+    };
+    
+    if (showExportModal) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [showExportModal, setShowExportModal]);
+  
   if (!showExportModal) return null;
 
   return (
