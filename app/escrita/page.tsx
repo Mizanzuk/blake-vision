@@ -270,13 +270,13 @@ function EscritaPageContent() {
               </svg>
             </button>
             
-            {/* Célula B2 - Título */}
-            <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary truncate max-w-[672px]">
-              A Noite do Cão Misterioso (Cópia)
-            </h2>
-            
-            {/* Célula C2 - Três Pontos */}
-            <div className="relative" ref={optionsMenuRef}>
+            {/* Célula B2 - Título + Três Pontos */}
+            <div className="flex justify-between items-center max-w-[672px]">
+              <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary truncate">
+                A Noite do Cão Misterioso (Cópia)
+              </h2>
+              
+              <div className="relative" ref={optionsMenuRef}>
               <button 
                 onClick={() => setShowOptionsMenu(!showOptionsMenu)}
                 className="text-xl hover:opacity-70 transition-opacity text-text-light-secondary dark:text-dark-secondary"
@@ -346,7 +346,11 @@ function EscritaPageContent() {
                   </div>
                 </div>
               )}
+              </div>
             </div>
+            
+            {/* Célula C2 - Vazia */}
+            <div></div>
           </div>
 
           {/* LINHA 3: Metadados (Condicional) */}
