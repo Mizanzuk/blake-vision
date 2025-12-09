@@ -7,6 +7,7 @@ import { Header } from '@/app/components/layout/Header';
 import TiptapEditor from '@/components/TiptapEditor';
 import { FontFamily } from '@/components/FontSelector';
 import { createClient } from '@/app/lib/supabase/client';
+import { toast } from 'sonner';
 
 function EscritaPageContent() {
   console.log('✅ COMPONENTE ESCRITA MONTADO - Build:', Date.now());
@@ -156,11 +157,11 @@ function EscritaPageContent() {
         setConteudo(texto.conteudo || "");
         setLastSaved(new Date(texto.updated_at));
       } else {
-        alert("Erro ao carregar texto");
+        toast.error("Erro ao carregar texto");
       }
     } catch (error) {
       console.error("Erro ao carregar texto:", error);
-      alert("Erro ao carregar texto");
+      toast.error("Erro ao carregar texto");
     }
   };
   
@@ -200,29 +201,36 @@ function EscritaPageContent() {
   
   // Função para apagar texto
   const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja apagar este texto?")) return;
-    
-    try {
-      const response = await fetch(`/api/textos?id=${id}`, {
-        method: "DELETE",
-      });
+    // Criar promise para toast.promise
+    const deletePromise = new Promise(async (resolve, reject) => {
+      try {
+        const response = await fetch(`/api/textos?id=${id}`, {
+          method: "DELETE",
+        });
 
-      if (response.ok) {
-        alert("Texto apagado com sucesso!");
-        
-        // Se é o texto atual, limpar editor
-        if (id === currentTextId) {
-          handleNewTexto();
+        if (response.ok) {
+          // Se é o texto atual, limpar editor
+          if (id === currentTextId) {
+            handleNewTexto();
+          }
+          
+          loadTextos();
+          resolve(true);
+        } else {
+          reject(new Error("Erro ao deletar texto"));
         }
-        
-        loadTextos();
-      } else {
-        alert("Erro ao deletar texto");
+      } catch (error) {
+        console.error("Erro ao deletar texto:", error);
+        reject(error);
       }
-    } catch (error) {
-      console.error("Erro ao deletar texto:", error);
-      alert("Erro ao deletar texto");
-    }
+    });
+
+    // Usar toast.promise para mostrar loading, success e error
+    toast.promise(deletePromise, {
+      loading: 'Apagando texto...',
+      success: 'Texto apagado com sucesso!',
+      error: 'Erro ao deletar texto',
+    });
   };
   
   // Função para editar título
@@ -238,7 +246,7 @@ function EscritaPageContent() {
       });
 
       if (response.ok) {
-        alert("Título atualizado!");
+        toast.success("Título atualizado!");
         
         // Se é o texto atual, atualizar no editor
         if (id === currentTextId) {
@@ -247,11 +255,11 @@ function EscritaPageContent() {
         
         loadTextos();
       } else {
-        alert("Erro ao atualizar título");
+        toast.error("Erro ao atualizar título");
       }
     } catch (error) {
       console.error("Erro ao atualizar título:", error);
-      alert("Erro ao atualizar título");
+      toast.error("Erro ao atualizar título");
     }
   };
   
@@ -337,7 +345,7 @@ function EscritaPageContent() {
     console.log('📊 Estado atual:', { titulo, conteudo: conteudo.substring(0, 50), currentTextId, autoSave });
     
     if (!titulo.trim()) {
-      if (!autoSave) alert("Por favor, adicione um título");
+      if (!autoSave) toast.error("Por favor, adicione um título");
       return;
     }
 
@@ -376,7 +384,7 @@ function EscritaPageContent() {
 
       if (response.ok) {
         if (!autoSave) {
-          alert(currentTextId ? "Texto atualizado!" : "Texto criado!");
+          toast.success(currentTextId ? "Texto atualizado!" : "Texto criado!");
         }
         setLastSaved(new Date());
         
@@ -389,11 +397,11 @@ function EscritaPageContent() {
         // Recarregar lista de textos
         loadTextos();
       } else {
-        alert(data.error || "Erro ao salvar texto");
+        toast.error(data.error || "Erro ao salvar texto");
       }
     } catch (error) {
       console.error("Erro ao salvar texto:", error);
-      alert("Erro ao salvar texto");
+      toast.error("Erro ao salvar texto");
     } finally {
       setIsSaving(false);
     }
@@ -402,7 +410,7 @@ function EscritaPageContent() {
   const handlePublish = async () => {
     await handleSave();
     // TODO: Implementar lógica de publicação
-    alert('Texto publicado!');
+    toast.success('Texto publicado!');
   };
   
   const handleAssistantMessage = async (agent: 'urthona' | 'urizen') => {
@@ -800,9 +808,7 @@ function EscritaPageContent() {
                     
                     <button
                       onClick={() => {
-                        if (confirm('Tem certeza que deseja excluir este texto?')) {
-                          console.log('Excluir texto');
-                        }
+                        // TODO: Implementar exclusão
                         setShowOptionsMenu(false);
                       }}
                       className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
