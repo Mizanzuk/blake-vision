@@ -121,15 +121,21 @@ function EscritaPageContent() {
   
   // Handlers
   const handleSave = async () => {
+    console.log('🔵 handleSave CHAMADO!');
     try {
+      console.log('🔵 Iniciando save...');
       setIsSaving(true);
       
       // Pegar usuário atual
+      console.log('🔵 Buscando usuário...');
       const { data: { user } } = await supabase.auth.getUser();
+      console.log('🔵 Usuário:', user);
       if (!user) {
+        console.log('🔴 Usuário não encontrado!');
         alert('Você precisa estar logado para salvar');
         return;
       }
+      console.log('🔵 Usuário OK, preparando dados...');
       
       const textData = {
         titulo: 'A Noite do Cão Misterioso (Cópia)', // TODO: pegar do estado
@@ -161,7 +167,7 @@ function EscritaPageContent() {
       setLastSaved(new Date());
       console.log('Texto salvo com sucesso!');
     } catch (error) {
-      console.error('Erro ao salvar:', error);
+      console.error('🔴 ERRO AO SALVAR:', error);
       alert('Erro ao salvar o texto');
     } finally {
       setIsSaving(false);
