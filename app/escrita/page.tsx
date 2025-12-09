@@ -56,6 +56,11 @@ function EscritaPageContent() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   
+  // Estados da Seleção de Texto (Bubble Menu)
+  const [selectedText, setSelectedText] = useState('');
+  const [selectionPosition, setSelectionPosition] = useState<{x: number, y: number} | null>(null);
+  const [showBubbleMenu, setShowBubbleMenu] = useState(false);
+  
   // Estados dos Agentes Flutuantes
   const [showUrthona, setShowUrthona] = useState(false);
   const [showUrizen, setShowUrizen] = useState(false);
@@ -161,6 +166,30 @@ function EscritaPageContent() {
     }
   }, [showOptionsMenu, showStylesDropdown]);
   
+  // Fechar bubble menu ao clicar fora ou pressionar ESC
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (showBubbleMenu) {
+        closeBubbleMenu();
+      }
+    };
+    
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showBubbleMenu) {
+        closeBubbleMenu();
+      }
+    };
+    
+    if (showBubbleMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscape);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('keydown', handleEscape);
+      };
+    }
+  }, [showBubbleMenu]);
+  
   // Carregar lista de textos ao montar componente
   useEffect(() => {
     loadTextos();
@@ -227,6 +256,42 @@ function EscritaPageContent() {
     setTitulo("");
     setConteudo("");
     router.push("/escrita");
+  };
+  
+  // Função para lidar com seleção de texto
+  const handleTextSelect = (text: string, position: { x: number; y: number }) => {
+    setSelectedText(text);
+    setSelectionPosition(position);
+    setShowBubbleMenu(true);
+  };
+  
+  // Função para fechar bubble menu
+  const closeBubbleMenu = () => {
+    setShowBubbleMenu(false);
+    setSelectedText('');
+    setSelectionPosition(null);
+  };
+  
+  // Função para enviar texto selecionado para Urizen
+  const sendToUrizen = () => {
+    if (!selectedText) return;
+    setShowUrizen(true);
+    setUrizenMessages([{
+      role: 'user',
+      content: selectedText
+    }]);
+    closeBubbleMenu();
+  };
+  
+  // Função para enviar texto selecionado para Urthona
+  const sendToUrthona = () => {
+    if (!selectedText) return;
+    setShowUrthona(true);
+    setUrthonaMessages([{
+      role: 'user',
+      content: selectedText
+    }]);
+    closeBubbleMenu();
   };
   
   // Função para abrir modal de confirmação de delete
@@ -1007,6 +1072,7 @@ function EscritaPageContent() {
               editorRef={editorRef}
               fontFamily={fontFamily}
               onFontChange={(font) => setFontFamily(font)}
+              onTextSelect={handleTextSelect}
             />
             </div>
             
@@ -1294,6 +1360,7 @@ function EscritaPageContent() {
                   editorRef={editorRef}
                   fontFamily={fontFamily}
                   onFontChange={(font) => setFontFamily(font)}
+                  onTextSelect={handleTextSelect}
                 />
               </div>
             </div>
@@ -1380,6 +1447,45 @@ function EscritaPageContent() {
               </Button>
             </div>
           </div>
+        </div>
+      )}
+      
+      {/* Bubble Menu - Botões de Agentes na Seleção */}
+      {showBubbleMenu && selectionPosition && (
+        <div
+          className="fixed z-50 flex gap-2 p-2 bg-light-raised dark:bg-dark-raised rounded-lg shadow-xl border border-border-light-default dark:border-border-dark-default animate-in fade-in duration-200"
+          style={{
+            left: `${selectionPosition.x}px`,
+            top: `${selectionPosition.y - 60}px`, // 60px acima da seleção
+          }}
+        >
+          <button
+            onClick={sendToUrizen}
+            className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+            title="Enviar para Urizen (Consulta)"
+          >
+            <span className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold">
+              U
+            </span>
+            Urizen
+          </button>
+          <button
+            onClick={sendToUrthona}
+            className="flex items-center gap-2 px-3 py-2 text-sm bg-purple-500 hover:bg-purple-600 text-white rounded-md transition-colors"
+            title="Enviar para Urthona (Criativo)"
+          >
+            <span className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center text-xs font-bold">
+              U
+            </span>
+            Urthona
+          </button>
+          <button
+            onClick={closeBubbleMenu}
+            className="px-2 py-2 text-sm text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay rounded-md transition-colors"
+            title="Fechar"
+          >
+            ×
+          </button>
         </div>
       )}
     </div>
