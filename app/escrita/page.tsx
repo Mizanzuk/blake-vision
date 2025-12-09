@@ -15,6 +15,7 @@ function EscritaPageContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [currentTextId, setCurrentTextId] = useState<string | null>(null);
+  const [titulo, setTitulo] = useState('A Noite do Cão Misterioso (Cópia)');
   
   // Estado da Sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -120,57 +121,61 @@ function EscritaPageContent() {
   }, [showOptionsMenu, showStylesDropdown]);
   
   // Handlers
-  const handleSave = async () => {
-    console.log('🔵 handleSave CHAMADO!');
-    alert('🔵 TESTE: Botão Salvar foi clicado!');
-    
+  const handleSave = async (autoSave: boolean = false) => {
+    if (!titulo.trim()) {
+      if (!autoSave) alert("Por favor, adicione um título");
+      return;
+    }
+
+    setIsSaving(true);
+
     try {
-      console.log('🔵 Iniciando save...');
-      setIsSaving(true);
-      
-      // Pegar usuário atual
-      console.log('🔵 Buscando usuário...');
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('🔵 Usuário:', user);
-      if (!user) {
-        console.log('🔴 Usuário não encontrado!');
-        alert('Você precisa estar logado para salvar');
-        return;
-      }
-      console.log('🔵 Usuário OK, preparando dados...');
-      
-      const textData = {
-        titulo: 'A Noite do Cão Misterioso (Cópia)', // TODO: pegar do estado
-        conteudo: conteudo,
-        user_id: user.id,
-        updated_at: new Date().toISOString(),
+      const body = {
+        id: currentTextId,
+        titulo,
+        conteudo,
+        universe_id: null, // TODO: implementar seleção de universo
+        world_id: null,
+        episodio: null,
+        categoria: null,
+        status: 'rascunho',
       };
-      
+
+      let response;
       if (currentTextId) {
         // Atualizar texto existente
-        const { error } = await supabase
-          .from('texts')
-          .update(textData)
-          .eq('id', currentTextId);
-        
-        if (error) throw error;
+        response = await fetch(`/api/textos?id=${currentTextId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
       } else {
         // Criar novo texto
-        const { data, error } = await supabase
-          .from('texts')
-          .insert([{ ...textData, created_at: new Date().toISOString() }])
-          .select()
-          .single();
-        
-        if (error) throw error;
-        if (data) setCurrentTextId(data.id);
+        response = await fetch("/api/textos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
       }
-      
-      setLastSaved(new Date());
-      console.log('Texto salvo com sucesso!');
+
+      const data = await response.json();
+
+      if (response.ok) {
+        if (!autoSave) {
+          alert(currentTextId ? "Texto atualizado!" : "Texto criado!");
+        }
+        setLastSaved(new Date());
+        
+        // Se é novo texto, atualizar ID
+        if (!currentTextId && data.texto) {
+          setCurrentTextId(data.texto.id);
+        }
+      } else {
+        alert(data.error || "Erro ao salvar texto");
+      }
     } catch (error) {
-      console.error('🔴 ERRO AO SALVAR:', error);
-      alert('Erro ao salvar o texto');
+      console.error("Erro ao salvar texto:", error);
+      alert("Erro ao salvar texto");
     } finally {
       setIsSaving(false);
     }
