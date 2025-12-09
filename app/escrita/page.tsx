@@ -416,9 +416,29 @@ function EscritaPageContent() {
             
             {/* Célula B4 - Toolbar */}
             <div className="flex items-center gap-4">
-              <button className="text-sm font-medium hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary">B</button>
-              <button className="text-sm font-medium hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary">/</button>
-              <button className="text-sm font-medium hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary">Aa ▼</button>
+              <button 
+                onClick={() => editorRef.current?.chain().focus().toggleBold().run()}
+                className="text-sm font-medium hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary"
+              >
+                B
+              </button>
+              <button 
+                onClick={() => editorRef.current?.chain().focus().toggleItalic().run()}
+                className="text-sm font-medium hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary"
+              >
+                /
+              </button>
+              <div className="relative">
+                <button 
+                  onClick={() => {
+                    // Dropdown de estilos - implementar depois
+                    alert('Dropdown de estilos em desenvolvimento');
+                  }}
+                  className="text-sm font-medium hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary"
+                >
+                  Aa ▼
+                </button>
+              </div>
             </div>
             
             {/* Célula C4 - Vazia */}
@@ -437,7 +457,7 @@ function EscritaPageContent() {
               onChange={(value) => setConteudo(value)}
               placeholder="Escreva seu texto aqui..."
               className="w-full min-h-[400px]"
-              showToolbar={true}
+              showToolbar={false}
               editorRef={editorRef}
               fontFamily={fontFamily}
               onFontChange={(font) => setFontFamily(font)}
@@ -716,7 +736,7 @@ function EscritaPageContent() {
                     "w-full min-h-[calc(100vh-12rem)] bg-transparent border-none",
                     temaFoco === 'light' ? 'text-gray-900' : 'text-white'
                   )}
-                  showToolbar={true}
+                  showToolbar={false}
                   editorRef={editorRef}
                   fontFamily={fontFamily}
                   onFontChange={(font) => setFontFamily(font)}
