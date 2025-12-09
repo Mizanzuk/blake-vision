@@ -453,7 +453,7 @@ function EscritaPageContent() {
           <div></div>
           
           {/* Célula B6 - Botões */}
-          <div className="max-w-[672px]">
+          <div className="max-w-[672px] w-full">
             <div className="flex gap-3 justify-end">
               <button className="px-4 py-1.5 text-sm bg-light-overlay dark:bg-dark-overlay text-text-light-primary dark:text-dark-primary rounded hover:opacity-80 transition-opacity font-medium">
                 Salvar
