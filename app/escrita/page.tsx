@@ -230,14 +230,24 @@ function EscritaPageContent() {
       
       if (response.ok && data.texto) {
         const texto = data.texto;
+        console.log('=== loadTexto DEBUG ===');
+        console.log('texto.id:', texto.id);
+        console.log('texto.universe_id:', texto.universe_id);
+        console.log('texto.titulo:', texto.titulo);
+        
         setCurrentTextId(texto.id);
         setTitulo(texto.titulo || "");
         setConteudo(texto.conteudo || "");
         setUniverseId(texto.universe_id || "");
         setLastSaved(new Date(texto.updated_at));
+        
         // Marcar metadados como salvos se o texto já existe
         if (texto.universe_id) {
+          console.log('Marcando isMetadataSaved = true');
           setIsMetadataSaved(true);
+        } else {
+          console.log('universe_id vazio, isMetadataSaved = false');
+          setIsMetadataSaved(false);
         }
       } else {
         toast.error("Erro ao carregar texto");
@@ -300,13 +310,18 @@ function EscritaPageContent() {
   
   // Função para enviar texto selecionado para Urizen
   const sendToUrizen = () => {
-    console.log('sendToUrizen chamado, selectedText:', selectedText);
+    console.log('=== sendToUrizen DEBUG ===');
+    console.log('selectedText:', selectedText);
+    console.log('isMetadataSaved:', isMetadataSaved);
+    console.log('universeId:', universeId);
+    
     if (!selectedText) {
       console.log('selectedText vazio, retornando');
       return;
     }
     // Verificar se metadados foram salvos
     if (!isMetadataSaved) {
+      console.log('Metadados não salvos, mostrando toast');
       toast.error('Salve os metadados do texto antes de usar os agentes');
       return;
     }
@@ -320,13 +335,18 @@ function EscritaPageContent() {
   
   // Função para enviar texto selecionado para Urthona
   const sendToUrthona = () => {
-    console.log('sendToUrthona chamado, selectedText:', selectedText);
+    console.log('=== sendToUrthona DEBUG ===');
+    console.log('selectedText:', selectedText);
+    console.log('isMetadataSaved:', isMetadataSaved);
+    console.log('universeId:', universeId);
+    
     if (!selectedText) {
       console.log('selectedText vazio, retornando');
       return;
     }
     // Verificar se metadados foram salvos
     if (!isMetadataSaved) {
+      console.log('Metadados não salvos, mostrando toast');
       toast.error('Salve os metadados do texto antes de usar os agentes');
       return;
     }
