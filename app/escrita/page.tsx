@@ -437,7 +437,7 @@ function EscritaPageContent() {
               onChange={(value) => setConteudo(value)}
               placeholder="Escreva seu texto aqui..."
               className="w-full min-h-[400px]"
-              showToolbar={false}
+              showToolbar={true}
               editorRef={editorRef}
               fontFamily={fontFamily}
               onFontChange={(font) => setFontFamily(font)}
@@ -716,7 +716,7 @@ function EscritaPageContent() {
                     "w-full min-h-[calc(100vh-12rem)] bg-transparent border-none",
                     temaFoco === 'light' ? 'text-gray-900' : 'text-white'
                   )}
-                  showToolbar={false}
+                  showToolbar={true}
                   editorRef={editorRef}
                   fontFamily={fontFamily}
                   onFontChange={(font) => setFontFamily(font)}
