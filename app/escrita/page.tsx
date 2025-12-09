@@ -40,6 +40,7 @@ function EscritaPageContent() {
   
   // Estados do Editor
   const [conteudo, setConteudo] = useState("Em uma pequena cidade cercada por densas florestas, viviam dois amigos inseparáveis: Lucas e Pedro. Os dois eram conhecidos por suas aventuras noturnas, onde exploravam os arredores da cidade à procura de mistérios e lendas urbanas para desvendar. Teste.\n\nCerta noite, enquanto caminhavam por uma trilha pouco iluminada na floresta, Lucas e Pedro começaram a ouvir um som baixo e gutural. Curiosos, seguiram o ruído até que, entre as sombras das árvores, avistaram uma figura enorme e peluda. A luz da lua cheia iluminou a criatura, revelando olhos brilhantes e um corpo imponente. O susto foi imediato: ambos acreditaram estar diante de um lobisomem! Sem pensar duas vezes, os amigos correram de volta para a cidade, o coração disparado e a mente cheia de imagens sombrias. Ao chegarem, contaram a todos sobre o encontro sobrenatural. A notícia se espalhou rapidamente, e em pouco tempo, a cidade estava em alvoroço com a história do \"lobisomem da floresta\". No entanto, a curiosidade dos amigos não os deixava em paz. No dia seguinte, decidiram investigar a área à luz do dia. Armados com lanternas e coragem renovada, voltaram à floresta. Ao chegarem ao local do avistamento, encontraram pegadas enormes no solo. Seguiram as pistas pelas os levaram até uma clareira onde, para sua surpresa, encontraram um cachorro gigantesco, de pelagem escura e olhos penetrantes. O cachorro, embora imponente, era dócil. Aproximando-se devagar, os amigos descobriram que ele usava uma coleira com uma medalha, onde estava escrito o nome de seu dono. Compreendendo o mal-entendido, Lucas e Pedro riceberam que Max era o cachorro perdido de um fazendeiro da região, famoso por possuir uma presença intimidadora. Compreendendo o mal-entendido, Lucas e Pedro voltaram à cidade com Max, explicando a verdadeira história ao fazendeiro e aos moradores. O alívio tomou conta de todos, e o susto da noite anterior se transformou em uma divertida anedota para a comunidade. A partir daquele dia, Max se tornou uma mascote local, e Lucas e Pedro continuaram suas aventuras, agora prontos para desvendar qualquer mistério que a noite pudesse trazer. **\"Moral da História:\"** Às vezes, o que nos assusta no escuro se revela inofensivo à luz do dia. A coragem de enfrentar nossos medos pode transformar monstros em amigos.");
+  const [universeId, setUniverseId] = useState<string>("");
   const [fontFamily, setFontFamily] = useState<FontFamily>('serif');
   const editorRef = useRef<any>(null);
   
@@ -232,7 +233,12 @@ function EscritaPageContent() {
         setCurrentTextId(texto.id);
         setTitulo(texto.titulo || "");
         setConteudo(texto.conteudo || "");
+        setUniverseId(texto.universe_id || "");
         setLastSaved(new Date(texto.updated_at));
+        // Marcar metadados como salvos se o texto já existe
+        if (texto.universe_id) {
+          setIsMetadataSaved(true);
+        }
       } else {
         toast.error("Erro ao carregar texto");
       }
@@ -273,6 +279,8 @@ function EscritaPageContent() {
     setCurrentTextId(null);
     setTitulo("");
     setConteudo("");
+    setUniverseId("");
+    setIsMetadataSaved(false);
     router.push("/escrita");
   };
   
@@ -517,7 +525,7 @@ function EscritaPageContent() {
         id: currentTextId,
         titulo,
         conteudo,
-        universe_id: null, // TODO: implementar seleção de universo
+        universe_id: universeId || null,
         world_id: null,
         episodio: null,
         categoria: null,
@@ -548,6 +556,11 @@ function EscritaPageContent() {
           toast.success(currentTextId ? "Texto atualizado!" : "Texto criado!");
         }
         setLastSaved(new Date());
+        
+        // Marcar metadados como salvos se universeId existe
+        if (universeId) {
+          setIsMetadataSaved(true);
+        }
         
         // Se é novo texto, atualizar ID e URL
         if (!currentTextId && data.texto) {
@@ -594,7 +607,7 @@ function EscritaPageContent() {
         body: JSON.stringify({
           messages: [...messages, newUserMessage],
           mode: agent === 'urthona' ? 'criativo' : 'consulta',
-          universeId: null, // TODO: pegar do estado quando implementar
+          universeId: universeId || null,
           textContent: conteudo,
         }),
       });
