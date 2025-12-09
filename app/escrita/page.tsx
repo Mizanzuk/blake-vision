@@ -1264,7 +1264,8 @@ function EscritaPageContent() {
               </div>
             </div>
           </div>
-        </div>      )}}
+        </div>
+      )}
     </div>
     </>
   );
