@@ -65,8 +65,7 @@ function EscritaPageContent() {
   
   // Estados da Seleção de Texto (Bubble Menu)
   const [selectedText, setSelectedText] = useState('');
-  const [selectionPosition, setSelectionPosition] = useState<{x: number, y: number} | null>(null);
-  const [showBubbleMenu, setShowBubbleMenu] = useState(false);
+  const [selectionMenuPosition, setSelectionMenuPosition] = useState<{x: number, y: number} | null>(null);
   
   // Estados dos Agentes Flutuantes
   const [showUrthona, setShowUrthona] = useState(false);
@@ -187,30 +186,6 @@ function EscritaPageContent() {
     }
   }, [showOptionsMenu, showStylesDropdown]);
   
-  // Fechar bubble menu ao clicar fora ou pressionar ESC
-  useEffect(() => {
-    const handleClickOutside = () => {
-      if (showBubbleMenu) {
-        closeBubbleMenu();
-      }
-    };
-    
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && showBubbleMenu) {
-        closeBubbleMenu();
-      }
-    };
-    
-    if (showBubbleMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleEscape);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-        document.removeEventListener('keydown', handleEscape);
-      };
-    }
-  }, [showBubbleMenu]);
-  
   // Carregar lista de textos e universos ao montar componente
   useEffect(() => {
     loadTextos();
@@ -314,66 +289,10 @@ function EscritaPageContent() {
   // Função para lidar com seleção de texto
   const handleTextSelect = (text: string, position: { x: number; y: number }) => {
     setSelectedText(text);
-    setSelectionPosition(position);
-    setShowBubbleMenu(true);
+    setSelectionMenuPosition(position);
   };
   
-  // Função para fechar bubble menu
-  const closeBubbleMenu = () => {
-    setShowBubbleMenu(false);
-    setSelectedText('');
-    setSelectionPosition(null);
-  };
-  
-  // Função para enviar texto selecionado para Urizen
-  const sendToUrizen = () => {
-    console.log('=== sendToUrizen DEBUG ===');
-    console.log('selectedText:', selectedText);
-    console.log('isMetadataSaved:', isMetadataSaved);
-    console.log('universeId:', universeId);
-    
-    if (!selectedText) {
-      console.log('selectedText vazio, retornando');
-      return;
-    }
-    // Verificar se metadados foram salvos
-    if (!isMetadataSaved) {
-      console.log('Metadados não salvos, mostrando toast');
-      toast.error('Salve os metadados do texto antes de usar os agentes');
-      return;
-    }
-    console.log('Abrindo Urizen com texto:', selectedText);
-    setShowUrizen(true);
-    setShowUrthona(false); // Fechar Urthona se estiver aberto
-    // Preencher o campo de input com o trecho selecionado
-    setAssistantInput(`Sobre o trecho "${selectedText}", me diga: `);
-    closeBubbleMenu();
-  };
-  
-  // Função para enviar texto selecionado para Urthona
-  const sendToUrthona = () => {
-    console.log('=== sendToUrthona DEBUG ===');
-    console.log('selectedText:', selectedText);
-    console.log('isMetadataSaved:', isMetadataSaved);
-    console.log('universeId:', universeId);
-    
-    if (!selectedText) {
-      console.log('selectedText vazio, retornando');
-      return;
-    }
-    // Verificar se metadados foram salvos
-    if (!isMetadataSaved) {
-      console.log('Metadados não salvos, mostrando toast');
-      toast.error('Salve os metadados do texto antes de usar os agentes');
-      return;
-    }
-    console.log('Abrindo Urthona com texto:', selectedText);
-    setShowUrthona(true);
-    setShowUrizen(false); // Fechar Urizen se estiver aberto
-    // Preencher o campo de input com o trecho selecionado
-    setAssistantInput(`Sobre o trecho "${selectedText}", me diga: `);
-    closeBubbleMenu();
-  };
+
   
   // Função para abrir modal de confirmação de delete
   const handleDelete = (id: string, titulo: string) => {
@@ -1594,30 +1513,86 @@ function EscritaPageContent() {
         </div>
       )}
       
-      {/* Bubble Menu - Botões de Agentes na Seleção */}
-      {showBubbleMenu && selectionPosition && (
-        <div
-          className="fixed z-50 flex gap-2 p-1 bg-light-raised dark:bg-dark-raised rounded-full shadow-xl animate-in fade-in duration-200"
-          style={{
-            left: `${selectionPosition.x}px`,
-            top: `${selectionPosition.y - 60}px`, // 60px acima da seleção
-          }}
-        >
-          <button
-            onClick={sendToUrizen}
-            className="w-10 h-10 rounded-full hover:ring-2 hover:ring-[#5B7C8D] transition-all"
-            title="Urizen (Consulta)"
+      {/* Menu Flutuante de Seleção de Texto */}
+      {selectionMenuPosition && selectedText && (
+        <>
+          {/* Backdrop invisível para fechar o menu */}
+          <div
+            className="fixed inset-0 z-[9990]"
+            onClick={() => {
+              setSelectionMenuPosition(null);
+              setSelectedText("");
+            }}
+          />
+          
+          {/* Menu */}
+          <div
+            className="fixed z-[9991] bg-light-base dark:bg-dark-base rounded-lg shadow-md border border-border-light-default dark:border-border-dark-default overflow-hidden"
+            style={{
+              left: `${selectionMenuPosition.x}px`,
+              top: `${selectionMenuPosition.y - 60}px`, // 60px acima da seleção
+              transform: 'translateX(-50%)'
+            }}
           >
-            <img src="/urizen-avatar.png" alt="Urizen" className="w-full h-full rounded-full object-cover" />
-          </button>
-          <button
-            onClick={sendToUrthona}
-            className="w-10 h-10 rounded-full hover:ring-2 hover:ring-[#C85A54] transition-all"
-            title="Urthona (Criativo)"
-          >
-            <img src="/urthona-avatar.png" alt="Urthona" className="w-full h-full rounded-full object-cover" />
-          </button>
-        </div>
+            <div className="flex flex-col">
+              <div className="flex items-center justify-center gap-3 p-2">
+                {/* Avatar Urthona */}
+                <button
+                  onClick={() => {
+                    if (!isMetadataSaved) return;
+                    setShowUrthona(true);
+                    setShowUrizen(false);
+                    // Preencher o campo de input com o trecho selecionado
+                    setAssistantInput(`Sobre o trecho "${selectedText}", me diga: `);
+                    setSelectionMenuPosition(null);
+                    setSelectedText("");
+                  }}
+                  disabled={!isMetadataSaved}
+                  className={clsx(
+                    "w-10 h-10 rounded-full transition-all",
+                    isMetadataSaved
+                      ? "hover:scale-110 cursor-pointer"
+                      : "opacity-30 cursor-not-allowed"
+                  )}
+                  title={isMetadataSaved ? "Perguntar para Urthona" : "Crie um texto primeiro"}
+                >
+                  <img
+                    src="/urthona-avatar.png"
+                    alt="Urthona"
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                </button>
+                
+                {/* Avatar Urizen */}
+                <button
+                  onClick={() => {
+                    if (!isMetadataSaved) return;
+                    setShowUrizen(true);
+                    setShowUrthona(false);
+                    // Preencher o campo de input com o trecho selecionado
+                    setAssistantInput(`Sobre o trecho "${selectedText}", me diga: `);
+                    setSelectionMenuPosition(null);
+                    setSelectedText("");
+                  }}
+                  disabled={!isMetadataSaved}
+                  className={clsx(
+                    "w-10 h-10 rounded-full transition-all",
+                    isMetadataSaved
+                      ? "hover:scale-110 cursor-pointer"
+                      : "opacity-30 cursor-not-allowed"
+                  )}
+                  title={isMetadataSaved ? "Perguntar para Urizen" : "Crie um texto primeiro"}
+                >
+                  <img
+                    src="/urizen-avatar.png"
+                    alt="Urizen"
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
       )}
       
       {/* Modal de Ficha */}
