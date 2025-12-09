@@ -28,6 +28,9 @@ function EscritaPageContent() {
   const [currentTextId, setCurrentTextId] = useState<string | null>(null);
   const [titulo, setTitulo] = useState('A Noite do Cão Misterioso (Cópia)');
   const [isMetadataSaved, setIsMetadataSaved] = useState(false); // Controla se metadados foram salvos
+  const [isMetadataLocked, setIsMetadataLocked] = useState(false); // Controla se campos estão bloqueados
+  const [hasUnsavedMetadataChanges, setHasUnsavedMetadataChanges] = useState(false); // Detecta alterações
+  const [savedMetadataSnapshot, setSavedMetadataSnapshot] = useState<any>(null); // Snapshot dos metadados salvos
   
   // Estado da Sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -139,6 +142,17 @@ function EscritaPageContent() {
     }
   }, [assistantInput]);
   
+  // Detectar alterações nos metadados
+  useEffect(() => {
+    if (!isMetadataLocked && savedMetadataSnapshot) {
+      const hasChanges = 
+        titulo !== savedMetadataSnapshot.titulo ||
+        universeId !== savedMetadataSnapshot.universeId;
+      
+      setHasUnsavedMetadataChanges(hasChanges);
+    }
+  }, [titulo, universeId, isMetadataLocked, savedMetadataSnapshot]);
+  
   // Auto-save a cada 30 segundos (apenas se já tiver ID do texto)
   useEffect(() => {
     if (!conteudo || !currentTextId) return;
@@ -219,13 +233,22 @@ function EscritaPageContent() {
         setUniverseId(texto.universe_id || "");
         setLastSaved(new Date(texto.updated_at));
         
-        // Marcar metadados como salvos se o texto já existe
+        // Marcar metadados como salvos e bloquear se o texto já existe
         if (texto.universe_id) {
-          console.log('Marcando isMetadataSaved = true');
+          console.log('Marcando isMetadataSaved = true e isMetadataLocked = true');
           setIsMetadataSaved(true);
+          setIsMetadataLocked(true);
+          setIsHeaderExpanded(false); // Começar colapsado para textos existentes
+          
+          // Salvar snapshot dos metadados
+          setSavedMetadataSnapshot({
+            titulo: texto.titulo || "",
+            universeId: texto.universe_id || ""
+          });
         } else {
           console.log('universe_id vazio, isMetadataSaved = false');
           setIsMetadataSaved(false);
+          setIsMetadataLocked(false);
         }
       } else {
         toast.error("Erro ao carregar texto");
@@ -513,9 +536,15 @@ function EscritaPageContent() {
         }
         setLastSaved(new Date());
         
-        // Marcar metadados como salvos se universeId existe
+        // Marcar metadados como salvos e bloquear se universeId existe
         if (universeId) {
           setIsMetadataSaved(true);
+          setIsMetadataLocked(true);
+          setIsHeaderExpanded(false); // Colapsar cabeçalho
+          
+          // Salvar snapshot dos metadados e resetar flag de alterações
+          setSavedMetadataSnapshot({ titulo, universeId });
+          setHasUnsavedMetadataChanges(false);
         }
         
         // Se é novo texto, atualizar ID e URL
@@ -965,14 +994,33 @@ function EscritaPageContent() {
             <div className="border-b border-border-light-default dark:border-border-dark-default grid grid-cols-[48px_1fr_48px] gap-0 px-4 py-4 flex-shrink-0 max-w-[1328px] mx-auto w-full">
               <div></div>
               <div className="space-y-4 max-w-[672px]">
+              {/* Botão de editar (só aparece quando está bloqueado) */}
+              {isMetadataLocked && (
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setIsMetadataLocked(false)}
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                    title="Editar metadados"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    Editar
+                  </button>
+                </div>
+              )}
+              
               <div>
                 <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
                   TÍTULO
                 </label>
                 <input
                   type="text"
-                  defaultValue="A Noite do Cão Misterioso (Cópia)"
-                  className="w-full px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  value={titulo}
+                  onChange={(e) => setTitulo(e.target.value)}
+                  placeholder="Digite o título do texto..."
+                  disabled={isMetadataLocked}
+                  className="w-full px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-60 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -985,7 +1033,7 @@ function EscritaPageContent() {
                   onSelect={(id) => {
                     setUniverseId(id);
                   }}
-                  disabled={false}
+                  disabled={isMetadataLocked}
                 />
                 <div>
                   <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
@@ -1012,6 +1060,19 @@ function EscritaPageContent() {
                   </select>
                 </div>
               </div>
+              
+              {/* Botão Salvar (só aparece quando está editando) */}
+              {!isMetadataLocked && (
+                <div className="flex justify-center mt-4">
+                  <Button
+                    onClick={() => handleSave(false)}
+                    disabled={isSaving || !titulo.trim() || !universeId}
+                    variant="primary"
+                  >
+                    {isSaving ? 'Salvando...' : 'Salvar Metadados'}
+                  </Button>
+                </div>
+              )}
               </div>
               <div></div>
             </div>
