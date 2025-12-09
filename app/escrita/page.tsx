@@ -20,9 +20,11 @@ function EscritaPageContent() {
   
   // Estados do Menu Três Pontos e Modo Foco
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [showStylesDropdown, setShowStylesDropdown] = useState(false);
   const [modoFoco, setModoFoco] = useState(false);
   const [temaFoco, setTemaFoco] = useState<'light' | 'dark'>('light');
   const optionsMenuRef = useRef<HTMLDivElement>(null);
+  const stylesDropdownRef = useRef<HTMLDivElement>(null);
   
   // Estados dos Agentes Flutuantes
   const [showUrthona, setShowUrthona] = useState(false);
@@ -88,13 +90,16 @@ function EscritaPageContent() {
       if (optionsMenuRef.current && !optionsMenuRef.current.contains(event.target as Node)) {
         setShowOptionsMenu(false);
       }
+      if (stylesDropdownRef.current && !stylesDropdownRef.current.contains(event.target as Node)) {
+        setShowStylesDropdown(false);
+      }
     };
     
-    if (showOptionsMenu) {
+    if (showOptionsMenu || showStylesDropdown) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
-  }, [showOptionsMenu]);
+  }, [showOptionsMenu, showStylesDropdown]);
   
   // Handlers
   const handleAssistantMessage = (agent: 'urthona' | 'urizen') => {
@@ -428,16 +433,50 @@ function EscritaPageContent() {
               >
                 /
               </button>
-              <div className="relative">
+              <div className="relative" ref={stylesDropdownRef}>
                 <button 
-                  onClick={() => {
-                    // Dropdown de estilos - implementar depois
-                    alert('Dropdown de estilos em desenvolvimento');
-                  }}
+                  onClick={() => setShowStylesDropdown(!showStylesDropdown)}
                   className="text-sm font-medium hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary"
                 >
                   Aa ▼
                 </button>
+                {showStylesDropdown && (
+                  <div className="absolute top-full left-0 mt-2 bg-white dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg py-2 z-50 min-w-[120px]">
+                    <button
+                      onClick={() => {
+                        setFontFamily('serif');
+                        setShowStylesDropdown(false);
+                      }}
+                      className={`w-full px-4 py-2 text-left text-sm hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors ${
+                        fontFamily === 'serif' ? 'font-semibold text-primary-600 dark:text-primary-400' : 'text-text-light-primary dark:text-dark-primary'
+                      }`}
+                    >
+                      Serif
+                    </button>
+                    <button
+                      onClick={() => {
+                        setFontFamily('sans');
+                        setShowStylesDropdown(false);
+                      }}
+                      className={`w-full px-4 py-2 text-left text-sm hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors ${
+                        fontFamily === 'sans' ? 'font-semibold text-primary-600 dark:text-primary-400' : 'text-text-light-primary dark:text-dark-primary'
+                      }`}
+                    >
+                      Sans
+                    </button>
+                    <button
+                      onClick={() => {
+                        setFontFamily('mono');
+                        setShowStylesDropdown(false);
+                      }}
+                      className={`w-full px-4 py-2 text-left text-sm hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors ${
+                        fontFamily === 'mono' ? 'font-semibold text-primary-600 dark:text-primary-400' : 'text-text-light-primary dark:text-dark-primary'
+                      }`}
+                    >
+                      Mono
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
             
