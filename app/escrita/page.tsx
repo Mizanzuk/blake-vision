@@ -1297,34 +1297,18 @@ function EscritaPageContent() {
             className="relative w-full max-w-md bg-light-raised dark:bg-dark-raised rounded-2xl shadow-soft-xl animate-slide-up overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header sem borda */}
-            <div className="flex items-start justify-between p-6">
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-text-light-primary dark:text-dark-primary">
-                  Apagar texto
-                </h3>
-                <p className="mt-1 text-sm text-text-light-tertiary dark:text-dark-tertiary">
-                  Tem certeza que deseja apagar "{textoToDelete?.titulo}"?
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  if (!isDeletingTexto) {
-                    setShowDeleteConfirm(false);
-                    setTextoToDelete(null);
-                  }
-                }}
-                className="ml-4 p-1 rounded-lg text-text-light-tertiary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-tertiary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
-                disabled={isDeletingTexto}
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+            {/* Header sem borda e sem botão X */}
+            <div className="p-5 pb-3">
+              <h3 className="text-xl font-bold text-text-light-primary dark:text-dark-primary">
+                Apagar texto
+              </h3>
+              <p className="mt-1 text-sm text-text-light-tertiary dark:text-dark-tertiary">
+                Tem certeza que deseja apagar "{textoToDelete?.titulo}"?
+              </p>
             </div>
             
-            {/* Footer sem borda */}
-            <div className="flex items-center justify-end gap-3 p-6">
+            {/* Footer sem borda e sem espaço extra */}
+            <div className="flex items-center justify-end gap-3 px-5 pb-5">
               <Button 
                 variant="ghost" 
                 size="sm"
@@ -1359,24 +1343,15 @@ function EscritaPageContent() {
             className="relative w-full max-w-md bg-light-raised dark:bg-dark-raised rounded-2xl shadow-soft-xl animate-slide-up overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header sem borda */}
-            <div className="flex items-start justify-between p-6">
-              <div className="flex-1">
-                <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-success-light/20 flex items-center justify-center">
-                    <svg className="w-6 h-6 text-success-light" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <p className="text-base font-medium text-text-light-primary dark:text-dark-primary">
-                    {successMessage}
-                  </p>
-                </div>
-              </div>
+            {/* Header sem borda e sem ícone */}
+            <div className="p-5 pb-3">
+              <p className="text-base font-medium text-text-light-primary dark:text-dark-primary">
+                {successMessage}
+              </p>
             </div>
             
-            {/* Footer sem borda */}
-            <div className="flex items-center justify-end gap-3 p-6">
+            {/* Footer sem borda e sem espaço extra */}
+            <div className="flex items-center justify-end gap-3 px-5 pb-5">
               <Button 
                 variant="primary" 
                 size="sm"
