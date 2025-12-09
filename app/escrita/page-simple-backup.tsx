@@ -1,0 +1,482 @@
+'use client';
+
+import React, { useState, useRef, useEffect } from 'react';
+import clsx from 'clsx';
+import { Header } from '@/app/components/layout/Header';
+
+function EscritaPageContent() {
+  // Estados do Header
+  const [isHeaderExpanded, setIsHeaderExpanded] = useState(false);
+  
+  // Estado da Sidebar
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  
+  // Estados dos Agentes Flutuantes
+  const [showUrthona, setShowUrthona] = useState(false);
+  const [showUrizen, setShowUrizen] = useState(false);
+  const [urthonaMessages, setUrthonaMessages] = useState<any[]>([]);
+  const [urizenMessages, setUrizenMessages] = useState<any[]>([]);
+  const [assistantInput, setAssistantInput] = useState("");
+  const [isAssistantLoading, setIsAssistantLoading] = useState(false);
+  
+  // Estados para drag and drop do chat
+  const [chatPosition, setChatPosition] = useState({ x: 0, y: 0 });
+  const [chatSize, setChatSize] = useState({ width: 384, height: 600 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  
+  // Refs
+  const chatRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatInputRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Handle mouse move para drag and drop
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        setChatPosition({
+          x: e.clientX - dragStart.x,
+          y: e.clientY - dragStart.y
+        });
+      }
+      
+      if (isResizing) {
+        const newWidth = Math.max(300, resizeStart.width + (e.clientX - resizeStart.x));
+        const newHeight = Math.max(300, resizeStart.height + (e.clientY - resizeStart.y));
+        setChatSize({ width: newWidth, height: newHeight });
+      }
+    };
+    
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      setIsResizing(false);
+    };
+    
+    if (isDragging || isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, isResizing, dragStart, resizeStart]);
+  
+  // Scroll para última mensagem
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [urthonaMessages, urizenMessages]);
+  
+  // Handlers
+  const handleAssistantMessage = (agent: 'urthona' | 'urizen') => {
+    if (!assistantInput.trim()) return;
+    
+    const messages = agent === 'urthona' ? urthonaMessages : urizenMessages;
+    const setMessages = agent === 'urthona' ? setUrthonaMessages : setUrizenMessages;
+    
+    // Adicionar mensagem do usuário
+    const newMessages = [...messages, { role: 'user', content: assistantInput }];
+    setMessages(newMessages);
+    setAssistantInput('');
+    
+    // Simular resposta do assistente
+    setIsAssistantLoading(true);
+    setTimeout(() => {
+      const response = `Resposta de ${agent === 'urthona' ? 'Urthona' : 'Urizen'} sobre: "${assistantInput}"`;
+      setMessages([...newMessages, { role: 'assistant', content: response }]);
+      setIsAssistantLoading(false);
+    }, 1000);
+  };
+
+  return (
+    <div className="min-h-screen bg-light-base dark:bg-dark-base flex flex-col">
+      <Header showNav={true} currentPage="escrita" />
+
+      {/* MAIN CONTENT */}
+      <div className="flex flex-1 overflow-hidden">
+        
+        {/* COLUNA A - Sidebar (Biblioteca de Textos) */}
+        {isSidebarOpen && (
+          <aside className="w-[250px] bg-light-raised dark:bg-dark-raised overflow-y-auto border-r border-border-light-default dark:border-border-dark-default flex flex-col flex-shrink-0">
+            {/* Header da Sidebar */}
+            <div className="p-4 border-b border-border-light-default dark:border-border-dark-default">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-text-light-primary dark:text-dark-primary">Blake Vision</h2>
+                <button
+                  onClick={() => setIsSidebarOpen(false)}
+                  className="p-1.5 rounded-lg text-text-light-tertiary hover:text-text-light-secondary hover:bg-light-overlay dark:text-dark-tertiary dark:hover:text-dark-secondary dark:hover:bg-dark-overlay transition-colors"
+                  title="Fechar barra lateral"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                  </svg>
+                </button>
+              </div>
+              <button className="w-full px-4 py-2 bg-primary-600 dark:bg-primary-500 text-white rounded-full hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors text-sm font-medium">
+                + Novo Texto
+              </button>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex border-b border-border-light-default dark:border-border-dark-default">
+              <button className="flex-1 px-4 py-3 text-sm font-medium text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400 transition-colors">
+                Rascunhos (1)
+              </button>
+              <button className="flex-1 px-4 py-3 text-sm font-medium text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary transition-colors">
+                Publicados (0)
+              </button>
+            </div>
+
+            {/* Filtros */}
+            <div className="p-4 space-y-3 border-b border-border-light-default dark:border-border-dark-default">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Buscar textos..."
+                  className="w-full px-3 py-2 pl-9 text-sm rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+                <svg
+                  className="absolute left-3 top-2.5 w-4 h-4 text-text-light-tertiary dark:text-dark-tertiary"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <select className="w-full px-3 py-2 text-sm rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary">
+                <option>Todos os tipos</option>
+              </select>
+            </div>
+
+            {/* Lista de Textos */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              <div className="px-3 py-1 text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase">Texto Livre</div>
+              <button className="w-full text-left px-3 py-2 rounded text-sm bg-primary-600 dark:bg-primary-500 text-white hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors">
+                A Noite do Cão Misterioso
+              </button>
+              <button className="w-full text-left px-3 py-2 rounded text-sm text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors">
+                O Segredo da Floresta
+              </button>
+            </div>
+          </aside>
+        )}
+
+        {/* Botão de expandir sidebar (quando colapsada) */}
+        {!isSidebarOpen && (
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="w-12 border-r border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised flex items-center justify-center hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors flex-shrink-0"
+            title="Abrir barra lateral"
+          >
+            <svg className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </button>
+        )}
+
+        {/* COLUNA B - Conteúdo Principal (6 Linhas) */}
+        <main className="flex-1 flex flex-col overflow-hidden">
+          
+          {/* LINHA 1: Modo Foco + Avatares */}
+          <div className="h-16 border-b border-border-light-default dark:border-border-dark-default flex items-center justify-between px-8 flex-shrink-0">
+            <button className="px-4 py-2 bg-primary-600 dark:bg-primary-500 text-white rounded-full hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors text-sm font-medium">
+              👁 Modo Foco
+            </button>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowUrizen(!showUrizen);
+                  if (!showUrizen) setShowUrthona(false);
+                }}
+                className="w-10 h-10 rounded-full hover:ring-2 hover:ring-[#5B7C8D] transition-all"
+                title="Urizen (Consulta)"
+              >
+                <img src="/urizen-avatar.png" alt="Urizen" className="w-full h-full rounded-full object-cover" />
+              </button>
+              <button
+                onClick={() => {
+                  setShowUrthona(!showUrthona);
+                  if (!showUrthona) setShowUrizen(false);
+                }}
+                className="w-10 h-10 rounded-full hover:ring-2 hover:ring-[#C85A54] transition-all"
+                title="Urthona (Criativo)"
+              >
+                <img src="/urthona-avatar.png" alt="Urthona" className="w-full h-full rounded-full object-cover" />
+              </button>
+            </div>
+          </div>
+
+          {/* LINHA 2: Título + Botão Colapsar (A2) + Menu (C1) */}
+          <div className="h-12 border-b border-border-light-default dark:border-border-dark-default flex items-center px-8 flex-shrink-0 relative">
+            {/* Célula A2 - Botão Colapsar (Flutuante para esquerda) */}
+            <button
+              onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
+              className="absolute left-0 -translate-x-full pr-2 text-xl hover:opacity-70 transition-opacity text-text-light-secondary dark:text-dark-secondary"
+              title={isHeaderExpanded ? "Colapsar" : "Expandir"}
+            >
+              <svg 
+                className={clsx(
+                  "w-5 h-5 transition-transform",
+                  isHeaderExpanded && "rotate-90"
+                )} 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+            
+            {/* Célula B2 - Título (Centro) */}
+            <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary truncate">
+              A Noite do Cão Misterioso (Cópia)
+            </h2>
+            
+            {/* Célula C1 - Três Pontinhos (Flutuante para direita) */}
+            <button className="absolute right-0 translate-x-full pl-2 text-xl hover:opacity-70 transition-opacity text-text-light-secondary dark:text-dark-secondary">
+              ⋮
+            </button>
+          </div>
+
+          {/* LINHA 3: Metadados (Condicional) */}
+          {isHeaderExpanded && (
+            <div className="border-b border-border-light-default dark:border-border-dark-default px-8 py-4 flex-shrink-0 space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
+                  TÍTULO
+                </label>
+                <input
+                  type="text"
+                  defaultValue="A Noite do Cão Misterioso (Cópia)"
+                  className="w-full px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+
+              {/* Metadados Grid */}
+              <div className="grid grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
+                    UNIVERSO
+                  </label>
+                  <select className="w-full px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    <option>U1</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
+                    MUNDO
+                  </label>
+                  <select className="w-full px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    <option>T1</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
+                    EPISÓDIO
+                  </label>
+                  <select className="w-full px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    <option>T3</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
+                    CATEGORIA
+                  </label>
+                  <select className="w-full px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    <option>Texto Livre</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* LINHA 4: Toolbar de Edição */}
+          <div className="h-12 border-b border-border-light-default dark:border-border-dark-default flex items-center gap-4 px-8 flex-shrink-0">
+            <button className="text-sm font-medium hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary">B</button>
+            <button className="text-sm font-medium hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary">/</button>
+            <button className="text-sm font-medium hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary">Aa ▼</button>
+          </div>
+
+          {/* LINHA 5: Conteúdo do Editor (Scrollável) */}
+          <div className="flex-1 overflow-y-auto px-8 py-6">
+            <p className="text-text-light-primary dark:text-dark-primary leading-relaxed">
+              Em uma pequena cidade cercada por densas florestas, viviam dois amigos inseparáveis: Lucas e Pedro. Os dois eram conhecidos por suas aventuras noturnas, onde exploravam os arredores da cidade à procura de mistérios e lendas urbanas para desvendar. Teste.
+            </p>
+            <p className="text-text-light-primary dark:text-dark-primary leading-relaxed mt-4">
+              Certa noite, enquanto caminhavam por uma trilha pouco iluminada na floresta, Lucas e Pedro começaram a ouvir um som baixo e gutural. Curiosos, seguiram o ruído até que, entre as sombras das árvores, avistaram uma figura enorme e peluda. A luz da lua cheia iluminou a criatura, revelando olhos brilhantes e um corpo imponente. O susto foi imediato: ambos acreditaram estar diante de um lobisomem! Sem pensar duas vezes, os amigos correram de volta para a cidade, o coração disparado e a mente cheia de imagens sombrias. Ao chegarem, contaram a todos sobre o encontro sobrenatural. A notícia se espalhou rapidamente, e em pouco tempo, a cidade estava em alvoroço com a história do "lobisomem da floresta". No entanto, a curiosidade dos amigos não os deixava em paz. No dia seguinte, decidiram investigar a área à luz do dia. Armados com lanternas e coragem renovada, voltaram à floresta. Ao chegarem ao local do avistamento, encontraram pegadas enormes no solo. Seguiram as pistas pelas os levaram até uma clareira onde, para sua surpresa, encontraram um cachorro gigantesco, de pelagem escura e olhos penetrantes. O cachorro, embora imponente, era dócil. Aproximando-se devagar, os amigos descobriram que ele usava uma coleira com uma medalha, onde estava escrito o nome de seu dono. Compreendendo o mal-entendido, Lucas e Pedro riceberam que Max era o cachorro perdido de um fazendeiro da região, famoso por possuir uma presença intimidadora. Compreendendo o mal-entendido, Lucas e Pedro voltaram à cidade com Max, explicando a verdadeira história ao fazendeiro e aos moradores. O alívio tomou conta de todos, e o susto da noite anterior se transformou em uma divertida anedota para a comunidade. A partir daquele dia, Max se tornou uma mascote local, e Lucas e Pedro continuaram suas aventuras, agora prontos para desvendar qualquer mistério que a noite pudesse trazer. **"Moral da História:"** Às vezes, o que nos assusta no escuro se revela inofensivo à luz do dia. A coragem de enfrentar nossos medos pode transformar monstros em amigos.
+            </p>
+          </div>
+        </main>
+      </div>
+
+      {/* LINHA 6: Footer Fixo */}
+      <footer className="border-t border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base py-4 flex-shrink-0">
+        <div className="flex justify-end gap-3 px-8 max-w-[1328px] mx-auto">
+          <button className="px-6 py-2 bg-light-overlay dark:bg-dark-overlay text-text-light-primary dark:text-dark-primary rounded hover:opacity-80 transition-opacity font-medium">
+            Salvar
+          </button>
+          <button className="px-6 py-2 bg-primary-600 dark:bg-primary-500 text-white rounded hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors font-medium">
+            Publicar
+          </button>
+        </div>
+      </footer>
+
+      {/* Chat Lateral com Assistentes */}
+      {(showUrthona || showUrizen) && (
+        <div 
+          ref={chatRef}
+          className="fixed bg-light-base dark:bg-dark-base overflow-hidden flex flex-col shadow-2xl rounded-lg border border-border-light-default dark:border-border-dark-default"
+          style={{
+            left: chatPosition.x || 'auto',
+            top: chatPosition.y || 80,
+            right: chatPosition.x ? 'auto' : 16,
+            width: `${chatSize.width}px`,
+            height: `${chatSize.height}px`,
+            zIndex: 1000,
+            cursor: isDragging ? 'grabbing' : 'default'
+          }}
+        >
+          <div className="flex flex-col h-full px-4 pt-4 pb-4">
+            {/* Header do Chat (Draggable) */}
+            <div 
+              className="flex justify-between items-center mb-4 pb-4 cursor-grab active:cursor-grabbing border-b border-border-light-default dark:border-border-dark-default"
+              onMouseDown={(e) => {
+                setIsDragging(true);
+                setDragStart({
+                  x: e.clientX - (chatPosition.x || (window.innerWidth - chatSize.width - 16)),
+                  y: e.clientY - (chatPosition.y || 80)
+                });
+              }}
+            >
+              <div>
+                <h3 className="font-semibold text-text-light-primary dark:text-dark-primary">
+                  {showUrthona ? "Urthona" : "Urizen"}
+                </h3>
+                <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary">
+                  {showUrthona ? "Criativo" : "Consulta"}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowUrthona(false);
+                  setShowUrizen(false);
+                }}
+                className="text-text-light-tertiary hover:text-text-light-primary dark:text-dark-tertiary dark:hover:text-dark-primary transition-colors p-2 rounded-lg hover:bg-light-overlay dark:hover:bg-dark-overlay"
+                title="Fechar"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            {/* Mensagens */}
+            <div className="flex-1 overflow-y-auto mb-4 space-y-3 pr-2">
+              {(showUrthona ? urthonaMessages : urizenMessages).map((msg, idx) => (
+                <div
+                  key={idx}
+                  className={clsx(
+                    "flex gap-2",
+                    msg.role === "user" ? "justify-end" : "justify-start"
+                  )}
+                >
+                  <div
+                    className={clsx(
+                      "max-w-[85%] px-4 py-2 rounded-lg",
+                      msg.role === "user"
+                        ? "bg-primary-600 dark:bg-primary-500 text-white"
+                        : "bg-light-overlay dark:bg-dark-overlay text-text-light-primary dark:text-dark-primary"
+                    )}
+                  >
+                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+            
+            {/* Input */}
+            <div className="flex gap-2 items-end pt-4 border-t border-border-light-default dark:border-border-dark-default">
+              <textarea
+                ref={chatInputRef}
+                value={assistantInput}
+                onChange={(e) => setAssistantInput(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleAssistantMessage(showUrthona ? "urthona" : "urizen");
+                  }
+                }}
+                placeholder="Mensagem..."
+                rows={1}
+                className="flex-1 px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder:text-text-light-tertiary dark:placeholder:text-dark-tertiary outline-none focus:outline-none focus:border-primary-500 dark:focus:border-primary-400 resize-none max-h-24 overflow-y-auto text-sm"
+                disabled={isAssistantLoading}
+                style={{
+                  fontSize: '14px',
+                  height: 'auto',
+                  minHeight: '40px',
+                  maxHeight: '96px',
+                  boxShadow: 'none'
+                }}
+                onInput={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  target.style.height = 'auto';
+                  const newHeight = Math.min(target.scrollHeight, 96);
+                  target.style.height = `${newHeight}px`;
+                }}
+              />
+              <button
+                onClick={() => handleAssistantMessage(showUrthona ? "urthona" : "urizen")}
+                disabled={!assistantInput.trim() || isAssistantLoading}
+                className="px-4 py-2 bg-primary-600 dark:bg-primary-500 hover:bg-primary-700 dark:hover:bg-primary-600 disabled:bg-primary-300 dark:disabled:bg-primary-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2 flex-shrink-0"
+              >
+                {isAssistantLoading ? (
+                  <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                  </svg>
+                )}
+              </button>
+            </div>
+
+            {/* Resize Handle */}
+            <div
+              className="absolute bottom-0 right-0 w-6 h-6 cursor-nwse-resize flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                setIsResizing(true);
+                setResizeStart({
+                  x: e.clientX,
+                  y: e.clientY,
+                  width: chatSize.width,
+                  height: chatSize.height
+                });
+              }}
+              title="Redimensionar"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 15l-6 6M21 9l-12 12" strokeLinecap="round" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function EscritaPage() {
+  return (
+    <React.Suspense fallback={<div>Carregando...</div>}>
+      <EscritaPageContent />
+    </React.Suspense>
+  );
+}
