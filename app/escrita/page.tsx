@@ -10,6 +10,9 @@ import { createClient } from '@/app/lib/supabase/client';
 import { toast, Toaster } from 'sonner';
 import { Modal } from '@/app/components/ui/Modal';
 import { Button } from '@/app/components/ui/Button';
+import { Badge } from '@/app/components/ui/Badge';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 function EscritaPageContent() {
   console.log('✅ COMPONENTE ESCRITA MONTADO - Build:', Date.now());
@@ -23,6 +26,7 @@ function EscritaPageContent() {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [currentTextId, setCurrentTextId] = useState<string | null>(null);
   const [titulo, setTitulo] = useState('A Noite do Cão Misterioso (Cópia)');
+  const [isMetadataSaved, setIsMetadataSaved] = useState(false); // Controla se metadados foram salvos
   
   // Estado da Sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -77,6 +81,11 @@ function EscritaPageContent() {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
   
+  // Estados para modal de ficha
+  const [showFichaModal, setShowFichaModal] = useState(false);
+  const [fichaData, setFichaData] = useState<any>(null);
+  const [loadingFicha, setLoadingFicha] = useState(false);
+  
   // Refs
   const chatRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -118,6 +127,15 @@ function EscritaPageContent() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [urthonaMessages, urizenMessages]);
+  
+  // Auto-resize do textarea do chat quando assistantInput mudar
+  useEffect(() => {
+    if (chatInputRef.current) {
+      chatInputRef.current.style.height = 'auto';
+      const newHeight = Math.min(chatInputRef.current.scrollHeight, 96);
+      chatInputRef.current.style.height = `${newHeight}px`;
+    }
+  }, [assistantInput]);
   
   // Auto-save a cada 30 segundos (apenas se já tiver ID do texto)
   useEffect(() => {
@@ -279,13 +297,16 @@ function EscritaPageContent() {
       console.log('selectedText vazio, retornando');
       return;
     }
+    // Verificar se metadados foram salvos
+    if (!isMetadataSaved) {
+      toast.error('Salve os metadados do texto antes de usar os agentes');
+      return;
+    }
     console.log('Abrindo Urizen com texto:', selectedText);
     setShowUrizen(true);
     setShowUrthona(false); // Fechar Urthona se estiver aberto
-    setUrizenMessages([{
-      role: 'user',
-      content: selectedText
-    }]);
+    // Preencher o campo de input com o trecho selecionado
+    setAssistantInput(`Sobre o trecho "${selectedText}", me diga: `);
     closeBubbleMenu();
   };
   
@@ -296,13 +317,16 @@ function EscritaPageContent() {
       console.log('selectedText vazio, retornando');
       return;
     }
+    // Verificar se metadados foram salvos
+    if (!isMetadataSaved) {
+      toast.error('Salve os metadados do texto antes de usar os agentes');
+      return;
+    }
     console.log('Abrindo Urthona com texto:', selectedText);
     setShowUrthona(true);
     setShowUrizen(false); // Fechar Urizen se estiver aberto
-    setUrthonaMessages([{
-      role: 'user',
-      content: selectedText
-    }]);
+    // Preencher o campo de input com o trecho selecionado
+    setAssistantInput(`Sobre o trecho "${selectedText}", me diga: `);
     closeBubbleMenu();
   };
   
@@ -311,6 +335,31 @@ function EscritaPageContent() {
     setTextoToDelete({ id, titulo });
     setShowDeleteConfirm(true);
   };
+  
+  // Função para buscar e exibir ficha no modal
+  async function handleFichaClick(fichaSlug: string) {
+    setLoadingFicha(true);
+    setShowFichaModal(true);
+    
+    try {
+      const response = await fetch(`/api/fichas/${fichaSlug}`);
+      if (!response.ok) {
+        toast.error("Ficha não encontrada");
+        setShowFichaModal(false);
+        return;
+      }
+      
+      const data = await response.json();
+      // A API retorna { ficha: {...} }
+      setFichaData(data.ficha);
+    } catch (error) {
+      console.error("Erro ao buscar ficha:", error);
+      toast.error("Erro ao carregar ficha");
+      setShowFichaModal(false);
+    } finally {
+      setLoadingFicha(false);
+    }
+  }
   
   // Função para confirmar delete
   const confirmDelete = async () => {
@@ -1192,7 +1241,39 @@ function EscritaPageContent() {
                         : "bg-light-overlay dark:bg-dark-overlay text-text-light-primary dark:text-dark-primary"
                     )}
                   >
-                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                    {msg.role === "user" ? (
+                      <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                    ) : (
+                      <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            a: ({ node, href, children, ...props }) => {
+                              // Interceptar links /ficha/[slug]
+                              if (href && href.startsWith('/ficha/')) {
+                                const fichaSlug = href.replace('/ficha/', '');
+                                return (
+                                  <a
+                                    href="#"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      handleFichaClick(fichaSlug);
+                                    }}
+                                    className="text-primary-600 dark:text-primary-400 hover:underline cursor-pointer"
+                                    {...props}
+                                  >
+                                    {children}
+                                  </a>
+                                );
+                              }
+                              return <a href={href} {...props}>{children}</a>;
+                            }
+                          }}
+                        >
+                          {msg.content}
+                        </ReactMarkdown>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -1485,13 +1566,161 @@ function EscritaPageContent() {
           >
             <img src="/urthona-avatar.png" alt="Urthona" className="w-full h-full rounded-full object-cover" />
           </button>
-          <button
-            onClick={closeBubbleMenu}
-            className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors text-text-light-secondary dark:text-dark-secondary"
-            title="Fechar"
+        </div>
+      )}
+      
+      {/* Modal de Ficha */}
+      {showFichaModal && (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[2000]"
+          onClick={() => setShowFichaModal(false)}
+        >
+          <div 
+            className="bg-light-base dark:bg-dark-base rounded-lg shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden m-4"
+            onClick={(e) => e.stopPropagation()}
           >
-            ×
-          </button>
+            {loadingFicha ? (
+              <div className="flex items-center justify-center py-24">
+                <svg className="w-8 h-8 animate-spin text-primary-500" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </div>
+            ) : fichaData ? (
+              <div className="max-h-[80vh] overflow-y-auto px-6 py-6">
+                <div className="space-y-6">
+                  {/* Header com badge de tipo e botão fechar */}
+                  <div className="flex items-start justify-between border-b border-border-light-default dark:border-border-dark-default pb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Badge variant="primary" size="sm">
+                          {fichaData.tipo === 'episodio' ? 'Episódio' :
+                           fichaData.tipo === 'personagem' ? 'Personagem' :
+                           fichaData.tipo === 'local' ? 'Local' :
+                           fichaData.tipo === 'evento' ? 'Evento' :
+                           fichaData.tipo === 'conceito' ? 'Conceito' :
+                           fichaData.tipo === 'regra' ? 'Regra' :
+                           fichaData.tipo === 'objeto' ? 'Objeto' :
+                           fichaData.tipo}
+                        </Badge>
+                        {fichaData.codigo && (
+                          <Badge variant="default" size="sm">
+                            {fichaData.codigo}
+                          </Badge>
+                        )}
+                      </div>
+                      <h2 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
+                        {fichaData.titulo || fichaData.nome || 'Sem título'}
+                      </h2>
+                    </div>
+                    <button
+                      onClick={() => setShowFichaModal(false)}
+                      className="p-2 rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover transition-colors"
+                      aria-label="Fechar"
+                    >
+                      <svg className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* Imagem de capa */}
+                  {fichaData.imagem_capa && (
+                    <div className="rounded-lg overflow-hidden">
+                      <img
+                        src={fichaData.imagem_capa}
+                        alt={fichaData.titulo}
+                        className="w-full h-64 object-cover"
+                      />
+                    </div>
+                  )}
+
+                  {/* Resumo */}
+                  {fichaData.resumo && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-2">
+                        Resumo
+                      </h3>
+                      <p className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap">
+                        {fichaData.resumo}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Descrição */}
+                  {fichaData.descricao && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-2">
+                        Descrição
+                      </h3>
+                      <p className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap">
+                        {fichaData.descricao}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Conteúdo */}
+                  {fichaData.conteudo && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-2">
+                        Conteúdo
+                      </h3>
+                      <p className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap">
+                        {fichaData.conteudo}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Ano Diegese */}
+                  {fichaData.ano_diegese && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-2">
+                        Ano Diegese
+                      </h3>
+                      <p className="text-base text-text-light-primary dark:text-dark-primary">
+                        {fichaData.ano_diegese}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Tags */}
+                  {fichaData.tags && fichaData.tags.trim() !== '' && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-2">
+                        Tags
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {fichaData.tags.split(',').map((tag: string, index: number) => (
+                          <Badge key={index} variant="default" size="sm">
+                            {tag.trim()}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Botão Abrir ficha no Catálogo */}
+                  <div className="pt-4 border-t border-border-light-default dark:border-border-dark-default">
+                    <a
+                      href={`/catalog?ficha=${fichaData.slug || fichaData.titulo?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:underline font-medium"
+                    >
+                      Abrir ficha no Catálogo
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-12 text-text-light-tertiary dark:text-dark-tertiary">
+                Ficha não encontrada
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
