@@ -485,7 +485,7 @@ function EscritaPageContent() {
         
         {/* COLUNA A - Sidebar (Biblioteca de Textos) */}
         {isSidebarOpen && (
-          <aside className="w-[250px] bg-light-raised dark:bg-dark-raised overflow-y-auto md:relative fixed inset-y-0 left-0 z-40 md:z-auto">
+          <aside className="w-[250px] h-screen bg-light-raised dark:bg-dark-raised overflow-y-auto md:relative fixed inset-y-0 left-0 z-40 md:z-auto flex flex-col">
             {/* Header da Sidebar */}
             <div className="p-4">
               <div className="flex items-center justify-between mb-3">
@@ -557,7 +557,7 @@ function EscritaPageContent() {
             </div>
 
             {/* Lista de Textos */}
-            <div className="p-4">
+            <div className="flex-1 overflow-y-auto p-4">
               {filteredTextos.length === 0 ? (
                 <div className="p-8 text-center">
                   <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary">
