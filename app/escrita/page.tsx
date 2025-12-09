@@ -8,6 +8,7 @@ import TiptapEditor from '@/components/TiptapEditor';
 import { FontFamily } from '@/components/FontSelector';
 import { createClient } from '@/app/lib/supabase/client';
 import { toast } from 'sonner';
+import { Toaster } from '@/app/components/ui/Toaster';
 
 function EscritaPageContent() {
   console.log('✅ COMPONENTE ESCRITA MONTADO - Build:', Date.now());
@@ -1270,6 +1271,7 @@ function EscritaPageContent() {
 export default function EscritaPage() {
   return (
     <React.Suspense fallback={<div>Carregando...</div>}>
+      <Toaster />
       <EscritaPageContent />
     </React.Suspense>
   );
