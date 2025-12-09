@@ -260,7 +260,7 @@ export default function TiptapEditor({
   }
 
   return (
-    <div className={`tiptap-editor ${className || ''} ${focusType && focusType !== 'off' ? 'focus-mode-active' : ''}`}>
+    <div className={`tiptap-editor font-${fontFamily} ${className || ''} ${focusType && focusType !== 'off' ? 'focus-mode-active' : ''}`}>
       {showToolbar && (
         <div className="toolbar">
           <button
@@ -285,7 +285,7 @@ export default function TiptapEditor({
           )}
         </div>
       )}
-      <EditorContent editor={editor} />
+      <EditorContent editor={editor} className={`font-${fontFamily}`} />
     </div>
   );
 }

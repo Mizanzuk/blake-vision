@@ -5,10 +5,16 @@ import clsx from 'clsx';
 import { Header } from '@/app/components/layout/Header';
 import TiptapEditor from '@/components/TiptapEditor';
 import { FontFamily } from '@/components/FontSelector';
+import { createClient } from '@/app/lib/supabase/client';
 
 function EscritaPageContent() {
+  const supabase = createClient();
+  
   // Estados do Header
   const [isHeaderExpanded, setIsHeaderExpanded] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [currentTextId, setCurrentTextId] = useState<string | null>(null);
   
   // Estado da Sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -84,6 +90,18 @@ function EscritaPageContent() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [urthonaMessages, urizenMessages]);
   
+  // Auto-save a cada 30 segundos
+  useEffect(() => {
+    if (!conteudo) return;
+    
+    const autoSaveInterval = setInterval(() => {
+      console.log('[Auto-save] Salvando automaticamente...');
+      handleSave();
+    }, 30000); // 30 segundos
+    
+    return () => clearInterval(autoSaveInterval);
+  }, [conteudo]);
+  
   // Fechar menu de opções ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -102,24 +120,129 @@ function EscritaPageContent() {
   }, [showOptionsMenu, showStylesDropdown]);
   
   // Handlers
-  const handleAssistantMessage = (agent: 'urthona' | 'urizen') => {
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      
+      // Pegar usuário atual
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('Você precisa estar logado para salvar');
+        return;
+      }
+      
+      const textData = {
+        titulo: 'A Noite do Cão Misterioso (Cópia)', // TODO: pegar do estado
+        conteudo: conteudo,
+        user_id: user.id,
+        updated_at: new Date().toISOString(),
+      };
+      
+      if (currentTextId) {
+        // Atualizar texto existente
+        const { error } = await supabase
+          .from('texts')
+          .update(textData)
+          .eq('id', currentTextId);
+        
+        if (error) throw error;
+      } else {
+        // Criar novo texto
+        const { data, error } = await supabase
+          .from('texts')
+          .insert([{ ...textData, created_at: new Date().toISOString() }])
+          .select()
+          .single();
+        
+        if (error) throw error;
+        if (data) setCurrentTextId(data.id);
+      }
+      
+      setLastSaved(new Date());
+      console.log('Texto salvo com sucesso!');
+    } catch (error) {
+      console.error('Erro ao salvar:', error);
+      alert('Erro ao salvar o texto');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  
+  const handlePublish = async () => {
+    await handleSave();
+    // TODO: Implementar lógica de publicação
+    alert('Texto publicado!');
+  };
+  
+  const handleAssistantMessage = async (agent: 'urthona' | 'urizen') => {
     if (!assistantInput.trim()) return;
     
     const messages = agent === 'urthona' ? urthonaMessages : urizenMessages;
     const setMessages = agent === 'urthona' ? setUrthonaMessages : setUrizenMessages;
     
     // Adicionar mensagem do usuário
-    const newMessages = [...messages, { role: 'user', content: assistantInput }];
-    setMessages(newMessages);
+    const newUserMessage = { role: 'user' as const, content: assistantInput };
+    setMessages([...messages, newUserMessage]);
     setAssistantInput('');
     
-    // Simular resposta do assistente
+    // Chamar API do assistente
     setIsAssistantLoading(true);
-    setTimeout(() => {
-      const response = `Resposta de ${agent === 'urthona' ? 'Urthona' : 'Urizen'} sobre: "${assistantInput}"`;
-      setMessages([...newMessages, { role: 'assistant', content: response }]);
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [...messages, newUserMessage],
+          mode: agent === 'urthona' ? 'criativo' : 'consulta',
+          universeId: null, // TODO: pegar do estado quando implementar
+          textContent: conteudo,
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+        throw new Error(errorData.error || 'Erro ao conversar com assistente');
+      }
+      
+      // Ler resposta em streaming
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let assistantMessage = '';
+      
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          
+          const chunk = decoder.decode(value, { stream: true });
+          assistantMessage += chunk;
+          
+          // Atualizar mensagem progressivamente
+          setMessages([...messages, newUserMessage, {
+            role: 'assistant',
+            content: assistantMessage,
+          }]);
+        }
+        
+        // Detectar e aplicar EDIT_CONTENT (apenas para Urthona)
+        if (agent === 'urthona' && assistantMessage.includes('```EDIT_CONTENT')) {
+          const editMatch = assistantMessage.match(/```EDIT_CONTENT\s*([\s\S]*?)```/);
+          if (editMatch && editMatch[1]) {
+            const newContent = editMatch[1].trim();
+            setConteudo(newContent);
+            console.log('Texto atualizado por Urthona!');
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error('Erro ao chamar assistente:', error);
+      setMessages([...messages, newUserMessage, { 
+        role: 'assistant', 
+        content: 'Desculpe, ocorreu um erro ao processar sua mensagem.' 
+      }]);
+    } finally {
       setIsAssistantLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -516,10 +639,18 @@ function EscritaPageContent() {
           {/* Célula B6 - Botões */}
           <div className="flex justify-start">
             <div className="max-w-[672px] w-full flex gap-3 justify-end">
-              <button className="px-4 py-1.5 text-sm bg-light-overlay dark:bg-dark-overlay text-text-light-primary dark:text-dark-primary rounded hover:opacity-80 transition-opacity font-medium">
-                Salvar
+              <button 
+                onClick={handleSave}
+                disabled={isSaving}
+                className="px-4 py-1.5 text-sm bg-light-overlay dark:bg-dark-overlay text-text-light-primary dark:text-dark-primary rounded hover:opacity-80 transition-opacity font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSaving ? 'Salvando...' : 'Salvar'}
               </button>
-              <button className="px-4 py-1.5 text-sm bg-primary-600 dark:bg-primary-500 text-white rounded hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors font-medium">
+              <button 
+                onClick={handlePublish}
+                disabled={isSaving}
+                className="px-4 py-1.5 text-sm bg-primary-600 dark:bg-primary-500 text-white rounded hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 Publicar
               </button>
             </div>
