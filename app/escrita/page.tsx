@@ -276,6 +276,7 @@ function EscritaPageContent() {
   const sendToUrizen = () => {
     if (!selectedText) return;
     setShowUrizen(true);
+    setShowUrthona(false); // Fechar Urthona se estiver aberto
     setUrizenMessages([{
       role: 'user',
       content: selectedText
@@ -287,6 +288,7 @@ function EscritaPageContent() {
   const sendToUrthona = () => {
     if (!selectedText) return;
     setShowUrthona(true);
+    setShowUrizen(false); // Fechar Urizen se estiver aberto
     setUrthonaMessages([{
       role: 'user',
       content: selectedText
@@ -1461,22 +1463,18 @@ function EscritaPageContent() {
         >
           <button
             onClick={sendToUrizen}
-            className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
-            title="Enviar para Urizen (Consulta)"
+            className="flex items-center gap-2 px-3 py-2 text-sm bg-[#5B7C8D] hover:bg-[#4a6a7a] text-white rounded-md transition-colors"
+            title="Urizen (Consulta)"
           >
-            <span className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold">
-              U
-            </span>
+            <img src="/urizen-avatar.png" alt="Urizen" className="w-6 h-6 rounded-full object-cover" />
             Urizen
           </button>
           <button
             onClick={sendToUrthona}
-            className="flex items-center gap-2 px-3 py-2 text-sm bg-purple-500 hover:bg-purple-600 text-white rounded-md transition-colors"
-            title="Enviar para Urthona (Criativo)"
+            className="flex items-center gap-2 px-3 py-2 text-sm bg-[#C85A54] hover:bg-[#b14a44] text-white rounded-md transition-colors"
+            title="Urthona (Criativo)"
           >
-            <span className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center text-xs font-bold">
-              U
-            </span>
+            <img src="/urthona-avatar.png" alt="Urthona" className="w-6 h-6 rounded-full object-cover" />
             Urthona
           </button>
           <button
