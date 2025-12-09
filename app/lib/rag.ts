@@ -1,10 +1,18 @@
 import { createAdminClient } from "./supabase/server";
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-  baseURL: 'https://api.openai.com/v1',
-});
+// Lazy initialization to avoid build-time errors
+let openaiClient: OpenAI | null = null;
+
+function getOpenAIClient(): OpenAI {
+  if (!openaiClient) {
+    openaiClient = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY!,
+      baseURL: 'https://api.openai.com/v1',
+    });
+  }
+  return openaiClient;
+}
 
 export interface LoreSearchResult {
   id: string;
@@ -25,6 +33,7 @@ export async function searchLore(
   try {
     // Generate embedding for the query
     console.log('[searchLore] Generating embedding...');
+    const openai = getOpenAIClient();
     const embeddingResponse = await openai.embeddings.create({
       model: "text-embedding-3-small",
       input: query,
@@ -59,6 +68,7 @@ export async function searchLore(
 
 export async function generateEmbedding(text: string): Promise<number[]> {
   try {
+    const openai = getOpenAIClient();
     const response = await openai.embeddings.create({
       model: "text-embedding-3-small",
       input: text,
