@@ -22,6 +22,13 @@ function EscritaPageContent() {
   
   // Estado da Sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState<"rascunhos" | "publicados">("rascunhos");
+  const [rascunhos, setRascunhos] = useState<any[]>([]);
+  const [publicados, setPublicados] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterCategorias, setFilterCategorias] = useState<string[]>([]);
+  const [draggedTextoId, setDraggedTextoId] = useState<string | null>(null);
+  const [dragOverTextoId, setDragOverTextoId] = useState<string | null>(null);
   
   // Estados do Editor
   const [conteudo, setConteudo] = useState("Em uma pequena cidade cercada por densas florestas, viviam dois amigos inseparáveis: Lucas e Pedro. Os dois eram conhecidos por suas aventuras noturnas, onde exploravam os arredores da cidade à procura de mistérios e lendas urbanas para desvendar. Teste.\n\nCerta noite, enquanto caminhavam por uma trilha pouco iluminada na floresta, Lucas e Pedro começaram a ouvir um som baixo e gutural. Curiosos, seguiram o ruído até que, entre as sombras das árvores, avistaram uma figura enorme e peluda. A luz da lua cheia iluminou a criatura, revelando olhos brilhantes e um corpo imponente. O susto foi imediato: ambos acreditaram estar diante de um lobisomem! Sem pensar duas vezes, os amigos correram de volta para a cidade, o coração disparado e a mente cheia de imagens sombrias. Ao chegarem, contaram a todos sobre o encontro sobrenatural. A notícia se espalhou rapidamente, e em pouco tempo, a cidade estava em alvoroço com a história do \"lobisomem da floresta\". No entanto, a curiosidade dos amigos não os deixava em paz. No dia seguinte, decidiram investigar a área à luz do dia. Armados com lanternas e coragem renovada, voltaram à floresta. Ao chegarem ao local do avistamento, encontraram pegadas enormes no solo. Seguiram as pistas pelas os levaram até uma clareira onde, para sua surpresa, encontraram um cachorro gigantesco, de pelagem escura e olhos penetrantes. O cachorro, embora imponente, era dócil. Aproximando-se devagar, os amigos descobriram que ele usava uma coleira com uma medalha, onde estava escrito o nome de seu dono. Compreendendo o mal-entendido, Lucas e Pedro riceberam que Max era o cachorro perdido de um fazendeiro da região, famoso por possuir uma presença intimidadora. Compreendendo o mal-entendido, Lucas e Pedro voltaram à cidade com Max, explicando a verdadeira história ao fazendeiro e aos moradores. O alívio tomou conta de todos, e o susto da noite anterior se transformou em uma divertida anedota para a comunidade. A partir daquele dia, Max se tornou uma mascote local, e Lucas e Pedro continuaram suas aventuras, agora prontos para desvendar qualquer mistério que a noite pudesse trazer. **\"Moral da História:\"** Às vezes, o que nos assusta no escuro se revela inofensivo à luz do dia. A coragem de enfrentar nossos medos pode transformar monstros em amigos.");
@@ -122,6 +129,11 @@ function EscritaPageContent() {
     }
   }, [showOptionsMenu, showStylesDropdown]);
   
+  // Carregar lista de textos ao montar componente
+  useEffect(() => {
+    loadTextos();
+  }, []);
+  
   // Carregar texto específico da URL
   useEffect(() => {
     const textoId = searchParams.get("id");
@@ -150,6 +162,173 @@ function EscritaPageContent() {
       alert("Erro ao carregar texto");
     }
   };
+  
+  // Função para carregar lista de textos
+  const loadTextos = async () => {
+    try {
+      // Carregar rascunhos
+      const responseRascunhos = await fetch("/api/textos?status=rascunho");
+      const dataRascunhos = await responseRascunhos.json();
+      if (responseRascunhos.ok) {
+        setRascunhos(dataRascunhos.textos || []);
+      }
+
+      // Carregar publicados
+      const responsePublicados = await fetch("/api/textos?status=publicado");
+      const dataPublicados = await responsePublicados.json();
+      if (responsePublicados.ok) {
+        setPublicados(dataPublicados.textos || []);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar textos:", error);
+    }
+  };
+  
+  // Função para selecionar texto da lista
+  const handleSelectTexto = (texto: any) => {
+    router.push(`/escrita?id=${texto.id}`);
+  };
+  
+  // Função para criar novo texto
+  const handleNewTexto = () => {
+    setCurrentTextId(null);
+    setTitulo("");
+    setConteudo("");
+    router.push("/escrita");
+  };
+  
+  // Função para apagar texto
+  const handleDelete = async (id: string) => {
+    if (!confirm("Tem certeza que deseja apagar este texto?")) return;
+    
+    try {
+      const response = await fetch(`/api/textos?id=${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        alert("Texto apagado com sucesso!");
+        
+        // Se é o texto atual, limpar editor
+        if (id === currentTextId) {
+          handleNewTexto();
+        }
+        
+        loadTextos();
+      } else {
+        alert("Erro ao deletar texto");
+      }
+    } catch (error) {
+      console.error("Erro ao deletar texto:", error);
+      alert("Erro ao deletar texto");
+    }
+  };
+  
+  // Função para editar título
+  const handleEditTitle = async (id: string, currentTitle: string) => {
+    const newTitle = prompt("Novo título:", currentTitle);
+    if (!newTitle || newTitle === currentTitle) return;
+
+    try {
+      const response = await fetch(`/api/textos?id=${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, titulo: newTitle }),
+      });
+
+      if (response.ok) {
+        alert("Título atualizado!");
+        
+        // Se é o texto atual, atualizar no editor
+        if (id === currentTextId) {
+          setTitulo(newTitle);
+        }
+        
+        loadTextos();
+      } else {
+        alert("Erro ao atualizar título");
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar título:", error);
+      alert("Erro ao atualizar título");
+    }
+  };
+  
+  // Função para download do texto
+  const handleDownload = (texto: any) => {
+    const blob = new Blob([texto.conteudo], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${texto.titulo || "texto"}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+  
+  // Funções de drag and drop
+  const handleDragStart = (id: string) => {
+    setDraggedTextoId(id);
+  };
+
+  const handleDragOver = (e: React.DragEvent, id: string) => {
+    e.preventDefault();
+    if (draggedTextoId !== id) {
+      setDragOverTextoId(id);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedTextoId(null);
+    setDragOverTextoId(null);
+  };
+  
+  // Helper functions para categorias
+  const getCategoryColor = (categoria: string) => {
+    const colors: Record<string, string> = {
+      "personagem": "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300",
+      "local": "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300",
+      "objeto": "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300",
+      "evento": "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300",
+      "conceito": "bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300",
+    };
+    return colors[categoria] || "bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-300";
+  };
+
+  const getCategoryLabel = (categoria: string) => {
+    const labels: Record<string, string> = {
+      "personagem": "Personagem",
+      "local": "Local",
+      "objeto": "Objeto",
+      "evento": "Evento",
+      "conceito": "Conceito",
+    };
+    return labels[categoria] || categoria;
+  };
+  
+  // Filtrar textos
+  const textos = activeTab === "rascunhos" ? rascunhos : publicados;
+  const filteredTextos = textos.filter(texto => {
+    // Filtro de busca
+    if (searchQuery && !texto.titulo.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false;
+    }
+    
+    // Filtro de categorias (múltipla seleção)
+    if (filterCategorias.length > 0) {
+      // Se "texto-livre" estiver selecionado, incluir textos sem categoria
+      if (filterCategorias.includes("texto-livre") && !texto.categoria) {
+        return true;
+      }
+      // Caso contrário, verificar se a categoria do texto está na lista
+      if (!filterCategorias.includes(texto.categoria || "")) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
   
   // Handlers
   const handleSave = async (autoSave: boolean = false) => {
@@ -202,6 +381,9 @@ function EscritaPageContent() {
           setCurrentTextId(data.texto.id);
           router.push(`/escrita?id=${data.texto.id}`);
         }
+        
+        // Recarregar lista de textos
+        loadTextos();
       } else {
         alert(data.error || "Erro ao salvar texto");
       }
@@ -299,9 +481,9 @@ function EscritaPageContent() {
         
         {/* COLUNA A - Sidebar (Biblioteca de Textos) */}
         {isSidebarOpen && (
-          <aside className="w-[250px] bg-light-raised dark:bg-dark-raised overflow-y-auto border-r border-border-light-default dark:border-border-dark-default flex flex-col flex-shrink-0">
+          <aside className="w-[250px] bg-light-raised dark:bg-dark-raised overflow-y-auto md:relative fixed inset-y-0 left-0 z-40 md:z-auto">
             {/* Header da Sidebar */}
-            <div className="p-4 border-b border-border-light-default dark:border-border-dark-default">
+            <div className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold text-text-light-primary dark:text-dark-primary">Blake Vision</h2>
                 <button
@@ -314,27 +496,49 @@ function EscritaPageContent() {
                   </svg>
                 </button>
               </div>
-              <button className="w-full px-4 py-2 bg-primary-600 dark:bg-primary-500 text-white rounded-full hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors text-sm font-medium">
+              <button
+                onClick={handleNewTexto}
+                className="w-full px-4 py-2 bg-primary-600 dark:bg-primary-500 text-white rounded-lg hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors text-sm font-medium"
+              >
                 + Novo Texto
               </button>
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-border-light-default dark:border-border-dark-default">
-              <button className="flex-1 px-4 py-3 text-sm font-medium text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400 transition-colors">
-                Rascunhos (1)
+            <div className="flex">
+              <button
+                onClick={() => setActiveTab("rascunhos")}
+                className={clsx(
+                  "flex-1 px-4 py-3 text-sm font-medium transition-colors",
+                  activeTab === "rascunhos"
+                    ? "text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400"
+                    : "text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary"
+                )}
+              >
+                Rascunhos ({rascunhos.length})
               </button>
-              <button className="flex-1 px-4 py-3 text-sm font-medium text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary transition-colors">
-                Publicados (0)
+              <button
+                onClick={() => setActiveTab("publicados")}
+                className={clsx(
+                  "flex-1 px-4 py-3 text-sm font-medium transition-colors",
+                  activeTab === "publicados"
+                    ? "text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400"
+                    : "text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary"
+                )}
+              >
+                Publicados ({publicados.length})
               </button>
             </div>
 
             {/* Filtros */}
-            <div className="p-4 space-y-3 border-b border-border-light-default dark:border-border-dark-default">
+            <div className="p-4 space-y-3">
+              {/* Busca */}
               <div className="relative">
                 <input
                   type="text"
                   placeholder="Buscar textos..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full px-3 py-2 pl-9 text-sm rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
                 <svg
@@ -346,20 +550,108 @@ function EscritaPageContent() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
-              <select className="w-full px-3 py-2 text-sm rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary">
-                <option>Todos os tipos</option>
-              </select>
             </div>
 
             {/* Lista de Textos */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-2">
-              <div className="px-3 py-1 text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase">Texto Livre</div>
-              <button className="w-full text-left px-3 py-2 rounded text-sm bg-primary-600 dark:bg-primary-500 text-white hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors">
-                A Noite do Cão Misterioso
-              </button>
-              <button className="w-full text-left px-3 py-2 rounded text-sm text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors">
-                O Segredo da Floresta
-              </button>
+            <div className="p-4">
+              {filteredTextos.length === 0 ? (
+                <div className="p-8 text-center">
+                  <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary">
+                    {searchQuery || filterCategorias.length > 0
+                      ? "Nenhum texto encontrado"
+                      : activeTab === "rascunhos"
+                      ? "Nenhum rascunho ainda"
+                      : "Nenhum texto publicado"}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {filteredTextos.map(texto => (
+                    <div key={texto.id} className="relative">
+                      {/* Linha indicadora de drag and drop */}
+                      {dragOverTextoId === texto.id && draggedTextoId !== texto.id && (
+                        <div className="absolute -top-1 left-0 right-0 h-0.5 bg-primary-600 dark:bg-primary-400 z-10" />
+                      )}
+                      
+                      <div
+                        draggable
+                        onDragStart={() => handleDragStart(texto.id)}
+                        onDragOver={(e) => handleDragOver(e, texto.id)}
+                        onDragEnd={handleDragEnd}
+                        onClick={() => handleSelectTexto(texto)}
+                        className={clsx(
+                          "group relative flex flex-col gap-2 px-3 py-2 rounded-lg cursor-move transition-colors",
+                          currentTextId === texto.id
+                            ? "bg-[#E8E4DB] dark:bg-primary-900/30 text-text-light-primary dark:text-dark-primary"
+                            : "bg-transparent dark:bg-transparent text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay",
+                          draggedTextoId === texto.id && "opacity-50"
+                        )}
+                      >
+                      {/* Badge na primeira linha */}
+                      <div className="flex items-center">
+                        {texto.categoria ? (
+                          <span className={clsx(
+                            "inline-block px-2 py-0.5 text-[10px] font-medium rounded flex-shrink-0",
+                            getCategoryColor(texto.categoria)
+                          )}>
+                            {getCategoryLabel(texto.categoria)}
+                          </span>
+                        ) : (
+                          <span className="inline-block px-2 py-0.5 text-[10px] font-medium rounded flex-shrink-0 bg-text-light-tertiary/20 dark:bg-dark-tertiary/20 text-text-light-secondary dark:text-dark-secondary">
+                            Texto Livre
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* Título na segunda linha */}
+                      <div className="text-xs line-clamp-3">
+                        {texto.titulo || "Sem título"}
+                      </div>
+                      
+                      {/* Botões com gradiente (aparecem no hover) */}
+                      <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 pr-2 pl-8 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-[#E8E4DB] via-[#E8E4DB]/95 to-transparent dark:from-primary-900/30 dark:via-primary-900/30 dark:to-transparent">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditTitle(texto.id, texto.titulo);
+                          }}
+                          className="p-1 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary"
+                          title="Editar Título"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownload(texto);
+                          }}
+                          className="p-1 rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-secondary dark:text-dark-secondary"
+                          title="Download"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(texto.id);
+                          }}
+                          className="p-1 rounded hover:bg-error-light/10 text-error-light"
+                          title="Apagar"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </aside>
         )}
