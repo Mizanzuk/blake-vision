@@ -274,7 +274,12 @@ function EscritaPageContent() {
   
   // Função para enviar texto selecionado para Urizen
   const sendToUrizen = () => {
-    if (!selectedText) return;
+    console.log('sendToUrizen chamado, selectedText:', selectedText);
+    if (!selectedText) {
+      console.log('selectedText vazio, retornando');
+      return;
+    }
+    console.log('Abrindo Urizen com texto:', selectedText);
     setShowUrizen(true);
     setShowUrthona(false); // Fechar Urthona se estiver aberto
     setUrizenMessages([{
@@ -286,7 +291,12 @@ function EscritaPageContent() {
   
   // Função para enviar texto selecionado para Urthona
   const sendToUrthona = () => {
-    if (!selectedText) return;
+    console.log('sendToUrthona chamado, selectedText:', selectedText);
+    if (!selectedText) {
+      console.log('selectedText vazio, retornando');
+      return;
+    }
+    console.log('Abrindo Urthona com texto:', selectedText);
     setShowUrthona(true);
     setShowUrizen(false); // Fechar Urizen se estiver aberto
     setUrthonaMessages([{
@@ -1455,7 +1465,7 @@ function EscritaPageContent() {
       {/* Bubble Menu - Botões de Agentes na Seleção */}
       {showBubbleMenu && selectionPosition && (
         <div
-          className="fixed z-50 flex gap-2 p-2 bg-light-raised dark:bg-dark-raised rounded-lg shadow-xl border border-border-light-default dark:border-border-dark-default animate-in fade-in duration-200"
+          className="fixed z-50 flex gap-2 p-1 bg-light-raised dark:bg-dark-raised rounded-full shadow-xl animate-in fade-in duration-200"
           style={{
             left: `${selectionPosition.x}px`,
             top: `${selectionPosition.y - 60}px`, // 60px acima da seleção
@@ -1463,23 +1473,21 @@ function EscritaPageContent() {
         >
           <button
             onClick={sendToUrizen}
-            className="flex items-center gap-2 px-3 py-2 text-sm bg-[#5B7C8D] hover:bg-[#4a6a7a] text-white rounded-md transition-colors"
+            className="w-10 h-10 rounded-full hover:ring-2 hover:ring-[#5B7C8D] transition-all"
             title="Urizen (Consulta)"
           >
-            <img src="/urizen-avatar.png" alt="Urizen" className="w-6 h-6 rounded-full object-cover" />
-            Urizen
+            <img src="/urizen-avatar.png" alt="Urizen" className="w-full h-full rounded-full object-cover" />
           </button>
           <button
             onClick={sendToUrthona}
-            className="flex items-center gap-2 px-3 py-2 text-sm bg-[#C85A54] hover:bg-[#b14a44] text-white rounded-md transition-colors"
+            className="w-10 h-10 rounded-full hover:ring-2 hover:ring-[#C85A54] transition-all"
             title="Urthona (Criativo)"
           >
-            <img src="/urthona-avatar.png" alt="Urthona" className="w-6 h-6 rounded-full object-cover" />
-            Urthona
+            <img src="/urthona-avatar.png" alt="Urthona" className="w-full h-full rounded-full object-cover" />
           </button>
           <button
             onClick={closeBubbleMenu}
-            className="px-2 py-2 text-sm text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay rounded-md transition-colors"
+            className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors text-text-light-secondary dark:text-dark-secondary"
             title="Fechar"
           >
             ×
