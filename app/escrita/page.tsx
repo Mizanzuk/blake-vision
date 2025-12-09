@@ -245,7 +245,37 @@ function EscritaPageContent() {
               </div>
             </div>
             
-            {/* Célula C1 - Três Pontos */}
+            {/* Célula C1 - Vazia */}
+            <div></div>
+          </div>
+
+          {/* LINHA 2: Grid 3 colunas - Botão Colapsar (A2) + Título (B2) + Menu (C2) */}
+          <div className="h-12 border-b border-border-light-default dark:border-border-dark-default grid grid-cols-[48px_1fr_48px] gap-0 items-center px-4 flex-shrink-0 max-w-[1328px] mx-auto w-full">
+            {/* Célula A2 - Botão Colapsar */}
+            <button
+              onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
+              className="text-xl hover:opacity-70 transition-opacity text-text-light-secondary dark:text-dark-secondary"
+              title={isHeaderExpanded ? "Colapsar" : "Expandir"}
+            >
+              <svg 
+                className={clsx(
+                  "w-5 h-5 transition-transform",
+                  isHeaderExpanded && "rotate-90"
+                )} 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+            
+            {/* Célula B2 - Título */}
+            <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary truncate max-w-[672px]">
+              A Noite do Cão Misterioso (Cópia)
+            </h2>
+            
+            {/* Célula C2 - Três Pontos */}
             <div className="relative" ref={optionsMenuRef}>
               <button 
                 onClick={() => setShowOptionsMenu(!showOptionsMenu)}
@@ -317,36 +347,6 @@ function EscritaPageContent() {
                 </div>
               )}
             </div>
-          </div>
-
-          {/* LINHA 2: Grid 3 colunas - Botão Colapsar (A2) + Título (B2) + Menu (C2) */}
-          <div className="h-12 border-b border-border-light-default dark:border-border-dark-default grid grid-cols-[48px_1fr_48px] gap-0 items-center px-4 flex-shrink-0 max-w-[1328px] mx-auto w-full">
-            {/* Célula A2 - Botão Colapsar */}
-            <button
-              onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
-              className="text-xl hover:opacity-70 transition-opacity text-text-light-secondary dark:text-dark-secondary"
-              title={isHeaderExpanded ? "Colapsar" : "Expandir"}
-            >
-              <svg 
-                className={clsx(
-                  "w-5 h-5 transition-transform",
-                  isHeaderExpanded && "rotate-90"
-                )} 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-            
-            {/* Célula B2 - Título */}
-            <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary truncate max-w-[672px]">
-              A Noite do Cão Misterioso (Cópia)
-            </h2>
-            
-            {/* Célula C2 - Vazia */}
-            <div></div>
           </div>
 
           {/* LINHA 3: Metadados (Condicional) */}
@@ -448,18 +448,20 @@ function EscritaPageContent() {
 
       {/* LINHA 6: Grid 3 colunas - Vazio (A6) + Botões (B6) + Vazio (C6) */}
       <footer className="border-t border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base py-4 flex-shrink-0">
-        <div className="grid grid-cols-[48px_1fr_48px] gap-0 px-4 max-w-[1328px] mx-auto">
+        <div className="grid grid-cols-[48px_1fr_48px] gap-0 px-4 max-w-[1328px] mx-auto w-full">
           {/* Célula A6 - Vazia */}
           <div></div>
           
           {/* Célula B6 - Botões */}
-          <div className="flex justify-end gap-3 max-w-[672px]">
-          <button className="px-4 py-1.5 text-sm bg-light-overlay dark:bg-dark-overlay text-text-light-primary dark:text-dark-primary rounded hover:opacity-80 transition-opacity font-medium">
-            Salvar
-          </button>
-          <button className="px-4 py-1.5 text-sm bg-primary-600 dark:bg-primary-500 text-white rounded hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors font-medium">
-            Publicar
-          </button>
+          <div className="flex justify-end items-center">
+            <div className="flex gap-3 max-w-[672px] w-full justify-end">
+              <button className="px-4 py-1.5 text-sm bg-light-overlay dark:bg-dark-overlay text-text-light-primary dark:text-dark-primary rounded hover:opacity-80 transition-opacity font-medium">
+                Salvar
+              </button>
+              <button className="px-4 py-1.5 text-sm bg-primary-600 dark:bg-primary-500 text-white rounded hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors font-medium">
+                Publicar
+              </button>
+            </div>
           </div>
           
           {/* Célula C6 - Vazia */}
