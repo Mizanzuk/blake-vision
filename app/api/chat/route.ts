@@ -5,11 +5,6 @@ import { createClient } from "@/app/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-  baseURL: 'https://api.openai.com/v1',
-});
-
 type Message = { role: "user" | "assistant" | "system"; content: string };
 
 const PERSONAS = {
@@ -73,7 +68,13 @@ ${rulesText}
 
 export async function POST(req: NextRequest) {
   try {
-    if (!openai) {
+    // Initialize OpenAI client inside the function to avoid build-time errors
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY!,
+      baseURL: 'https://api.openai.com/v1',
+    });
+    
+    if (!openai.apiKey) {
       return NextResponse.json({ error: "OPENAI_API_KEY não configurada." }, { status: 500 });
     }
 

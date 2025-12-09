@@ -6,13 +6,13 @@ import mammoth from "mammoth";
 
 export const dynamic = "force-dynamic";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  baseURL: 'https://api.openai.com/v1',
-});
-
 export async function POST(request: NextRequest) {
   try {
+    // Initialize OpenAI client inside the function to avoid build-time errors
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+      baseURL: 'https://api.openai.com/v1',
+    });
     const body = await request.json();
     
     // Aceitar AMBOS os formatos:
