@@ -208,17 +208,19 @@ function EscritaPageContent() {
         <main className="flex-1 flex flex-col overflow-hidden">
           
           {/* LINHA 1: Grid 3 colunas - Vazio (A1) + Modo Foco (B1) + Avatares (C1) */}
-          <div className="h-16 border-b border-border-light-default dark:border-border-dark-default grid grid-cols-[auto_1fr_auto] gap-4 items-center px-8 flex-shrink-0">
+          <div className="h-16 border-b border-border-light-default dark:border-border-dark-default grid grid-cols-[48px_1fr_auto] gap-0 items-center px-4 flex-shrink-0">
             {/* Célula A1 - Vazia */}
             <div></div>
             
             {/* Célula B1 - Modo Foco */}
-            <button 
-              onClick={() => setModoFoco(true)}
-              className="px-4 py-2 bg-primary-600 dark:bg-primary-500 text-white rounded-full hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors text-sm font-medium"
-            >
-              👁 Modo Foco
-            </button>
+            <div>
+              <button 
+                onClick={() => setModoFoco(true)}
+                className="px-4 py-2 bg-primary-600 dark:bg-primary-500 text-white rounded-full hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors text-sm font-medium inline-flex items-center gap-2"
+              >
+                👁 Modo Foco
+              </button>
+            </div>
             
             {/* Célula C1 - Avatares */}
             <div className="flex gap-3 justify-end">
@@ -246,7 +248,7 @@ function EscritaPageContent() {
           </div>
 
           {/* LINHA 2: Grid 3 colunas - Botão Colapsar (A2) + Título (B2) + Menu (C2) */}
-          <div className="h-12 border-b border-border-light-default dark:border-border-dark-default grid grid-cols-[auto_1fr_auto] gap-4 items-center px-8 flex-shrink-0">
+          <div className="h-12 border-b border-border-light-default dark:border-border-dark-default grid grid-cols-[48px_1fr_auto] gap-0 items-center px-4 flex-shrink-0">
             {/* Célula A2 - Botão Colapsar */}
             <button
               onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
@@ -352,7 +354,9 @@ function EscritaPageContent() {
 
           {/* LINHA 3: Metadados (Condicional) */}
           {isHeaderExpanded && (
-            <div className="border-b border-border-light-default dark:border-border-dark-default px-8 py-4 flex-shrink-0 space-y-4">
+            <div className="border-b border-border-light-default dark:border-border-dark-default grid grid-cols-[48px_1fr_auto] gap-0 px-4 py-4 flex-shrink-0">
+              <div></div>
+              <div className="space-y-4">
               <div>
                 <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
                   TÍTULO
@@ -399,11 +403,13 @@ function EscritaPageContent() {
                   </select>
                 </div>
               </div>
+              </div>
+              <div></div>
             </div>
           )}
 
           {/* LINHA 4: Grid 3 colunas - Vazio (A4) + Toolbar (B4) + Vazio (C4) */}
-          <div className="h-12 border-b border-border-light-default dark:border-border-dark-default grid grid-cols-[auto_1fr_auto] gap-4 items-center px-8 flex-shrink-0">
+          <div className="h-12 border-b border-border-light-default dark:border-border-dark-default grid grid-cols-[48px_1fr_auto] gap-0 items-center px-4 flex-shrink-0">
             {/* Célula A4 - Vazia */}
             <div></div>
             
@@ -419,7 +425,7 @@ function EscritaPageContent() {
           </div>
 
           {/* LINHA 5: Grid 3 colunas - Vazio (A5) + Editor (B5) + Vazio (C5) */}
-          <div className="flex-1 overflow-y-auto grid grid-cols-[auto_1fr_auto] gap-4 px-8 py-6">
+          <div className="flex-1 overflow-y-auto grid grid-cols-[48px_1fr_auto] gap-0 px-4 py-6">
             {/* Célula A5 - Vazia */}
             <div></div>
             
@@ -430,7 +436,7 @@ function EscritaPageContent() {
               onChange={(value) => setConteudo(value)}
               placeholder="Escreva seu texto aqui..."
               className="w-full min-h-[400px]"
-              showToolbar={true}
+              showToolbar={false}
               editorRef={editorRef}
               fontFamily={fontFamily}
               onFontChange={(font) => setFontFamily(font)}
@@ -445,7 +451,7 @@ function EscritaPageContent() {
 
       {/* LINHA 6: Grid 3 colunas - Vazio (A6) + Botões (B6) + Vazio (C6) */}
       <footer className="border-t border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base py-4 flex-shrink-0">
-        <div className="grid grid-cols-[auto_1fr_auto] gap-4 px-8 max-w-[1328px] mx-auto">
+        <div className="grid grid-cols-[48px_1fr_auto] gap-0 px-4 max-w-[1328px] mx-auto">
           {/* Célula A6 - Vazia */}
           <div></div>
           
