@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import clsx from 'clsx';
+import { Header } from '@/app/components/layout/Header';
 
 function EscritaPageContent() {
   // Estados do Header
@@ -91,26 +92,7 @@ function EscritaPageContent() {
 
   return (
     <div className="min-h-screen bg-light-base dark:bg-dark-base flex flex-col">
-      {/* HEADER - Menu de Topo */}
-      <header className="border-b border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <h1 className="text-xl font-bold text-text-light-primary dark:text-dark-primary">Blake Vision</h1>
-            <nav className="hidden md:flex gap-6">
-              <a href="/" className="text-sm text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary">Home</a>
-              <a href="/projetos" className="text-sm text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary">Projetos</a>
-              <a href="/catalogo" className="text-sm text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary">Catálogo</a>
-              <a href="/escrita" className="text-sm font-semibold text-primary">Escrita</a>
-              <a href="/timeline" className="text-sm text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary">Timeline</a>
-              <a href="/upload" className="text-sm text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary">Upload</a>
-            </nav>
-          </div>
-          <div className="flex items-center gap-4">
-            <a href="#faq" className="text-sm text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary">FAQ</a>
-            <button className="w-8 h-8 rounded-full bg-light-overlay dark:bg-dark-overlay flex items-center justify-center">👤</button>
-          </div>
-        </div>
-      </header>
+      <Header showNav={true} currentPage="escrita" />
 
       {/* MAIN CONTENT */}
       <div className="flex flex-1 overflow-hidden">
