@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import clsx from 'clsx';
 import { Header } from '@/app/components/layout/Header';
 import TiptapEditor from '@/components/TiptapEditor';
@@ -8,6 +9,8 @@ import { FontFamily } from '@/components/FontSelector';
 import { createClient } from '@/app/lib/supabase/client';
 
 function EscritaPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
   
   // Estados do Header
@@ -91,17 +94,16 @@ function EscritaPageContent() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [urthonaMessages, urizenMessages]);
   
-  // Auto-save a cada 30 segundos
+  // Auto-save a cada 30 segundos (apenas se já tiver ID do texto)
   useEffect(() => {
-    if (!conteudo) return;
+    if (!conteudo || !currentTextId) return;
     
     const autoSaveInterval = setInterval(() => {
-      console.log('[Auto-save] Salvando automaticamente...');
-      handleSave();
+      handleSave(true); // true = auto-save silencioso
     }, 30000); // 30 segundos
     
     return () => clearInterval(autoSaveInterval);
-  }, [conteudo]);
+  }, [conteudo, currentTextId]);
   
   // Fechar menu de opções ao clicar fora
   useEffect(() => {
@@ -119,6 +121,35 @@ function EscritaPageContent() {
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [showOptionsMenu, showStylesDropdown]);
+  
+  // Carregar texto específico da URL
+  useEffect(() => {
+    const textoId = searchParams.get("id");
+    if (textoId && !currentTextId) {
+      loadTexto(textoId);
+    }
+  }, [searchParams]);
+  
+  // Função para carregar texto do banco
+  const loadTexto = async (id: string) => {
+    try {
+      const response = await fetch(`/api/textos?id=${id}`);
+      const data = await response.json();
+      
+      if (response.ok && data.texto) {
+        const texto = data.texto;
+        setCurrentTextId(texto.id);
+        setTitulo(texto.titulo || "");
+        setConteudo(texto.conteudo || "");
+        setLastSaved(new Date(texto.updated_at));
+      } else {
+        alert("Erro ao carregar texto");
+      }
+    } catch (error) {
+      console.error("Erro ao carregar texto:", error);
+      alert("Erro ao carregar texto");
+    }
+  };
   
   // Handlers
   const handleSave = async (autoSave: boolean = false) => {
@@ -166,9 +197,10 @@ function EscritaPageContent() {
         }
         setLastSaved(new Date());
         
-        // Se é novo texto, atualizar ID
+        // Se é novo texto, atualizar ID e URL
         if (!currentTextId && data.texto) {
           setCurrentTextId(data.texto.id);
+          router.push(`/escrita?id=${data.texto.id}`);
         }
       } else {
         alert(data.error || "Erro ao salvar texto");
