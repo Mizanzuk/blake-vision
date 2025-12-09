@@ -208,7 +208,7 @@ function EscritaPageContent() {
         <main className="flex-1 flex flex-col overflow-hidden">
           
           {/* LINHA 1: Grid 3 colunas - Vazio (A1) + Modo Foco (B1) + Avatares (C1) */}
-          <div className="h-16 border-b border-border-light-default dark:border-border-dark-default grid grid-cols-[48px_1fr_48px] gap-0 items-center px-4 flex-shrink-0">
+          <div className="h-16 border-b border-border-light-default dark:border-border-dark-default grid grid-cols-[48px_1fr_48px] gap-0 items-center px-4 flex-shrink-0 max-w-[1328px] mx-auto w-full">
             {/* Célula A1 - Vazia */}
             <div></div>
             
@@ -320,7 +320,7 @@ function EscritaPageContent() {
           </div>
 
           {/* LINHA 2: Grid 3 colunas - Botão Colapsar (A2) + Título (B2) + Menu (C2) */}
-          <div className="h-12 border-b border-border-light-default dark:border-border-dark-default grid grid-cols-[48px_1fr_48px] gap-0 items-center px-4 flex-shrink-0">
+          <div className="h-12 border-b border-border-light-default dark:border-border-dark-default grid grid-cols-[48px_1fr_48px] gap-0 items-center px-4 flex-shrink-0 max-w-[1328px] mx-auto w-full">
             {/* Célula A2 - Botão Colapsar */}
             <button
               onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
@@ -351,7 +351,7 @@ function EscritaPageContent() {
 
           {/* LINHA 3: Metadados (Condicional) */}
           {isHeaderExpanded && (
-            <div className="border-b border-border-light-default dark:border-border-dark-default grid grid-cols-[48px_1fr_48px] gap-0 px-4 py-4 flex-shrink-0">
+            <div className="border-b border-border-light-default dark:border-border-dark-default grid grid-cols-[48px_1fr_48px] gap-0 px-4 py-4 flex-shrink-0 max-w-[1328px] mx-auto w-full">
               <div></div>
               <div className="space-y-4">
               <div>
@@ -406,7 +406,7 @@ function EscritaPageContent() {
           )}
 
           {/* LINHA 4: Grid 3 colunas - Vazio (A4) + Toolbar (B4) + Vazio (C4) */}
-          <div className="h-12 border-b border-border-light-default dark:border-border-dark-default grid grid-cols-[48px_1fr_48px] gap-0 items-center px-4 flex-shrink-0">
+          <div className="h-12 border-b border-border-light-default dark:border-border-dark-default grid grid-cols-[48px_1fr_48px] gap-0 items-center px-4 flex-shrink-0 max-w-[1328px] mx-auto w-full">
             {/* Célula A4 - Vazia */}
             <div></div>
             
@@ -422,7 +422,7 @@ function EscritaPageContent() {
           </div>
 
           {/* LINHA 5: Grid 3 colunas - Vazio (A5) + Editor (B5) + Vazio (C5) */}
-          <div className="flex-1 overflow-y-auto grid grid-cols-[48px_1fr_48px] gap-0 px-4 py-6">
+          <div className="flex-1 overflow-y-auto grid grid-cols-[48px_1fr_48px] gap-0 px-4 py-6 max-w-[1328px] mx-auto w-full">
             {/* Célula A5 - Vazia */}
             <div></div>
             
