@@ -212,38 +212,110 @@ function EscritaPageContent() {
             {/* Célula A1 - Vazia */}
             <div></div>
             
-            {/* Célula B1 - Modo Foco */}
-            <div>
+            {/* Célula B1 - Modo Foco (esquerda) + Avatares (direita) */}
+            <div className="flex justify-between items-center max-w-[672px]">
               <button 
                 onClick={() => setModoFoco(true)}
                 className="px-4 py-2 bg-primary-600 dark:bg-primary-500 text-white rounded-full hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors text-sm font-medium inline-flex items-center gap-2"
               >
                 👁 Modo Foco
               </button>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowUrizen(!showUrizen);
+                    if (!showUrizen) setShowUrthona(false);
+                  }}
+                  className="w-10 h-10 rounded-full hover:ring-2 hover:ring-[#5B7C8D] transition-all"
+                  title="Urizen (Consulta)"
+                >
+                  <img src="/urizen-avatar.png" alt="Urizen" className="w-full h-full rounded-full object-cover" />
+                </button>
+                <button
+                  onClick={() => {
+                    setShowUrthona(!showUrthona);
+                    if (!showUrthona) setShowUrizen(false);
+                  }}
+                  className="w-10 h-10 rounded-full hover:ring-2 hover:ring-[#C85A54] transition-all"
+                  title="Urthona (Criativo)"
+                >
+                  <img src="/urthona-avatar.png" alt="Urthona" className="w-full h-full rounded-full object-cover" />
+                </button>
+              </div>
             </div>
             
-            {/* Célula C1 - Avatares */}
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => {
-                  setShowUrizen(!showUrizen);
-                  if (!showUrizen) setShowUrthona(false);
-                }}
-                className="w-10 h-10 rounded-full hover:ring-2 hover:ring-[#5B7C8D] transition-all"
-                title="Urizen (Consulta)"
+            {/* Célula C1 - Três Pontos */}
+            <div className="relative" ref={optionsMenuRef}>
+              <button 
+                onClick={() => setShowOptionsMenu(!showOptionsMenu)}
+                className="text-xl hover:opacity-70 transition-opacity text-text-light-secondary dark:text-dark-secondary"
               >
-                <img src="/urizen-avatar.png" alt="Urizen" className="w-full h-full rounded-full object-cover" />
+                ⋮
               </button>
-              <button
-                onClick={() => {
-                  setShowUrthona(!showUrthona);
-                  if (!showUrthona) setShowUrizen(false);
-                }}
-                className="w-10 h-10 rounded-full hover:ring-2 hover:ring-[#C85A54] transition-all"
-                title="Urthona (Criativo)"
-              >
-                <img src="/urthona-avatar.png" alt="Urthona" className="w-full h-full rounded-full object-cover" />
-              </button>
+              
+              {/* Dropdown Menu */}
+              {showOptionsMenu && (
+                <div className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default z-50">
+                  <div className="py-2">
+                    <button
+                      onClick={() => {
+                        console.log('Duplicar texto');
+                        setShowOptionsMenu(false);
+                      }}
+                      className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
+                    >
+                      <svg className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-sm text-text-light-primary dark:text-dark-primary">Duplicar</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        console.log('Ver estatísticas');
+                        setShowOptionsMenu(false);
+                      }}
+                      className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
+                    >
+                      <svg className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                      <span className="text-sm text-text-light-primary dark:text-dark-primary">Estatísticas</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        console.log('Exportar texto');
+                        setShowOptionsMenu(false);
+                      }}
+                      className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
+                    >
+                      <svg className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      <span className="text-sm text-text-light-primary dark:text-dark-primary">Exportar</span>
+                    </button>
+                    
+                    <div className="border-t border-border-light-default dark:border-border-dark-default my-2"></div>
+                    
+                    <button
+                      onClick={() => {
+                        if (confirm('Tem certeza que deseja excluir este texto?')) {
+                          console.log('Excluir texto');
+                        }
+                        setShowOptionsMenu(false);
+                      }}
+                      className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                    >
+                      <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      <span className="text-sm text-red-600 dark:text-red-400">Excluir texto</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -269,87 +341,12 @@ function EscritaPageContent() {
             </button>
             
             {/* Célula B2 - Título */}
-            <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary truncate">
+            <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary truncate max-w-[672px]">
               A Noite do Cão Misterioso (Cópia)
             </h2>
             
-            {/* Célula C2 - Três Pontinhos */}
-            <div className="relative" ref={optionsMenuRef}>
-              <button 
-                onClick={() => setShowOptionsMenu(!showOptionsMenu)}
-                className="text-xl hover:opacity-70 transition-opacity text-text-light-secondary dark:text-dark-secondary"
-              >
-                ⋮
-              </button>
-              
-              {/* Dropdown Menu */}
-              {showOptionsMenu && (
-                <div className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default z-50">
-                  <div className="py-2">
-                    {/* Duplicar */}
-                    <button
-                      onClick={() => {
-                        alert('Duplicar texto');
-                        setShowOptionsMenu(false);
-                      }}
-                      className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
-                    >
-                      <svg className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                      <span className="text-sm text-text-light-primary dark:text-dark-primary">Duplicar</span>
-                    </button>
-
-                    {/* Estatísticas */}
-                    <button
-                      onClick={() => {
-                        alert('Estatísticas do texto');
-                        setShowOptionsMenu(false);
-                      }}
-                      className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
-                    >
-                      <svg className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                      <span className="text-sm text-text-light-primary dark:text-dark-primary">Estatísticas</span>
-                    </button>
-
-                    {/* Exportar */}
-                    <button
-                      onClick={() => {
-                        alert('Exportar texto');
-                        setShowOptionsMenu(false);
-                      }}
-                      className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
-                    >
-                      <svg className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      <span className="text-sm text-text-light-primary dark:text-dark-primary">Exportar</span>
-                    </button>
-
-                    {/* Separador */}
-                    <div className="my-2 border-t border-border-light-default dark:border-border-dark-default"></div>
-
-                    {/* Excluir */}
-                    <button
-                      onClick={() => {
-                        if (confirm('Tem certeza que deseja excluir este texto?')) {
-                          alert('Texto excluído');
-                        }
-                        setShowOptionsMenu(false);
-                      }}
-                      className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                    >
-                      <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      <span className="text-sm text-red-600 dark:text-red-400">Excluir texto</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* Célula C2 - Vazia */}
+            <div></div>
           </div>
 
           {/* LINHA 3: Metadados (Condicional) */}
@@ -430,7 +427,7 @@ function EscritaPageContent() {
             <div></div>
             
             {/* Célula B5 - Editor */}
-            <div>
+            <div className="max-w-[672px]">
             <TiptapEditor
               value={conteudo}
               onChange={(value) => setConteudo(value)}
@@ -456,7 +453,7 @@ function EscritaPageContent() {
           <div></div>
           
           {/* Célula B6 - Botões */}
-          <div className="flex justify-end gap-3">
+          <div className="flex justify-end gap-3 max-w-[672px]">
           <button className="px-6 py-2 bg-light-overlay dark:bg-dark-overlay text-text-light-primary dark:text-dark-primary rounded hover:opacity-80 transition-opacity font-medium">
             Salvar
           </button>
