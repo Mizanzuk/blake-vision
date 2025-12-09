@@ -8,7 +8,8 @@ import TiptapEditor from '@/components/TiptapEditor';
 import { FontFamily } from '@/components/FontSelector';
 import { createClient } from '@/app/lib/supabase/client';
 import { toast, Toaster } from 'sonner';
-import { ConfirmDialog } from '@/app/components/ui/Modal';
+import { Modal } from '@/app/components/ui/Modal';
+import { Button } from '@/app/components/ui/Button';
 
 function EscritaPageContent() {
   console.log('✅ COMPONENTE ESCRITA MONTADO - Build:', Date.now());
@@ -50,6 +51,10 @@ function EscritaPageContent() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [textoToDelete, setTextoToDelete] = useState<{id: string, titulo: string} | null>(null);
   const [isDeletingTexto, setIsDeletingTexto] = useState(false);
+  
+  // Estado do Modal de Sucesso
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   
   // Estados dos Agentes Flutuantes
   const [showUrthona, setShowUrthona] = useState(false);
@@ -229,9 +234,10 @@ function EscritaPageContent() {
         }
         
         loadTextos();
-        toast.success('Texto apagado com sucesso!');
         setShowDeleteConfirm(false);
         setTextoToDelete(null);
+        setSuccessMessage('Texto apagado com sucesso!');
+        setShowSuccessModal(true);
       } else {
         toast.error('Erro ao deletar texto');
       }
@@ -1277,20 +1283,111 @@ function EscritaPageContent() {
       )}
       
       {/* Modal de Confirmação de Delete */}
-      <ConfirmDialog
-        isOpen={showDeleteConfirm}
-        onClose={() => {
-          setShowDeleteConfirm(false);
-          setTextoToDelete(null);
-        }}
-        onConfirm={confirmDelete}
-        title="Apagar texto"
-        description={`Tem certeza que deseja apagar "${textoToDelete?.titulo}"?`}
-        confirmText="Apagar"
-        cancelText="Cancelar"
-        confirmVariant="danger"
-        isLoading={isDeletingTexto}
-      />
+      {showDeleteConfirm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in"
+          onClick={() => {
+            if (!isDeletingTexto) {
+              setShowDeleteConfirm(false);
+              setTextoToDelete(null);
+            }
+          }}
+        >
+          <div
+            className="relative w-full max-w-md bg-light-raised dark:bg-dark-raised rounded-2xl shadow-soft-xl animate-slide-up overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header sem borda */}
+            <div className="flex items-start justify-between p-6">
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-text-light-primary dark:text-dark-primary">
+                  Apagar texto
+                </h3>
+                <p className="mt-1 text-sm text-text-light-tertiary dark:text-dark-tertiary">
+                  Tem certeza que deseja apagar "{textoToDelete?.titulo}"?
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  if (!isDeletingTexto) {
+                    setShowDeleteConfirm(false);
+                    setTextoToDelete(null);
+                  }
+                }}
+                className="ml-4 p-1 rounded-lg text-text-light-tertiary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-tertiary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
+                disabled={isDeletingTexto}
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            {/* Footer sem borda */}
+            <div className="flex items-center justify-end gap-3 p-6">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setTextoToDelete(null);
+                }} 
+                disabled={isDeletingTexto}
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={confirmDelete}
+                loading={isDeletingTexto}
+              >
+                Apagar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Modal de Sucesso */}
+      {showSuccessModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in"
+          onClick={() => setShowSuccessModal(false)}
+        >
+          <div
+            className="relative w-full max-w-md bg-light-raised dark:bg-dark-raised rounded-2xl shadow-soft-xl animate-slide-up overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header sem borda */}
+            <div className="flex items-start justify-between p-6">
+              <div className="flex-1">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-success-light/20 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-success-light" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <p className="text-base font-medium text-text-light-primary dark:text-dark-primary">
+                    {successMessage}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Footer sem borda */}
+            <div className="flex items-center justify-end gap-3 p-6">
+              <Button 
+                variant="primary" 
+                size="sm"
+                onClick={() => setShowSuccessModal(false)}
+              >
+                OK
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
     </>
   );
