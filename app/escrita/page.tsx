@@ -1236,7 +1236,49 @@ function EscritaPageContent() {
                                   </a>
                                 );
                               }
-                              return <a href={href} {...props}>{children}</a>;
+                              
+                              // FALLBACK: Links vazios com texto (ex: [Joaquim]())
+                              // Tentar usar o texto como slug
+                              if (!href || href === '' || href === '#') {
+                                const childText = typeof children === 'string' ? children : 
+                                  (Array.isArray(children) && typeof children[0] === 'string' ? children[0] : '');
+                                
+                                if (childText) {
+                                  // Converter texto para slug (minúsculas, espaços para hífens)
+                                  const fichaSlug = childText.toLowerCase()
+                                    .normalize('NFD')
+                                    .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+                                    .replace(/\s+/g, '-') // Espaços para hífens
+                                    .replace(/[^a-z0-9-]/g, ''); // Remove caracteres especiais
+                                  
+                                  return (
+                                    <a
+                                      href="#"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        handleFichaClick(fichaSlug);
+                                      }}
+                                      className="text-primary-600 dark:text-primary-400 hover:underline cursor-pointer"
+                                      {...props}
+                                    >
+                                      {children}
+                                    </a>
+                                  );
+                                }
+                              }
+                              
+                              // Links normais abrem em nova aba
+                              return (
+                                <a
+                                  href={href}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary-600 dark:text-primary-400 hover:underline"
+                                  {...props}
+                                >
+                                  {children}
+                                </a>
+                              );
                             }
                           }}
                         >
