@@ -9,6 +9,7 @@ import { FontFamily } from '@/components/FontSelector';
 import { createClient } from '@/app/lib/supabase/client';
 
 function EscritaPageContent() {
+  console.log('✅ COMPONENTE ESCRITA MONTADO - Build:', Date.now());
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
@@ -332,6 +333,9 @@ function EscritaPageContent() {
   
   // Handlers
   const handleSave = async (autoSave: boolean = false) => {
+    console.log('🚀🚀🚀 HANDLE SAVE EXECUTADO! 🚀🚀🚀');
+    console.log('📊 Estado atual:', { titulo, conteudo: conteudo.substring(0, 50), currentTextId, autoSave });
+    
     if (!titulo.trim()) {
       if (!autoSave) alert("Por favor, adicione um título");
       return;
