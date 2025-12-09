@@ -964,7 +964,7 @@ function EscritaPageContent() {
           {isHeaderExpanded && (
             <div className="border-b border-border-light-default dark:border-border-dark-default grid grid-cols-[48px_1fr_48px] gap-0 px-4 py-4 flex-shrink-0 max-w-[1328px] mx-auto w-full">
               <div></div>
-              <div className="space-y-4">
+              <div className="space-y-4 max-w-[672px]">
               <div>
                 <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
                   TÍTULO
