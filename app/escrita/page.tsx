@@ -653,7 +653,7 @@ function EscritaPageContent() {
           <div className="flex justify-start">
             <div className="max-w-[672px] w-full flex gap-3 justify-end">
               <button 
-                onClick={handleSave}
+                onClick={() => handleSave(false)}
                 disabled={isSaving}
                 className="px-4 py-1.5 text-sm bg-light-overlay dark:bg-dark-overlay text-text-light-primary dark:text-dark-primary rounded hover:opacity-80 transition-opacity font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
