@@ -122,6 +122,8 @@ function EscritaPageContent() {
   // Handlers
   const handleSave = async () => {
     console.log('🔵 handleSave CHAMADO!');
+    alert('🔵 TESTE: Botão Salvar foi clicado!');
+    
     try {
       console.log('🔵 Iniciando save...');
       setIsSaving(true);
