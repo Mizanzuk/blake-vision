@@ -69,7 +69,17 @@ function EscritaPageContent() {
   const [modoFoco, setModoFoco] = useState(false);
   const [temaFoco, setTemaFoco] = useState<'normal' | 'light' | 'dark'>('normal');
   const [menuFocoExpanded, setMenuFocoExpanded] = useState(false);
-  const [menuFocoPosition, setMenuFocoPosition] = useState({ x: 20, y: 20 });
+  const [menuFocoPosition, setMenuFocoPosition] = useState(() => {
+    // Tentar carregar posição salva do localStorage
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('menuFocoPosition');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    }
+    // Posição inicial: mais centralizada (160px da esquerda, próximo à margem do texto)
+    return { x: 160, y: 120 };
+  });
   const [isDraggingMenu, setIsDraggingMenu] = useState(false);
   const menuFocoRef = useRef<HTMLDivElement>(null);
   const optionsMenuRef = useRef<HTMLDivElement>(null);
@@ -329,6 +339,10 @@ function EscritaPageContent() {
     
     const handleMouseUp = () => {
       setIsDraggingMenu(false);
+      // Salvar posição no localStorage quando soltar o menu
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('menuFocoPosition', JSON.stringify(menuFocoPosition));
+      }
     };
     
     if (isDraggingMenu) {
