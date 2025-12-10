@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
       universe_id,
       nome,
       is_root: is_root || false,
-      tem_episodios: has_episodes || false, // Usar tem_episodios (nome da coluna no Supabase)
+      has_episodes: has_episodes || false,
     };
     
     // Adicionar campos opcionais apenas se tiverem valor
@@ -145,7 +145,7 @@ export async function PUT(req: NextRequest) {
         nome,
         descricao: descricao || null,
         is_root: is_root || false,
-        tem_episodios: has_episodes || false, // Usar tem_episodios (nome da coluna no Supabase)
+        has_episodes: has_episodes || false,
         ordem: ordem || null,
         updated_at: new Date().toISOString(),
       })
