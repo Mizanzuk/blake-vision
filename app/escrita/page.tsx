@@ -942,7 +942,9 @@ function EscritaPageContent() {
                     setShowUrizen(!showUrizen);
                     if (!showUrizen) setShowUrthona(false);
                   }}
-                  className="w-10 h-10 rounded-full hover:ring-2 hover:ring-[#5B7C8D] transition-all"
+                  className={`w-10 h-10 rounded-full transition-all ${
+                    showUrizen ? 'ring-2 ring-[#5B7C8D] opacity-100' : 'opacity-50 hover:opacity-100 hover:ring-2 hover:ring-[#5B7C8D]'
+                  }`}
                   title="Urizen (Consulta)"
                 >
                   <img src="/urizen-avatar.png" alt="Urizen" className="w-full h-full rounded-full object-cover" />
@@ -952,7 +954,9 @@ function EscritaPageContent() {
                     setShowUrthona(!showUrthona);
                     if (!showUrthona) setShowUrizen(false);
                   }}
-                  className="w-10 h-10 rounded-full hover:ring-2 hover:ring-[#C85A54] transition-all"
+                  className={`w-10 h-10 rounded-full transition-all ${
+                    showUrthona ? 'ring-2 ring-[#C85A54] opacity-100' : 'opacity-50 hover:opacity-100 hover:ring-2 hover:ring-[#C85A54]'
+                  }`}
                   title="Urthona (Criativo)"
                 >
                   <img src="/urthona-avatar.png" alt="Urthona" className="w-full h-full rounded-full object-cover" />
@@ -1562,7 +1566,9 @@ function EscritaPageContent() {
                     setShowUrthona(!showUrthona);
                     if (!showUrthona) setShowUrizen(false);
                   }}
-                  className="w-10 h-10 rounded-full hover:ring-2 hover:ring-[#C85A54] transition-all"
+                  className={`w-10 h-10 rounded-full transition-all ${
+                    showUrthona ? 'ring-2 ring-[#C85A54] opacity-100' : 'opacity-50 hover:opacity-100 hover:ring-2 hover:ring-[#C85A54]'
+                  }`}
                   title="Urthona (Criativo)"
                 >
                   <img src="/urthona-avatar.png" alt="Urthona" className="w-full h-full rounded-full" />
@@ -1572,7 +1578,9 @@ function EscritaPageContent() {
                     setShowUrizen(!showUrizen);
                     if (!showUrizen) setShowUrthona(false);
                   }}
-                  className="w-10 h-10 rounded-full hover:ring-2 hover:ring-[#5B7C8D] transition-all"
+                  className={`w-10 h-10 rounded-full transition-all ${
+                    showUrizen ? 'ring-2 ring-[#5B7C8D] opacity-100' : 'opacity-50 hover:opacity-100 hover:ring-2 hover:ring-[#5B7C8D]'
+                  }`}
                   title="Urizen (Consulta)"
                 >
                   <img src="/urizen-avatar.png" alt="Urizen" className="w-full h-full rounded-full" />
