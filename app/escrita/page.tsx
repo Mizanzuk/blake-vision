@@ -1204,7 +1204,7 @@ function EscritaPageContent() {
     <>
       <Toaster />
       <div className="min-h-screen bg-light-base dark:bg-dark-base flex flex-col">
-      <Header showNav={true} currentPage="escrita" />
+      <Header showNav={true} currentPage="escrita" title={titulo || "Sem título"} />
 
       {/* MAIN CONTENT */}
       <div className="flex flex-1 overflow-hidden">
@@ -1469,7 +1469,7 @@ function EscritaPageContent() {
           </div>
 
           {/* LINHA 2: Grid 3 colunas - Botão Colapsar (A2) + Título (B2) + Menu (C2) */}
-          <div className="h-12 grid grid-cols-[48px_1fr_48px] gap-0 items-center px-4 flex-shrink-0 max-w-[768px] mx-auto w-full">
+          <div className="h-12 hidden md:grid grid-cols-[48px_1fr_48px] gap-0 items-center px-4 flex-shrink-0 max-w-[768px] mx-auto w-full">
             {/* Célula A2 - Botão Colapsar (só desktop) */}
             <button
               onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}

@@ -83,7 +83,7 @@ export function Header({ title, showNav = true, currentPage }: HeaderProps) {
         <div className="flex items-center justify-between h-16">
           {/* Left: Title or Navigation */}
           <div className="flex items-center gap-6">
-            {title && (
+            {title && currentPage !== "escrita" && (
               <h1 className="text-xl font-bold text-text-light-primary dark:text-dark-primary">
                 {title}
               </h1>
@@ -124,6 +124,15 @@ export function Header({ title, showNav = true, currentPage }: HeaderProps) {
               </button>
             )}
           </div>
+
+          {/* Center: Title (Mobile only, Escrita page) */}
+          {title && currentPage === "escrita" && (
+            <div className="flex-1 flex justify-center md:hidden">
+              <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary truncate max-w-[60%]">
+                {title}
+              </h2>
+            </div>
+          )}
 
           {/* Right: FAQ + Profile Dropdown */}
           <div className="flex items-center gap-3">
