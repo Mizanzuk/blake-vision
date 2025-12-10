@@ -52,7 +52,10 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { universe_id, nome, descricao, is_root, has_episodes, ordem } = body;
+    console.log('[API /api/worlds POST] Body recebido:', JSON.stringify(body));
+    
+    // Remover id explicitamente se vier no body
+    const { id, universe_id, nome, descricao, is_root, has_episodes, ordem } = body;
 
     if (!universe_id || !nome) {
       return NextResponse.json(
