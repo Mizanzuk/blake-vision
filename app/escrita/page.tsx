@@ -1087,10 +1087,12 @@ function EscritaPageContent() {
     }
     
     try {
+      // Remover id se existir (criação não deve ter id)
+      const { id, ...dataToSend } = worldData;
       const response = await fetch('/api/worlds', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...worldData, universe_id: universeId }),
+        body: JSON.stringify({ ...dataToSend, universe_id: universeId }),
       });
       
       const data = await response.json();
