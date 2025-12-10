@@ -1389,17 +1389,6 @@ function EscritaPageContent() {
         {/* Botões laterais (quando sidebar colapsada) */}
         {!isSidebarOpen && (
           <div className="w-12 bg-light-raised dark:bg-dark-raised flex flex-col items-center pt-4 gap-2 flex-shrink-0">
-            {/* Botão sanduíche (menu mobile) - só aparece no mobile */}
-            <button
-              onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className="w-10 h-10 flex items-center justify-center hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors rounded-lg md:hidden"
-              title="Menu"
-            >
-              <svg className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            
             {/* Botão lápis (abrir sidebar) */}
             <button
               onClick={() => setIsSidebarOpen(true)}
@@ -1408,6 +1397,19 @@ function EscritaPageContent() {
             >
               <svg className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+            </button>
+            
+            {/* Botão três pontos horizontais (menu de ferramentas) - só aparece no mobile */}
+            <button
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              className="w-10 h-10 flex items-center justify-center hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors rounded-lg md:hidden"
+              title="Ferramentas"
+            >
+              <svg className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary" fill="currentColor" viewBox="0 0 24 24">
+                <circle cx="6" cy="12" r="1.5" />
+                <circle cx="12" cy="12" r="1.5" />
+                <circle cx="18" cy="12" r="1.5" />
               </svg>
             </button>
           </div>
@@ -1496,7 +1498,7 @@ function EscritaPageContent() {
                     setShowMetadataModal(true);
                   }
                 }}
-                className="text-lg font-semibold text-text-light-primary dark:text-dark-primary md:truncate md:cursor-default cursor-pointer"
+                className="text-lg font-semibold text-text-light-primary dark:text-dark-primary md:truncate md:cursor-default cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis"
               >
                 {titulo || "Sem título"}
               </h2>
