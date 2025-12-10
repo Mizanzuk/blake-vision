@@ -24,6 +24,7 @@
     "@tiptap/react": "^3.13.0",
     "@tiptap/starter-kit": "^3.13.0",
     "@tiptap/suggestion": "^3.13.0",
+    "@types/uuid": "^11.0.0",
     "clsx": "^2.1.0",
     "mammoth": "^1.8.0",
     "next": "14.2.3",
@@ -39,6 +40,7 @@
     "sonner": "^1.4.0",
     "textarea-caret": "^3.1.0",
     "tippy.js": "^6.3.7",
+    "uuid": "^13.0.0",
     "zustand": "^4.5.0"
   },
   "devDependencies": {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/app/lib/supabase/server";
+import { v4 as uuidv4 } from 'uuid';
 
 export const dynamic = "force-dynamic";
 
@@ -59,6 +60,7 @@ export async function POST(req: NextRequest) {
     
     // Criar objeto limpo apenas com os campos necessários, removendo campos null
     const dataToInsert: any = {
+      id: uuidv4(), // Gerar UUID manualmente para evitar erro de null
       user_id: user.id,
       universe_id,
       nome,
