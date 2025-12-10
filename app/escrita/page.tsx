@@ -1469,7 +1469,7 @@ function EscritaPageContent() {
           </div>
 
           {/* LINHA 2: Grid 3 colunas - Botão Colapsar (A2) + Título (B2) + Menu (C2) */}
-          <div className="h-12 grid grid-cols-[48px_1fr_48px] gap-0 items-center px-4 flex-shrink-0 max-w-[768px] mx-auto w-full">
+          <div className="h-12 grid grid-cols-[48px_1fr] md:grid-cols-[48px_1fr_48px] gap-0 items-center px-4 flex-shrink-0 max-w-[768px] mx-auto w-full">
             {/* Célula A2 - Botão Colapsar (só desktop) */}
             <button
               onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
@@ -1503,7 +1503,7 @@ function EscritaPageContent() {
                 {titulo || "Sem título"}
               </h2>
               
-              <div className="relative" ref={optionsMenuRef}>
+              <div className="relative hidden md:block" ref={optionsMenuRef}>
               <button 
                 onClick={() => setShowOptionsMenu(!showOptionsMenu)}
                 className="text-xl hover:opacity-70 transition-opacity text-text-light-secondary dark:text-dark-secondary"
@@ -3024,6 +3024,8 @@ function EscritaPageContent() {
         handleSave={handleSave}
         handlePublish={handlePublish}
         isSaving={isSaving}
+        handleDuplicate={handleDuplicate}
+        handleDeleteCurrentTexto={handleDeleteCurrentTexto}
       />
     </div>
     </>

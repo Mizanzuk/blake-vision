@@ -218,6 +218,8 @@ interface MobileMenuProps {
   handleSave: () => void;
   handlePublish: () => void;
   isSaving: boolean;
+  handleDuplicate: () => void;
+  handleDeleteCurrentTexto: () => void;
 }
 
 export function MobileMenu({
@@ -235,6 +237,8 @@ export function MobileMenu({
   handleSave,
   handlePublish,
   isSaving,
+  handleDuplicate,
+  handleDeleteCurrentTexto,
 }: MobileMenuProps) {
   if (!show) return null;
 
@@ -311,21 +315,54 @@ export function MobileMenu({
         <div className="space-y-2 pt-3 border-t border-border-light-subtle dark:border-border-dark-subtle">
           <button
             onClick={() => {
+              handleDuplicate();
+              onClose();
+            }}
+            className="w-full px-4 py-2 text-left flex items-center gap-3 text-sm rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-primary dark:text-dark-primary transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            Duplicar
+          </button>
+          <button
+            onClick={() => {
               setShowStatsModal(true);
               onClose();
             }}
-            className="w-full px-4 py-2 text-left text-sm rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-primary dark:text-dark-primary transition-colors"
+            className="w-full px-4 py-2 text-left flex items-center gap-3 text-sm rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-primary dark:text-dark-primary transition-colors"
           >
-            📊 Estatísticas
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            Estatísticas
           </button>
           <button
             onClick={() => {
               setShowExportModal(true);
               onClose();
             }}
-            className="w-full px-4 py-2 text-left text-sm rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-primary dark:text-dark-primary transition-colors"
+            className="w-full px-4 py-2 text-left flex items-center gap-3 text-sm rounded hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-primary dark:text-dark-primary transition-colors"
           >
-            📥 Exportar
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Exportar
+          </button>
+          
+          <div className="border-t border-border-light-default dark:border-border-dark-default my-2"></div>
+          
+          <button
+            onClick={() => {
+              handleDeleteCurrentTexto();
+              onClose();
+            }}
+            className="w-full px-4 py-2 text-left flex items-center gap-3 text-sm rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            Excluir texto
           </button>
         </div>
         

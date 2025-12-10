@@ -108,8 +108,8 @@ export function Header({ title, showNav = true, currentPage }: HeaderProps) {
               </nav>
             )}
 
-            {/* Mobile Menu Button (Hamburger) - Hidden on Escrita page */}
-            {showNav && currentPage !== "escrita" && (
+            {/* Mobile Menu Button (Hamburger) */}
+            {showNav && (
               <button
                 onClick={() => setShowMobileMenu(!showMobileMenu)}
                 className="md:hidden p-2 rounded-lg text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
