@@ -227,7 +227,7 @@ function EscritaPageContent() {
       // Limpar estado quando navega para /escrita sem id
       handleNewTexto();
     }
-  }, [searchParams]);
+  }, [searchParams, currentTextId]);
   
   // Função para carregar texto do banco
   const loadTexto = async (id: string) => {
