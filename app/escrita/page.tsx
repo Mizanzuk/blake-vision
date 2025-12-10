@@ -64,7 +64,11 @@ function EscritaPageContent() {
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [showStylesDropdown, setShowStylesDropdown] = useState(false);
   const [modoFoco, setModoFoco] = useState(false);
-  const [temaFoco, setTemaFoco] = useState<'light' | 'dark'>('light');
+  const [temaFoco, setTemaFoco] = useState<'normal' | 'light' | 'dark'>('normal');
+  const [menuFocoExpanded, setMenuFocoExpanded] = useState(true);
+  const [menuFocoPosition, setMenuFocoPosition] = useState({ x: 20, y: 20 });
+  const [isDraggingMenu, setIsDraggingMenu] = useState(false);
+  const menuFocoRef = useRef<HTMLDivElement>(null);
   const optionsMenuRef = useRef<HTMLDivElement>(null);
   const stylesDropdownRef = useRef<HTMLDivElement>(null);
   
@@ -110,6 +114,40 @@ function EscritaPageContent() {
   const chatRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Função para obter cores baseadas no tema do modo foco
+  const getFocoThemeColors = () => {
+    switch (temaFoco) {
+      case 'light':
+        return {
+          bg: 'bg-white',
+          text: 'text-gray-900',
+          border: 'border-gray-200',
+          hover: 'hover:bg-gray-50',
+          secondary: 'bg-gray-100',
+          textSecondary: 'text-gray-600'
+        };
+      case 'dark':
+        return {
+          bg: 'bg-gray-900',
+          text: 'text-gray-50',
+          border: 'border-gray-700',
+          hover: 'hover:bg-gray-800',
+          secondary: 'bg-gray-800',
+          textSecondary: 'text-gray-300'
+        };
+      case 'normal':
+      default:
+        return {
+          bg: 'bg-light-base dark:bg-dark-base',
+          text: 'text-text-light-primary dark:text-dark-primary',
+          border: 'border-border-light-default dark:border-border-dark-default',
+          hover: 'hover:bg-light-overlay dark:hover:bg-dark-overlay',
+          secondary: 'bg-light-overlay dark:bg-dark-overlay',
+          textSecondary: 'text-text-light-secondary dark:text-dark-secondary'
+        };
+    }
+  };
   
   // Handle mouse move para drag and drop
   useEffect(() => {
@@ -216,20 +254,65 @@ function EscritaPageContent() {
     }
   }, [showOptionsMenu, showStylesDropdown]);
   
-  // Fechar chat com tecla ESC
+  // ESC hierárquico: chat > menu > modo foco
   useEffect(() => {
     const handleEscKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && (showUrthona || showUrizen)) {
-        setShowUrthona(false);
-        setShowUrizen(false);
+      if (event.key === 'Escape') {
+        // Prioridade 1: Fechar chat se estiver aberto
+        if (showUrthona || showUrizen) {
+          setShowUrthona(false);
+          setShowUrizen(false);
+          return;
+        }
+        
+        // Prioridade 2: Recolher menu se estiver expandido (apenas no modo foco)
+        if (modoFoco && menuFocoExpanded) {
+          setMenuFocoExpanded(false);
+          return;
+        }
+        
+        // Prioridade 3: Sair do modo foco
+        if (modoFoco) {
+          setModoFoco(false);
+          // Sair de tela cheia se estiver
+          if (document.fullscreenElement) {
+            document.exitFullscreen();
+          }
+          return;
+        }
       }
     };
     
-    if (showUrthona || showUrizen) {
+    if (showUrthona || showUrizen || modoFoco) {
       document.addEventListener('keydown', handleEscKey);
       return () => document.removeEventListener('keydown', handleEscKey);
     }
-  }, [showUrthona, showUrizen]);
+  }, [showUrthona, showUrizen, modoFoco, menuFocoExpanded]);
+  
+  // Drag do menu flutuante no modo foco
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDraggingMenu) {
+        setMenuFocoPosition({
+          x: e.clientX - 100, // Offset para centralizar no cursor
+          y: e.clientY - 20
+        });
+      }
+    };
+    
+    const handleMouseUp = () => {
+      setIsDraggingMenu(false);
+    };
+    
+    if (isDraggingMenu) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDraggingMenu]);
   
   // Carregar lista de textos e universos ao montar componente
   useEffect(() => {
@@ -619,6 +702,19 @@ function EscritaPageContent() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+  
+  // Função para entrar no modo foco com tela cheia
+  const enterModoFoco = async () => {
+    setModoFoco(true);
+    setMenuFocoExpanded(true);
+    
+    // Entrar em tela cheia
+    try {
+      await document.documentElement.requestFullscreen();
+    } catch (err) {
+      console.log('Erro ao entrar em tela cheia:', err);
+    }
   };
   
   // Funções de drag and drop
@@ -1052,8 +1148,8 @@ function EscritaPageContent() {
             {/* Célula B1 - Modo Foco (esquerda) + Avatares (direita) */}
             <div className="flex justify-between items-center max-w-[672px]">
               <button 
-                onClick={() => setModoFoco(true)}
-                className="px-4 py-2 bg-primary-600 dark:bg-primary-500 text-white rounded-full hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors text-sm font-medium inline-flex items-center gap-2"
+                onClick={enterModoFoco}
+                className="px-4 py-2 bg-primary-600 dark:bg-primary-500 text-white rounded hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors text-sm font-medium inline-flex items-center gap-2"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
@@ -1441,7 +1537,11 @@ function EscritaPageContent() {
       {(showUrthona || showUrizen) && (
         <div 
           ref={chatRef}
-          className="fixed bg-light-base dark:bg-dark-base overflow-hidden flex flex-col shadow-2xl rounded-lg border border-border-light-default dark:border-border-dark-default"
+          className={clsx(
+            "fixed overflow-hidden flex flex-col shadow-2xl rounded-lg border",
+            modoFoco ? getFocoThemeColors().bg : "bg-light-base dark:bg-dark-base",
+            modoFoco ? getFocoThemeColors().border : "border-border-light-default dark:border-border-dark-default"
+          )}
           style={{
             left: chatPosition.x || 'auto',
             top: chatPosition.y || 80,
@@ -1465,10 +1565,16 @@ function EscritaPageContent() {
               }}
             >
               <div>
-                <h3 className="font-semibold text-text-light-primary dark:text-dark-primary">
+                <h3 className={clsx(
+                  "font-semibold",
+                  modoFoco ? getFocoThemeColors().text : "text-text-light-primary dark:text-dark-primary"
+                )}>
                   {showUrthona ? "Urthona" : "Urizen"}
                 </h3>
-                <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary">
+                <p className={clsx(
+                  "text-xs",
+                  modoFoco ? getFocoThemeColors().textSecondary : "text-text-light-tertiary dark:text-dark-tertiary"
+                )}>
                   {showUrthona ? "Criativo" : "Consulta"}
                 </p>
               </div>
@@ -1501,6 +1607,8 @@ function EscritaPageContent() {
                       "max-w-[85%] px-4 py-2 rounded-lg",
                       msg.role === "user"
                         ? "bg-primary-600 dark:bg-primary-500 text-white"
+                        : modoFoco
+                        ? clsx(getFocoThemeColors().secondary, getFocoThemeColors().text)
                         : "bg-light-overlay dark:bg-dark-overlay text-text-light-primary dark:text-dark-primary"
                     )}
                   >
@@ -1599,7 +1707,10 @@ function EscritaPageContent() {
                 }}
                 placeholder="Mensagem..."
                 rows={1}
-                className="flex-1 px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder:text-text-light-tertiary dark:placeholder:text-dark-tertiary outline-none focus:outline-none focus:border-primary-500 dark:focus:border-primary-400 resize-none max-h-24 overflow-y-auto text-sm"
+                className={clsx(
+                  "flex-1 px-4 py-2 rounded-lg border outline-none focus:outline-none focus:border-primary-500 dark:focus:border-primary-400 resize-none max-h-24 overflow-y-auto text-sm",
+                  modoFoco ? clsx(getFocoThemeColors().secondary, getFocoThemeColors().text, getFocoThemeColors().border) : "border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder:text-text-light-tertiary dark:placeholder:text-dark-tertiary"
+                )}
                 disabled={isAssistantLoading}
                 style={{
                   fontSize: '14px',
@@ -1657,116 +1768,233 @@ function EscritaPageContent() {
       )}
       
       {/* Modo Foco - Fullscreen */}
+      {/* Modo Foco - Fullscreen Redesenhado */}
       {modoFoco && (
         <div className={clsx(
           "fixed inset-0 z-50 flex flex-col",
-          temaFoco === 'light' ? 'bg-white' : 'bg-gray-900'
+          getFocoThemeColors().bg
         )}>
-          {/* Header do Modo Foco */}
-          <div className={clsx(
-            "flex justify-between items-center px-8 py-4 border-b",
-            temaFoco === 'light' ? 'border-gray-200 bg-white' : 'border-gray-700 bg-gray-900'
-          )}>
-            <h1 className={clsx(
-              "text-2xl font-bold",
-              temaFoco === 'light' ? 'text-gray-900' : 'text-white'
-            )}>
-              {titulo || "Sem título"}
-            </h1>
-            
-            <div className="flex items-center gap-4">
-              {/* Controles de Tema */}
-              <div className="flex items-center gap-2">
+          
+          {/* Menu Flutuante */}
+          <div
+            ref={menuFocoRef}
+            style={{
+              position: 'fixed',
+              left: `${menuFocoPosition.x}px`,
+              top: `${menuFocoPosition.y}px`,
+              zIndex: 100
+            }}
+            className={clsx(
+              "transition-all duration-300",
+              menuFocoExpanded ? "w-64" : "w-12"
+            )}
+          >
+            {menuFocoExpanded ? (
+              // Menu Expandido
+              <div className={clsx(
+                "rounded-lg shadow-lg border p-4 space-y-3",
+                getFocoThemeColors().bg,
+                getFocoThemeColors().border
+              )}>
+                {/* Header com título e botão colapsar */}
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className={clsx(
+                    "text-sm font-semibold truncate flex-1",
+                    getFocoThemeColors().text
+                  )}>
+                    {titulo || "Sem título"}
+                  </h2>
+                  <button
+                    onClick={() => setMenuFocoExpanded(false)}
+                    className={clsx(
+                      "p-1 rounded transition-colors",
+                      getFocoThemeColors().hover
+                    )}
+                    title="Recolher menu (ESC)"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                
+                {/* Botões de Formatação */}
+                <div className="flex gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+                  <button
+                    onClick={() => editorRef.current?.chain().focus().toggleBold().run()}
+                    className={clsx(
+                      "px-3 py-1.5 text-sm font-bold rounded transition-colors",
+                      getFocoThemeColors().secondary,
+                      getFocoThemeColors().text,
+                      getFocoThemeColors().hover
+                    )}
+                    title="Negrito"
+                  >
+                    B
+                  </button>
+                  <button
+                    onClick={() => editorRef.current?.chain().focus().toggleItalic().run()}
+                    className={clsx(
+                      "px-3 py-1.5 text-sm italic rounded transition-colors",
+                      getFocoThemeColors().secondary,
+                      getFocoThemeColors().text,
+                      getFocoThemeColors().hover
+                    )}
+                    title="Itálico"
+                  >
+                    I
+                  </button>
+                  <button
+                    onClick={() => setShowStylesDropdown(!showStylesDropdown)}
+                    className={clsx(
+                      "px-3 py-1.5 text-sm rounded transition-colors",
+                      getFocoThemeColors().secondary,
+                      getFocoThemeColors().text,
+                      getFocoThemeColors().hover
+                    )}
+                    title="Estilos"
+                  >
+                    Aa
+                  </button>
+                </div>
+                
+                {/* Modos de Cor */}
+                <div className="space-y-2">
+                  <button
+                    onClick={() => setTemaFoco('normal')}
+                    className={clsx(
+                      "w-full px-3 py-2 text-sm rounded transition-colors text-left",
+                      temaFoco === 'normal'
+                        ? "bg-primary-600 text-white"
+                        : clsx(getFocoThemeColors().secondary, getFocoThemeColors().text, getFocoThemeColors().hover)
+                    )}
+                  >
+                    Modo Normal
+                  </button>
+                  <button
+                    onClick={() => setTemaFoco('light')}
+                    className={clsx(
+                      "w-full px-3 py-2 text-sm rounded transition-colors text-left",
+                      temaFoco === 'light'
+                        ? "bg-primary-600 text-white"
+                        : clsx(getFocoThemeColors().secondary, getFocoThemeColors().text, getFocoThemeColors().hover)
+                    )}
+                  >
+                    Modo Branco
+                  </button>
+                  <button
+                    onClick={() => setTemaFoco('dark')}
+                    className={clsx(
+                      "w-full px-3 py-2 text-sm rounded transition-colors text-left",
+                      temaFoco === 'dark'
+                        ? "bg-primary-600 text-white"
+                        : clsx(getFocoThemeColors().secondary, getFocoThemeColors().text, getFocoThemeColors().hover)
+                    )}
+                  >
+                    Modo Preto
+                  </button>
+                </div>
+                
+                {/* Avatares dos Assistentes */}
+                <div className="flex gap-3 justify-center pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <button
+                    onClick={() => {
+                      setShowUrizen(!showUrizen);
+                      if (!showUrizen) setShowUrthona(false);
+                    }}
+                    className={`w-10 h-10 rounded-full transition-all ${
+                      showUrizen ? 'ring-2 ring-[#5B7C8D] opacity-100' : 'opacity-50 hover:opacity-100 hover:ring-2 hover:ring-[#5B7C8D]'
+                    }`}
+                    title="Urizen (Consulta)"
+                  >
+                    <img src="/urizen-avatar.png" alt="Urizen" className="w-full h-full rounded-full" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowUrthona(!showUrthona);
+                      if (!showUrthona) setShowUrizen(false);
+                    }}
+                    className={`w-10 h-10 rounded-full transition-all ${
+                      showUrthona ? 'ring-2 ring-[#C85A54] opacity-100' : 'opacity-50 hover:opacity-100 hover:ring-2 hover:ring-[#C85A54]'
+                    }`}
+                    title="Urthona (Criativo)"
+                  >
+                    <img src="/urthona-avatar.png" alt="Urthona" className="w-full h-full rounded-full" />
+                  </button>
+                </div>
+                
+                {/* Botão Salvar */}
                 <button
-                  onClick={() => setTemaFoco('light')}
+                  onClick={() => handleSave(false)}
+                  disabled={isSaving}
                   className={clsx(
-                    "px-3 py-1.5 rounded text-xs font-medium transition-colors",
-                    temaFoco === 'light'
-                      ? "bg-primary-500 text-white"
-                      : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                    "w-full px-4 py-2 text-sm rounded transition-colors font-medium",
+                    "bg-primary-600 hover:bg-primary-700 text-white",
+                    "disabled:opacity-50 disabled:cursor-not-allowed"
                   )}
-                  title="Modo Branco"
                 >
-                  ☀️ Branco
+                  {isSaving ? 'Salvando...' : 'Salvar'}
                 </button>
-                <button
-                  onClick={() => setTemaFoco('dark')}
-                  className={clsx(
-                    "px-3 py-1.5 rounded text-xs font-medium transition-colors",
-                    temaFoco === 'dark'
-                      ? "bg-primary-500 text-white"
-                      : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
-                  )}
-                  title="Modo Preto"
-                >
-                  🌙 Preto
-                </button>
-              </div>
-              
-              {/* Avatares dos Assistentes */}
-              <div className="flex gap-3">
+                
+                {/* Botão Sair */}
                 <button
                   onClick={() => {
-                    setShowUrthona(!showUrthona);
-                    if (!showUrthona) setShowUrizen(false);
+                    setModoFoco(false);
+                    if (document.fullscreenElement) {
+                      document.exitFullscreen();
+                    }
                   }}
-                  className={`w-10 h-10 rounded-full transition-all ${
-                    showUrthona ? 'ring-2 ring-[#C85A54] opacity-100' : 'opacity-50 hover:opacity-100 hover:ring-2 hover:ring-[#C85A54]'
-                  }`}
-                  title="Urthona (Criativo)"
+                  className="w-full px-4 py-2 text-sm rounded transition-colors font-medium bg-red-500 hover:bg-red-600 text-white"
                 >
-                  <img src="/urthona-avatar.png" alt="Urthona" className="w-full h-full rounded-full" />
-                </button>
-                <button
-                  onClick={() => {
-                    setShowUrizen(!showUrizen);
-                    if (!showUrizen) setShowUrthona(false);
-                  }}
-                  className={`w-10 h-10 rounded-full transition-all ${
-                    showUrizen ? 'ring-2 ring-[#5B7C8D] opacity-100' : 'opacity-50 hover:opacity-100 hover:ring-2 hover:ring-[#5B7C8D]'
-                  }`}
-                  title="Urizen (Consulta)"
-                >
-                  <img src="/urizen-avatar.png" alt="Urizen" className="w-full h-full rounded-full" />
+                  Sair
                 </button>
               </div>
-              
-              {/* Botão Sair */}
+            ) : (
+              // Botão Sanduíche (Menu Recolhido)
               <button
-                onClick={() => setModoFoco(false)}
-                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors"
-                title="Sair do Modo Foco (ESC)"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  setIsDraggingMenu(true);
+                }}
+                onClick={(e) => {
+                  if (!isDraggingMenu) {
+                    setMenuFocoExpanded(true);
+                  }
+                }}
+                className={clsx(
+                  "w-12 h-12 rounded-full shadow-lg flex items-center justify-center cursor-move",
+                  "bg-primary-600 hover:bg-primary-700 text-white transition-colors"
+                )}
+                title="Expandir menu"
               >
-                Sair
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
               </button>
+            )}
+          </div>
+          
+          {/* Editor Centralizado com Margem Superior */}
+          <div className="flex-1 overflow-y-auto">
+            <div className={`max-w-4xl mx-auto px-16 pt-24 pb-12 font-${fontFamily}`}>
+              <TiptapEditor
+                value={conteudo}
+                onChange={(value) => setConteudo(value)}
+                placeholder="Escreva seu texto aqui..."
+                className={clsx(
+                  "w-full min-h-[calc(100vh-12rem)] bg-transparent border-none",
+                  getFocoThemeColors().text
+                )}
+                showToolbar={false}
+                editorRef={editorRef}
+                fontFamily={fontFamily}
+                onFontChange={(font) => setFontFamily(font)}
+                onTextSelect={handleTextSelect}
+              />
             </div>
           </div>
           
-          {/* Editor em Fullscreen */}
-          <div className="flex-1 flex overflow-hidden">
-            {/* Área do Editor */}
-            <div className={clsx(
-              "flex-1 overflow-y-auto transition-all duration-300",
-              (showUrthona || showUrizen) ? "mr-96" : ""
-            )}>
-              <div className={`max-w-4xl mx-auto px-16 py-12 font-${fontFamily}`}>
-                <TiptapEditor
-                  value={conteudo}
-                  onChange={(value) => setConteudo(value)}
-                  placeholder="Escreva seu texto aqui..."
-                  className={clsx(
-                    "w-full min-h-[calc(100vh-12rem)] bg-transparent border-none",
-                    temaFoco === 'light' ? 'text-gray-900' : 'text-white'
-                  )}
-                  showToolbar={false}
-                  editorRef={editorRef}
-                  fontFamily={fontFamily}
-                  onFontChange={(font) => setFontFamily(font)}
-                  onTextSelect={handleTextSelect}
-                />
-              </div>
-            </div>
-          </div>
+
         </div>
       )}
       
