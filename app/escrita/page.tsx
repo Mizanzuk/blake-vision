@@ -94,10 +94,17 @@ function EscritaPageContent() {
   const [showCreateEpisodeModal, setShowCreateEpisodeModal] = useState(false);
   const [showCreateCategoryModal, setShowCreateCategoryModal] = useState(false);
   const [newEpisodeNumber, setNewEpisodeNumber] = useState('');
-  const [universeForm, setUniverseForm] = useState({ nome: '', descricao: '' });
+  const [universeForm, setUniverseForm] = useState({ id: '', nome: '', descricao: '' });
   const [worldToEdit, setWorldToEdit] = useState<any>(null);
   const [categoryToEdit, setCategoryToEdit] = useState<any>(null);
   const [isSubmittingUniverse, setIsSubmittingUniverse] = useState(false);
+  
+  // Estados para Editar/Deletar Universo
+  const [showEditUniverseModal, setShowEditUniverseModal] = useState(false);
+  const [showDeleteUniverseModal, setShowDeleteUniverseModal] = useState(false);
+  const [universeToDelete, setUniverseToDelete] = useState<{id: string, nome: string} | null>(null);
+  const [captchaAnswer, setCaptchaAnswer] = useState('');
+  const [captchaQuestion, setCaptchaQuestion] = useState({ num1: 0, num2: 0, answer: 0 });
   
   // Estados da Seleção de Texto (Bubble Menu)
   const [selectedText, setSelectedText] = useState('');
@@ -957,8 +964,9 @@ function EscritaPageContent() {
   };
   
   // Funções de criação
-  const handleCreateUniverse = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreateUniverse = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
     if (!universeForm.nome.trim()) {
       toast.error('Nome do universo é obrigatório');
       return;
@@ -978,7 +986,7 @@ function EscritaPageContent() {
         setUniverses([...universes, data.universe]);
         setUniverseId(data.universe.id);
         setShowCreateUniverseModal(false);
-        setUniverseForm({ nome: '', descricao: '' });
+        setUniverseForm({ id: '', nome: '', descricao: '' });
         // Recarregar mundos
         const worldsRes = await fetch('/api/worlds');
         const worldsData = await worldsRes.json();
@@ -995,7 +1003,89 @@ function EscritaPageContent() {
     }
   };
   
+  const handleEditUniverse = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
+    if (!universeForm.nome.trim()) {
+      toast.error('Nome do universo é obrigatório');
+      return;
+    }
+    
+    setIsSubmittingUniverse(true);
+    try {
+      const response = await fetch(`/api/universes/${universeForm.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome: universeForm.nome, descricao: universeForm.descricao }),
+      });
+      
+      const data = await response.json();
+      if (response.ok) {
+        toast.success('Universo atualizado!');
+        setUniverses(universes.map(u => u.id === universeForm.id ? data.universe : u));
+        setShowEditUniverseModal(false);
+        setUniverseForm({ id: '', nome: '', descricao: '' });
+      } else {
+        toast.error(data.error || 'Erro ao atualizar universo');
+      }
+    } catch (error) {
+      toast.error('Erro ao atualizar universo');
+    } finally {
+      setIsSubmittingUniverse(false);
+    }
+  };
+  
+  function generateCaptcha() {
+    const num1 = Math.floor(Math.random() * 10) + 1;
+    const num2 = Math.floor(Math.random() * 10) + 1;
+    return { num1, num2, answer: num1 + num2 };
+  }
+  
+  function promptDeleteUniverse(universeId: string, universeName: string) {
+    const captcha = generateCaptcha();
+    setCaptchaQuestion(captcha);
+    setCaptchaAnswer('');
+    setUniverseToDelete({ id: universeId, nome: universeName });
+    setShowDeleteUniverseModal(true);
+  }
+  
+  async function confirmDeleteUniverse() {
+    if (!universeToDelete) return;
+    
+    if (parseInt(captchaAnswer) !== captchaQuestion.answer) {
+      toast.error('Resposta incorreta. Tente novamente.');
+      return;
+    }
+    
+    try {
+      const response = await fetch(`/api/universes/${universeToDelete.id}`, {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        toast.success('Universo deletado!');
+        setUniverses(universes.filter(u => u.id !== universeToDelete.id));
+        if (universeId === universeToDelete.id) {
+          setUniverseId('');
+        }
+        setShowDeleteUniverseModal(false);
+        setUniverseToDelete(null);
+        setCaptchaAnswer('');
+      } else {
+        const data = await response.json();
+        toast.error(data.error || 'Erro ao deletar universo');
+      }
+    } catch (error) {
+      toast.error('Erro ao deletar universo');
+    }
+  }
+  
   const handleSaveWorld = async (worldData: any) => {
+    if (!universeId) {
+      toast.error('Selecione um universo primeiro');
+      return;
+    }
+    
     try {
       const response = await fetch('/api/worlds', {
         method: 'POST',
@@ -1489,6 +1579,11 @@ function EscritaPageContent() {
                   onSelect={(id) => {
                     setUniverseId(id);
                   }}
+                  onEdit={(universe) => {
+                    setUniverseForm({ id: universe.id, nome: universe.nome, descricao: universe.descricao || '' });
+                    setShowEditUniverseModal(true);
+                  }}
+                  onDelete={promptDeleteUniverse}
                   onCreate={() => setShowCreateUniverseModal(true)}
                   disabled={isMetadataLocked}
                 />
@@ -2625,7 +2720,7 @@ function EscritaPageContent() {
         isOpen={showCreateUniverseModal}
         onClose={() => {
           setShowCreateUniverseModal(false);
-          setUniverseForm({ nome: '', descricao: '' });
+          setUniverseForm({ id: '', nome: '', descricao: '' });
         }}
         title="Criar Novo Universo"
         footer={
@@ -2635,7 +2730,7 @@ function EscritaPageContent() {
               variant="ghost"
               onClick={() => {
                 setShowCreateUniverseModal(false);
-                setUniverseForm({ nome: '', descricao: '' });
+                setUniverseForm({ id: '', nome: '', descricao: '' });
               }}
             >
               Cancelar
@@ -2667,6 +2762,109 @@ function EscritaPageContent() {
             rows={4}
           />
         </form>
+      </Modal>
+      
+      {/* Modal de Editar Universo */}
+      <Modal
+        isOpen={showEditUniverseModal}
+        onClose={() => {
+          setShowEditUniverseModal(false);
+          setUniverseForm({ id: '', nome: '', descricao: '' });
+        }}
+        title="Editar Universo"
+        footer={
+          <>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setShowEditUniverseModal(false);
+                setUniverseForm({ id: '', nome: '', descricao: '' });
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={handleEditUniverse}
+              loading={isSubmittingUniverse}
+            >
+              Salvar
+            </Button>
+          </>
+        }
+      >
+        <form onSubmit={handleEditUniverse} className="space-y-4">
+          <Input
+            label="Nome"
+            value={universeForm.nome}
+            onChange={(e) => setUniverseForm({ ...universeForm, nome: e.target.value })}
+            placeholder="Ex: Meu Universo Épico"
+            required
+          />
+          <Textarea
+            label="Descrição"
+            value={universeForm.descricao}
+            onChange={(e) => setUniverseForm({ ...universeForm, descricao: e.target.value })}
+            placeholder="Descreva seu universo..."
+            rows={4}
+          />
+        </form>
+      </Modal>
+      
+      {/* Modal de Deletar Universo */}
+      <Modal
+        isOpen={showDeleteUniverseModal}
+        onClose={() => {
+          setShowDeleteUniverseModal(false);
+          setUniverseToDelete(null);
+          setCaptchaAnswer('');
+        }}
+        title="Deletar Universo"
+        footer={
+          <>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setShowDeleteUniverseModal(false);
+                setUniverseToDelete(null);
+                setCaptchaAnswer('');
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              variant="danger"
+              onClick={confirmDeleteUniverse}
+            >
+              Deletar
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-text-light-secondary dark:text-dark-secondary">
+            Tem certeza que deseja deletar o universo <strong>{universeToDelete?.nome}</strong>?
+          </p>
+          <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary">
+            Esta ação não pode ser desfeita.
+          </p>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-text-light-secondary dark:text-dark-secondary">
+              Para confirmar, resolva: {captchaQuestion.num1} + {captchaQuestion.num2} = ?
+            </label>
+            <Input
+              type="number"
+              value={captchaAnswer}
+              onChange={(e) => setCaptchaAnswer(e.target.value)}
+              placeholder="Digite a resposta"
+              required
+            />
+          </div>
+        </div>
       </Modal>
       
       {/* Modal de Criar Mundo */}
