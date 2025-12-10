@@ -57,16 +57,18 @@ export async function POST(req: NextRequest) {
     // Remover id explicitamente se vier no body
     const { id, universe_id, nome, descricao, is_root, has_episodes, ordem } = body;
     
-    // Criar objeto limpo apenas com os campos necessários
-    const dataToInsert = {
+    // Criar objeto limpo apenas com os campos necessários, removendo campos null
+    const dataToInsert: any = {
       user_id: user.id,
       universe_id,
       nome,
-      descricao: descricao || null,
       is_root: is_root || false,
       has_episodes: has_episodes || false,
-      ordem: ordem || null,
     };
+    
+    // Adicionar campos opcionais apenas se tiverem valor
+    if (descricao) dataToInsert.descricao = descricao;
+    if (ordem !== undefined && ordem !== null) dataToInsert.ordem = ordem;
     
     console.log('[API /api/worlds POST] Dados para insert:', JSON.stringify(dataToInsert));
 
