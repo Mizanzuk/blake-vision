@@ -11,6 +11,9 @@ import { toast, Toaster } from 'sonner';
 import { Modal } from '@/app/components/ui/Modal';
 import { Button } from '@/app/components/ui/Button';
 import { Badge } from '@/app/components/ui/Badge';
+import { Input, Textarea } from '@/app/components/ui';
+import WorldModal from '@/app/components/catalog/WorldModal';
+import CategoryModal from '@/app/components/catalog/CategoryModal';
 import { UniverseDropdown } from '@/app/components/ui';
 import { WorldsDropdownSingle } from '@/app/components/ui/WorldsDropdownSingle';
 import { EpisodesDropdownSingle } from '@/app/components/ui/EpisodesDropdownSingle';
@@ -84,6 +87,17 @@ function EscritaPageContent() {
   // Estados dos Modais de Estatísticas e Exportar
   const [showStatsModal, setShowStatsModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  
+  // Estados dos Modais de Criação
+  const [showCreateUniverseModal, setShowCreateUniverseModal] = useState(false);
+  const [showCreateWorldModal, setShowCreateWorldModal] = useState(false);
+  const [showCreateEpisodeModal, setShowCreateEpisodeModal] = useState(false);
+  const [showCreateCategoryModal, setShowCreateCategoryModal] = useState(false);
+  const [newEpisodeNumber, setNewEpisodeNumber] = useState('');
+  const [universeForm, setUniverseForm] = useState({ nome: '', descricao: '' });
+  const [worldToEdit, setWorldToEdit] = useState<any>(null);
+  const [categoryToEdit, setCategoryToEdit] = useState<any>(null);
+  const [isSubmittingUniverse, setIsSubmittingUniverse] = useState(false);
   
   // Estados da Seleção de Texto (Bubble Menu)
   const [selectedText, setSelectedText] = useState('');
@@ -941,6 +955,139 @@ function EscritaPageContent() {
       setIsAssistantLoading(false);
     }
   };
+  
+  // Funções de criação
+  const handleCreateUniverse = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!universeForm.nome.trim()) {
+      toast.error('Nome do universo é obrigatório');
+      return;
+    }
+    
+    setIsSubmittingUniverse(true);
+    try {
+      const response = await fetch('/api/universes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(universeForm),
+      });
+      
+      const data = await response.json();
+      if (response.ok) {
+        toast.success('Universo criado!');
+        setUniverses([...universes, data.universe]);
+        setUniverseId(data.universe.id);
+        setShowCreateUniverseModal(false);
+        setUniverseForm({ nome: '', descricao: '' });
+        // Recarregar mundos
+        const worldsRes = await fetch('/api/worlds');
+        const worldsData = await worldsRes.json();
+        if (worldsRes.ok && worldsData.worlds) {
+          setWorlds(worldsData.worlds);
+        }
+      } else {
+        toast.error(data.error || 'Erro ao criar universo');
+      }
+    } catch (error) {
+      toast.error('Erro ao criar universo');
+    } finally {
+      setIsSubmittingUniverse(false);
+    }
+  };
+  
+  const handleSaveWorld = async (worldData: any) => {
+    try {
+      const response = await fetch('/api/worlds', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...worldData, universe_id: universeId }),
+      });
+      
+      const data = await response.json();
+      if (response.ok) {
+        toast.success('Mundo criado!');
+        // Recarregar mundos
+        const worldsRes = await fetch('/api/worlds');
+        const worldsData = await worldsRes.json();
+        if (worldsRes.ok && worldsData.worlds) {
+          setWorlds(worldsData.worlds);
+        }
+        setWorldId(data.world.id);
+        setShowCreateWorldModal(false);
+        setWorldToEdit(null);
+      } else {
+        toast.error(data.error || 'Erro ao criar mundo');
+      }
+    } catch (error) {
+      toast.error('Erro ao criar mundo');
+    }
+  };
+  
+  const handleCreateEpisode = async () => {
+    const episodeNum = parseInt(newEpisodeNumber);
+    if (isNaN(episodeNum) || episodeNum <= 0) {
+      toast.error('Por favor, insira um número válido');
+      return;
+    }
+    
+    // Verificar se episódio já existe
+    if (episodes.includes(episodeNum.toString())) {
+      toast.error(`Episódio ${episodeNum} já existe na lista`);
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/episodes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          world_id: worldId, 
+          episode_number: episodeNum 
+        }),
+      });
+      
+      const data = await response.json();
+      if (response.ok) {
+        toast.success(`Episódio ${episodeNum} criado!`);
+        setEpisodes([...episodes, episodeNum.toString()].sort((a, b) => parseInt(a) - parseInt(b)));
+        setEpisodio(episodeNum.toString());
+        setShowCreateEpisodeModal(false);
+        setNewEpisodeNumber('');
+      } else {
+        toast.error(data.error || 'Erro ao criar episódio');
+      }
+    } catch (error) {
+      toast.error('Erro ao criar episódio');
+    }
+  };
+  
+  const handleSaveCategory = async (categoryData: any) => {
+    try {
+      const response = await fetch('/api/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...categoryData, universe_id: universeId }),
+      });
+      
+      const data = await response.json();
+      if (response.ok) {
+        toast.success('Categoria criada!');
+        // Recarregar categorias
+        const categoriesRes = await fetch(`/api/categories?universe_id=${universeId}`);
+        const categoriesData = await categoriesRes.json();
+        if (categoriesRes.ok && categoriesData.categories) {
+          setCategories(categoriesData.categories);
+        }
+        setCategoria(data.category.slug);
+        setShowCreateCategoryModal(false);
+        setCategoryToEdit(null);
+      } else {
+        toast.error(data.error || 'Erro ao criar categoria');
+      }
+    } catch (error) {
+      toast.error('Erro ao criar categoria');
+    }
+  };
 
   return (
     <>
@@ -1342,6 +1489,7 @@ function EscritaPageContent() {
                   onSelect={(id) => {
                     setUniverseId(id);
                   }}
+                  onCreate={() => setShowCreateUniverseModal(true)}
                   disabled={isMetadataLocked}
                 />
                 <WorldsDropdownSingle
@@ -1351,7 +1499,8 @@ function EscritaPageContent() {
                   onSelect={(id) => setWorldId(id)}
                   disabled={!universeId || isMetadataLocked}
                   onCreate={() => {
-                    console.log("Criar novo mundo");
+                    setWorldToEdit(null);
+                    setShowCreateWorldModal(true);
                   }}
                 />
 
@@ -1360,9 +1509,7 @@ function EscritaPageContent() {
                   episodes={availableEpisodes}
                   selectedEpisode={episodio}
                   onSelect={setEpisodio}
-                  onCreate={() => {
-                    console.log("Criar novo episódio");
-                  }}
+                  onCreate={() => setShowCreateEpisodeModal(true)}
                   disabled={!worldId || isMetadataLocked}
                 />
 
@@ -1371,6 +1518,10 @@ function EscritaPageContent() {
                   categories={categories}
                   selectedCategory={categoria}
                   onSelect={setCategoria}
+                  onCreate={() => {
+                    setCategoryToEdit(null);
+                    setShowCreateCategoryModal(true);
+                  }}
                   worldId={worldId}
                   disabled={!universeId || isMetadataLocked}
                 />
@@ -2468,6 +2619,123 @@ function EscritaPageContent() {
           </div>
         </div>
       )}
+      
+      {/* Modal de Criar Universo */}
+      <Modal
+        isOpen={showCreateUniverseModal}
+        onClose={() => {
+          setShowCreateUniverseModal(false);
+          setUniverseForm({ nome: '', descricao: '' });
+        }}
+        title="Criar Novo Universo"
+        footer={
+          <>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setShowCreateUniverseModal(false);
+                setUniverseForm({ nome: '', descricao: '' });
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={handleCreateUniverse}
+              loading={isSubmittingUniverse}
+            >
+              Criar
+            </Button>
+          </>
+        }
+      >
+        <form onSubmit={handleCreateUniverse} className="space-y-4">
+          <Input
+            label="Nome"
+            value={universeForm.nome}
+            onChange={(e) => setUniverseForm({ ...universeForm, nome: e.target.value })}
+            placeholder="Ex: Meu Universo Épico"
+            required
+          />
+          <Textarea
+            label="Descrição"
+            value={universeForm.descricao}
+            onChange={(e) => setUniverseForm({ ...universeForm, descricao: e.target.value })}
+            placeholder="Descreva seu universo..."
+            rows={4}
+          />
+        </form>
+      </Modal>
+      
+      {/* Modal de Criar Mundo */}
+      <WorldModal
+        isOpen={showCreateWorldModal}
+        onClose={() => {
+          setShowCreateWorldModal(false);
+          setWorldToEdit(null);
+        }}
+        world={worldToEdit}
+        onSave={handleSaveWorld}
+      />
+      
+      {/* Modal de Criar Episódio */}
+      <Modal
+        isOpen={showCreateEpisodeModal}
+        onClose={() => {
+          setShowCreateEpisodeModal(false);
+          setNewEpisodeNumber('');
+        }}
+        title="Criar Novo Episódio"
+        footer={
+          <>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setShowCreateEpisodeModal(false);
+                setNewEpisodeNumber('');
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={handleCreateEpisode}
+            >
+              Criar
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <Input
+            label="Número do Episódio"
+            type="number"
+            min="1"
+            value={newEpisodeNumber}
+            onChange={(e) => setNewEpisodeNumber(e.target.value)}
+            placeholder="Ex: 1"
+            required
+          />
+          <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary">
+            Digite apenas números. Se o episódio já existir, você receberá um aviso.
+          </p>
+        </div>
+      </Modal>
+      
+      {/* Modal de Criar Categoria */}
+      <CategoryModal
+        isOpen={showCreateCategoryModal}
+        onClose={() => {
+          setShowCreateCategoryModal(false);
+          setCategoryToEdit(null);
+        }}
+        category={categoryToEdit}
+        onSave={handleSaveCategory}
+      />
     </div>
     </>
   );
