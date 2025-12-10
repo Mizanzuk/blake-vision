@@ -65,7 +65,7 @@ function EscritaPageContent() {
   const [showStylesDropdown, setShowStylesDropdown] = useState(false);
   const [modoFoco, setModoFoco] = useState(false);
   const [temaFoco, setTemaFoco] = useState<'normal' | 'light' | 'dark'>('normal');
-  const [menuFocoExpanded, setMenuFocoExpanded] = useState(true);
+  const [menuFocoExpanded, setMenuFocoExpanded] = useState(false);
   const [menuFocoPosition, setMenuFocoPosition] = useState({ x: 20, y: 20 });
   const [isDraggingMenu, setIsDraggingMenu] = useState(false);
   const menuFocoRef = useRef<HTMLDivElement>(null);
@@ -260,6 +260,8 @@ function EscritaPageContent() {
       if (event.key === 'Escape') {
         // Prioridade 1: Fechar chat se estiver aberto
         if (showUrthona || showUrizen) {
+          event.preventDefault();
+          event.stopPropagation();
           setShowUrthona(false);
           setShowUrizen(false);
           return;
@@ -267,12 +269,16 @@ function EscritaPageContent() {
         
         // Prioridade 2: Recolher menu se estiver expandido (apenas no modo foco)
         if (modoFoco && menuFocoExpanded) {
+          event.preventDefault();
+          event.stopPropagation();
           setMenuFocoExpanded(false);
           return;
         }
         
         // Prioridade 3: Sair do modo foco
         if (modoFoco) {
+          event.preventDefault();
+          event.stopPropagation();
           setModoFoco(false);
           // Sair de tela cheia se estiver
           if (document.fullscreenElement) {
@@ -707,7 +713,7 @@ function EscritaPageContent() {
   // Função para entrar no modo foco com tela cheia
   const enterModoFoco = async () => {
     setModoFoco(true);
-    setMenuFocoExpanded(true);
+    setMenuFocoExpanded(false);
     
     // Entrar em tela cheia
     try {
@@ -1797,11 +1803,18 @@ function EscritaPageContent() {
                 getFocoThemeColors().border
               )}>
                 {/* Header com título e botão colapsar */}
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className={clsx(
-                    "text-sm font-semibold truncate flex-1",
-                    getFocoThemeColors().text
-                  )}>
+                <div className="flex items-start justify-between mb-2 gap-2">
+                  <h2 
+                    className={clsx(
+                      "text-sm font-semibold flex-1 cursor-move line-clamp-2",
+                      getFocoThemeColors().text
+                    )}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      setIsDraggingMenu(true);
+                    }}
+                    title="Arrastar menu"
+                  >
                     {titulo || "Sem título"}
                   </h2>
                   <button
