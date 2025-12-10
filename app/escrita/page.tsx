@@ -55,6 +55,8 @@ function EscritaPageContent() {
   const [episodio, setEpisodio] = useState<string>("");
   const [categories, setCategories] = useState<any[]>([]); // Lista de categorias disponíveis
   const [categoria, setCategoria] = useState<string>("Texto Livre");
+  const [allFichas, setAllFichas] = useState<any[]>([]); // Todas as fichas do catálogo
+  const [availableEpisodes, setAvailableEpisodes] = useState<string[]>([]); // Episódios filtrados por mundo
   const [fontFamily, setFontFamily] = useState<FontFamily>('serif');
   const editorRef = useRef<any>(null);
   
@@ -163,15 +165,16 @@ function EscritaPageContent() {
   }, [titulo, universeId, isMetadataLocked, savedMetadataSnapshot]);
   
   // Auto-save a cada 30 segundos (apenas se já tiver ID do texto)
+  // DESABILITADO quando metadados estão expandidos para evitar fechar durante edição
   useEffect(() => {
-    if (!conteudo || !currentTextId) return;
+    if (!conteudo || !currentTextId || isHeaderExpanded) return;
     
     const autoSaveInterval = setInterval(() => {
       handleSave(true); // true = auto-save silencioso
     }, 30000); // 30 segundos
     
     return () => clearInterval(autoSaveInterval);
-  }, [conteudo, currentTextId]);
+  }, [conteudo, currentTextId, isHeaderExpanded]);
   
   // Fechar modais com ESC
   useEffect(() => {
@@ -289,7 +292,7 @@ function EscritaPageContent() {
     }
   };
   
-  // Função para carregar universos
+  // Função para carregar universos e mundos
   const loadUniversesAndWorlds = async () => {
     try {
       // Carregar universos
@@ -305,25 +308,53 @@ function EscritaPageContent() {
       if (worldsRes.ok && worldsData.worlds) {
         setWorlds(worldsData.worlds);
       }
-
-      // Carregar episódios
-      const episodesRes = await fetch("/api/episodes");
-      const episodesData = await episodesRes.json();
-      if (episodesRes.ok && episodesData.episodes) {
-        setEpisodes(episodesData.episodes);
-      }
-
-      // Carregar categorias
-      const categoriesRes = await fetch("/api/categories");
-      const categoriesData = await categoriesRes.json();
-      if (categoriesRes.ok && categoriesData.categories) {
-        setCategories(categoriesData.categories);
-      }
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
     }
   };
   
+  // Carregar fichas e categorias quando universeId muda
+  useEffect(() => {
+    if (universeId) {
+      // Carregar fichas do catálogo
+      fetch(`/api/catalog?universeId=${universeId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.fichas) {
+            setAllFichas(data.fichas);
+          }
+        })
+        .catch(error => console.error("Erro ao carregar fichas:", error));
+      
+      // Carregar categorias
+      fetch(`/api/categories?universeId=${universeId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.categories) {
+            setCategories(data.categories);
+          }
+        })
+        .catch(error => console.error("Erro ao carregar categorias:", error));
+    }
+  }, [universeId]);
+
+  // Atualizar episódios disponíveis quando mundo muda
+  useEffect(() => {
+    if (worldId && allFichas.length > 0) {
+      const worldFichas = allFichas.filter(f => f.world_id === worldId);
+      const episodes = Array.from(
+        new Set(
+          worldFichas
+            .map(f => f.episodio)
+            .filter((ep): ep is string => ep !== null && ep !== undefined)
+        )
+      ).sort();
+      setAvailableEpisodes(episodes);
+    } else {
+      setAvailableEpisodes([]);
+    }
+  }, [worldId, allFichas]);
+
   // Função para selecionar texto da lista
   const handleSelectTexto = (texto: any) => {
     router.push(`/escrita?id=${texto.id}`);
@@ -1078,7 +1109,7 @@ function EscritaPageContent() {
 
                 <EpisodesDropdownSingle
                   label="EPISÓDIO"
-                  episodes={episodes.filter(e => e.world_id === worldId)}
+                  episodes={availableEpisodes}
                   selectedEpisode={episodio}
                   onSelect={setEpisodio}
                   onCreate={() => {
@@ -1104,6 +1135,7 @@ function EscritaPageContent() {
                     onClick={() => handleSave(false)}
                     disabled={isSaving || !titulo.trim() || !universeId}
                     variant="primary"
+                    size="sm"
                   >
                     {isSaving ? 'Salvando...' : 'Salvar Metadados'}
                   </Button>
