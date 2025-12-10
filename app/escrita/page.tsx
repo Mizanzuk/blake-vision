@@ -1469,7 +1469,7 @@ function EscritaPageContent() {
           </div>
 
           {/* LINHA 2: Grid 3 colunas - Botão Colapsar (A2) + Título (B2) + Menu (C2) */}
-          <div className="h-12 grid grid-cols-[48px_1fr] md:grid-cols-[48px_1fr_48px] gap-0 items-center px-4 flex-shrink-0 max-w-[768px] mx-auto w-full">
+          <div className="h-12 grid grid-cols-[48px_1fr_48px] gap-0 items-center px-4 flex-shrink-0 max-w-[768px] mx-auto w-full">
             {/* Célula A2 - Botão Colapsar (só desktop) */}
             <button
               onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
@@ -1498,7 +1498,7 @@ function EscritaPageContent() {
                     setShowMetadataModal(true);
                   }
                 }}
-                className="text-lg font-semibold text-text-light-primary dark:text-dark-primary md:truncate md:cursor-default cursor-pointer md:whitespace-nowrap md:overflow-hidden md:text-ellipsis max-w-full break-words"
+                className="text-lg font-semibold text-text-light-primary dark:text-dark-primary truncate cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis max-w-full md:cursor-default"
               >
                 {titulo || "Sem título"}
               </h2>
