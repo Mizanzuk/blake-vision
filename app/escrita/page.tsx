@@ -160,12 +160,12 @@ function EscritaPageContent() {
         };
       case 'dark':
         return {
-          bg: 'bg-gray-900',
-          text: 'text-gray-50',
-          border: 'border-gray-700',
-          hover: 'hover:bg-gray-800',
-          secondary: 'bg-gray-800',
-          textSecondary: 'text-gray-300'
+          bg: 'bg-[#0a0a0a]',           // Preto quase puro para imersão total
+          text: 'text-[#e8e8e8]',        // Branco suave, não cansa
+          border: 'border-[#2a2a2a]',    // Borda sutil
+          hover: 'hover:bg-[#1a1a1a]',   // Hover discreto
+          secondary: 'bg-[#1a1a1a]',     // Fundo secundário
+          textSecondary: 'text-[#b8b8b8]' // Texto secundário legível
         };
       case 'normal':
       default:
