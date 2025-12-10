@@ -267,8 +267,8 @@ export function MobileMenu({
         onClick={onClose}
       />
       
-      {/* Menu Sidebar (from right) */}
-      <div className="fixed inset-y-0 right-0 w-[280px] z-50 bg-light-raised dark:bg-dark-raised border-l border-border-light-default dark:border-border-dark-default md:hidden shadow-2xl overflow-y-auto">
+      {/* Menu Sidebar (from left) */}
+      <div className="fixed inset-y-0 left-0 w-[280px] z-50 bg-light-raised dark:bg-dark-raised border-r border-border-light-default dark:border-border-dark-default md:hidden shadow-2xl overflow-y-auto">
       <div className="p-4 space-y-4">
         {/* Avatares */}
         <div className="flex gap-3 justify-center pb-3 border-b border-border-light-subtle dark:border-border-dark-subtle">

@@ -79,7 +79,7 @@ export function Header({ title, showNav = true, currentPage }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 bg-[#F5F1E8]/80 dark:bg-dark-raised/80 backdrop-blur-lg">
-      <div className="max-w-[1328px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1328px] mx-auto px-0 md:px-4 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left: Title or Navigation */}
           <div className="flex items-center gap-6">
@@ -91,7 +91,7 @@ export function Header({ title, showNav = true, currentPage }: HeaderProps) {
             
             {/* Desktop Navigation */}
             {showNav && (
-              <nav className="hidden md:flex items-center gap-6">
+              <nav className="hidden md:flex items-center gap-6 md:ml-0">
                 {navItems.map((item) => (
                   <Link
                     key={item.href}
@@ -108,8 +108,9 @@ export function Header({ title, showNav = true, currentPage }: HeaderProps) {
               </nav>
             )}
 
-            {/* Mobile Menu Button (Hamburger) */}
+            {/* Mobile Menu Button (Hamburger) - Container 48px */}
             {showNav && (
+              <div className="w-12 md:w-auto flex items-center justify-center md:block">
               <button
                 onClick={() => setShowMobileMenu(!showMobileMenu)}
                 className="md:hidden w-10 h-10 flex items-center justify-center rounded-lg text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
@@ -122,6 +123,7 @@ export function Header({ title, showNav = true, currentPage }: HeaderProps) {
                   )}
                 </svg>
               </button>
+              </div>
             )}
           </div>
 
@@ -136,7 +138,7 @@ export function Header({ title, showNav = true, currentPage }: HeaderProps) {
               className="flex-1 flex items-center justify-center gap-2 md:hidden"
             >
               <svg className="w-4 h-4 text-text-light-secondary dark:text-dark-secondary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
               <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary truncate max-w-[50%]">
                 {title}
