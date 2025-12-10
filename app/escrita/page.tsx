@@ -1177,25 +1177,25 @@ function EscritaPageContent() {
               </button>
               <button 
                 onClick={() => editorRef.current?.chain().focus().toggleItalic().run()}
-                className="text-sm font-medium hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary"
+                className="text-sm font-medium hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary italic"
               >
-                /
+                I
               </button>
               <div className="relative" ref={stylesDropdownRef}>
                 <button 
                   onClick={() => setShowStylesDropdown(!showStylesDropdown)}
                   className="text-sm font-medium hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary"
                 >
-                  Aa ▼
+                  Aa
                 </button>
                 {showStylesDropdown && (
-                  <div className="absolute top-full left-0 mt-2 bg-white dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg py-2 z-50 min-w-[120px]">
+                  <div className="absolute top-full left-0 mt-2 bg-light-base dark:bg-dark-base border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg py-2 z-50 min-w-[120px]">
                     <button
                       onClick={() => {
                         setFontFamily('serif');
                         setShowStylesDropdown(false);
                       }}
-                      className={`w-full px-4 py-2 text-left text-sm hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors ${
+                      className={`w-full px-4 py-2 text-left text-sm hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors font-serif ${
                         fontFamily === 'serif' ? 'font-semibold text-primary-600 dark:text-primary-400' : 'text-text-light-primary dark:text-dark-primary'
                       }`}
                     >
@@ -1206,7 +1206,7 @@ function EscritaPageContent() {
                         setFontFamily('sans');
                         setShowStylesDropdown(false);
                       }}
-                      className={`w-full px-4 py-2 text-left text-sm hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors ${
+                      className={`w-full px-4 py-2 text-left text-sm hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors font-sans ${
                         fontFamily === 'sans' ? 'font-semibold text-primary-600 dark:text-primary-400' : 'text-text-light-primary dark:text-dark-primary'
                       }`}
                     >
@@ -1217,7 +1217,7 @@ function EscritaPageContent() {
                         setFontFamily('mono');
                         setShowStylesDropdown(false);
                       }}
-                      className={`w-full px-4 py-2 text-left text-sm hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors ${
+                      className={`w-full px-4 py-2 text-left text-sm hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors font-mono ${
                         fontFamily === 'mono' ? 'font-semibold text-primary-600 dark:text-primary-400' : 'text-text-light-primary dark:text-dark-primary'
                       }`}
                     >
