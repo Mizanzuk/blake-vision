@@ -1388,7 +1388,7 @@ function EscritaPageContent() {
 
         {/* Botões laterais (quando sidebar colapsada) */}
         {!isSidebarOpen && (
-          <div className="w-12 bg-light-raised dark:bg-dark-raised flex flex-col items-center pt-4 gap-3 flex-shrink-0">
+          <div className="w-12 bg-light-raised dark:bg-dark-raised flex flex-col items-center pt-3 gap-3 flex-shrink-0">
             {/* Botão lápis (abrir sidebar) */}
             <button
               onClick={() => setIsSidebarOpen(true)}
@@ -1498,7 +1498,7 @@ function EscritaPageContent() {
                     setShowMetadataModal(true);
                   }
                 }}
-                className="text-lg font-semibold text-text-light-primary dark:text-dark-primary md:truncate md:cursor-default cursor-pointer md:whitespace-nowrap md:overflow-hidden md:text-ellipsis"
+                className="text-lg font-semibold text-text-light-primary dark:text-dark-primary md:truncate md:cursor-default cursor-pointer md:whitespace-nowrap md:overflow-hidden md:text-ellipsis max-w-full break-words"
               >
                 {titulo || "Sem título"}
               </h2>
