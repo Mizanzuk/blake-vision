@@ -1388,11 +1388,11 @@ function EscritaPageContent() {
 
         {/* Botões laterais (quando sidebar colapsada) */}
         {!isSidebarOpen && (
-          <div className="w-12 bg-light-raised dark:bg-dark-raised flex flex-col items-center pt-4 gap-2 flex-shrink-0">
+          <div className="w-12 bg-light-raised dark:bg-dark-raised flex flex-col items-center pt-4 gap-3 flex-shrink-0">
             {/* Botão lápis (abrir sidebar) */}
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="w-10 h-10 flex items-center justify-center hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors rounded-lg"
+              className="w-10 h-10 flex-shrink-0 flex items-center justify-center hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors rounded-lg"
               title="Abrir barra lateral"
             >
               <svg className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1403,7 +1403,7 @@ function EscritaPageContent() {
             {/* Botão três pontos horizontais (menu de ferramentas) - só aparece no mobile */}
             <button
               onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className="w-10 h-10 flex items-center justify-center hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors rounded-lg md:hidden"
+              className="w-10 h-10 flex-shrink-0 flex items-center justify-center hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors rounded-lg md:hidden"
               title="Ferramentas"
             >
               <svg className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary" fill="currentColor" viewBox="0 0 24 24">
@@ -1498,7 +1498,7 @@ function EscritaPageContent() {
                     setShowMetadataModal(true);
                   }
                 }}
-                className="text-lg font-semibold text-text-light-primary dark:text-dark-primary md:truncate md:cursor-default cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis"
+                className="text-lg font-semibold text-text-light-primary dark:text-dark-primary md:truncate md:cursor-default cursor-pointer md:whitespace-nowrap md:overflow-hidden md:text-ellipsis"
               >
                 {titulo || "Sem título"}
               </h2>
@@ -1833,25 +1833,28 @@ function EscritaPageContent() {
         <div 
           ref={chatRef}
           className={clsx(
-            "fixed overflow-hidden flex flex-col shadow-2xl rounded-lg border",
+            "fixed overflow-hidden flex flex-col shadow-2xl border",
+            "inset-0 md:inset-auto md:rounded-lg",
             modoFoco ? getFocoThemeColors().bg : "bg-light-base dark:bg-dark-base",
             modoFoco ? getFocoThemeColors().border : "border-border-light-default dark:border-border-dark-default"
           )}
           style={{
-            left: chatPosition.x || 'auto',
-            top: chatPosition.y || 80,
-            right: chatPosition.x ? 'auto' : 16,
-            width: `${chatSize.width}px`,
-            height: `${chatSize.height}px`,
+            left: window.innerWidth >= 768 ? (chatPosition.x || 'auto') : 0,
+            top: window.innerWidth >= 768 ? (chatPosition.y || 80) : 0,
+            right: window.innerWidth >= 768 ? (chatPosition.x ? 'auto' : 16) : 0,
+            bottom: window.innerWidth < 768 ? 0 : 'auto',
+            width: window.innerWidth >= 768 ? `${chatSize.width}px` : '100%',
+            height: window.innerWidth >= 768 ? `${chatSize.height}px` : '100%',
             zIndex: 1000,
-            cursor: isDragging ? 'grabbing' : 'default'
+            cursor: window.innerWidth >= 768 && isDragging ? 'grabbing' : 'default'
           }}
         >
           <div className="flex flex-col h-full px-4 pt-4 pb-4">
-            {/* Header do Chat (Draggable) */}
+            {/* Header do Chat (Draggable apenas no desktop) */}
             <div 
-              className="flex justify-between items-center mb-4 pb-4 cursor-grab active:cursor-grabbing"
+              className="flex justify-between items-center mb-4 pb-4 md:cursor-grab md:active:cursor-grabbing"
               onMouseDown={(e) => {
+                if (window.innerWidth < 768) return; // Desabilitar drag no mobile
                 setIsDragging(true);
                 setDragStart({
                   x: e.clientX - (chatPosition.x || (window.innerWidth - chatSize.width - 16)),
