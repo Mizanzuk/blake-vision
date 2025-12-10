@@ -1311,7 +1311,7 @@ function EscritaPageContent() {
           <div className="flex flex-col h-full px-4 pt-4 pb-4">
             {/* Header do Chat (Draggable) */}
             <div 
-              className="flex justify-between items-center mb-4 pb-4 cursor-grab active:cursor-grabbing border-b border-border-light-default dark:border-border-dark-default"
+              className="flex justify-between items-center mb-4 pb-4 cursor-grab active:cursor-grabbing"
               onMouseDown={(e) => {
                 setIsDragging(true);
                 setDragStart({
@@ -1442,7 +1442,7 @@ function EscritaPageContent() {
             </div>
             
             {/* Input */}
-            <div className="flex gap-2 items-end pt-4 border-t border-border-light-default dark:border-border-dark-default">
+            <div className="flex gap-2 items-end pt-4">
               <textarea
                 ref={chatInputRef}
                 value={assistantInput}
