@@ -56,6 +56,19 @@ export async function POST(req: NextRequest) {
     
     // Remover id explicitamente se vier no body
     const { id, universe_id, nome, descricao, is_root, has_episodes, ordem } = body;
+    
+    // Criar objeto limpo apenas com os campos necessários
+    const dataToInsert = {
+      user_id: user.id,
+      universe_id,
+      nome,
+      descricao: descricao || null,
+      is_root: is_root || false,
+      has_episodes: has_episodes || false,
+      ordem: ordem || null,
+    };
+    
+    console.log('[API /api/worlds POST] Dados para insert:', JSON.stringify(dataToInsert));
 
     if (!universe_id || !nome) {
       return NextResponse.json(
@@ -66,15 +79,7 @@ export async function POST(req: NextRequest) {
 
     const { data: world, error } = await supabase
       .from("worlds")
-      .insert({
-        user_id: user.id,
-        universe_id,
-        nome,
-        descricao: descricao || null,
-        is_root: is_root || false,
-        has_episodes: has_episodes || false,
-        ordem: ordem || null,
-      })
+      .insert(dataToInsert)
       .select()
       .single();
 
