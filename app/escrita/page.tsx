@@ -1496,7 +1496,7 @@ function EscritaPageContent() {
                     setShowMetadataModal(true);
                   }
                 }}
-                className="text-lg font-semibold text-text-light-primary dark:text-dark-primary truncate md:cursor-default cursor-pointer"
+                className="text-lg font-semibold text-text-light-primary dark:text-dark-primary md:truncate md:cursor-default cursor-pointer"
               >
                 {titulo || "Sem título"}
               </h2>

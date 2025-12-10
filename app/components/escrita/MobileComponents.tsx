@@ -239,7 +239,15 @@ export function MobileMenu({
   if (!show) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 bg-light-raised dark:bg-dark-raised border-t border-border-light-default dark:border-border-dark-default md:hidden shadow-2xl">
+    <>
+      {/* Backdrop */}
+      <div 
+        className="fixed inset-0 bg-black/50 z-40 md:hidden animate-in fade-in"
+        onClick={onClose}
+      />
+      
+      {/* Menu */}
+      <div className="fixed inset-x-0 bottom-0 z-50 bg-light-raised dark:bg-dark-raised border-t border-border-light-default dark:border-border-dark-default md:hidden shadow-2xl animate-in slide-in-from-bottom">
       <div className="p-4 space-y-3 max-h-[70vh] overflow-y-auto">
         {/* Avatares */}
         <div className="flex gap-3 justify-center pb-3 border-b border-border-light-subtle dark:border-border-dark-subtle">
@@ -344,6 +352,7 @@ export function MobileMenu({
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
