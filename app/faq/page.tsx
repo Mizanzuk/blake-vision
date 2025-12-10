@@ -110,6 +110,41 @@ const faqData: FAQItem[] = [
     answer: "Atualmente não há função de exportação automática, mas todos os seus dados estão no Supabase e podem ser acessados via SQL. Planejamos adicionar exportação em formatos como JSON, Markdown e PDF no futuro.",
   },
   {
+    category: "Modo Foco",
+    question: "O que é o Modo Foco?",
+    answer: "O Modo Foco é um ambiente de escrita imersivo e sem distrações. Ao ativá-lo, a tela entra em modo fullscreen, removendo barras e menus, deixando apenas o editor centralizado com margem generosa para melhor leitura e escrita.",
+  },
+  {
+    category: "Modo Foco",
+    question: "Como ativar o Modo Foco?",
+    answer: "Na página Escrita, clique no botão 'Modo Foco' (com ícone de olho) localizado no canto superior direito. A tela entrará automaticamente em fullscreen e o menu flutuante aparecerá recolhido (apenas ícone sanduíche).",
+  },
+  {
+    category: "Modo Foco",
+    question: "Quais recursos estão disponíveis no Modo Foco?",
+    answer: "O Modo Foco oferece: 3 temas de cores (Normal, Branco, Preto), botões de formatação rápida (Negrito, Itálico, Estilos), acesso aos agentes Urizen e Urthona, botão Salvar, e menu flutuante arrastável que pode ser recolhido para não atrapalhar a escrita.",
+  },
+  {
+    category: "Modo Foco",
+    question: "Como funciona o menu flutuante?",
+    answer: "O menu inicia recolhido (apenas ícone sanduíche). Clique no ícone para expandir e acessar todos os controles. Quando expandido, você pode arrastá-lo para qualquer posição clicando e segurando o título. Para recolher, clique no X ou pressione ESC.",
+  },
+  {
+    category: "Modo Foco",
+    question: "Como funcionam os atalhos ESC no Modo Foco?",
+    answer: "O ESC funciona de forma hierárquica: primeiro fecha chat com agente (se aberto), depois recolhe o menu (se expandido), e por último sai do Modo Foco. Isso permite fechar elementos sem sair acidentalmente do modo de escrita.",
+  },
+  {
+    category: "Modo Foco",
+    question: "Quais navegadores são recomendados para o Modo Foco?",
+    answer: "Para melhor experiência com atalhos ESC hierárquicos em fullscreen, recomendamos Chrome, Edge ou Firefox. No Safari (macOS), o ESC sai primeiro do fullscreen antes de fechar elementos flutuantes, devido a limitações de segurança da Apple. O Modo Foco funciona em todos os navegadores, mas o comportamento do ESC é mais intuitivo no Chrome/Firefox.",
+  },
+  {
+    category: "Modo Foco",
+    question: "O que são os 3 modos de cor?",
+    answer: "Modo Normal usa as cores padrão do site (light/dark mode). Modo Branco oferece fundo branco puro com texto escuro, ideal para escrita diurna. Modo Preto oferece fundo preto com texto claro de alto contraste, ideal para escrita noturna ou ambientes com pouca luz. Todos os componentes (menu, chats, editor) respeitam o tema escolhido.",
+  },
+  {
     category: "Conta e Configurações",
     question: "Como alterar tema (claro/escuro)?",
     answer: "Clique no ícone de sol/lua no canto superior direito de qualquer página. Sua preferência é salva automaticamente.",
