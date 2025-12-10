@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
       universe_id,
       nome,
       is_root: is_root || false,
-      has_episodes: has_episodes || false,
+      tem_episodios: has_episodes || false, // Usar tem_episodios (nome da coluna no Supabase)
     };
     
     // Adicionar campos opcionais apenas se tiverem valor
@@ -86,8 +86,9 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (error) {
-      console.error("Erro ao criar mundo:", error);
-      return NextResponse.json({ error: "Erro ao criar mundo" }, { status: 500 });
+      console.error('[API /api/worlds POST] Erro ao criar mundo:', JSON.stringify(error));
+      console.error('[API /api/worlds POST] Detalhes do erro:', error.message, error.code, error.details);
+      return NextResponse.json({ error: error.message || "Erro ao criar mundo", details: error }, { status: 500 });
     }
 
     // Criar categoria base "episódios" automaticamente
@@ -144,7 +145,7 @@ export async function PUT(req: NextRequest) {
         nome,
         descricao: descricao || null,
         is_root: is_root || false,
-        has_episodes: has_episodes || false,
+        tem_episodios: has_episodes || false, // Usar tem_episodios (nome da coluna no Supabase)
         ordem: ordem || null,
         updated_at: new Date().toISOString(),
       })
