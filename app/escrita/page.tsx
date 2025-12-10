@@ -364,6 +364,20 @@ function EscritaPageContent() {
     loadUniversesAndWorlds();
   }, []);
   
+  // Event listeners para modal de metadados
+  useEffect(() => {
+    const handleOpenModal = () => setShowMetadataModal(true);
+    const handleUnlock = () => setIsMetadataLocked(false);
+    
+    window.addEventListener('openMetadataModal', handleOpenModal);
+    window.addEventListener('unlockMetadata', handleUnlock);
+    
+    return () => {
+      window.removeEventListener('openMetadataModal', handleOpenModal);
+      window.removeEventListener('unlockMetadata', handleUnlock);
+    };
+  }, []);
+  
   // Carregar texto específico da URL
   useEffect(() => {
     const textoId = searchParams.get("id");
@@ -1211,6 +1225,12 @@ function EscritaPageContent() {
         
         {/* COLUNA A - Sidebar (Biblioteca de Textos) */}
         {isSidebarOpen && (
+          <>
+          {/* Backdrop (mobile only) */}
+          <div 
+            className="fixed inset-0 bg-black/50 z-30 md:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+          />
           <aside className="w-[250px] h-screen bg-light-raised dark:bg-dark-raised overflow-y-auto md:relative fixed inset-y-0 left-0 z-40 md:z-auto flex flex-col">
             {/* Header da Sidebar */}
             <div className="p-4">
@@ -1218,7 +1238,7 @@ function EscritaPageContent() {
                 <h2 className="text-sm font-semibold text-text-light-primary dark:text-dark-primary">Blake Vision</h2>
                 <button
                   onClick={() => setIsSidebarOpen(false)}
-                  className="p-1.5 rounded-lg text-text-light-tertiary hover:text-text-light-secondary hover:bg-light-overlay dark:text-dark-tertiary dark:hover:text-dark-secondary dark:hover:bg-dark-overlay transition-colors"
+                  className="hidden md:block p-1.5 rounded-lg text-text-light-tertiary hover:text-text-light-secondary hover:bg-light-overlay dark:text-dark-tertiary dark:hover:text-dark-secondary dark:hover:bg-dark-overlay transition-colors"
                   title="Fechar barra lateral"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1384,6 +1404,7 @@ function EscritaPageContent() {
               )}
             </div>
           </aside>
+          </>
         )}
 
         {/* Botões laterais (quando sidebar colapsada) */}

@@ -112,9 +112,9 @@ export function Header({ title, showNav = true, currentPage }: HeaderProps) {
             {showNav && (
               <button
                 onClick={() => setShowMobileMenu(!showMobileMenu)}
-                className="md:hidden p-2 rounded-lg text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
+                className="md:hidden w-10 h-10 flex items-center justify-center rounded-lg text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
               >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   {showMobileMenu ? (
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   ) : (
@@ -127,11 +127,21 @@ export function Header({ title, showNav = true, currentPage }: HeaderProps) {
 
           {/* Center: Title (Mobile only, Escrita page) */}
           {title && currentPage === "escrita" && (
-            <div className="flex-1 flex justify-center md:hidden">
-              <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary truncate max-w-[60%]">
+            <button 
+              onClick={() => {
+                // Trigger metadata modal
+                const event = new CustomEvent('openMetadataModal');
+                window.dispatchEvent(event);
+              }}
+              className="flex-1 flex items-center justify-center gap-2 md:hidden"
+            >
+              <svg className="w-4 h-4 text-text-light-secondary dark:text-dark-secondary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary truncate max-w-[50%]">
                 {title}
               </h2>
-            </div>
+            </button>
           )}
 
           {/* Right: FAQ + Profile Dropdown */}

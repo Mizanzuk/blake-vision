@@ -88,6 +88,23 @@ export function MetadataModal({
           </button>
         </div>
         
+        {/* Botão Editar (quando bloqueado) */}
+        {isMetadataLocked && (
+          <div className="mb-4">
+            <Button
+              onClick={() => {
+                // Trigger unlock event
+                const event = new CustomEvent('unlockMetadata');
+                window.dispatchEvent(event);
+              }}
+              variant="primary"
+              className="w-full"
+            >
+              Editar Metadados
+            </Button>
+          </div>
+        )}
+        
         {/* Formulário de Metadados */}
         <div className="space-y-4">
           {/* Título */}
@@ -246,13 +263,13 @@ export function MobileMenu({
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/50 z-40 md:hidden animate-in fade-in"
+        className="fixed inset-0 bg-black/50 z-40 md:hidden"
         onClick={onClose}
       />
       
-      {/* Menu */}
-      <div className="fixed inset-x-0 bottom-0 z-50 bg-light-raised dark:bg-dark-raised border-t border-border-light-default dark:border-border-dark-default md:hidden shadow-2xl animate-in slide-in-from-bottom">
-      <div className="p-4 space-y-3 max-h-[70vh] overflow-y-auto">
+      {/* Menu Sidebar (from right) */}
+      <div className="fixed inset-y-0 right-0 w-[280px] z-50 bg-light-raised dark:bg-dark-raised border-l border-border-light-default dark:border-border-dark-default md:hidden shadow-2xl overflow-y-auto">
+      <div className="p-4 space-y-4">
         {/* Avatares */}
         <div className="flex gap-3 justify-center pb-3 border-b border-border-light-subtle dark:border-border-dark-subtle">
           <button
@@ -374,7 +391,7 @@ export function MobileMenu({
               onClose();
             }}
             disabled={isSaving}
-            className="flex-1 px-4 py-3 rounded bg-light-overlay dark:bg-dark-overlay hover:bg-light-base dark:hover:bg-dark-base font-medium text-text-light-primary dark:text-dark-primary transition-colors disabled:opacity-50"
+            className="flex-1 px-3 py-2 text-sm rounded bg-light-overlay dark:bg-dark-overlay hover:bg-light-base dark:hover:bg-dark-base font-medium text-text-light-primary dark:text-dark-primary transition-colors disabled:opacity-50"
           >
             {isSaving ? 'Salvando...' : 'Salvar'}
           </button>
@@ -383,7 +400,7 @@ export function MobileMenu({
               handlePublish();
               onClose();
             }}
-            className="flex-1 px-4 py-3 rounded bg-primary-600 dark:bg-primary-500 text-white hover:bg-primary-700 dark:hover:bg-primary-600 font-medium transition-colors"
+            className="flex-1 px-3 py-2 text-sm rounded bg-primary-600 dark:bg-primary-500 text-white hover:bg-primary-700 dark:hover:bg-primary-600 font-medium transition-colors"
           >
             Publicar
           </button>
