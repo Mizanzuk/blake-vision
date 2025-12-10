@@ -904,7 +904,7 @@ function EscritaPageContent() {
         {!isSidebarOpen && (
           <button
             onClick={() => setIsSidebarOpen(true)}
-            className="w-12 border-r border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised flex items-center justify-center hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors flex-shrink-0"
+            className="w-12 bg-light-raised dark:bg-dark-raised flex items-center justify-center hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors flex-shrink-0"
             title="Abrir barra lateral"
           >
             <svg className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -917,7 +917,7 @@ function EscritaPageContent() {
         <main className="flex-1 flex flex-col overflow-hidden">
           
           {/* LINHA 1: Grid 3 colunas - Vazio (A1) + Modo Foco (B1) + Avatares (C1) */}
-          <div className="h-16 border-b border-border-light-default dark:border-border-dark-default grid grid-cols-[48px_1fr_48px] gap-0 items-center px-4 flex-shrink-0 max-w-[768px] mx-auto w-full">
+          <div className="h-16 grid grid-cols-[48px_1fr_48px] gap-0 items-center px-4 flex-shrink-0 max-w-[768px] mx-auto w-full">
             {/* Célula A1 - Vazia */}
             <div></div>
             
@@ -963,7 +963,7 @@ function EscritaPageContent() {
           </div>
 
           {/* LINHA 2: Grid 3 colunas - Botão Colapsar (A2) + Título (B2) + Menu (C2) */}
-          <div className="h-12 border-b border-border-light-default dark:border-border-dark-default grid grid-cols-[48px_1fr_48px] gap-0 items-center px-4 flex-shrink-0 max-w-[768px] mx-auto w-full">
+          <div className="h-12 grid grid-cols-[48px_1fr_48px] gap-0 items-center px-4 flex-shrink-0 max-w-[768px] mx-auto w-full">
             {/* Célula A2 - Botão Colapsar */}
             <button
               onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
@@ -1066,7 +1066,7 @@ function EscritaPageContent() {
 
           {/* LINHA 3: Metadados (Condicional) */}
           {isHeaderExpanded && (
-            <div className="border-b border-border-light-default dark:border-border-dark-default grid grid-cols-[48px_1fr_48px] gap-0 px-4 py-4 flex-shrink-0 max-w-[768px] mx-auto w-full">
+            <div className="grid grid-cols-[48px_1fr_48px] gap-0 px-4 py-4 flex-shrink-0 max-w-[768px] mx-auto w-full">
               <div></div>
               <div className="space-y-4 max-w-[672px]">
               {/* Botão de editar (só aparece quando está bloqueado) */}
@@ -1161,7 +1161,7 @@ function EscritaPageContent() {
           )}
 
           {/* LINHA 4: Grid 3 colunas - Vazio (A4) + Toolbar (B4) + Vazio (C4) */}
-          <div className="h-12 border-b border-border-light-default dark:border-border-dark-default grid grid-cols-[48px_1fr_48px] gap-0 items-center px-4 flex-shrink-0 max-w-[768px] mx-auto w-full">
+          <div className="h-12 grid grid-cols-[48px_1fr_48px] gap-0 items-center px-4 flex-shrink-0 max-w-[768px] mx-auto w-full">
             {/* Célula A4 - Vazia */}
             <div></div>
             
@@ -1231,12 +1231,12 @@ function EscritaPageContent() {
           </div>
 
           {/* LINHA 5: Grid 3 colunas - Vazio (A5) + Editor (B5) + Vazio (C5) */}
-          <div className="flex-1 overflow-y-auto grid grid-cols-[48px_1fr_48px] gap-0 px-4 py-6 max-w-[768px] mx-auto w-full">
+          <div className="flex-1 grid grid-cols-[48px_1fr_48px] gap-0 px-4 py-6 pb-24 max-w-[768px] mx-auto w-full overflow-hidden">
             {/* Célula A5 - Vazia */}
             <div></div>
             
             {/* Célula B5 - Editor */}
-            <div className="max-w-[672px]">
+            <div className="max-w-[672px] h-full overflow-y-auto">
             <TiptapEditor
               value={conteudo}
               onChange={(value) => setConteudo(value)}
@@ -1255,7 +1255,7 @@ function EscritaPageContent() {
           </div>
 
           {/* LINHA 6: Grid 3 colunas - Vazio (A6) + Botões (B6) + Vazio (C6) */}
-          <footer className="border-t border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base py-4 flex-shrink-0 max-w-[768px] mx-auto w-full">
+          <footer className="fixed bottom-0 left-0 right-0 bg-light-base dark:bg-dark-base py-4 z-10">
         <div className="grid grid-cols-[48px_1fr_48px] gap-0 px-4 max-w-[768px] mx-auto w-full">
           {/* Célula A6 - Vazia */}
           <div></div>
