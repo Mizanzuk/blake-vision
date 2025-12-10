@@ -223,6 +223,9 @@ function EscritaPageContent() {
     const textoId = searchParams.get("id");
     if (textoId && !currentTextId) {
       loadTexto(textoId);
+    } else if (!textoId && currentTextId) {
+      // Limpar estado quando navega para /escrita sem id
+      handleNewTexto();
     }
   }, [searchParams]);
   
