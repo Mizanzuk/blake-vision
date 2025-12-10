@@ -1096,6 +1096,7 @@ function EscritaPageContent() {
       });
       
       const data = await response.json();
+      console.log('[handleSaveWorld] Response:', response.status, data);
       if (response.ok) {
         toast.success('Mundo criado!');
         // Recarregar mundos
@@ -1108,6 +1109,7 @@ function EscritaPageContent() {
         setShowCreateWorldModal(false);
         setWorldToEdit(null);
       } else {
+        console.error('[handleSaveWorld] Erro:', data);
         toast.error(data.error || 'Erro ao criar mundo');
       }
     } catch (error) {
