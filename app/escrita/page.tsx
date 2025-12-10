@@ -221,7 +221,7 @@ function EscritaPageContent() {
   // Carregar texto específico da URL
   useEffect(() => {
     const textoId = searchParams.get("id");
-    if (textoId && !currentTextId) {
+    if (textoId && textoId !== currentTextId) {
       loadTexto(textoId);
     } else if (!textoId && currentTextId) {
       // Limpar estado quando navega para /escrita sem id
