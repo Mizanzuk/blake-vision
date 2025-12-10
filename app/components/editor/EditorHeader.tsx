@@ -219,7 +219,7 @@ export function EditorHeader({
 
                 {/* Dropdown Menu */}
                 {showOptionsMenu && (
-                  <div className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white dark:bg-dark-bg-secondary border border-border-light-default dark:border-border-dark-default z-50">
+                  <div className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-light-base dark:bg-dark-bg-secondary border border-border-light-default dark:border-border-dark-default z-50">
                     <div className="py-2">
                       {/* Exportar */}
                       <button

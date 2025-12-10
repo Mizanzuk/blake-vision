@@ -77,6 +77,10 @@ function EscritaPageContent() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   
+  // Estados dos Modais de Estatísticas e Exportar
+  const [showStatsModal, setShowStatsModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  
   // Estados da Seleção de Texto (Bubble Menu)
   const [selectedText, setSelectedText] = useState('');
   const [selectionMenuPosition, setSelectionMenuPosition] = useState<{x: number, y: number} | null>(null);
@@ -211,6 +215,21 @@ function EscritaPageContent() {
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [showOptionsMenu, showStylesDropdown]);
+  
+  // Fechar chat com tecla ESC
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && (showUrthona || showUrizen)) {
+        setShowUrthona(false);
+        setShowUrizen(false);
+      }
+    };
+    
+    if (showUrthona || showUrizen) {
+      document.addEventListener('keydown', handleEscKey);
+      return () => document.removeEventListener('keydown', handleEscKey);
+    }
+  }, [showUrthona, showUrizen]);
   
   // Carregar lista de textos e universos ao montar componente
   useEffect(() => {
@@ -388,10 +407,117 @@ function EscritaPageContent() {
   
 
   
+  // Função para duplicar texto
+  const handleDuplicate = async () => {
+    if (!currentTextId) {
+      toast.error("Nenhum texto selecionado para duplicar");
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/textos?id=${currentTextId}`);
+      const data = await response.json();
+
+      if (response.ok && data.texto) {
+        const duplicatedTexto = {
+          ...data.texto,
+          id: undefined,
+          titulo: `${data.texto.titulo} (Cópia)`,
+          status: "rascunho" as const,
+        };
+
+        const createResponse = await fetch("/api/textos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(duplicatedTexto),
+        });
+
+        const createData = await createResponse.json();
+
+        if (createResponse.ok) {
+          toast.success("Texto duplicado com sucesso!");
+          loadTextos();
+          router.push(`/escrita?id=${createData.texto.id}`);
+        } else {
+          toast.error(createData.error || "Erro ao duplicar texto");
+        }
+      } else {
+        toast.error("Erro ao carregar texto para duplicar");
+      }
+    } catch (error) {
+      console.error("Erro ao duplicar texto:", error);
+      toast.error("Erro ao duplicar texto");
+    }
+  };
+  
+  // Função para exportar texto
+  const handleExport = async (format: 'pdf' | 'docx' | 'txt') => {
+    if (!titulo.trim() || !conteudo.trim()) {
+      toast.error("Texto vazio não pode ser exportado");
+      return;
+    }
+
+    try {
+      if (format === 'txt') {
+        // Exportar como TXT (direto no navegador)
+        const blob = new Blob([`${titulo}\n\n${conteudo}`], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${titulo}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast.success("Texto exportado como TXT!");
+      } else if (format === 'pdf' || format === 'docx') {
+        // Exportar via API
+        const response = await fetch('/api/export', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            titulo,
+            conteudo,
+            format,
+          }),
+        });
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${titulo}.${format}`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          toast.success(`Texto exportado como ${format.toUpperCase()}!`);
+        } else {
+          toast.error(`Erro ao exportar como ${format.toUpperCase()}`);
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao exportar texto:", error);
+      toast.error("Erro ao exportar texto");
+    }
+
+    setShowExportModal(false);
+  };
+  
   // Função para abrir modal de confirmação de delete
   const handleDelete = (id: string, titulo: string) => {
     setTextoToDelete({ id, titulo });
     setShowDeleteConfirm(true);
+  };
+  
+  // Função para deletar texto do menu três pontinhos
+  const handleDeleteCurrentTexto = () => {
+    if (currentTextId && titulo) {
+      handleDelete(currentTextId, titulo);
+    } else {
+      toast.error("Nenhum texto selecionado para excluir");
+    }
   };
   
   // Função para buscar e exibir ficha no modal
@@ -1005,11 +1131,11 @@ function EscritaPageContent() {
               
               {/* Dropdown Menu */}
               {showOptionsMenu && (
-                <div className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default z-50">
+                <div className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-light-base dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default z-50">
                   <div className="py-2">
                     <button
                       onClick={() => {
-                        console.log('Duplicar texto');
+                        handleDuplicate();
                         setShowOptionsMenu(false);
                       }}
                       className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
@@ -1022,7 +1148,7 @@ function EscritaPageContent() {
                     
                     <button
                       onClick={() => {
-                        console.log('Ver estatísticas');
+                        setShowStatsModal(true);
                         setShowOptionsMenu(false);
                       }}
                       className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
@@ -1035,7 +1161,7 @@ function EscritaPageContent() {
                     
                     <button
                       onClick={() => {
-                        console.log('Exportar texto');
+                        setShowExportModal(true);
                         setShowOptionsMenu(false);
                       }}
                       className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors"
@@ -1050,7 +1176,7 @@ function EscritaPageContent() {
                     
                     <button
                       onClick={() => {
-                        // TODO: Implementar exclusão
+                        handleDeleteCurrentTexto();
                         setShowOptionsMenu(false);
                       }}
                       className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
@@ -1148,9 +1274,27 @@ function EscritaPageContent() {
                 />
               </div>
               
-              {/* Botão Salvar (só aparece quando está editando) */}
+              {/* Botões Cancelar e Salvar (só aparecem quando está editando) */}
               {!isMetadataLocked && (
-                <div className="flex justify-end mt-4">
+                <div className="flex justify-end gap-3 mt-4">
+                  <Button
+                    onClick={() => {
+                      // Reverter para valores salvos
+                      if (savedMetadataSnapshot) {
+                        setTitulo(savedMetadataSnapshot.titulo);
+                        setUniverseId(savedMetadataSnapshot.universeId);
+                        setWorldId(savedMetadataSnapshot.worldId);
+                        setEpisodio(savedMetadataSnapshot.episodio);
+                        setCategoria(savedMetadataSnapshot.categoria);
+                      }
+                      setIsHeaderExpanded(false);
+                      setHasUnsavedMetadataChanges(false);
+                    }}
+                    variant="secondary"
+                    size="sm"
+                  >
+                    Cancelar
+                  </Button>
                   <Button
                     onClick={() => handleSave(false)}
                     disabled={isSaving || !titulo.trim() || !universeId}
@@ -1261,7 +1405,7 @@ function EscritaPageContent() {
           </div>
 
           {/* LINHA 6: Grid 3 colunas - Vazio (A6) + Botões (B6) + Vazio (C6) */}
-          <footer className="fixed bottom-0 left-0 right-0 bg-light-base dark:bg-dark-base py-4 z-10">
+          <footer className="fixed bottom-0 bg-light-base dark:bg-dark-base py-4 z-10" style={{ left: isSidebarOpen ? '250px' : '48px', right: 0 }}>
         <div className="grid grid-cols-[48px_1fr_48px] gap-0 px-4 max-w-[768px] mx-auto w-full">
           {/* Célula A6 - Vazia */}
           <div></div>
@@ -1702,6 +1846,145 @@ function EscritaPageContent() {
                 onClick={() => setShowSuccessModal(false)}
               >
                 OK
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Modal de Estatísticas */}
+      {showStatsModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in"
+          onClick={() => setShowStatsModal(false)}
+        >
+          <div
+            className="relative w-full max-w-md bg-light-raised dark:bg-dark-raised rounded-2xl shadow-soft-xl animate-slide-up overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="p-5 pb-3 border-b border-border-light-default dark:border-border-dark-default">
+              <h3 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary">
+                Estatísticas do Texto
+              </h3>
+            </div>
+            
+            {/* Conteúdo */}
+            <div className="p-5 space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-text-light-secondary dark:text-dark-secondary">Palavras:</span>
+                <span className="font-semibold text-text-light-primary dark:text-dark-primary">
+                  {conteudo.trim().split(/\s+/).filter(w => w.length > 0).length}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-text-light-secondary dark:text-dark-secondary">Caracteres (com espaços):</span>
+                <span className="font-semibold text-text-light-primary dark:text-dark-primary">
+                  {conteudo.length}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-text-light-secondary dark:text-dark-secondary">Caracteres (sem espaços):</span>
+                <span className="font-semibold text-text-light-primary dark:text-dark-primary">
+                  {conteudo.replace(/\s/g, '').length}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-text-light-secondary dark:text-dark-secondary">Parágrafos:</span>
+                <span className="font-semibold text-text-light-primary dark:text-dark-primary">
+                  {conteudo.split('\n\n').filter(p => p.trim().length > 0).length}
+                </span>
+              </div>
+            </div>
+            
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-3 px-5 pb-5">
+              <Button 
+                variant="primary" 
+                size="sm"
+                onClick={() => setShowStatsModal(false)}
+              >
+                Fechar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Modal de Exportar */}
+      {showExportModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in"
+          onClick={() => setShowExportModal(false)}
+        >
+          <div
+            className="relative w-full max-w-md bg-light-raised dark:bg-dark-raised rounded-2xl shadow-soft-xl animate-slide-up overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="p-5 pb-3 border-b border-border-light-default dark:border-border-dark-default">
+              <h3 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary">
+                Exportar Texto
+              </h3>
+            </div>
+            
+            {/* Conteúdo */}
+            <div className="p-5 space-y-3">
+              <p className="text-sm text-text-light-secondary dark:text-dark-secondary mb-4">
+                Escolha o formato de exportação:
+              </p>
+              
+              <button
+                onClick={() => handleExport('pdf')}
+                className="w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors rounded-lg border border-border-light-default dark:border-border-dark-default"
+              >
+                <svg className="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" />
+                  <path d="M14 2v6h6" />
+                </svg>
+                <div>
+                  <div className="font-medium text-text-light-primary dark:text-dark-primary">PDF</div>
+                  <div className="text-xs text-text-light-tertiary dark:text-dark-tertiary">Documento portátil</div>
+                </div>
+              </button>
+              
+              <button
+                onClick={() => handleExport('docx')}
+                className="w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors rounded-lg border border-border-light-default dark:border-border-dark-default"
+              >
+                <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" />
+                  <path d="M14 2v6h6" />
+                </svg>
+                <div>
+                  <div className="font-medium text-text-light-primary dark:text-dark-primary">DOCX</div>
+                  <div className="text-xs text-text-light-tertiary dark:text-dark-tertiary">Microsoft Word</div>
+                </div>
+              </button>
+              
+              <button
+                onClick={() => handleExport('txt')}
+                className="w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors rounded-lg border border-border-light-default dark:border-border-dark-default"
+              >
+                <svg className="w-6 h-6 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" />
+                  <path d="M14 2v6h6" />
+                </svg>
+                <div>
+                  <div className="font-medium text-text-light-primary dark:text-dark-primary">TXT</div>
+                  <div className="text-xs text-text-light-tertiary dark:text-dark-tertiary">Texto simples</div>
+                </div>
+              </button>
+            </div>
+            
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-3 px-5 pb-5">
+              <Button 
+                variant="secondary" 
+                size="sm"
+                onClick={() => setShowExportModal(false)}
+              >
+                Cancelar
               </Button>
             </div>
           </div>
