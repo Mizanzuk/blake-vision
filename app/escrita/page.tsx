@@ -1137,7 +1137,7 @@ function EscritaPageContent() {
               
               {/* Botão Salvar (só aparece quando está editando) */}
               {!isMetadataLocked && (
-                <div className="flex justify-center mt-4">
+                <div className="flex justify-end mt-4">
                   <Button
                     onClick={() => handleSave(false)}
                     disabled={isSaving || !titulo.trim() || !universeId}
