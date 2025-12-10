@@ -986,7 +986,7 @@ function EscritaPageContent() {
             {/* Célula B2 - Título + Três Pontos */}
             <div className="flex justify-between items-center max-w-[672px]">
               <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary truncate">
-                A Noite do Cão Misterioso (Cópia)
+                {titulo || "Sem título"}
               </h2>
               
               <div className="relative" ref={optionsMenuRef}>
@@ -1521,7 +1521,7 @@ function EscritaPageContent() {
               "text-2xl font-bold",
               temaFoco === 'light' ? 'text-gray-900' : 'text-white'
             )}>
-              A Noite do Cão Misterioso (Cópia)
+              {titulo || "Sem título"}
             </h1>
             
             <div className="flex items-center gap-4">
