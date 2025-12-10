@@ -18,6 +18,7 @@ import { UniverseDropdown } from '@/app/components/ui';
 import { WorldsDropdownSingle } from '@/app/components/ui/WorldsDropdownSingle';
 import { EpisodesDropdownSingle } from '@/app/components/ui/EpisodesDropdownSingle';
 import { CategoryDropdownSingle } from '@/app/components/ui/CategoryDropdownSingle';
+import { MetadataModal, MobileMenu } from '@/app/components/escrita/MobileComponents';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -66,6 +67,8 @@ function EscritaPageContent() {
   // Estados do Menu Três Pontos e Modo Foco
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [showStylesDropdown, setShowStylesDropdown] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false); // Menu mobile expansível
+  const [showMetadataModal, setShowMetadataModal] = useState(false); // Modal fullscreen de metadados
   const [modoFoco, setModoFoco] = useState(false);
   const [temaFoco, setTemaFoco] = useState<'normal' | 'light' | 'dark'>('normal');
   const [menuFocoExpanded, setMenuFocoExpanded] = useState(false);
@@ -1383,9 +1386,21 @@ function EscritaPageContent() {
           </aside>
         )}
 
-        {/* Botão de expandir sidebar (quando colapsada) */}
+        {/* Botões laterais (quando sidebar colapsada) */}
         {!isSidebarOpen && (
-          <div className="w-12 bg-light-raised dark:bg-dark-raised flex flex-col items-center pt-4 flex-shrink-0">
+          <div className="w-12 bg-light-raised dark:bg-dark-raised flex flex-col items-center pt-4 gap-2 flex-shrink-0">
+            {/* Botão sanduíche (menu mobile) - só aparece no mobile */}
+            <button
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              className="w-10 h-10 flex items-center justify-center hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors rounded-lg md:hidden"
+              title="Menu"
+            >
+              <svg className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            
+            {/* Botão lápis (abrir sidebar) */}
             <button
               onClick={() => setIsSidebarOpen(true)}
               className="w-10 h-10 flex items-center justify-center hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors rounded-lg"
@@ -1410,7 +1425,7 @@ function EscritaPageContent() {
             <div className="flex justify-between items-center max-w-[672px]">
               <button 
                 onClick={enterModoFoco}
-                className="px-4 py-2 bg-primary-600 dark:bg-primary-500 text-white rounded hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors text-sm font-medium inline-flex items-center gap-2"
+                className="hidden md:inline-flex px-4 py-2 bg-primary-600 dark:bg-primary-500 text-white rounded hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors text-sm font-medium items-center gap-2"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
@@ -1419,7 +1434,7 @@ function EscritaPageContent() {
                 Modo Foco
               </button>
               
-              <div className="flex gap-3">
+              <div className="hidden md:flex gap-3">
                 <button
                   onClick={() => {
                     setShowUrizen(!showUrizen);
@@ -1453,10 +1468,10 @@ function EscritaPageContent() {
 
           {/* LINHA 2: Grid 3 colunas - Botão Colapsar (A2) + Título (B2) + Menu (C2) */}
           <div className="h-12 grid grid-cols-[48px_1fr_48px] gap-0 items-center px-4 flex-shrink-0 max-w-[768px] mx-auto w-full">
-            {/* Célula A2 - Botão Colapsar */}
+            {/* Célula A2 - Botão Colapsar (só desktop) */}
             <button
               onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
-              className="text-xl hover:opacity-70 transition-opacity text-text-light-secondary dark:text-dark-secondary"
+              className="hidden md:block text-xl hover:opacity-70 transition-opacity text-text-light-secondary dark:text-dark-secondary"
               title={isHeaderExpanded ? "Colapsar" : "Expandir"}
             >
               <svg 
@@ -1474,7 +1489,15 @@ function EscritaPageContent() {
             
             {/* Célula B2 - Título + Três Pontos */}
             <div className="flex justify-between items-center max-w-[672px]">
-              <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary truncate">
+              <h2 
+                onClick={() => {
+                  // No mobile, abre modal de metadados
+                  if (window.innerWidth < 768) {
+                    setShowMetadataModal(true);
+                  }
+                }}
+                className="text-lg font-semibold text-text-light-primary dark:text-dark-primary truncate md:cursor-default cursor-pointer"
+              >
                 {titulo || "Sem título"}
               </h2>
               
@@ -1681,8 +1704,8 @@ function EscritaPageContent() {
             {/* Célula A4 - Vazia */}
             <div></div>
             
-            {/* Célula B4 - Toolbar */}
-            <div className="flex items-center gap-4">
+            {/* Célula B4 - Toolbar (só desktop) */}
+            <div className="hidden md:flex items-center gap-4">
               <button 
                 onClick={() => editorRef.current?.chain().focus().toggleBold().run()}
                 className="text-sm font-medium hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary"
@@ -1776,9 +1799,9 @@ function EscritaPageContent() {
           {/* Célula A6 - Vazia */}
           <div></div>
           
-          {/* Célula B6 - Botões */}
+          {/* Célula B6 - Botões (só desktop) */}
           <div className="flex justify-start">
-            <div className="max-w-[672px] w-full flex gap-3 justify-end">
+            <div className="hidden md:flex max-w-[672px] w-full gap-3 justify-end">
               <button 
                 onClick={() => handleSave(false)}
                 disabled={isSaving}
@@ -2951,6 +2974,54 @@ function EscritaPageContent() {
         }}
         category={categoryToEdit}
         onSave={handleSaveCategory}
+      />
+      
+      {/* Componentes Mobile */}
+      <MetadataModal
+        show={showMetadataModal}
+        onClose={() => setShowMetadataModal(false)}
+        titulo={titulo}
+        setTitulo={setTitulo}
+        universes={universes}
+        universeId={universeId}
+        setUniverseId={setUniverseId}
+        worlds={worlds}
+        worldId={worldId}
+        setWorldId={setWorldId}
+        availableEpisodes={availableEpisodes}
+        episodio={episodio}
+        setEpisodio={setEpisodio}
+        categories={categories}
+        categoria={categoria}
+        setCategoria={setCategoria}
+        onSave={() => handleSave(false)}
+        isMetadataLocked={isMetadataLocked}
+        setShowEditUniverseModal={setShowEditUniverseModal}
+        setUniverseForm={setUniverseForm}
+        promptDeleteUniverse={promptDeleteUniverse}
+        setShowCreateUniverseModal={setShowCreateUniverseModal}
+        setWorldToEdit={setWorldToEdit}
+        setShowCreateWorldModal={setShowCreateWorldModal}
+        setShowCreateEpisodeModal={setShowCreateEpisodeModal}
+        setCategoryToEdit={setCategoryToEdit}
+        setShowCreateCategoryModal={setShowCreateCategoryModal}
+      />
+      
+      <MobileMenu
+        show={showMobileMenu}
+        onClose={() => setShowMobileMenu(false)}
+        showUrizen={showUrizen}
+        setShowUrizen={setShowUrizen}
+        showUrthona={showUrthona}
+        setShowUrthona={setShowUrthona}
+        editorRef={editorRef}
+        showStylesDropdown={showStylesDropdown}
+        setShowStylesDropdown={setShowStylesDropdown}
+        setShowStatsModal={setShowStatsModal}
+        setShowExportModal={setShowExportModal}
+        handleSave={handleSave}
+        handlePublish={handlePublish}
+        isSaving={isSaving}
       />
     </div>
     </>
