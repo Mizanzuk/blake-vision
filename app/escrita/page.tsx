@@ -7,7 +7,7 @@ import { Header } from '@/app/components/layout/Header';
 import TiptapEditor from '@/components/TiptapEditor';
 import { FontFamily } from '@/components/FontSelector';
 import { createClient } from '@/app/lib/supabase/client';
-import { toast, Toaster } from 'sonner';
+import { toast } from 'sonner';
 import { Modal } from '@/app/components/ui/Modal';
 import { Button } from '@/app/components/ui/Button';
 import { Badge } from '@/app/components/ui/Badge';
@@ -1221,7 +1221,6 @@ function EscritaPageContent() {
 
   return (
     <>
-      <Toaster />
       <div className="min-h-screen bg-light-base dark:bg-dark-base flex flex-col">
       <Header showNav={true} currentPage="escrita" title={titulo || "Sem título"} editorRef={editorRef} />
 
