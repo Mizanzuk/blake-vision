@@ -1602,22 +1602,24 @@ function EscritaPageContent() {
           <div className="md:hidden fixed top-16 left-12 right-0 z-30 flex justify-center py-2 px-4 border-b border-light-border dark:border-dark-border bg-light-base dark:bg-dark-base">
             <div className="flex gap-2 relative">
               <button
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  const editor = document.querySelector('[contenteditable="true"]') as HTMLElement;
-                  if (editor) editor.focus();
-                  document.execCommand('bold', false, undefined);
+                onClick={() => {
+                  if (editorRef.current) {
+                    editorRef.current.chain().focus().toggleBold().run();
+                  } else {
+                    console.error('editorRef.current is null');
+                  }
                 }}
                 className="w-10 h-8 flex items-center justify-center text-sm font-bold rounded bg-light-overlay dark:bg-dark-overlay hover:bg-light-base dark:hover:bg-dark-base text-text-light-primary dark:text-dark-primary transition-colors"
               >
                 B
               </button>
               <button
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  const editor = document.querySelector('[contenteditable="true"]') as HTMLElement;
-                  if (editor) editor.focus();
-                  document.execCommand('italic', false, undefined);
+                onClick={() => {
+                  if (editorRef.current) {
+                    editorRef.current.chain().focus().toggleItalic().run();
+                  } else {
+                    console.error('editorRef.current is null');
+                  }
                 }}
                 className="w-10 h-8 flex items-center justify-center text-sm italic rounded bg-light-overlay dark:bg-dark-overlay hover:bg-light-base dark:hover:bg-dark-base text-text-light-primary dark:text-dark-primary transition-colors"
               >
