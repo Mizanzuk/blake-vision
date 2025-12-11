@@ -8,7 +8,7 @@ import { Button, Loading, EmptyState } from "@/app/components/ui";
 import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
 import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import EpisodeModal from "@/app/components/projetos/EpisodeModal";
-import ConceptRuleModal from "@/app/components/projetos/ConceptRuleModal";
+import ConceptRuleModal from "@/app/components/shared/ConceptRuleModal";
 import WorldModal from "@/app/components/projetos/WorldModal";
 import SinopseViewModal from "@/app/components/projetos/SinopseViewModal";
 import FichaCard from "@/app/components/shared/FichaCard";

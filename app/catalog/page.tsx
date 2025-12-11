@@ -39,6 +39,9 @@ import WorldModal from "@/app/components/catalog/WorldModal";
 import CategoryModal from "@/app/components/catalog/CategoryModal";
 import FichaCard from "@/app/components/shared/FichaCard";
 import FichaViewModal from "@/app/components/shared/FichaViewModal";
+import ConceptRuleModal from "@/app/components/shared/ConceptRuleModal";
+import EpisodeModal from "@/app/components/projetos/EpisodeModal";
+import SinopseViewModal from "@/app/components/projetos/SinopseViewModal";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
@@ -136,6 +139,9 @@ function CatalogContent() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewingFicha, setViewingFicha] = useState<Ficha | null>(null);
+  const [showSinopseViewModal, setShowSinopseViewModal] = useState(false);
+  const [viewingSinopse, setViewingSinopse] = useState<Episode | null>(null);
+  const [showEpisodeModal, setShowEpisodeModal] = useState(false);
   
   // Fechar modais com ESC
   useEffect(() => {
@@ -449,8 +455,15 @@ function CatalogContent() {
     if (!viewingFicha) return;
     
     setShowViewModal(false);
-    setSelectedFicha(viewingFicha);
-    setShowFichaModal(true);
+    
+    // Usar modal específico baseado no tipo
+    if (viewingFicha.tipo === "conceito" || viewingFicha.tipo === "regra") {
+      setSelectedFicha(viewingFicha);
+      setShowFichaModal(true);
+    } else {
+      setSelectedFicha(viewingFicha);
+      setShowFichaModal(true);
+    }
   }
 
   function handleCloseViewModal() {
@@ -1181,18 +1194,38 @@ function CatalogContent() {
       </div>
 
       {/* Modals */}
-      <FichaModal
-        isOpen={showFichaModal}
-        onClose={() => {
-          setShowFichaModal(false);
-          setSelectedFicha(null);
-        }}
-        ficha={selectedFicha}
-        worlds={worlds}
-        categories={categories}
-        onSave={handleSaveFicha}
-        onDelete={selectedFicha ? handleDeleteFicha : undefined}
-      />
+      {/* Modal para Conceitos e Regras */}
+      {showFichaModal && selectedFicha && (selectedFicha.tipo === "conceito" || selectedFicha.tipo === "regra") && (
+        <ConceptRuleModal
+          item={selectedFicha}
+          tipo={selectedFicha.tipo as "conceito" | "regra"}
+          universes={universes}
+          worlds={worlds}
+          preSelectedUniverseId={selectedUniverseId}
+          onSave={handleSaveFicha}
+          onDelete={handleDeleteFicha}
+          onClose={() => {
+            setShowFichaModal(false);
+            setSelectedFicha(null);
+          }}
+        />
+      )}
+
+      {/* Modal para outras categorias */}
+      {showFichaModal && selectedFicha && selectedFicha.tipo !== "conceito" && selectedFicha.tipo !== "regra" && (
+        <FichaModal
+          isOpen={showFichaModal}
+          onClose={() => {
+            setShowFichaModal(false);
+            setSelectedFicha(null);
+          }}
+          ficha={selectedFicha}
+          worlds={worlds}
+          categories={categories}
+          onSave={handleSaveFicha}
+          onDelete={selectedFicha ? handleDeleteFicha : undefined}
+        />
+      )}
 
       <WorldModal
         isOpen={showWorldModal}
