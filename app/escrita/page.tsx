@@ -1223,7 +1223,7 @@ function EscritaPageContent() {
     <>
       <Toaster />
       <div className="min-h-screen bg-light-base dark:bg-dark-base flex flex-col">
-      <Header showNav={true} currentPage="escrita" title={titulo || "Sem título"} />
+      <Header showNav={true} currentPage="escrita" title={titulo || "Sem título"} editorRef={editorRef} />
 
       {/* MAIN CONTENT */}
       <div className="flex flex-1 overflow-hidden">
@@ -1603,84 +1603,6 @@ function EscritaPageContent() {
             <div></div>
           </div>
 
-          {/* LINHA 2.5: Barra de Formatação (Mobile) */}
-          <div className="md:hidden fixed top-16 left-12 right-0 z-30 flex justify-center py-2 px-4 border-b border-light-border dark:border-dark-border bg-light-base dark:bg-dark-base">
-            <div className="flex gap-2 relative">
-              <button
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  if (editorRef.current) {
-                    editorRef.current.chain().focus().toggleBold().run();
-                  } else {
-                    console.error('editorRef.current is null');
-                  }
-                }}
-                className="w-10 h-8 flex items-center justify-center text-sm font-bold rounded bg-light-overlay dark:bg-dark-overlay hover:bg-light-base dark:hover:bg-dark-base text-text-light-primary dark:text-dark-primary transition-colors"
-              >
-                B
-              </button>
-              <button
-                 onMouseDown={(e) => {
-                  e.preventDefault();
-                  if (editorRef.current) {
-                    editorRef.current.chain().focus().toggleItalic().run();
-                  } else {
-                    console.error('editorRef.current is null');
-                  }
-                }}
-                className="w-10 h-8 flex items-center justify-center text-sm italic rounded bg-light-overlay dark:bg-dark-overlay hover:bg-light-base dark:hover:bg-dark-base text-text-light-primary dark:text-dark-primary transition-colors"
-              >
-                I
-              </button>
-              <div className="relative">
-                <button
-                  onClick={() => setShowStylesDropdown(!showStylesDropdown)}
-                  className="w-10 h-8 flex items-center justify-center text-sm rounded bg-light-overlay dark:bg-dark-overlay hover:bg-light-base dark:hover:bg-dark-base text-text-light-primary dark:text-dark-primary transition-colors"
-                >
-                  Aa
-                </button>
-                {showStylesDropdown && (
-                  <div className="absolute top-full left-0 mt-2 bg-light-base dark:bg-dark-base border border-light-border dark:border-dark-border rounded-lg shadow-lg py-2 z-50 min-w-[120px]">
-                    <button
-                      onClick={() => {
-                        setFontFamily('serif');
-                        setShowStylesDropdown(false);
-                      }}
-                      className={`w-full px-4 py-2 text-left text-sm hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors font-serif ${
-                        fontFamily === 'serif' ? 'font-semibold text-primary-600 dark:text-primary-400' : 'text-text-light-primary dark:text-dark-primary'
-                      }`}
-                    >
-                      Serif
-                    </button>
-                    <button
-                      onClick={() => {
-                        setFontFamily('sans');
-                        setShowStylesDropdown(false);
-                      }}
-                      className={`w-full px-4 py-2 text-left text-sm hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors font-sans ${
-                        fontFamily === 'sans' ? 'font-semibold text-primary-600 dark:text-primary-400' : 'text-text-light-primary dark:text-dark-primary'
-                      }`}
-                    >
-                      Sans
-                    </button>
-                    <button
-                      onClick={() => {
-                        console.log('[DEBUG] Botão Mono clicado! Estado atual:', fontFamily);
-                        setFontFamily('mono');
-                        console.log('[DEBUG] setFontFamily("mono") chamado');
-                        setShowStylesDropdown(false);
-                      }}
-                      className={`w-full px-4 py-2 text-left text-sm hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors font-mono ${
-                        fontFamily === 'mono' ? 'font-semibold text-primary-600 dark:text-primary-400' : 'text-text-light-primary dark:text-dark-primary'
-                      }`}
-                    >
-                      Mono
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
 
           {/* LINHA 3: Metadados (Condicional) */}
           {isHeaderExpanded && (

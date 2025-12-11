@@ -11,9 +11,10 @@ interface HeaderProps {
   title?: string;
   showNav?: boolean;
   currentPage?: "home" | "catalog" | "timeline" | "escrita" | "upload" | "projetos" | "faq";
+  editorRef?: any; // Para acessar o editor TipTap
 }
 
-export function Header({ title, showNav = true, currentPage }: HeaderProps) {
+export function Header({ title, showNav = true, currentPage, editorRef }: HeaderProps) {
   const router = useRouter();
   const supabase = getSupabaseClient();
   
@@ -127,23 +128,48 @@ export function Header({ title, showNav = true, currentPage }: HeaderProps) {
             )}
           </div>
 
-          {/* Center: Title (Mobile only, Escrita page) */}
+          {/* Center: Title + Formatting Buttons (Mobile only, Escrita page) */}
           {title && currentPage === "escrita" && (
-            <button 
-              onClick={() => {
-                // Trigger metadata modal
-                const event = new CustomEvent('openMetadataModal');
-                window.dispatchEvent(event);
-              }}
-              className="flex-1 flex items-center justify-center gap-2 md:hidden"
-            >
-              <svg className="w-4 h-4 text-text-light-secondary dark:text-dark-secondary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-              <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary truncate max-w-[50%]">
-                {title}
-              </h2>
-            </button>
+            <div className="flex-1 flex items-center justify-between gap-2 md:hidden px-2">
+              {/* Título à esquerda */}
+              <button 
+                onClick={() => {
+                  // Trigger metadata modal
+                  const event = new CustomEvent('openMetadataModal');
+                  window.dispatchEvent(event);
+                }}
+                className="flex items-center gap-2 flex-shrink min-w-0"
+              >
+                <svg className="w-4 h-4 text-text-light-secondary dark:text-dark-secondary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+                <h2 className="text-base font-semibold text-text-light-primary dark:text-dark-primary truncate">
+                  {title}
+                </h2>
+              </button>
+
+              {/* Botões B e I à direita */}
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <button
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    editorRef?.current?.chain().focus().toggleBold().run();
+                  }}
+                  className="w-8 h-8 flex items-center justify-center rounded text-sm font-bold text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
+                >
+                  B
+                </button>
+                <button
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    editorRef?.current?.chain().focus().toggleItalic().run();
+                  }}
+                  className="w-8 h-8 flex items-center justify-center rounded text-sm italic font-medium text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
+                >
+                  I
+                </button>
+              </div>
+            </div>
           )}
 
           {/* Right: FAQ + Profile Dropdown */}
