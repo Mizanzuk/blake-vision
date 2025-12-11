@@ -14,7 +14,7 @@ import FichaCard from "@/app/components/shared/FichaCard";
 import FichaViewModal from "@/app/components/shared/FichaViewModal";
 import TipoDropdown from "@/app/components/projetos/TipoDropdown";
 import OrdenacaoDropdown from "@/app/components/projetos/OrdenacaoDropdown";
-import type { Universe, World, Ficha } from "@/app/types";
+import type { Universe, World, Ficha, Episode } from "@/app/types";
 import { toast } from "sonner";
 
 
@@ -31,6 +31,7 @@ export default function ProjetosPage() {
   const [selectedWorldId, setSelectedWorldId] = useState<string>("");
   const [selectedTipos, setSelectedTipos] = useState<string[]>([]);
   const [fichas, setFichas] = useState<Ficha[]>([]);
+  const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [ordenacao, setOrdenacao] = useState<"asc" | "desc">("asc");
   
   // Modals
@@ -75,8 +76,10 @@ export default function ProjetosPage() {
   useEffect(() => {
     if (selectedUniverseId) {
       loadFichas();
+      loadEpisodes();
     } else {
       setFichas([]);
+      setEpisodes([]);
     }
   }, [selectedUniverseId, selectedWorldId, selectedTipos, ordenacao]);
 
@@ -145,30 +148,23 @@ export default function ProjetosPage() {
       if (selectedTipos.length > 0) {
         url += `&tipo=${selectedTipos.join(',')}`;
       } else {
-        // Load episodios, conceitos, and regras
-        url += `&tipo=episodio,conceito,regra`;
+        // Load apenas conceitos e regras (episodios vem da tabela episodes)
+        url += `&tipo=conceito,regra`;
       }
       
       const response = await fetch(url);
       const data = await response.json();
       
       if (response.ok) {
-        // Sort by type and then by episode number or title
+        // Sort by type and then by title
         const sortedFichas = (data.fichas || []).sort((a: Ficha, b: Ficha) => {
           // First sort by type
-          const typeOrder = { episodio: 1, conceito: 2, regra: 3 };
+          const typeOrder = { conceito: 1, regra: 2 };
           const typeA = typeOrder[a.tipo as keyof typeof typeOrder] || 999;
           const typeB = typeOrder[b.tipo as keyof typeof typeOrder] || 999;
           
           if (typeA !== typeB) {
             return typeA - typeB;
-          }
-          
-          // Then by episode number for episodes
-          if (a.tipo === "episodio" && b.tipo === "episodio") {
-            const numA = a.numero_episodio || 0;
-            const numB = b.numero_episodio || 0;
-            return numA - numB;
           }
           
           // Otherwise by title
@@ -204,7 +200,39 @@ export default function ProjetosPage() {
       } else {
         return [...prev, tipo];
       }
-    });
+     }
+  }
+
+  async function loadEpisodes() {
+    try {
+      let url = `/api/episodes?`;
+      
+      if (selectedWorldId) {
+        url += `worldId=${selectedWorldId}`;
+      } else if (selectedUniverseId) {
+        // Carregar episodes de todos os mundos do universo
+        const worldIds = worlds.map(w => w.id).join(',');
+        if (worldIds) {
+          url += `worldIds=${worldIds}`;
+        }
+      }
+      
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (response.ok) {
+        const sortedEpisodes = (data.episodes || []).sort((a: Episode, b: Episode) => {
+          return ordenacao === "asc" ? a.numero - b.numero : b.numero - a.numero;
+        });
+        setEpisodes(sortedEpisodes);
+      } else {
+        console.error("Error loading episodes:", data.error);
+        setEpisodes([]);
+      }
+    } catch (error) {
+      console.error("Error loading episodes:", error);
+      setEpisodes([]);
+    }
   }
 
   function handleNewEpisode() {
@@ -329,7 +357,7 @@ export default function ProjetosPage() {
       if (response.ok) {
         const action = episodeData.id ? "atualizado" : "criado";
         toast.success(`Episódio ${action}`);
-        await loadFichas();
+        await loadEpisodes();
         setShowEpisodeModal(false);
         setSelectedFicha(null);
       } else {
@@ -349,7 +377,7 @@ export default function ProjetosPage() {
 
       if (response.ok) {
         toast.success("Episódio deletado");
-        await loadFichas();
+        await loadEpisodes();
         setShowEpisodeModal(false);
         setSelectedFicha(null);
       } else {
@@ -522,7 +550,7 @@ export default function ProjetosPage() {
             title="Selecione um Universo"
             description="Escolha um universo para visualizar e gerenciar seus projetos"
           />
-        ) : fichas.length === 0 ? (
+        ) : episodes.length === 0 && fichas.length === 0 ? (
           <EmptyState
             icon={
               <svg className="w-24 h-24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -534,77 +562,75 @@ export default function ProjetosPage() {
           />
         ) : (
           <div className="space-y-8">
-            {/* Agrupar episódios por mundo */}
-            {(() => {
-              // Separar episódios de outros tipos
-              const episodios = fichas.filter(f => f.tipo === "episodio");
-              const outros = fichas.filter(f => f.tipo !== "episodio");
-              
-              // Agrupar episódios por mundo
-              const episodiosPorMundo = episodios.reduce((acc, ep) => {
-                const worldId = ep.world_id;
-                if (!acc[worldId]) {
-                  acc[worldId] = [];
-                }
-                acc[worldId].push(ep);
-                return acc;
-              }, {} as Record<string, Ficha[]>);
-              
-              // Ordenar episódios dentro de cada mundo
-              Object.keys(episodiosPorMundo).forEach(worldId => {
-                episodiosPorMundo[worldId].sort((a, b) => {
-                  const numA = parseInt(a.episodio || "0");
-                  const numB = parseInt(b.episodio || "0");
-                  return ordenacao === "asc" ? numA - numB : numB - numA;
-                });
-              });
-              
-              return (
-                <>
-                  {/* Renderizar episódios agrupados por mundo */}
-                  {Object.entries(episodiosPorMundo).map(([worldId, worldEpisodes]) => {
-                    const world = allWorlds.find(w => w.id === worldId);
-                    return (
-                      <div key={worldId}>
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                          {world?.nome || "Mundo Desconhecido"}
-                        </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {worldEpisodes.map((ficha) => (
-                            <FichaCard
-                              key={ficha.id}
-                              ficha={ficha}
-                              onClick={() => handleViewFicha(ficha)}
-                              withIndent={true}
-                            />
-                          ))}
-                        </div>
+            {/* Renderizar episódios da tabela episodes */}
+            {episodes.length > 0 && (
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                  Episódios
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {episodes.map((episode) => (
+                    <div
+                      key={episode.id}
+                      onClick={() => {
+                        // Converter episode para formato de ficha para o modal
+                        const episodeFicha = {
+                          id: episode.id,
+                          tipo: "episodio",
+                          titulo: episode.titulo,
+                          resumo: episode.sinopse,
+                          conteudo: episode.logline,
+                          episodio: episode.numero.toString(),
+                          world_id: episode.world_id,
+                        } as any;
+                        setSelectedFicha(episodeFicha);
+                        setShowEpisodeModal(true);
+                      }}
+                      className="bg-white dark:bg-dark-card rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-200 dark:border-gray-700"
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                          Episódio {episode.numero}
+                        </span>
                       </div>
-                    );
-                  })}
-                  
-                  {/* Renderizar conceitos e regras */}
-                  {outros.length > 0 && (
-                    <div>
-                      {episodios.length > 0 && (
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                          Conceitos e Regras
-                        </h2>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                        {episode.titulo}
+                      </h3>
+                      {episode.logline && (
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-2 line-clamp-2">
+                          {episode.logline}
+                        </p>
                       )}
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {outros.map((ficha) => (
-                          <FichaCard
-                            key={ficha.id}
-                            ficha={ficha}
-                            onClick={() => handleViewFicha(ficha)}
-                          />
-                        ))}
-                      </div>
+                      {episode.sinopse && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-3">
+                          {episode.sinopse}
+                        </p>
+                      )}
                     </div>
-                  )}
-                </>
-              );
-            })()}
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Renderizar conceitos e regras */}
+            {fichas.length > 0 && (
+              <div>
+                {episodes.length > 0 && (
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                    Conceitos e Regras
+                  </h2>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {fichas.map((ficha) => (
+                    <FichaCard
+                      key={ficha.id}
+                      ficha={ficha}
+                      onClick={() => handleViewFicha(ficha)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
