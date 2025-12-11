@@ -11,3 +11,115 @@
   content: '\200B';
   display: inline-block;
 }
+
+/* Toast customization - Blake Vision style */
+:root {
+  --toast-bg: #FFFFFF;
+  --toast-text: #2B1810;
+  --toast-border: #E8E4DB;
+  --toast-success: #10b981;
+  --toast-error: #ef4444;
+  --toast-warning: #f59e0b;
+  --toast-info: #3b82f6;
+}
+
+.dark {
+  --toast-bg: #2B2420;
+  --toast-text: #F5F1E8;
+  --toast-border: #4D443D;
+  --toast-success: #34d399;
+  --toast-error: #f87171;
+  --toast-warning: #fbbf24;
+  --toast-info: #60a5fa;
+}
+
+/* Sonner toaster container - top center, only 1 toast */
+[data-sonner-toaster] {
+  top: 16px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  right: auto !important;
+  bottom: auto !important;
+}
+
+[data-sonner-toaster] [data-sonner-toast]:nth-child(n+2) {
+  display: none !important;
+}
+
+/* Sonner toast customization */
+[data-sonner-toast] {
+  background: var(--toast-bg) !important;
+  color: var(--toast-text) !important;
+  border: 1px solid var(--toast-border) !important;
+  border-radius: 8px !important;
+  padding: 12px 16px !important;
+  font-size: 14px !important;
+  font-family: var(--font-geist-sans), Inter, system-ui !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  min-width: 320px;
+  max-width: 480px;
+}
+
+/* Success toast */
+[data-sonner-toast][data-type="success"] {
+  border-left: 3px solid var(--toast-success) !important;
+}
+
+[data-sonner-toast][data-type="success"] [data-icon] {
+  color: var(--toast-success) !important;
+}
+
+/* Error toast */
+[data-sonner-toast][data-type="error"] {
+  border-left: 3px solid var(--toast-error) !important;
+}
+
+[data-sonner-toast][data-type="error"] [data-icon] {
+  color: var(--toast-error) !important;
+}
+
+/* Warning toast */
+[data-sonner-toast][data-type="warning"] {
+  border-left: 3px solid var(--toast-warning) !important;
+}
+
+[data-sonner-toast][data-type="warning"] [data-icon] {
+  color: var(--toast-warning) !important;
+}
+
+/* Info toast */
+[data-sonner-toast][data-type="info"] {
+  border-left: 3px solid var(--toast-info) !important;
+}
+
+[data-sonner-toast][data-type="info"] [data-icon] {
+  color: var(--toast-info) !important;
+}
+
+/* Toast close button */
+[data-sonner-toast] [data-close-button] {
+  background: transparent !important;
+  color: var(--toast-text) !important;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+[data-sonner-toast] [data-close-button]:hover {
+  opacity: 1;
+}
+
+/* Toast animation */
+[data-sonner-toast] {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
