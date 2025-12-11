@@ -242,17 +242,18 @@ function EscritaPageContent() {
     }
   }, [titulo, universeId, isMetadataLocked, savedMetadataSnapshot]);
   
-  // Auto-save a cada 30 segundos (apenas se já tiver ID do texto)
+  // Auto-save a cada 30 segundos (apenas para textos RASCUNHO abertos)
   // DESABILITADO quando metadados estão expandidos para evitar fechar durante edição
+  // DESABILITADO para textos publicados (não devem ser editados automaticamente)
   useEffect(() => {
-    if (!conteudo || !currentTextId || isHeaderExpanded) return;
+    if (!conteudo || !currentTextId || isHeaderExpanded || currentStatus !== 'rascunho') return;
     
     const autoSaveInterval = setInterval(() => {
       handleSave(true); // true = auto-save silencioso
     }, 30000); // 30 segundos
     
     return () => clearInterval(autoSaveInterval);
-  }, [conteudo, currentTextId, isHeaderExpanded]);
+  }, [conteudo, currentTextId, isHeaderExpanded, currentStatus]);
   
   // Fechar modais com ESC
   useEffect(() => {
