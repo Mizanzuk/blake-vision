@@ -1,6 +1,16 @@
 'use client';
 
+import React from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
+
+// Suprimir warning benigno do ResizeObserver do TipTap
+if (typeof window !== 'undefined') {
+  const resizeObserverErr = window.console.error;
+  window.console.error = (...args: any[]) => {
+    if (args[0]?.includes?.('ResizeObserver loop')) return;
+    resizeObserverErr(...args);
+  };
+}
 import Focus from '@tiptap/extension-focus';
 import StarterKit from '@tiptap/starter-kit';
 import Mention from '@tiptap/extension-mention';
@@ -108,7 +118,7 @@ const suggestion: Omit<SuggestionOptions, 'editor'> = {
 
 
 
-export default function TiptapEditor({ 
+function TiptapEditor({ 
   value, 
   onChange, 
   placeholder, 
@@ -301,4 +311,7 @@ export default function TiptapEditor({
     </div>
   );
 }
+
+// Exportar com React.memo para evitar re-renderizações desnecessárias
+export default React.memo(TiptapEditor);
 // Force rebuild: Sun Dec  7 23:41:27 EST 2025
