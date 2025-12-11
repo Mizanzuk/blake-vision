@@ -847,7 +847,7 @@ function EscritaPageContent() {
   });
   
   // Handlers
-  const handleSave = async (autoSave: boolean = false) => {
+  const handleSave = async (autoSave = false, overrideStatus?: string) => {
     console.log('🚀🚀🚀 HANDLE SAVE EXECUTADO! 🚀🚀🚀');
     console.log('📊 Estado atual:', { titulo, conteudo: conteudo.substring(0, 50), currentTextId, autoSave });
     
@@ -867,7 +867,7 @@ function EscritaPageContent() {
         world_id: null,
         episodio: null,
         categoria: null,
-        status: currentStatus, // Preservar status atual
+        status: overrideStatus || currentStatus, // Usar override se fornecido, senão preservar status atual
       };
 
       let response;
@@ -932,8 +932,8 @@ function EscritaPageContent() {
   
   const handlePublish = async () => {
     try {
-      // Primeiro salva o texto
-      await handleSave(false);
+      // Salvar o texto com status publicado
+      await handleSave(false, 'publicado');
       
       // Se não tem ID do texto, não pode publicar
       if (!currentTextId) {
@@ -941,27 +941,8 @@ function EscritaPageContent() {
         return;
       }
       
-      // Atualizar status para publicado
-      const response = await fetch('/api/textos', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: currentTextId,
-          status: 'publicado'
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error('Erro ao publicar texto');
-      }
-      
-      const { texto } = await response.json();
-      
-      // Remover da lista de rascunhos
-      setRascunhos(prev => prev.filter(t => t.id !== currentTextId));
-      
-      // Adicionar na lista de publicados
-      setPublicados(prev => [texto, ...prev]);
+      // Recarregar lista de textos
+      loadTextos();
       
       // Atualizar status local
       setCurrentStatus('publicado');
