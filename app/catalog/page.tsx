@@ -1202,7 +1202,6 @@ function CatalogContent() {
           tipo={selectedFicha.tipo as "conceito" | "regra"}
           universes={universes}
           worlds={worlds}
-          preSelectedUniverseId={selectedUniverseId}
           onSave={handleSaveFicha}
           onDelete={handleDeleteFicha}
           onClose={() => {

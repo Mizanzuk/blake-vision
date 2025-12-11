@@ -94,7 +94,7 @@ export async function GET(req: NextRequest) {
     if (worldIds.length > 0) {
       let query = supabase
         .from("fichas")
-        .select("id, world_id, tipo, titulo, slug, codigo, resumo, conteudo, ano_diegese, tags, episodio, imagem_url, aparece_em")
+        .select("id, universe_id, world_id, tipo, titulo, slug, codigo, resumo, descricao, conteudo, ano_diegese, tags, episodio, imagem_url, aparece_em")
         .in("world_id", worldIds);
 
       // Filter by tipo if provided
