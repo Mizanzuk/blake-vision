@@ -2648,6 +2648,37 @@ function EscritaPageContent() {
             }}
           >
             <div className="flex flex-col">
+              {/* Botões de Formatação */}
+              <div className="flex items-center justify-center gap-2 p-2 border-b border-border-light-default dark:border-border-dark-default">
+                <button
+                  onClick={() => {
+                    if (editorRef.current) {
+                      editorRef.current.chain().focus().toggleBold().run();
+                    }
+                    setSelectionMenuPosition(null);
+                    setSelectedText("");
+                  }}
+                  className="w-8 h-8 flex items-center justify-center text-sm font-bold rounded bg-light-overlay dark:bg-dark-overlay hover:bg-light-base dark:hover:bg-dark-base text-text-light-primary dark:text-dark-primary transition-colors"
+                  title="Negrito"
+                >
+                  B
+                </button>
+                <button
+                  onClick={() => {
+                    if (editorRef.current) {
+                      editorRef.current.chain().focus().toggleItalic().run();
+                    }
+                    setSelectionMenuPosition(null);
+                    setSelectedText("");
+                  }}
+                  className="w-8 h-8 flex items-center justify-center text-sm italic rounded bg-light-overlay dark:bg-dark-overlay hover:bg-light-base dark:hover:bg-dark-base text-text-light-primary dark:text-dark-primary transition-colors"
+                  title="Itálico"
+                >
+                  I
+                </button>
+              </div>
+              
+              {/* Assistentes de IA */}
               <div className="flex items-center justify-center gap-3 p-2">
                 {/* Avatar Urthona */}
                 <button
