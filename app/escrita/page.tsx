@@ -924,9 +924,47 @@ function EscritaPageContent() {
   };
   
   const handlePublish = async () => {
-    await handleSave();
-    // TODO: Implementar lógica de publicação
-    toast.success('Texto publicado!');
+    try {
+      // Primeiro salva o texto
+      await handleSave(false);
+      
+      // Se não tem ID do texto, não pode publicar
+      if (!currentTextId) {
+        toast.error('Salve o texto antes de publicar');
+        return;
+      }
+      
+      // Atualizar status para publicado
+      const response = await fetch('/api/textos', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: currentTextId,
+          status: 'publicado'
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Erro ao publicar texto');
+      }
+      
+      const { texto } = await response.json();
+      
+      // Remover da lista de rascunhos
+      setRascunhos(prev => prev.filter(t => t.id !== currentTextId));
+      
+      // Adicionar na lista de publicados
+      setPublicados(prev => [texto, ...prev]);
+      
+      // Mudar para aba de publicados
+      setActiveTab('publicados');
+      
+      toast.success('Texto publicado com sucesso!');
+      
+    } catch (error) {
+      console.error('Erro ao publicar:', error);
+      toast.error('Erro ao publicar texto');
+    }
   };
   
   const handleAssistantMessage = async (agent: 'urthona' | 'urizen') => {
