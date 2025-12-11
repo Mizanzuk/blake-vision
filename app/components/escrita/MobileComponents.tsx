@@ -98,6 +98,7 @@ export function MetadataModal({
                 window.dispatchEvent(event);
               }}
               variant="primary"
+              size="sm"
               className="w-full"
             >
               Editar Metadados
@@ -198,16 +199,18 @@ export function MetadataModal({
             <Button
               onClick={onClose}
               variant="secondary"
+              size="sm"
               className="flex-1"
             >
               Cancelar
             </Button>
             <Button
               onClick={() => {
-                onSave();
+                handleSave();
                 onClose();
               }}
               variant="primary"
+              size="sm"
               className="flex-1"
             >
               Salvar Metadados
@@ -306,7 +309,7 @@ export function MobileMenu({
         <div className="flex gap-2">
           <button
             onClick={() => {
-              editorRef.current?.chain().focus().toggleBold().run();
+              editorRef.current?.chain().toggleBold().run();
             }}
             className="flex-1 px-4 py-2 text-sm font-bold rounded bg-light-overlay dark:bg-dark-overlay hover:bg-light-base dark:hover:bg-dark-base text-text-light-primary dark:text-dark-primary transition-colors"
           >
@@ -314,7 +317,7 @@ export function MobileMenu({
           </button>
           <button
             onClick={() => {
-              editorRef.current?.chain().focus().toggleItalic().run();
+              editorRef.current?.chain().toggleItalic().run();
             }}
             className="flex-1 px-4 py-2 text-sm italic rounded bg-light-overlay dark:bg-dark-overlay hover:bg-light-base dark:hover:bg-dark-base text-text-light-primary dark:text-dark-primary transition-colors"
           >

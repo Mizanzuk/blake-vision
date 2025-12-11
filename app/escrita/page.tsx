@@ -1234,8 +1234,7 @@ function EscritaPageContent() {
           <aside className="w-[250px] h-screen bg-light-raised dark:bg-dark-raised overflow-y-auto md:relative fixed inset-y-0 left-0 z-40 md:z-auto flex flex-col">
             {/* Header da Sidebar */}
             <div className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-semibold text-text-light-primary dark:text-dark-primary">Blake Vision</h2>
+              <div className="flex items-center justify-end mb-3">
                 <button
                   onClick={() => setIsSidebarOpen(false)}
                   className="hidden md:block p-1.5 rounded-lg text-text-light-tertiary hover:text-text-light-secondary hover:bg-light-overlay dark:text-dark-tertiary dark:hover:text-dark-secondary dark:hover:bg-dark-overlay transition-colors"
@@ -1409,7 +1408,7 @@ function EscritaPageContent() {
 
         {/* Botões laterais (quando sidebar colapsada) */}
         {!isSidebarOpen && (
-          <div className="w-12 bg-light-raised dark:bg-dark-raised flex flex-col items-center pt-3 gap-3 flex-shrink-0">
+          <div className="w-12 bg-light-raised dark:bg-dark-raised flex flex-col items-center pt-3 gap-3 flex-shrink-0 sticky top-16 h-screen">
             {/* Botão lápis (abrir sidebar) */}
             <button
               onClick={() => setIsSidebarOpen(true)}
