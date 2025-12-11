@@ -92,10 +92,12 @@ export async function GET(req: NextRequest) {
     
     let fichas: any[] = [];
     if (worldIds.length > 0) {
+      // Buscar fichas do universo (world_id null) E fichas dos mundos específicos
       let query = supabase
         .from("fichas")
         .select("id, universe_id, world_id, tipo, titulo, slug, codigo, resumo, descricao, conteudo, ano_diegese, tags, episodio, imagem_url, aparece_em")
-        .in("world_id", worldIds);
+        .eq("universe_id", universeId)
+        .or(`world_id.in.(${worldIds.join(',')}),world_id.is.null`);
 
       // Filter by tipo if provided
       if (tipoParam) {

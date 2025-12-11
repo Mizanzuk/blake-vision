@@ -84,9 +84,19 @@ export async function POST(req: NextRequest) {
       camada_temporal,
     } = body;
 
-    if (!world_id || !tipo || !titulo) {
+    // world_id pode ser null para Conceitos e Regras (aplicados ao universo inteiro)
+    const allowNullWorld = tipo === 'conceito' || tipo === 'regra';
+    
+    if (!tipo || !titulo) {
       return NextResponse.json(
-        { error: "world_id, tipo e titulo são obrigatórios" },
+        { error: "tipo e titulo são obrigatórios" },
+        { status: 400 }
+      );
+    }
+    
+    if (!world_id && !allowNullWorld) {
+      return NextResponse.json(
+        { error: "world_id é obrigatório para este tipo de ficha" },
         { status: 400 }
       );
     }
