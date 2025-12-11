@@ -71,6 +71,7 @@ function EscritaPageContent() {
   const [showMetadataModal, setShowMetadataModal] = useState(false); // Modal fullscreen de metadados
   const [modoFoco, setModoFoco] = useState(false);
   const [temaFoco, setTemaFoco] = useState<'normal' | 'light' | 'dark'>('normal');
+  const [focusType, setFocusType] = useState<'off' | 'sentence' | 'paragraph'>('off');
   const [menuFocoExpanded, setMenuFocoExpanded] = useState(false);
   const [menuFocoPosition, setMenuFocoPosition] = useState(() => {
     // Tentar carregar posição salva do localStorage
@@ -2195,6 +2196,22 @@ function EscritaPageContent() {
                   </button>
                 </div>
                 
+                {/* Botão Parágrafo */}
+                <div className="pb-2 border-b border-gray-200 dark:border-gray-700">
+                  <button
+                    onClick={() => setFocusType(focusType === 'paragraph' ? 'off' : 'paragraph')}
+                    className={clsx(
+                      "w-full px-3 py-2 text-sm rounded transition-colors text-left font-medium",
+                      focusType === 'paragraph'
+                        ? "bg-primary-600 text-white"
+                        : clsx(getFocoThemeColors().secondary, getFocoThemeColors().text, getFocoThemeColors().hover)
+                    )}
+                    title="Destacar apenas o parágrafo atual"
+                  >
+                    {focusType === 'paragraph' ? '✓ ' : ''}Parágrafo
+                  </button>
+                </div>
+                
                 {/* Modos de Cor */}
                 <div className="space-y-2">
                   <button
@@ -2332,6 +2349,8 @@ function EscritaPageContent() {
                 fontFamily={fontFamily}
                 onFontChange={(font) => setFontFamily(font)}
                 onTextSelect={handleTextSelect}
+                focusType={focusType}
+                isFocusMode={modoFoco}
               />
             </div>
           </div>
