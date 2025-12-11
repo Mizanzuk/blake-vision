@@ -9,6 +9,7 @@ import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
 import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import EpisodeModal from "@/app/components/projetos/EpisodeModal";
 import ConceptRuleModal from "@/app/components/shared/ConceptRuleModal";
+import ConceptRuleViewModal from "@/app/components/shared/ConceptRuleViewModal";
 import WorldModal from "@/app/components/projetos/WorldModal";
 import SinopseViewModal from "@/app/components/projetos/SinopseViewModal";
 import FichaCard from "@/app/components/shared/FichaCard";
@@ -670,17 +671,30 @@ export default function ProjetosPage() {
         />
       )}
 
-      {/* View Modal */}
-      <FichaViewModal
-        isOpen={showViewModal}
-        ficha={viewingFicha}
-        onClose={handleCloseViewModal}
-        onEdit={handleEditFromView}
-        onNext={handleNextFicha}
-        onPrevious={handlePreviousFicha}
-        hasNext={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) < fichas.length - 1 : false}
-        hasPrevious={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) > 0 : false}
-      />
+      {/* View Modal - Conceitos e Regras */}
+      {showViewModal && viewingFicha && (viewingFicha.tipo === "conceito" || viewingFicha.tipo === "regra") && (
+        <ConceptRuleViewModal
+          ficha={viewingFicha}
+          universes={universes}
+          worlds={worlds}
+          onClose={handleCloseViewModal}
+          onEdit={handleEditFromView}
+        />
+      )}
+
+      {/* View Modal - Outras fichas */}
+      {showViewModal && viewingFicha && viewingFicha.tipo !== "conceito" && viewingFicha.tipo !== "regra" && (
+        <FichaViewModal
+          isOpen={showViewModal}
+          ficha={viewingFicha}
+          onClose={handleCloseViewModal}
+          onEdit={handleEditFromView}
+          onNext={handleNextFicha}
+          onPrevious={handlePreviousFicha}
+          hasNext={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) < fichas.length - 1 : false}
+          hasPrevious={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) > 0 : false}
+        />
+      )}
 
       {/* Sinopse View Modal */}
       {showSinopseViewModal && viewingSinopse && (

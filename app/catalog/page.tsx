@@ -40,6 +40,7 @@ import CategoryModal from "@/app/components/catalog/CategoryModal";
 import FichaCard from "@/app/components/shared/FichaCard";
 import FichaViewModal from "@/app/components/shared/FichaViewModal";
 import ConceptRuleModal from "@/app/components/shared/ConceptRuleModal";
+import ConceptRuleViewModal from "@/app/components/shared/ConceptRuleViewModal";
 import EpisodeModal from "@/app/components/projetos/EpisodeModal";
 import SinopseViewModal from "@/app/components/projetos/SinopseViewModal";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
@@ -1249,16 +1250,30 @@ function CatalogContent() {
         onDelete={selectedCategory ? handleDeleteCategory : undefined}
       />
 
-      <FichaViewModal
-        isOpen={showViewModal}
-        onClose={handleCloseViewModal}
-        ficha={viewingFicha}
-        onEdit={handleEditFromView}
-        onNext={handleNextFicha}
-        onPrevious={handlePreviousFicha}
-        hasNext={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) < fichas.length - 1 : false}
-        hasPrevious={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) > 0 : false}
-      />
+      {/* View Modal - Conceitos e Regras */}
+      {showViewModal && viewingFicha && (viewingFicha.tipo === "conceito" || viewingFicha.tipo === "regra") && (
+        <ConceptRuleViewModal
+          ficha={viewingFicha}
+          universes={universes}
+          worlds={worlds}
+          onClose={handleCloseViewModal}
+          onEdit={handleEditFromView}
+        />
+      )}
+
+      {/* View Modal - Outras fichas */}
+      {showViewModal && viewingFicha && viewingFicha.tipo !== "conceito" && viewingFicha.tipo !== "regra" && (
+        <FichaViewModal
+          isOpen={showViewModal}
+          onClose={handleCloseViewModal}
+          ficha={viewingFicha}
+          onEdit={handleEditFromView}
+          onNext={handleNextFicha}
+          onPrevious={handlePreviousFicha}
+          hasNext={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) < fichas.length - 1 : false}
+          hasPrevious={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) > 0 : false}
+        />
+      )}
 
       {/* Manage Categories Modal */}
       {showManageCategoriesModal && (
