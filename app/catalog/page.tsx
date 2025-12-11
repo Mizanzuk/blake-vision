@@ -772,6 +772,9 @@ function CatalogContent() {
     if (selectedTypes.length > 0 && !selectedTypes.includes("sinopse")) {
       return false;
     }
+    if (selectedEpisodes.length > 0 && !selectedEpisodes.includes(episode.numero.toString())) {
+      return false;
+    }
     return true;
   });
 
@@ -807,8 +810,10 @@ function CatalogContent() {
     );
   };
 
-  // Get unique episode numbers from fichas
-  const uniqueEpisodeNumbers = Array.from(new Set(fichas.filter(f => f.episodio).map(f => f.episodio)));
+  // Get unique episode numbers from fichas and episodes
+  const episodeNumbersFromFichas = fichas.filter(f => f.episodio).map(f => f.episodio);
+  const episodeNumbersFromEpisodes = episodes.map(e => e.numero.toString());
+  const uniqueEpisodeNumbers = Array.from(new Set([...episodeNumbersFromFichas, ...episodeNumbersFromEpisodes]));
 
   if (isLoading) {
     return <Loading fullScreen text={t.common.loading} />;
