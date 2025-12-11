@@ -2594,13 +2594,13 @@ function EscritaPageContent() {
             className="fixed z-[9991] bg-light-base dark:bg-dark-base rounded-lg shadow-md border border-border-light-default dark:border-border-dark-default overflow-hidden"
             style={{
               left: `${selectionMenuPosition.x}px`,
-              top: `${selectionMenuPosition.y - 60}px`, // 60px acima da seleção
+              top: `${selectionMenuPosition.y + 20}px`, // 20px abaixo da seleção
               transform: 'translateX(-50%)'
             }}
           >
             <div className="flex flex-col">
-              {/* Botões de Formatação */}
-              <div className="flex items-center justify-center gap-2 p-2 border-b border-border-light-default dark:border-border-dark-default">
+              {/* Botões de Formatação - Só Mobile */}
+              <div className="md:hidden flex items-center justify-center gap-2 p-2 border-b border-border-light-default dark:border-border-dark-default">
                 <button
                   onClick={() => {
                     if (editorRef.current) {
@@ -2630,7 +2630,7 @@ function EscritaPageContent() {
               </div>
               
               {/* Assistentes de IA */}
-              <div className="flex items-center justify-center gap-3 p-2">
+              <div className="flex items-center justify-center gap-3 p-3">
                 {/* Avatar Urthona */}
                 <button
                   onClick={() => {
