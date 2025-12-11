@@ -305,34 +305,8 @@ export function MobileMenu({
           </button>
         </div>
         
-        {/* Formatação */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => {
-              editorRef.current?.chain().toggleBold().run();
-            }}
-            className="flex-1 px-4 py-2 text-sm font-bold rounded bg-light-overlay dark:bg-dark-overlay hover:bg-light-base dark:hover:bg-dark-base text-text-light-primary dark:text-dark-primary transition-colors"
-          >
-            B
-          </button>
-          <button
-            onClick={() => {
-              editorRef.current?.chain().toggleItalic().run();
-            }}
-            className="flex-1 px-4 py-2 text-sm italic rounded bg-light-overlay dark:bg-dark-overlay hover:bg-light-base dark:hover:bg-dark-base text-text-light-primary dark:text-dark-primary transition-colors"
-          >
-            I
-          </button>
-          <button
-            onClick={() => setShowStylesDropdown(!showStylesDropdown)}
-            className="flex-1 px-4 py-2 text-sm rounded bg-light-overlay dark:bg-dark-overlay hover:bg-light-base dark:hover:bg-dark-base text-text-light-primary dark:text-dark-primary transition-colors"
-          >
-            Aa
-          </button>
-        </div>
-        
         {/* Opções do menu três pontos verticais */}
-        <div className="space-y-2 pt-3 border-t border-border-light-subtle dark:border-border-dark-subtle">
+        <div className="space-y-2">
           <button
             onClick={() => {
               handleDuplicate();
@@ -369,25 +343,10 @@ export function MobileMenu({
             </svg>
             Exportar
           </button>
-          
-          <div className="border-t border-border-light-default dark:border-border-dark-default my-2"></div>
-          
-          <button
-            onClick={() => {
-              handleDeleteCurrentTexto();
-              onClose();
-            }}
-            className="w-full px-4 py-2 text-left flex items-center gap-3 text-sm rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-            Excluir texto
-          </button>
         </div>
         
         {/* Ações */}
-        <div className="flex gap-3 pt-3">
+        <div className="flex gap-3 pt-3 border-t border-border-light-subtle dark:border-border-dark-subtle">
           <button
             onClick={() => {
               handleSave();
@@ -406,6 +365,22 @@ export function MobileMenu({
             className="flex-1 px-3 py-2 text-sm rounded bg-primary-600 dark:bg-primary-500 text-white hover:bg-primary-700 dark:hover:bg-primary-600 font-medium transition-colors"
           >
             Publicar
+          </button>
+        </div>
+        
+        {/* Rodapé: Excluir texto */}
+        <div className="pt-3 border-t border-border-light-default dark:border-border-dark-default">
+          <button
+            onClick={() => {
+              handleDeleteCurrentTexto();
+              onClose();
+            }}
+            className="w-full px-4 py-2 text-center flex items-center justify-center gap-2 text-sm rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            Excluir texto
           </button>
         </div>
       </div>

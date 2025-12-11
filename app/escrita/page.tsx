@@ -1408,7 +1408,7 @@ function EscritaPageContent() {
 
         {/* Botões laterais (quando sidebar colapsada) */}
         {!isSidebarOpen && (
-          <div className="w-12 bg-light-raised dark:bg-dark-raised flex flex-col items-center pt-3 gap-3 flex-shrink-0 sticky top-16 h-screen">
+          <div className="w-12 bg-light-raised dark:bg-dark-raised flex flex-col items-center pt-3 gap-3 flex-shrink-0 fixed left-0 top-16 h-[calc(100vh-4rem)] md:relative md:top-0 md:h-auto">
             {/* Botão lápis (abrir sidebar) */}
             <button
               onClick={() => setIsSidebarOpen(true)}
@@ -1596,6 +1596,34 @@ function EscritaPageContent() {
             
             {/* Célula C2 - Vazia */}
             <div></div>
+          </div>
+
+          {/* LINHA 2.5: Barra de Formatação (Mobile) */}
+          <div className="md:hidden flex justify-center py-2 px-4 border-b border-light-border dark:border-dark-border">
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  editorRef.current?.chain().toggleBold().run();
+                }}
+                className="w-10 h-8 flex items-center justify-center text-sm font-bold rounded bg-light-overlay dark:bg-dark-overlay hover:bg-light-base dark:hover:bg-dark-base text-text-light-primary dark:text-dark-primary transition-colors"
+              >
+                B
+              </button>
+              <button
+                onClick={() => {
+                  editorRef.current?.chain().toggleItalic().run();
+                }}
+                className="w-10 h-8 flex items-center justify-center text-sm italic rounded bg-light-overlay dark:bg-dark-overlay hover:bg-light-base dark:hover:bg-dark-base text-text-light-primary dark:text-dark-primary transition-colors"
+              >
+                I
+              </button>
+              <button
+                onClick={() => setShowStylesDropdown(!showStylesDropdown)}
+                className="w-10 h-8 flex items-center justify-center text-sm rounded bg-light-overlay dark:bg-dark-overlay hover:bg-light-base dark:hover:bg-dark-base text-text-light-primary dark:text-dark-primary transition-colors"
+              >
+                Aa
+              </button>
+            </div>
           </div>
 
           {/* LINHA 3: Metadados (Condicional) */}
