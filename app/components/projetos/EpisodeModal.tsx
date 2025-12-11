@@ -247,7 +247,7 @@ export default function EpisodeModal({
     <Modal
       isOpen={true}
       onClose={handleClose}
-      title={episode ? "Editar Episódio" : "Novo Episódio"}
+      title={episode ? "Editar Sinopse" : "Nova Sinopse"}
       size="lg"
     >
       <div className="space-y-4">

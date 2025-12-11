@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const world_id = searchParams.get("world_id");
+    const worldIds = searchParams.get("worldIds");
     const status = searchParams.get("status");
 
     let query = supabase
@@ -24,6 +25,12 @@ export async function GET(req: NextRequest) {
 
     if (world_id) {
       query = query.eq("world_id", world_id);
+    } else if (worldIds) {
+      // Suporte para múltiplos mundos (usado no catálogo)
+      const worldIdArray = worldIds.split(',').filter(id => id.trim());
+      if (worldIdArray.length > 0) {
+        query = query.in("world_id", worldIdArray);
+      }
     }
 
     if (status) {

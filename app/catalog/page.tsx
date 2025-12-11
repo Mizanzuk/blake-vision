@@ -240,7 +240,8 @@ function CatalogContent() {
           universe_id: selectedUniverseId,
           user_id: userId || "",
           label: "Sinopse",
-          description: "Sinopses de episódios",
+          description: "Sinopses de episódios do universo narrativo",
+          prefix: "SIN",
           created_at: new Date().toISOString(),
         };
         const categoriesWithSinopse = [
@@ -251,8 +252,8 @@ function CatalogContent() {
         
         setFichas(data.fichas || []);
         
-        // Carregar episodes (sinopses)
-        await loadEpisodes();
+        // Carregar episodes (sinopses) usando worlds do response
+        await loadEpisodesForWorlds(data.worlds || []);
       } else {
         toast.error(data.error || t.errors.generic);
       }
@@ -262,10 +263,10 @@ function CatalogContent() {
     }
   }
 
-  async function loadEpisodes() {
+  async function loadEpisodesForWorlds(worldsList: World[]) {
     try {
       // Carregar episodes de todos os mundos do universo
-      const worldIds = worlds.map(w => w.id).join(',');
+      const worldIds = worldsList.map(w => w.id).join(',');
       if (!worldIds) {
         setEpisodes([]);
         return;
@@ -296,6 +297,28 @@ function CatalogContent() {
     setSelectedWorldIds([]);
     setSelectedTypes([]);
     setSelectedEpisodes([]);
+  }
+
+  async function createDefaultSinopseCategory(universeId: string) {
+    try {
+      const response = await fetch("/api/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          universe_id: universeId,
+          slug: "sinopse",
+          label: "Sinopse",
+          description: "Sinopses de episódios do universo narrativo",
+          prefix: "SIN",
+        }),
+      });
+      
+      if (!response.ok) {
+        console.error("Erro ao criar categoria Sinopse padrão");
+      }
+    } catch (error) {
+      console.error("Erro ao criar categoria Sinopse:", error);
+    }
   }
 
   async function handleCreateUniverse() {
@@ -346,6 +369,10 @@ function CatalogContent() {
           setUniverses(prev => [...prev, inserted as Universe]);
           setSelectedUniverseId(inserted.id);
           localStorage.setItem("selectedUniverseId", inserted.id);
+          
+          // Criar categoria Sinopse padrão
+          await createDefaultSinopseCategory(inserted.id);
+          
           toast.success("Novo Universo criado com sucesso.");
         }
       }

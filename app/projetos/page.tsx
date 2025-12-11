@@ -358,8 +358,8 @@ export default function ProjetosPage() {
       const data = await response.json();
 
       if (response.ok) {
-        const action = episodeData.id ? "atualizado" : "criado";
-        toast.success(`Episódio ${action}`);
+        const action = episodeData.id ? "atualizada" : "criada";
+        toast.success(`Sinopse ${action}`);
         await loadEpisodes();
         setShowEpisodeModal(false);
         setSelectedFicha(null);
