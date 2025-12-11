@@ -1604,7 +1604,7 @@ function EscritaPageContent() {
               <button
                 onMouseDown={(e) => {
                   e.preventDefault();
-                  const editor = document.querySelector('[contenteditable="true"]');
+                  const editor = document.querySelector('[contenteditable="true"]') as HTMLElement;
                   if (editor) editor.focus();
                   document.execCommand('bold', false, undefined);
                 }}
@@ -1615,7 +1615,7 @@ function EscritaPageContent() {
               <button
                 onMouseDown={(e) => {
                   e.preventDefault();
-                  const editor = document.querySelector('[contenteditable="true"]');
+                  const editor = document.querySelector('[contenteditable="true"]') as HTMLElement;
                   if (editor) editor.focus();
                   document.execCommand('italic', false, undefined);
                 }}
