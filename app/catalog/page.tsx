@@ -42,7 +42,7 @@ import FichaViewModal from "@/app/components/shared/FichaViewModal";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
-import type { Universe, World, Ficha, Category } from "@/app/types";
+import type { Universe, World, Ficha, Category, Episode } from "@/app/types";
 
 // Sortable Card Component
 interface SortableCardProps {
@@ -90,6 +90,7 @@ function CatalogContent() {
   const [worlds, setWorlds] = useState<World[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [fichas, setFichas] = useState<Ficha[]>([]);
+  const [episodes, setEpisodes] = useState<Episode[]>([]);
   
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
@@ -232,14 +233,56 @@ function CatalogContent() {
       
       if (response.ok) {
         setWorlds(data.worlds || []);
-        setCategories(data.types || []);
+        
+        // Adicionar categoria "Sinopse" se houver episodes
+        const sinopseCategory: Category = {
+          slug: "sinopse",
+          universe_id: selectedUniverseId,
+          user_id: userId || "",
+          label: "Sinopse",
+          description: "Sinopses de episódios",
+          created_at: new Date().toISOString(),
+        };
+        const categoriesWithSinopse = [
+          sinopseCategory,
+          ...(data.types || [])
+        ];
+        setCategories(categoriesWithSinopse);
+        
         setFichas(data.fichas || []);
+        
+        // Carregar episodes (sinopses)
+        await loadEpisodes();
       } else {
         toast.error(data.error || t.errors.generic);
       }
     } catch (error) {
       console.error("Error loading catalog:", error);
       toast.error(t.errors.network);
+    }
+  }
+
+  async function loadEpisodes() {
+    try {
+      // Carregar episodes de todos os mundos do universo
+      const worldIds = worlds.map(w => w.id).join(',');
+      if (!worldIds) {
+        setEpisodes([]);
+        return;
+      }
+      
+      const response = await fetch(`/api/episodes?worldIds=${worldIds}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        setEpisodes(data.episodes || []);
+      } else {
+        console.error("Error loading episodes:", data.error);
+        setEpisodes([]);
+      }
+    } catch (error) {
+      console.error("Error loading episodes:", error);
+      setEpisodes([]);
     }
   }
 
@@ -691,6 +734,23 @@ function CatalogContent() {
     return true;
   });
 
+  // Filter episodes (sinopses)
+  const filteredEpisodes = episodes.filter(episode => {
+    if (searchTerm && !episode.titulo.toLowerCase().includes(searchTerm.toLowerCase())) {
+      return false;
+    }
+    if (selectedWorldIds.length > 0 && !selectedWorldIds.includes(episode.world_id)) {
+      return false;
+    }
+    if (selectedTypes.length > 0 && !selectedTypes.includes("sinopse")) {
+      return false;
+    }
+    return true;
+  });
+
+  // Combinar fichas e episodes para contagem total
+  const totalItems = filteredFichas.length + filteredEpisodes.length;
+
   // Sort fichas by custom order
   const sortedFichas = [...filteredFichas].sort((a, b) => {
     const orderA = customOrder[a.id];
@@ -720,8 +780,8 @@ function CatalogContent() {
     );
   };
 
-  // Get unique episodes
-  const episodes = Array.from(new Set(fichas.filter(f => f.episodio).map(f => f.episodio)));
+  // Get unique episode numbers from fichas
+  const uniqueEpisodeNumbers = Array.from(new Set(fichas.filter(f => f.episodio).map(f => f.episodio)));
 
   if (isLoading) {
     return <Loading fullScreen text={t.common.loading} />;
@@ -791,7 +851,7 @@ function CatalogContent() {
           
           <EpisodesDropdown
             label="EPISÓDIOS"
-            episodes={episodes.filter(e => e) as string[]}
+            episodes={uniqueEpisodeNumbers.filter(e => e) as string[]}
             selectedEpisodes={selectedEpisodes}
             onToggle={(episode) => {
               setSelectedEpisodes(prev => 
@@ -831,7 +891,7 @@ function CatalogContent() {
               {/* Results Counter Box */}
               <div className="px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised">
                 <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary whitespace-nowrap">
-                  {filteredFichas.length} {filteredFichas.length === 1 ? "ficha encontrada" : "fichas encontradas"}
+                  {totalItems} {totalItems === 1 ? "item encontrado" : "itens encontrados"}
                 </p>
               </div>
               
@@ -980,7 +1040,7 @@ function CatalogContent() {
             )}
 
             {/* Fichas Grid */}
-            {filteredFichas.length === 0 ? (
+            {totalItems === 0 ? (
               <EmptyState
                 icon={
                   <svg className="w-24 h-24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1038,6 +1098,41 @@ function CatalogContent() {
                   </div>
                 </SortableContext>
               </DndContext>
+            )}
+
+            {/* Sinopses Grid (sem drag and drop) */}
+            {filteredEpisodes.length > 0 && (
+              <div className="mt-8">
+                <h2 className="text-xl font-semibold text-text-light-primary dark:text-dark-primary mb-4">
+                  Sinopses
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredEpisodes.map(episode => (
+                    <div
+                      key={episode.id}
+                      onClick={() => {
+                        // Abrir modal de visualização de sinopse
+                        // TODO: Implementar modal de visualização no catálogo
+                      }}
+                      className="bg-light-raised dark:bg-dark-raised rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-border-light-default dark:border-border-dark-default"
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <span className="text-2xl font-bold text-primary-600 dark:text-primary-400">
+                          {episode.numero}
+                        </span>
+                      </div>
+                      <h3 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary mb-2">
+                        {episode.titulo}
+                      </h3>
+                      {episode.logline && (
+                        <p className="text-sm text-text-light-secondary dark:text-dark-secondary line-clamp-2">
+                          {episode.logline}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </>
         ) : (

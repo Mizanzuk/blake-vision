@@ -15,6 +15,7 @@ interface TipoDropdownProps {
 }
 
 const TIPO_OPTIONS: TipoOption[] = [
+  { value: "sinopse", label: "Sinopses" },
   { value: "conceito", label: "Conceitos" },
   { value: "regra", label: "Regras" },
 ];

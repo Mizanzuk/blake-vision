@@ -10,6 +10,7 @@ import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import EpisodeModal from "@/app/components/projetos/EpisodeModal";
 import ConceptRuleModal from "@/app/components/projetos/ConceptRuleModal";
 import WorldModal from "@/app/components/projetos/WorldModal";
+import SinopseViewModal from "@/app/components/projetos/SinopseViewModal";
 import FichaCard from "@/app/components/shared/FichaCard";
 import FichaViewModal from "@/app/components/shared/FichaViewModal";
 import TipoDropdown from "@/app/components/projetos/TipoDropdown";
@@ -43,6 +44,8 @@ export default function ProjetosPage() {
   const [selectedWorld, setSelectedWorld] = useState<World | null>(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewingFicha, setViewingFicha] = useState<Ficha | null>(null);
+  const [showSinopseViewModal, setShowSinopseViewModal] = useState(false);
+  const [viewingSinopse, setViewingSinopse] = useState<Episode | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -513,7 +516,7 @@ export default function ProjetosPage() {
             onClick={handleNewEpisode}
             fullWidth
           >
-            + Novo Episódio
+            + Nova Sinopse
           </Button>
 
           <Button
@@ -562,48 +565,33 @@ export default function ProjetosPage() {
           />
         ) : (
           <div className="space-y-8">
-            {/* Renderizar episódios da tabela episodes */}
-            {episodes.length > 0 && (
+            {/* Renderizar sinopses da tabela episodes */}
+            {episodes.length > 0 && (selectedTipos.length === 0 || selectedTipos.includes("sinopse")) && (
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                  Episódios
+                  Sinopses
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {episodes.map((episode) => (
                     <div
                       key={episode.id}
                       onClick={() => {
-                        // Converter episode para formato de ficha para o modal
-                        const episodeFicha = {
-                          id: episode.id,
-                          tipo: "episodio",
-                          titulo: episode.titulo,
-                          resumo: episode.sinopse,
-                          conteudo: episode.logline,
-                          episodio: episode.numero.toString(),
-                          world_id: episode.world_id,
-                        } as any;
-                        setSelectedFicha(episodeFicha);
-                        setShowEpisodeModal(true);
+                        setViewingSinopse(episode);
+                        setShowSinopseViewModal(true);
                       }}
-                      className="bg-white dark:bg-dark-card rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-200 dark:border-gray-700"
+                      className="bg-light-raised dark:bg-dark-raised rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-border-light-default dark:border-border-dark-default"
                     >
                       <div className="flex items-start justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                          Episódio {episode.numero}
+                        <span className="text-2xl font-bold text-primary-600 dark:text-primary-400">
+                          {episode.numero}
                         </span>
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                      <h3 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary mb-2">
                         {episode.titulo}
                       </h3>
                       {episode.logline && (
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-2 line-clamp-2">
+                        <p className="text-sm text-text-light-secondary dark:text-dark-secondary line-clamp-2">
                           {episode.logline}
-                        </p>
-                      )}
-                      {episode.sinopse && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-3">
-                          {episode.sinopse}
                         </p>
                       )}
                     </div>
@@ -693,6 +681,32 @@ export default function ProjetosPage() {
         hasNext={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) < fichas.length - 1 : false}
         hasPrevious={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) > 0 : false}
       />
+
+      {/* Sinopse View Modal */}
+      {showSinopseViewModal && viewingSinopse && (
+        <SinopseViewModal
+          sinopse={viewingSinopse}
+          onClose={() => {
+            setShowSinopseViewModal(false);
+            setViewingSinopse(null);
+          }}
+          onEdit={() => {
+            // Converter sinopse para formato de ficha para o modal de edição
+            const episodeFicha = {
+              id: viewingSinopse.id,
+              tipo: "episodio",
+              titulo: viewingSinopse.titulo,
+              resumo: viewingSinopse.sinopse,
+              conteudo: viewingSinopse.logline,
+              episodio: viewingSinopse.numero.toString(),
+              world_id: viewingSinopse.world_id,
+            } as any;
+            setSelectedFicha(episodeFicha);
+            setShowSinopseViewModal(false);
+            setShowEpisodeModal(true);
+          }}
+        />
+      )}
     </div>
   );
 }
