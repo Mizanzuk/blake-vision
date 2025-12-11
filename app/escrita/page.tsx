@@ -2157,58 +2157,56 @@ function EscritaPageContent() {
                 </div>
                 
                 {/* Botões de Formatação */}
-                <div className="flex gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
-                  <button
-                    onClick={() => editorRef.current?.chain().focus().toggleBold().run()}
-                    className={clsx(
-                      "px-3 py-1.5 text-sm font-bold rounded transition-colors",
-                      getFocoThemeColors().secondary,
-                      getFocoThemeColors().text,
-                      getFocoThemeColors().hover
-                    )}
-                    title="Negrito"
-                  >
-                    B
-                  </button>
-                  <button
-                    onClick={() => editorRef.current?.chain().focus().toggleItalic().run()}
-                    className={clsx(
-                      "px-3 py-1.5 text-sm italic rounded transition-colors",
-                      getFocoThemeColors().secondary,
-                      getFocoThemeColors().text,
-                      getFocoThemeColors().hover
-                    )}
-                    title="Itálico"
-                  >
-                    I
-                  </button>
-                  <button
-                    onClick={() => setShowStylesDropdown(!showStylesDropdown)}
-                    className={clsx(
-                      "px-3 py-1.5 text-sm rounded transition-colors",
-                      getFocoThemeColors().secondary,
-                      getFocoThemeColors().text,
-                      getFocoThemeColors().hover
-                    )}
-                    title="Estilos"
-                  >
-                    Aa
-                  </button>
-                </div>
-                
-                {/* Botão Parágrafo */}
-                <div className="pb-2 border-b border-gray-200 dark:border-gray-700">
+                <div className="space-y-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => editorRef.current?.chain().focus().toggleBold().run()}
+                      className={clsx(
+                        "px-3 py-1.5 text-sm font-bold rounded transition-colors",
+                        getFocoThemeColors().secondary,
+                        getFocoThemeColors().text,
+                        getFocoThemeColors().hover
+                      )}
+                      title="Negrito"
+                    >
+                      B
+                    </button>
+                    <button
+                      onClick={() => editorRef.current?.chain().focus().toggleItalic().run()}
+                      className={clsx(
+                        "px-3 py-1.5 text-sm italic rounded transition-colors",
+                        getFocoThemeColors().secondary,
+                        getFocoThemeColors().text,
+                        getFocoThemeColors().hover
+                      )}
+                      title="Itálico"
+                    >
+                      I
+                    </button>
+                    <button
+                      onClick={() => setShowStylesDropdown(!showStylesDropdown)}
+                      className={clsx(
+                        "px-3 py-1.5 text-sm rounded transition-colors",
+                        getFocoThemeColors().secondary,
+                        getFocoThemeColors().text,
+                        getFocoThemeColors().hover
+                      )}
+                      title="Estilos"
+                    >
+                      Aa
+                    </button>
+                  </div>
                   <button
                     onClick={() => setFocusType(focusType === 'paragraph' ? 'off' : 'paragraph')}
                     className={clsx(
-                      "w-full px-3 py-2 text-sm rounded transition-colors text-left font-medium",
+                      "w-full px-3 py-1.5 text-xs rounded transition-colors text-center font-medium",
                       focusType === 'paragraph'
                         ? "bg-primary-600 text-white"
                         : clsx(getFocoThemeColors().secondary, getFocoThemeColors().text, getFocoThemeColors().hover)
                     )}
                     title="Destacar apenas o parágrafo atual"
                   >
-                    {focusType === 'paragraph' ? '✓ ' : ''}Parágrafo
+                    {focusType === 'paragraph' ? '✓ ' : ''}Modo Parágrafo
                   </button>
                 </div>
                 
