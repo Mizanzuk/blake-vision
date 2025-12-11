@@ -1604,6 +1604,8 @@ function EscritaPageContent() {
               <button
                 onMouseDown={(e) => {
                   e.preventDefault();
+                  const editor = document.querySelector('[contenteditable="true"]');
+                  if (editor) editor.focus();
                   document.execCommand('bold', false, undefined);
                 }}
                 className="w-10 h-8 flex items-center justify-center text-sm font-bold rounded bg-light-overlay dark:bg-dark-overlay hover:bg-light-base dark:hover:bg-dark-base text-text-light-primary dark:text-dark-primary transition-colors"
@@ -1613,6 +1615,8 @@ function EscritaPageContent() {
               <button
                 onMouseDown={(e) => {
                   e.preventDefault();
+                  const editor = document.querySelector('[contenteditable="true"]');
+                  if (editor) editor.focus();
                   document.execCommand('italic', false, undefined);
                 }}
                 className="w-10 h-8 flex items-center justify-center text-sm italic rounded bg-light-overlay dark:bg-dark-overlay hover:bg-light-base dark:hover:bg-dark-base text-text-light-primary dark:text-dark-primary transition-colors"
