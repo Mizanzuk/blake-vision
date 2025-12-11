@@ -22,6 +22,23 @@ export type World = {
   updated_at: string;
 };
 
+export type Episode = {
+  id: string;
+  world_id: string;
+  user_id: string;
+  numero: number;
+  titulo: string;
+  slug?: string | null;
+  logline?: string | null;
+  sinopse?: string | null;
+  ordem?: number | null;
+  duracao_minutos?: number | null;
+  data_lancamento?: string | null;
+  status?: 'rascunho' | 'revisao' | 'finalizado' | 'publicado' | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Category = {
   slug: string;
   universe_id: string;
@@ -46,6 +63,7 @@ export type Ficha = {
   conteudo?: string | null;
   ano_diegese?: number | null;
   tags?: string | null;
+  episode_id?: string | null;
   episodio?: string | null;
   numero_episodio?: number | null;
   logline?: string | null;

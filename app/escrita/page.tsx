@@ -108,7 +108,6 @@ function EscritaPageContent() {
   const [showCreateWorldModal, setShowCreateWorldModal] = useState(false);
   const [showCreateEpisodeModal, setShowCreateEpisodeModal] = useState(false);
   const [showCreateCategoryModal, setShowCreateCategoryModal] = useState(false);
-  const [newEpisodeNumber, setNewEpisodeNumber] = useState('');
   const [universeForm, setUniverseForm] = useState({ id: '', nome: '', descricao: '' });
   const [worldToEdit, setWorldToEdit] = useState<any>(null);
   const [categoryToEdit, setCategoryToEdit] = useState<any>(null);
@@ -1248,44 +1247,7 @@ function EscritaPageContent() {
     }
   };
   
-  const handleCreateEpisode = async () => {
-    const episodeNum = parseInt(newEpisodeNumber);
-    if (isNaN(episodeNum) || episodeNum <= 0) {
-      toast.error('Por favor, insira um número válido');
-      return;
-    }
-    
-    // Verificar se episódio já existe
-    if (episodes.includes(episodeNum.toString())) {
-      toast.error(`Episódio ${episodeNum} já existe na lista`);
-      return;
-    }
-    
-    try {
-      const response = await fetch('/api/episodes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          world_id: worldId, 
-          nome: episodeNum.toString(),
-          ordem: episodeNum
-        }),
-      });
-      
-      const data = await response.json();
-      if (response.ok) {
-        toast.success(`Episódio ${episodeNum} criado!`);
-        setEpisodes([...episodes, episodeNum.toString()].sort((a, b) => parseInt(a) - parseInt(b)));
-        setEpisodio(episodeNum.toString());
-        setShowCreateEpisodeModal(false);
-        setNewEpisodeNumber('');
-      } else {
-        toast.error(data.error || 'Erro ao criar episódio');
-      }
-    } catch (error) {
-      toast.error('Erro ao criar episódio');
-    }
-  };
+  // Função removida - Episódios agora são criados na página Projetos
   
   const handleSaveCategory = async (categoryData: any) => {
     try {
@@ -3151,14 +3113,13 @@ function EscritaPageContent() {
         onSave={handleSaveWorld}
       />
       
-      {/* Modal de Criar Episódio */}
+      {/* Modal de Criar Episódio - Redirecionamento */}
       <Modal
         isOpen={showCreateEpisodeModal}
         onClose={() => {
           setShowCreateEpisodeModal(false);
-          setNewEpisodeNumber('');
         }}
-        title="Criar Novo Episódio"
+        title="Criar Episódios"
         footer={
           <>
             <Button
@@ -3166,33 +3127,33 @@ function EscritaPageContent() {
               variant="ghost"
               onClick={() => {
                 setShowCreateEpisodeModal(false);
-                setNewEpisodeNumber('');
               }}
             >
-              Cancelar
+              Fechar
             </Button>
             <Button
               size="sm"
               variant="primary"
-              onClick={handleCreateEpisode}
+              onClick={() => {
+                window.location.href = '/projetos';
+              }}
             >
-              Criar
+              Ir para Projetos
             </Button>
           </>
         }
       >
         <div className="space-y-4">
-          <Input
-            label="Número do Episódio"
-            type="number"
-            min="1"
-            value={newEpisodeNumber}
-            onChange={(e) => setNewEpisodeNumber(e.target.value)}
-            placeholder="Ex: 1"
-            required
-          />
+          <p className="text-text-light-secondary dark:text-dark-secondary">
+            Episódios agora são criados na página <strong>Projetos</strong>, onde você pode:
+          </p>
+          <ul className="list-disc list-inside space-y-2 text-sm text-text-light-tertiary dark:text-dark-tertiary">
+            <li>Criar e organizar episódios por mundo</li>
+            <li>Adicionar título, logline e sinopse</li>
+            <li>Gerenciar a estrutura completa do seu projeto</li>
+          </ul>
           <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary">
-            Digite apenas números. Se o episódio já existir, você receberá um aviso.
+            Após criar o episódio em Projetos, você poderá selecioná-lo aqui na Escrita.
           </p>
         </div>
       </Modal>

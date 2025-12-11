@@ -315,6 +315,53 @@ export default function ProjetosPage() {
     }
   }
 
+  async function handleSaveEpisode(episodeData: any) {
+    try {
+      const method = episodeData.id ? "PUT" : "POST";
+      const response = await fetch("/api/episodes", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(episodeData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const action = episodeData.id ? "atualizado" : "criado";
+        toast.success(`Episódio ${action}`);
+        await loadFichas();
+        setShowEpisodeModal(false);
+        setSelectedFicha(null);
+      } else {
+        toast.error(data.error || "Erro ao salvar episódio");
+      }
+    } catch (error) {
+      console.error("Error saving episode:", error);
+      toast.error("Erro de rede ao salvar episódio");
+    }
+  }
+
+  async function handleDeleteEpisode(id: string) {
+    try {
+      const response = await fetch(`/api/episodes?id=${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        toast.success("Episódio deletado");
+        await loadFichas();
+        setShowEpisodeModal(false);
+        setSelectedFicha(null);
+      } else {
+        const data = await response.json();
+        toast.error(data.error || "Erro ao deletar episódio");
+      }
+    } catch (error) {
+      console.error("Error deleting episode:", error);
+      toast.error("Erro de rede ao deletar episódio");
+    }
+  }
+
   function handleNewWorld() {
     if (!selectedUniverseId) {
       toast.error("Selecione um universo antes de criar um mundo");
@@ -568,8 +615,8 @@ export default function ProjetosPage() {
           episode={selectedFicha}
           worldId={selectedWorldId}
           universeId={selectedUniverseId}
-          onSave={handleSaveFicha}
-          onDelete={handleDeleteFicha}
+          onSave={handleSaveEpisode}
+          onDelete={handleDeleteEpisode}
           onClose={() => {
             setShowEpisodeModal(false);
             setSelectedFicha(null);

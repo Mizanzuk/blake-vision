@@ -194,12 +194,12 @@ export default function EpisodeModal({
 
     // Verificar se já existe episódio com esse número no mesmo mundo
     try {
-      const response = await fetch(`/api/catalog?worldId=${selectedWorldId}&tipo=episodio`);
+      const response = await fetch(`/api/episodes?worldId=${selectedWorldId}`);
       const data = await response.json();
       
-      if (response.ok && data.fichas) {
-        const duplicateEpisode = data.fichas.find((f: any) => 
-          (f.episodio === numeroEpisodio || f.numero_episodio === episodeNumber) && f.id !== episode?.id
+      if (response.ok && data.episodes) {
+        const duplicateEpisode = data.episodes.find((e: any) => 
+          e.numero === episodeNumber && e.id !== episode?.id
         );
         
         if (duplicateEpisode) {
@@ -216,11 +216,10 @@ export default function EpisodeModal({
     const episodeData = {
       id: episode?.id,
       world_id: selectedWorldId,
-      tipo: "episodio",
-      episodio: numeroEpisodio,
+      numero: episodeNumber,
       titulo: titulo.trim(),
-      resumo: sinopse.trim(),
-      conteudo: logline.trim(),
+      logline: logline.trim(),
+      sinopse: sinopse.trim(),
     };
 
     onSave(episodeData);
