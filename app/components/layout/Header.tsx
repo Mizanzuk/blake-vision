@@ -22,6 +22,8 @@ export function Header({ title, showNav = true, currentPage, editorRef }: Header
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isBoldActive, setIsBoldActive] = useState(false);
+  const [isItalicActive, setIsItalicActive] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -151,20 +153,28 @@ export function Header({ title, showNav = true, currentPage, editorRef }: Header
               {/* Botões B e I à direita */}
               <div className="flex items-center gap-1 flex-shrink-0">
                 <button
-                  onMouseDown={(e) => {
-                    e.preventDefault();
+                  onClick={() => {
                     editorRef?.current?.chain().focus().toggleBold().run();
+                    setIsBoldActive(!isBoldActive);
                   }}
-                  className="w-8 h-8 flex items-center justify-center rounded text-sm font-bold text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
+                  className={`w-8 h-8 flex items-center justify-center rounded text-sm font-bold transition-colors ${
+                    isBoldActive 
+                      ? 'bg-primary-600 text-white dark:bg-primary-500' 
+                      : 'text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay'
+                  }`}
                 >
                   B
                 </button>
                 <button
-                  onMouseDown={(e) => {
-                    e.preventDefault();
+                  onClick={() => {
                     editorRef?.current?.chain().focus().toggleItalic().run();
+                    setIsItalicActive(!isItalicActive);
                   }}
-                  className="w-8 h-8 flex items-center justify-center rounded text-sm italic font-medium text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
+                  className={`w-8 h-8 flex items-center justify-center rounded text-sm italic font-medium transition-colors ${
+                    isItalicActive 
+                      ? 'bg-primary-600 text-white dark:bg-primary-500' 
+                      : 'text-text-light-secondary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-secondary dark:hover:text-dark-primary dark:hover:bg-dark-overlay'
+                  }`}
                 >
                   I
                 </button>
