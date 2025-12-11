@@ -1267,7 +1267,8 @@ function EscritaPageContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           world_id: worldId, 
-          episode_number: episodeNum 
+          nome: episodeNum.toString(),
+          ordem: episodeNum
         }),
       });
       
