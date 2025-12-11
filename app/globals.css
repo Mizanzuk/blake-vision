@@ -123,3 +123,20 @@
     opacity: 1;
   }
 }
+
+/* Bordas coloridas por tipo usando classes */
+.blake-toast-success {
+  border-left: 3px solid var(--toast-success) !important;
+}
+
+.blake-toast-error {
+  border-left: 3px solid var(--toast-error) !important;
+}
+
+.blake-toast-warning {
+  border-left: 3px solid var(--toast-warning) !important;
+}
+
+.blake-toast-info {
+  border-left: 3px solid var(--toast-info) !important;
+}
