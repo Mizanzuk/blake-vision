@@ -1555,20 +1555,22 @@ function EscritaPageContent() {
             {/* Célula A1 - Vazia */}
             <div></div>
             
-            {/* Célula B1 - Modo Foco (esquerda) + Avatares (direita) */}
+            {/* Célula B1 - Modo Foco (esquerda) + Avatares (direita) - só em rascunhos */}
             <div className="flex justify-between items-center max-w-[672px]">
-              <button 
-                onClick={enterModoFoco}
-                className="hidden md:inline-flex px-4 py-2 bg-primary-600 dark:bg-primary-500 text-white rounded hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors text-sm font-medium items-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                  <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                </svg>
-                Modo Foco
-              </button>
-              
-              <div className="hidden md:flex gap-3">
+              {currentStatus === 'rascunho' && (
+                <>
+                  <button 
+                    onClick={enterModoFoco}
+                    className="hidden md:inline-flex px-4 py-2 bg-primary-600 dark:bg-primary-500 text-white rounded hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors text-sm font-medium items-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                      <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                    </svg>
+                    Modo Foco
+                  </button>
+                  
+                  <div className="hidden md:flex gap-3">
                 <button
                   onClick={() => {
                     setShowUrizen(!showUrizen);
@@ -1594,6 +1596,8 @@ function EscritaPageContent() {
                   <img src="/urthona-avatar.png" alt="Urthona" className="w-full h-full rounded-full object-cover" />
                 </button>
               </div>
+                </>
+              )}
             </div>
             
             {/* Célula C1 - Vazia */}
@@ -1602,24 +1606,28 @@ function EscritaPageContent() {
 
           {/* LINHA 2: Grid 3 colunas - Botão Colapsar (A2) + Título (B2) + Menu (C2) */}
           <div className="h-12 hidden md:grid grid-cols-[48px_1fr_48px] gap-0 items-center px-4 flex-shrink-0 max-w-[768px] mx-auto w-full">
-            {/* Célula A2 - Botão Colapsar (só desktop) */}
-            <button
-              onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
-              className="hidden md:block text-xl hover:opacity-70 transition-opacity text-text-light-secondary dark:text-dark-secondary"
-              title={isHeaderExpanded ? "Colapsar" : "Expandir"}
-            >
-              <svg 
-                className={clsx(
-                  "w-5 h-5 transition-transform",
-                  isHeaderExpanded && "rotate-90"
-                )} 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                stroke="currentColor"
+            {/* Célula A2 - Botão Colapsar (só desktop, não aparece em publicados) */}
+            {currentStatus === 'rascunho' ? (
+              <button
+                onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
+                className="hidden md:block text-xl hover:opacity-70 transition-opacity text-text-light-secondary dark:text-dark-secondary"
+                title={isHeaderExpanded ? "Colapsar" : "Expandir"}
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
+                <svg 
+                  className={clsx(
+                    "w-5 h-5 transition-transform",
+                    isHeaderExpanded && "rotate-90"
+                  )} 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            ) : (
+              <div></div>
+            )}
             
             {/* Célula B2 - Título + Três Pontos */}
             <div className="flex justify-between items-center max-w-[672px]">
@@ -1711,13 +1719,13 @@ function EscritaPageContent() {
           </div>
 
 
-          {/* LINHA 3: Metadados (Condicional) */}
-          {isHeaderExpanded && (
+          {/* LINHA 3: Metadados (Condicional - sempre visível em publicados) */}
+          {(isHeaderExpanded || currentStatus === 'publicado') && (
             <div className="grid grid-cols-[48px_1fr_48px] gap-0 px-4 py-4 flex-shrink-0 max-w-[768px] mx-auto w-full">
               <div></div>
               <div className="space-y-4 max-w-[672px]">
-              {/* Botão de editar (só aparece quando está bloqueado) */}
-              {isMetadataLocked && (
+              {/* Botão de editar (só aparece quando está bloqueado e é rascunho) */}
+              {isMetadataLocked && currentStatus === 'rascunho' && (
                 <div className="flex justify-end">
                   <button
                     onClick={() => setIsMetadataLocked(false)}
@@ -1839,8 +1847,10 @@ function EscritaPageContent() {
             {/* Célula A4 - Vazia */}
             <div></div>
             
-            {/* Célula B4 - Toolbar (só desktop) */}
+            {/* Célula B4 - Toolbar (só desktop e rascunhos) */}
             <div className="hidden md:flex items-center gap-4">
+              {currentStatus === 'rascunho' && (
+              <>
               <button 
                 onClick={() => editorRef.current?.chain().focus().toggleBold().run()}
                 className="text-sm font-medium hover:opacity-70 transition-opacity text-text-light-primary dark:text-dark-primary"
@@ -1900,6 +1910,8 @@ function EscritaPageContent() {
                   </div>
                 )}
               </div>
+              </>
+              )}
             </div>
             
             {/* Célula C4 - Vazia */}
