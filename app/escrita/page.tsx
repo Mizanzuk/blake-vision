@@ -2460,25 +2460,31 @@ function EscritaPageContent() {
               <div className="flex justify-between items-center">
                 <span className="text-text-light-secondary dark:text-dark-secondary">Palavras:</span>
                 <span className="font-semibold text-text-light-primary dark:text-dark-primary">
-                  {conteudo.trim().split(/\s+/).filter(w => w.length > 0).length}
+                  {(() => {
+                    const plainText = conteudo.replace(/<[^>]*>/g, '').trim();
+                    return plainText.split(/\s+/).filter(w => w.length > 0).length;
+                  })()}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-text-light-secondary dark:text-dark-secondary">Caracteres (com espaços):</span>
                 <span className="font-semibold text-text-light-primary dark:text-dark-primary">
-                  {conteudo.length}
+                  {conteudo.replace(/<[^>]*>/g, '').length}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-text-light-secondary dark:text-dark-secondary">Caracteres (sem espaços):</span>
                 <span className="font-semibold text-text-light-primary dark:text-dark-primary">
-                  {conteudo.replace(/\s/g, '').length}
+                  {conteudo.replace(/<[^>]*>/g, '').replace(/\s/g, '').length}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-text-light-secondary dark:text-dark-secondary">Parágrafos:</span>
                 <span className="font-semibold text-text-light-primary dark:text-dark-primary">
-                  {conteudo.split('\n\n').filter(p => p.trim().length > 0).length}
+                  {(() => {
+                    const paragraphs = conteudo.match(/<p[^>]*>[\s\S]*?<\/p>/g);
+                    return paragraphs ? paragraphs.filter(p => p.replace(/<[^>]*>/g, '').trim().length > 0).length : 0;
+                  })()}
                 </span>
               </div>
             </div>
