@@ -867,7 +867,7 @@ function EscritaPageContent() {
         world_id: null,
         episodio: null,
         categoria: null,
-        status: 'rascunho',
+        status: currentStatus, // Preservar status atual
       };
 
       let response;
@@ -1740,19 +1740,22 @@ function EscritaPageContent() {
                 </div>
               )}
               
-              <div>
-                <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
-                  TÍTULO
-                </label>
-                <input
-                  type="text"
-                  value={titulo}
-                  onChange={(e) => setTitulo(e.target.value)}
-                  placeholder="Digite o título do texto..."
-                  disabled={isMetadataLocked}
-                  className="w-full px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-60 disabled:cursor-not-allowed"
-                />
-              </div>
+              {/* Campo de título (só em rascunhos) */}
+              {currentStatus === 'rascunho' && (
+                <div>
+                  <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
+                    TÍTULO
+                  </label>
+                  <input
+                    type="text"
+                    value={titulo}
+                    onChange={(e) => setTitulo(e.target.value)}
+                    placeholder="Digite o título do texto..."
+                    disabled={isMetadataLocked}
+                    className="w-full px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                  />
+                </div>
+              )}
 
               {/* Metadados Grid */}
               <div className="grid grid-cols-4 gap-4">
