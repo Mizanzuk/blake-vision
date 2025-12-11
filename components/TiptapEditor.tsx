@@ -6,6 +6,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Mention from '@tiptap/extension-mention';
 import Placeholder from '@tiptap/extension-placeholder';
 import { useEffect, useState, useCallback, useRef } from 'react';
+import clsx from 'clsx';
 import './TiptapEditor.css';
 import FontSelector, { FontFamily } from './FontSelector';
 
@@ -260,7 +261,14 @@ export default function TiptapEditor({
   }
 
   return (
-    <div className={`tiptap-editor font-${fontFamily} ${className || ''} ${focusType && focusType !== 'off' ? 'focus-mode-active' : ''}`}>
+    <div className={clsx(
+      'tiptap-editor',
+      fontFamily === 'serif' && 'font-serif',
+      fontFamily === 'sans' && 'font-sans',
+      fontFamily === 'mono' && 'font-mono',
+      className,
+      focusType && focusType !== 'off' && 'focus-mode-active'
+    )}>
       {showToolbar && (
         <div className="toolbar">
           <button
@@ -285,7 +293,11 @@ export default function TiptapEditor({
           )}
         </div>
       )}
-      <EditorContent editor={editor} className={`font-${fontFamily}`} />
+      <EditorContent editor={editor} className={clsx(
+        fontFamily === 'serif' && 'font-serif',
+        fontFamily === 'sans' && 'font-sans',
+        fontFamily === 'mono' && 'font-mono'
+      )} />
     </div>
   );
 }
