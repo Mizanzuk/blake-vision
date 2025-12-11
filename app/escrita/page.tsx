@@ -358,6 +358,11 @@ function EscritaPageContent() {
     }
   }, [isDraggingMenu]);
   
+  // Debug: Monitorar mudanças no fontFamily
+  useEffect(() => {
+    console.log('[DEBUG] fontFamily mudou para:', fontFamily);
+  }, [fontFamily]);
+
   // Carregar lista de textos e universos ao montar componente
   useEffect(() => {
     loadTextos();
@@ -1660,7 +1665,9 @@ function EscritaPageContent() {
                     </button>
                     <button
                       onClick={() => {
+                        console.log('[DEBUG] Botão Mono clicado! Estado atual:', fontFamily);
                         setFontFamily('mono');
+                        console.log('[DEBUG] setFontFamily("mono") chamado');
                         setShowStylesDropdown(false);
                       }}
                       className={`w-full px-4 py-2 text-left text-sm hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors font-mono ${
@@ -1850,7 +1857,9 @@ function EscritaPageContent() {
                     </button>
                     <button
                       onClick={() => {
+                        console.log('[DEBUG] Botão Mono clicado! Estado atual:', fontFamily);
                         setFontFamily('mono');
+                        console.log('[DEBUG] setFontFamily("mono") chamado');
                         setShowStylesDropdown(false);
                       }}
                       className={`w-full px-4 py-2 text-left text-sm hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors font-mono ${
