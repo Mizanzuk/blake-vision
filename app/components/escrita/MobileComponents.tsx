@@ -206,7 +206,7 @@ export function MetadataModal({
             </Button>
             <Button
               onClick={() => {
-                handleSave();
+                onSave();
                 onClose();
               }}
               variant="primary"
