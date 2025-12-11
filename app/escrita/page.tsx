@@ -1602,7 +1602,8 @@ function EscritaPageContent() {
           <div className="md:hidden fixed top-16 left-12 right-0 z-30 flex justify-center py-2 px-4 border-b border-light-border dark:border-dark-border bg-light-base dark:bg-dark-base">
             <div className="flex gap-2 relative">
               <button
-                onClick={() => {
+                onMouseDown={(e) => {
+                  e.preventDefault();
                   if (editorRef.current) {
                     editorRef.current.chain().focus().toggleBold().run();
                   } else {
@@ -1614,7 +1615,8 @@ function EscritaPageContent() {
                 B
               </button>
               <button
-                onClick={() => {
+                 onMouseDown={(e) => {
+                  e.preventDefault();
                   if (editorRef.current) {
                     editorRef.current.chain().focus().toggleItalic().run();
                   } else {
