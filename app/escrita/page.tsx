@@ -1874,7 +1874,12 @@ function EscritaPageContent() {
             <div></div>
             
             {/* Célula B5 - Editor */}
-            <div className="max-w-[672px] h-full overflow-y-auto">
+            <div className={clsx(
+              "max-w-[672px] h-full overflow-y-auto",
+              fontFamily === 'serif' && 'font-serif',
+              fontFamily === 'sans' && 'font-sans',
+              fontFamily === 'mono' && 'font-mono'
+            )}>
             <TiptapEditor
               value={conteudo}
               onChange={(value) => setConteudo(value)}
