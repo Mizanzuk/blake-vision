@@ -34,6 +34,7 @@ function EscritaPageContent() {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [currentTextId, setCurrentTextId] = useState<string | null>(null);
   const [titulo, setTitulo] = useState('');
+  const [currentStatus, setCurrentStatus] = useState<'rascunho' | 'publicado'>('rascunho');
   const [isMetadataSaved, setIsMetadataSaved] = useState(false); // Controla se metadados foram salvos
   const [isMetadataLocked, setIsMetadataLocked] = useState(false); // Controla se campos estão bloqueados
   const [hasUnsavedMetadataChanges, setHasUnsavedMetadataChanges] = useState(false); // Detecta alterações
@@ -412,6 +413,7 @@ function EscritaPageContent() {
         setTitulo(texto.titulo || "");
         setConteudo(texto.conteudo || "");
         setUniverseId(texto.universe_id || "");
+        setCurrentStatus(texto.status || 'rascunho');
         setLastSaved(new Date(texto.updated_at));
         
         // Marcar metadados como salvos e bloquear se o texto já existe
@@ -956,6 +958,9 @@ function EscritaPageContent() {
       // Adicionar na lista de publicados
       setPublicados(prev => [texto, ...prev]);
       
+      // Atualizar status local
+      setCurrentStatus('publicado');
+      
       // Mudar para aba de publicados
       setActiveTab('publicados');
       
@@ -965,6 +970,70 @@ function EscritaPageContent() {
       console.error('Erro ao publicar:', error);
       toast.error('Erro ao publicar texto');
     }
+  };
+  
+  const handleMoveToRascunhos = async () => {
+    try {
+      if (!currentTextId) {
+        toast.error('Nenhum texto selecionado');
+        return;
+      }
+      
+      // Atualizar status para rascunho
+      const response = await fetch('/api/textos', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: currentTextId,
+          status: 'rascunho'
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Erro ao mover para rascunhos');
+      }
+      
+      const { texto } = await response.json();
+      
+      // Remover da lista de publicados
+      setPublicados(prev => prev.filter(t => t.id !== currentTextId));
+      
+      // Adicionar na lista de rascunhos
+      setRascunhos(prev => [texto, ...prev]);
+      
+      // Atualizar status local
+      setCurrentStatus('rascunho');
+      
+      // Mudar para aba de rascunhos
+      setActiveTab('rascunhos');
+      
+      toast.success('Texto movido para rascunhos!');
+      
+    } catch (error) {
+      console.error('Erro ao mover para rascunhos:', error);
+      toast.error('Erro ao mover para rascunhos');
+    }
+  };
+  
+  const handleUpload = () => {
+    if (!currentTextId) {
+      toast.error('Nenhum texto selecionado');
+      return;
+    }
+    
+    // Extrair texto puro do HTML
+    const plainText = conteudo.replace(/<[^>]*>/g, '');
+    
+    // Construir URL com query params
+    const params = new URLSearchParams();
+    params.set('text', plainText);
+    params.set('documentName', titulo);
+    if (universeId) params.set('universeId', universeId);
+    if (worldId) params.set('worldId', worldId);
+    if (episodio) params.set('unitNumber', episodio);
+    
+    // Redirecionar para página de upload
+    router.push(`/upload?${params.toString()}`);
   };
   
   const handleAssistantMessage = async (agent: 'urthona' | 'urizen') => {
@@ -1859,6 +1928,7 @@ function EscritaPageContent() {
               fontFamily={fontFamily}
               onFontChange={(font) => setFontFamily(font)}
               onTextSelect={handleTextSelect}
+              editable={currentStatus !== 'publicado'}
             />
             </div>
             
@@ -1875,20 +1945,45 @@ function EscritaPageContent() {
           {/* Célula B6 - Botões (só desktop) */}
           <div className="flex justify-start">
             <div className="hidden md:flex max-w-[672px] w-full gap-3 justify-end">
-              <button 
-                onClick={() => handleSave(false)}
-                disabled={isSaving}
-                className="px-4 py-1.5 text-sm bg-light-overlay dark:bg-dark-overlay text-text-light-primary dark:text-dark-primary rounded hover:opacity-80 transition-opacity font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSaving ? 'Salvando...' : 'Salvar'}
-              </button>
-              <button 
-                onClick={handlePublish}
-                disabled={isSaving}
-                className="px-4 py-1.5 text-sm bg-primary-600 dark:bg-primary-500 text-white rounded hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Publicar
-              </button>
+              {currentStatus === 'rascunho' ? (
+                // Botões para rascunhos
+                <>
+                  <button 
+                    onClick={() => handleSave(false)}
+                    disabled={isSaving}
+                    className="px-4 py-1.5 text-sm bg-light-overlay dark:bg-dark-overlay text-text-light-primary dark:text-dark-primary rounded hover:opacity-80 transition-opacity font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSaving ? 'Salvando...' : 'Salvar'}
+                  </button>
+                  <button 
+                    onClick={handlePublish}
+                    disabled={isSaving}
+                    className="px-4 py-1.5 text-sm bg-primary-600 dark:bg-primary-500 text-white rounded hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Publicar
+                  </button>
+                </>
+              ) : (
+                // Botões para publicados
+                <>
+                  <button 
+                    onClick={handleMoveToRascunhos}
+                    disabled={isSaving}
+                    className="px-4 py-1.5 text-sm bg-light-overlay dark:bg-dark-overlay text-text-light-primary dark:text-dark-primary rounded hover:opacity-80 transition-opacity font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Move para rascunho de novo"
+                  >
+                    Editar
+                  </button>
+                  <button 
+                    onClick={handleUpload}
+                    disabled={isSaving}
+                    className="px-4 py-1.5 text-sm bg-primary-600 dark:bg-primary-500 text-white rounded hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Enviar para extração"
+                  >
+                    Upload
+                  </button>
+                </>
+              )}
             </div>
           </div>
           
@@ -2386,6 +2481,7 @@ function EscritaPageContent() {
                 onTextSelect={handleTextSelect}
                 focusType={focusType}
                 isFocusMode={modoFoco}
+                editable={currentStatus !== 'publicado'}
               />
             </div>
           </div>

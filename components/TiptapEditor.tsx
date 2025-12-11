@@ -40,6 +40,7 @@ interface TiptapEditorProps {
   editorRef?: any;
   fontFamily?: FontFamily;
   onFontChange?: (font: FontFamily) => void;
+  editable?: boolean;
 }
 
 const suggestion: Omit<SuggestionOptions, 'editor'> = {
@@ -130,7 +131,8 @@ function TiptapEditor({
   typewriterMode = false,
   isFocusMode = false,
   fontFamily = 'serif',
-  onFontChange
+  onFontChange,
+  editable = true
 }: TiptapEditorProps) {
   console.log('========================================');
   console.log('[TiptapEditor] RENDER - focusType:', focusType);
@@ -139,6 +141,7 @@ function TiptapEditor({
   
   const editor = useEditor({
     immediatelyRender: false,
+    editable: editable,
     extensions: [
       StarterKit,
       Placeholder.configure({
@@ -177,6 +180,13 @@ function TiptapEditor({
       }
     }
   }, [value, editor]);
+  
+  // Sync editable prop changes
+  useEffect(() => {
+    if (editor) {
+      editor.setEditable(editable);
+    }
+  }, [editable, editor]);
 
   // Handle text selection for agent buttons
   useEffect(() => {
