@@ -1602,7 +1602,8 @@ function EscritaPageContent() {
           <div className="md:hidden fixed top-16 left-12 right-0 z-30 flex justify-center py-2 px-4 border-b border-light-border dark:border-dark-border bg-light-base dark:bg-dark-base">
             <div className="flex gap-2 relative">
               <button
-                onClick={() => {
+                onMouseDown={(e) => {
+                  e.preventDefault();
                   editorRef.current?.chain().focus().toggleBold().run();
                 }}
                 className="w-10 h-8 flex items-center justify-center text-sm font-bold rounded bg-light-overlay dark:bg-dark-overlay hover:bg-light-base dark:hover:bg-dark-base text-text-light-primary dark:text-dark-primary transition-colors"
@@ -1610,7 +1611,8 @@ function EscritaPageContent() {
                 B
               </button>
               <button
-                onClick={() => {
+                onMouseDown={(e) => {
+                  e.preventDefault();
                   editorRef.current?.chain().focus().toggleItalic().run();
                 }}
                 className="w-10 h-8 flex items-center justify-center text-sm italic rounded bg-light-overlay dark:bg-dark-overlay hover:bg-light-base dark:hover:bg-dark-base text-text-light-primary dark:text-dark-primary transition-colors"
@@ -2368,7 +2370,12 @@ function EscritaPageContent() {
           
           {/* Editor Centralizado com Margem Superior */}
           <div className="flex-1 overflow-y-auto">
-            <div className={`max-w-4xl mx-auto px-16 pt-24 pb-12 font-${fontFamily}`}>
+            <div className={clsx(
+              'max-w-4xl mx-auto px-16 pt-24 pb-12',
+              fontFamily === 'serif' && 'font-serif',
+              fontFamily === 'sans' && 'font-sans',
+              fontFamily === 'mono' && 'font-mono'
+            )}>
               <TiptapEditor
                 value={conteudo}
                 onChange={(value) => setConteudo(value)}
