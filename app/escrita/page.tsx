@@ -895,6 +895,11 @@ function EscritaPageContent() {
         }
         setLastSaved(new Date());
         
+        // Atualizar currentStatus com o valor retornado pela API
+        if (data.texto && data.texto.status) {
+          setCurrentStatus(data.texto.status);
+        }
+        
         // Marcar metadados como salvos e bloquear se universeId existe
         if (universeId) {
           setIsMetadataSaved(true);
