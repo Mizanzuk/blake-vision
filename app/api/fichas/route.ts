@@ -71,6 +71,7 @@ export async function POST(req: NextRequest) {
       slug,
       codigo,
       resumo,
+      descricao,
       conteudo,
       ano_diegese,
       tags,
@@ -91,7 +92,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate embedding
-    const textForEmbedding = `${titulo} ${resumo || ""} ${conteudo || ""}`.trim();
+    const textForEmbedding = `${titulo} ${resumo || ""} ${descricao || ""} ${conteudo || ""}`.trim();
     let embedding: number[] | null = null;
     
     if (textForEmbedding) {
@@ -112,6 +113,7 @@ export async function POST(req: NextRequest) {
         slug: slug || null,
         codigo: codigo || null,
         resumo: resumo || null,
+        descricao: descricao || null,
         conteudo: conteudo || null,
         ano_diegese: ano_diegese || null,
         tags: tags || null,
@@ -160,7 +162,7 @@ export async function PUT(req: NextRequest) {
     }
 
     // Generate new embedding if content changed
-    const textForEmbedding = `${updateData.titulo || ""} ${updateData.resumo || ""} ${updateData.conteudo || ""}`.trim();
+    const textForEmbedding = `${updateData.titulo || ""} ${updateData.resumo || ""} ${updateData.descricao || ""} ${updateData.conteudo || ""}`.trim();
     
     if (textForEmbedding) {
       try {
