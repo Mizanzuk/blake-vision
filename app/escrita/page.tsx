@@ -1599,7 +1599,7 @@ function EscritaPageContent() {
           </div>
 
           {/* LINHA 2.5: Barra de Formatação (Mobile) */}
-          <div className="md:hidden sticky top-16 z-30 flex justify-center py-2 px-4 border-b border-light-border dark:border-dark-border bg-light-base dark:bg-dark-base">
+          <div className="md:hidden fixed top-16 left-0 right-0 z-30 flex justify-center py-2 px-4 border-b border-light-border dark:border-dark-border bg-light-base dark:bg-dark-base">
             <div className="flex gap-2">
               <button
                 onClick={() => {
