@@ -200,7 +200,7 @@ export default function ProjetosPage() {
       } else {
         return [...prev, tipo];
       }
-     }
+    });
   }
 
   async function loadEpisodes() {
