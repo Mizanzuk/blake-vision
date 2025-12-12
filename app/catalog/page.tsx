@@ -1204,7 +1204,7 @@ function CatalogContent() {
                         
                         {/* Número e Título na mesma linha */}
                         <div className="flex items-baseline gap-2 mb-2">
-                          <span className="text-2xl font-bold text-primary-600 dark:text-primary-400 -ml-1">
+                          <span className="text-lg font-semibold text-text-light-primary dark:text-dark-primary">
                             {episode.numero}
                           </span>
                           <h3 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary flex-1">
@@ -1214,7 +1214,7 @@ function CatalogContent() {
                         
                         {/* Logline alinhado com título */}
                         {episode.logline && (
-                          <p className="text-sm text-text-light-secondary dark:text-dark-secondary line-clamp-2 ml-6">
+                          <p className="text-sm text-text-light-secondary dark:text-dark-secondary line-clamp-2">
                             {episode.logline}
                           </p>
                         )}

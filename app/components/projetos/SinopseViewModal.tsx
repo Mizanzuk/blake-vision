@@ -36,9 +36,9 @@ export default function SinopseViewModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-light-raised dark:bg-dark-raised border-b border-border-light-default dark:border-border-dark-default p-6 flex items-center justify-between">
+        <div className="sticky top-0 bg-light-raised dark:bg-dark-raised p-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
-            Sinopse {sinopse.numero}
+            {sinopse.numero}. {sinopse.titulo}
           </h2>
           <div className="flex items-center gap-2">
             {/* Botão de editar */}
@@ -64,16 +64,6 @@ export default function SinopseViewModal({
 
         {/* Content */}
         <div className="p-6 space-y-6">
-          {/* Título */}
-          <div>
-            <h3 className="text-xs font-medium text-text-light-tertiary dark:text-dark-tertiary mb-2">
-              Título
-            </h3>
-            <p className="text-lg font-semibold text-text-light-primary dark:text-dark-primary">
-              {sinopse.titulo}
-            </p>
-          </div>
-
           {/* Logline */}
           {sinopse.logline && (
             <div>
