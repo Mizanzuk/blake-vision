@@ -89,7 +89,7 @@ export default function ConceptRuleViewModal({
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               {/* Badge do tipo */}
-              <Badge variant={ficha.tipo === "conceito" ? "pink" : "orange"} className="mb-2">
+              <Badge variant={ficha.tipo === "conceito" ? "primary" : "warning"} className="mb-2">
                 {getTypeLabel()}
               </Badge>
               
