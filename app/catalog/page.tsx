@@ -978,6 +978,10 @@ function CatalogContent() {
           worlds={worlds}
           onClose={handleCloseViewModal}
           onEdit={handleEditFromView}
+          onNext={handleNextFicha}
+          onPrevious={handlePreviousFicha}
+          hasNext={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) < fichas.length - 1 : false}
+          hasPrevious={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) > 0 : false}
         />
       )}
 

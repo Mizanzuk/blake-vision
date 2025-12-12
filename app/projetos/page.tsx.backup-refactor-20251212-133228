@@ -7,7 +7,7 @@ import { Header } from "@/app/components/layout/Header";
 import { Button, Loading, EmptyState } from "@/app/components/ui";
 import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
 import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
-
+import EpisodeModal from "@/app/components/projetos/EpisodeModal";
 import NewConceptRuleModal from "@/app/components/shared/NewConceptRuleModal";
 import ConceptRuleViewModal from "@/app/components/shared/ConceptRuleViewModal";
 import WorldModal from "@/app/components/projetos/WorldModal";
@@ -32,10 +32,12 @@ export default function ProjetosPage() {
   const [selectedWorldId, setSelectedWorldId] = useState<string>("");
   const [selectedTipos, setSelectedTipos] = useState<string[]>([]);
   const [fichas, setFichas] = useState<Ficha[]>([]);
+  const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [ordenacao, setOrdenacao] = useState<"asc" | "desc">("asc");
   const [searchQuery, setSearchQuery] = useState<string>("");
   
   // Modals
+  const [showEpisodeModal, setShowEpisodeModal] = useState(false);
   const [showConceptRuleModal, setShowConceptRuleModal] = useState(false);
   const [conceptRuleType, setConceptRuleType] = useState<"conceito" | "regra">("conceito");
   const [selectedFicha, setSelectedFicha] = useState<Ficha | null>(null);
@@ -76,8 +78,10 @@ export default function ProjetosPage() {
   useEffect(() => {
     if (selectedUniverseId) {
       loadFichas();
+      loadEpisodes();
     } else {
       setFichas([]);
+      setEpisodes([]);
     }
   }, [selectedUniverseId, selectedWorldId, selectedTipos, ordenacao]);
 
@@ -146,30 +150,23 @@ export default function ProjetosPage() {
       if (selectedTipos.length > 0) {
         url += `&tipo=${selectedTipos.join(',')}`;
       } else {
-        // Load conceitos, regras e sinopses
-        url += `&tipo=conceito,regra,sinopse`;
+        // Load apenas conceitos e regras (episodios vem da tabela episodes)
+        url += `&tipo=conceito,regra`;
       }
       
       const response = await fetch(url);
       const data = await response.json();
       
       if (response.ok) {
-        // Sort by type and then by title/episode
+        // Sort by type and then by title
         const sortedFichas = (data.fichas || []).sort((a: Ficha, b: Ficha) => {
           // First sort by type
-          const typeOrder = { sinopse: 1, conceito: 2, regra: 3 };
+          const typeOrder = { conceito: 1, regra: 2 };
           const typeA = typeOrder[a.tipo as keyof typeof typeOrder] || 999;
           const typeB = typeOrder[b.tipo as keyof typeof typeOrder] || 999;
           
           if (typeA !== typeB) {
             return typeA - typeB;
-          }
-          
-          // For sinopses, sort by episode number
-          if (a.tipo === "sinopse" && b.tipo === "sinopse") {
-            const numA = parseInt(a.episodio || "0");
-            const numB = parseInt(b.episodio || "0");
-            return numA - numB;
           }
           
           // Otherwise by title
@@ -208,17 +205,42 @@ export default function ProjetosPage() {
     });
   }
 
-
-
-  function handleNewSinopse() {
-    if (!selectedUniverseId) {
-      toast.error("Selecione um universo antes de criar uma sinopse");
-      return;
+  async function loadEpisodes() {
+    try {
+      let url = `/api/episodes?`;
+      
+      if (selectedWorldId) {
+        url += `worldId=${selectedWorldId}`;
+      } else if (selectedUniverseId) {
+        // Carregar episodes de todos os mundos do universo
+        const worldIds = worlds.map(w => w.id).join(',');
+        if (worldIds) {
+          url += `worldIds=${worldIds}`;
+        }
+      }
+      
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (response.ok) {
+        const sortedEpisodes = (data.episodes || []).sort((a: Episode, b: Episode) => {
+          return ordenacao === "asc" ? a.numero - b.numero : b.numero - a.numero;
+        });
+        setEpisodes(sortedEpisodes);
+      } else {
+        console.error("Error loading episodes:", data.error);
+        setEpisodes([]);
+      }
+    } catch (error) {
+      console.error("Error loading episodes:", error);
+      setEpisodes([]);
     }
-    
+  }
+
+  function handleNewEpisode() {
+    // Não há mais pré-requisito - o usuário pode escolher universo e mundo no modal
     setSelectedFicha(null);
-    setShowConceptRuleModal(true);
-    setConceptRuleType("conceito"); // Temporário - vamos criar modal específico depois
+    setShowEpisodeModal(true);
   }
 
   function handleNewConceptRule(tipo: "conceito" | "regra") {
@@ -242,8 +264,11 @@ export default function ProjetosPage() {
     
     setShowViewModal(false);
     
-    if (viewingFicha.tipo === "sinopse" || viewingFicha.tipo === "conceito" || viewingFicha.tipo === "regra") {
-      setConceptRuleType(viewingFicha.tipo as "conceito" | "regra");
+    if (viewingFicha.tipo === "episodio") {
+      setSelectedFicha(viewingFicha);
+      setShowEpisodeModal(true);
+    } else if (viewingFicha.tipo === "conceito" || viewingFicha.tipo === "regra") {
+      setConceptRuleType(viewingFicha.tipo);
       setSelectedFicha(viewingFicha);
       setShowConceptRuleModal(true);
     }
@@ -283,9 +308,10 @@ export default function ProjetosPage() {
 
       if (response.ok) {
         const action = fichaData.id ? "atualizado" : "criado";
-        const tipoLabel = fichaData.tipo === "sinopse" ? "Sinopse" : fichaData.tipo === "conceito" ? "Conceito" : "Regra";
+        const tipoLabel = fichaData.tipo === "episodio" ? "Episódio" : fichaData.tipo === "conceito" ? "Conceito" : "Regra";
         toast.success(`${tipoLabel} ${action}`);
         await loadFichas();
+        setShowEpisodeModal(false);
         setShowConceptRuleModal(false);
         setSelectedFicha(null);
       } else {
@@ -306,6 +332,7 @@ export default function ProjetosPage() {
       if (response.ok) {
         toast.success("Item deletado");
         await loadFichas();
+        setShowEpisodeModal(false);
         setShowConceptRuleModal(false);
         setSelectedFicha(null);
       } else {
@@ -318,7 +345,52 @@ export default function ProjetosPage() {
     }
   }
 
+  async function handleSaveEpisode(episodeData: any) {
+    try {
+      const method = episodeData.id ? "PUT" : "POST";
+      const response = await fetch("/api/episodes", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(episodeData),
+      });
 
+      const data = await response.json();
+
+      if (response.ok) {
+        const action = episodeData.id ? "atualizada" : "criada";
+        toast.success(`Sinopse ${action}`);
+        await loadEpisodes();
+        setShowEpisodeModal(false);
+        setSelectedFicha(null);
+      } else {
+        toast.error(data.error || "Erro ao salvar episódio");
+      }
+    } catch (error) {
+      console.error("Error saving episode:", error);
+      toast.error("Erro de rede ao salvar episódio");
+    }
+  }
+
+  async function handleDeleteEpisode(id: string) {
+    try {
+      const response = await fetch(`/api/episodes?id=${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        toast.success("Episódio deletado");
+        await loadEpisodes();
+        setShowEpisodeModal(false);
+        setSelectedFicha(null);
+      } else {
+        const data = await response.json();
+        toast.error(data.error || "Erro ao deletar episódio");
+      }
+    } catch (error) {
+      console.error("Error deleting episode:", error);
+      toast.error("Erro de rede ao deletar episódio");
+    }
+  }
 
   function handleNewWorld() {
     if (!selectedUniverseId) {
@@ -406,7 +478,7 @@ export default function ProjetosPage() {
           <Button
             variant="primary"
             size="sm"
-            onClick={handleNewSinopse}
+            onClick={handleNewEpisode}
             fullWidth
           >
             + Nova Sinopse
@@ -490,6 +562,13 @@ export default function ProjetosPage() {
             <div className="px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised">
               <span className="text-sm text-text-light-tertiary dark:text-dark-tertiary whitespace-nowrap">
               {(() => {
+                const filteredEps = episodes.filter(ep => {
+                  const matchesSearch = searchQuery === "" || 
+                    ep.titulo?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    ep.logline?.toLowerCase().includes(searchQuery.toLowerCase());
+                  const matchesTipo = selectedTipos.length === 0 || selectedTipos.includes("sinopse");
+                  return matchesSearch && matchesTipo;
+                });
                 const filteredFichas = fichas.filter(f => {
                   const matchesSearch = searchQuery === "" || 
                     f.titulo?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -497,7 +576,7 @@ export default function ProjetosPage() {
                   const matchesTipo = selectedTipos.length === 0 || selectedTipos.includes(f.tipo);
                   return matchesSearch && matchesTipo;
                 });
-                const total = filteredFichas.length;
+                const total = filteredEps.length + filteredFichas.length;
                 return `${total} ${total === 1 ? 'item encontrado' : 'itens encontrados'}`;
               })()}
               </span>
@@ -527,7 +606,7 @@ export default function ProjetosPage() {
             title="Selecione um Universo"
             description="Escolha um universo para visualizar e gerenciar seus projetos"
           />
-        ) : fichas.length === 0 ? (
+        ) : episodes.length === 0 && fichas.length === 0 ? (
           <EmptyState
             icon={
               <svg className="w-24 h-24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -539,34 +618,109 @@ export default function ProjetosPage() {
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Renderizar todas as fichas (sinopses, conceitos, regras) */}
-            {fichas
-              .filter(f => {
-                const matchesSearch = searchQuery === "" || 
-                  f.titulo?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  f.resumo?.toLowerCase().includes(searchQuery.toLowerCase());
-                return matchesSearch;
-              })
-              .map((ficha) => {
-                // Encontrar o nome do mundo se a ficha pertence a um mundo específico
-                const worldName = ficha.world_id 
-                  ? allWorlds.find(w => w.id === ficha.world_id)?.nome 
-                  : undefined;
-                
-                return (
-                  <FichaCard
-                    key={ficha.id}
-                    ficha={ficha}
-                    onClick={() => handleViewFicha(ficha)}
-                    worldName={worldName}
-                  />
-                );
-              })}
+            {/* Renderizar sinopses da tabela episodes */}
+            {episodes.length > 0 && (selectedTipos.length === 0 || selectedTipos.includes("sinopse")) && (
+              <>
+                {episodes
+                  .filter(ep => {
+                    const matchesSearch = searchQuery === "" || 
+                      ep.titulo?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      ep.logline?.toLowerCase().includes(searchQuery.toLowerCase());
+                    return matchesSearch;
+                  })
+                  .map((episode) => {
+                  const worldName = episode.world_id 
+                    ? allWorlds.find(w => w.id === episode.world_id)?.nome 
+                    : undefined;
+                  
+                  return (
+                    <div
+                      key={episode.id}
+                      onClick={() => {
+                        setViewingSinopse(episode);
+                        setShowSinopseViewModal(true);
+                      }}
+                      className="bg-light-raised dark:bg-dark-raised rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-border-light-default dark:border-border-dark-default"
+                    >
+                      {/* Badge de tipo e mundo */}
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                          Sinopse
+                        </span>
+                        {worldName && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                            {worldName}
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* Número e Título na mesma linha */}
+                      <div className="flex items-baseline gap-2 mb-2">
+                        <span className="text-lg font-semibold text-text-light-primary dark:text-dark-primary">
+                          {episode.numero}
+                        </span>
+                        <h3 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary flex-1">
+                          {episode.titulo}
+                        </h3>
+                      </div>
+                      
+                      {/* Logline alinhado com título */}
+                      {episode.logline && (
+                        <p className="text-sm text-text-light-secondary dark:text-dark-secondary line-clamp-2">
+                          {episode.logline}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </>
+            )}
+            
+            {/* Renderizar conceitos e regras */}
+            {fichas.length > 0 && (
+              <>
+                  {fichas
+                    .filter(f => {
+                      const matchesSearch = searchQuery === "" || 
+                        f.titulo?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        f.resumo?.toLowerCase().includes(searchQuery.toLowerCase());
+                      return matchesSearch;
+                    })
+                    .map((ficha) => {
+                    // Encontrar o nome do mundo se a ficha pertence a um mundo específico
+                    const worldName = ficha.world_id 
+                      ? allWorlds.find(w => w.id === ficha.world_id)?.nome 
+                      : undefined;
+                    
+                    return (
+                      <FichaCard
+                        key={ficha.id}
+                        ficha={ficha}
+                        onClick={() => handleViewFicha(ficha)}
+                        worldName={worldName}
+                      />
+                    );
+                  })}
+              </>
+            )}
           </div>
         )}
       </div>
 
-
+      {/* Episode Modal */}
+      {showEpisodeModal && (
+        <EpisodeModal
+          episode={selectedFicha}
+          worldId={selectedWorldId}
+          universeId={selectedUniverseId}
+          onSave={handleSaveEpisode}
+          onDelete={handleDeleteEpisode}
+          onClose={() => {
+            setShowEpisodeModal(false);
+            setSelectedFicha(null);
+          }}
+        />
+      )}
 
       {/* Concept/Rule Modal */}
       <NewConceptRuleModal
@@ -606,10 +760,6 @@ export default function ProjetosPage() {
           worlds={worlds}
           onClose={handleCloseViewModal}
           onEdit={handleEditFromView}
-          onNext={handleNextFicha}
-          onPrevious={handlePreviousFicha}
-          hasNext={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) < fichas.length - 1 : false}
-          hasPrevious={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) > 0 : false}
         />
       )}
 
@@ -627,7 +777,31 @@ export default function ProjetosPage() {
         />
       )}
 
-
+      {/* Sinopse View Modal */}
+      {showSinopseViewModal && viewingSinopse && (
+        <SinopseViewModal
+          sinopse={viewingSinopse}
+          onClose={() => {
+            setShowSinopseViewModal(false);
+            setViewingSinopse(null);
+          }}
+          onEdit={() => {
+            // Converter sinopse para formato de ficha para o modal de edição
+            const episodeFicha = {
+              id: viewingSinopse.id,
+              tipo: "episodio",
+              titulo: viewingSinopse.titulo,
+              resumo: viewingSinopse.sinopse,
+              conteudo: viewingSinopse.logline,
+              episodio: viewingSinopse.numero.toString(),
+              world_id: viewingSinopse.world_id,
+            } as any;
+            setSelectedFicha(episodeFicha);
+            setShowSinopseViewModal(false);
+            setShowEpisodeModal(true);
+          }}
+        />
+      )}
     </div>
   );
 }
