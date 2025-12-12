@@ -610,13 +610,21 @@ export default function ProjetosPage() {
                   </h2>
                 )}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {fichas.map((ficha) => (
-                    <FichaCard
-                      key={ficha.id}
-                      ficha={ficha}
-                      onClick={() => handleViewFicha(ficha)}
-                    />
-                  ))}
+                  {fichas.map((ficha) => {
+                    // Encontrar o nome do mundo se a ficha pertence a um mundo específico
+                    const worldName = ficha.world_id 
+                      ? allWorlds.find(w => w.id === ficha.world_id)?.nome 
+                      : undefined;
+                    
+                    return (
+                      <FichaCard
+                        key={ficha.id}
+                        ficha={ficha}
+                        onClick={() => handleViewFicha(ficha)}
+                        worldName={worldName}
+                      />
+                    );
+                  })}
                 </div>
               </div>
             )}

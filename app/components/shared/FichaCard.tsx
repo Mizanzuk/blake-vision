@@ -7,9 +7,10 @@ interface FichaCardProps {
   ficha: Ficha;
   onClick: () => void;
   withIndent?: boolean; // Para recuo em episódios na página Projetos
+  worldName?: string; // Nome do mundo (se a ficha pertence a um mundo específico)
 }
 
-export default function FichaCard({ ficha, onClick, withIndent = false }: FichaCardProps) {
+export default function FichaCard({ ficha, onClick, withIndent = false, worldName }: FichaCardProps) {
   
   const getTypeColor = () => {
     const colors: Record<string, string> = {
@@ -87,12 +88,19 @@ export default function FichaCard({ ficha, onClick, withIndent = false }: FichaC
     <>
       {/* Type Badge */}
       <div className="flex items-center justify-between mb-2">
-        <span className={clsx(
-          "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium",
-          getTypeColor()
-        )}>
-          {getTypeLabel()}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className={clsx(
+            "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium",
+            getTypeColor()
+          )}>
+            {getTypeLabel()}
+          </span>
+          {worldName && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+              {worldName}
+            </span>
+          )}
+        </div>
         {ficha.codigo && (
           <span className="text-xs text-text-light-secondary dark:text-dark-secondary">
             {ficha.codigo}
