@@ -35,7 +35,7 @@ export default function FichaCard({ ficha, onClick, withIndent = false, worldNam
       conceito: "Conceito",
       regra: "Regra",
       objeto: "Objeto",
-      sinopse: "SINOPSE",
+      sinopse: "Sinopse",
     };
     return labels[ficha.tipo] || ficha.tipo.toUpperCase();
   };
