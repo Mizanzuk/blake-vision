@@ -1,4 +1,5 @@
 "use client";
+// Force recompile: 2025-12-12T00:18:30Z
 
 import { useState, useEffect } from "react";
 import type { Ficha, Universe, World } from "@/app/types";
@@ -98,6 +99,7 @@ export default function ConceptRuleFormModal({
   if (!isOpen) return null;
 
   console.log('[ConceptRuleFormModal] Modal OPENED', { tipo, item, selectedUniverseId });
+  alert('ConceptRuleFormModal RENDERIZADO!');
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
