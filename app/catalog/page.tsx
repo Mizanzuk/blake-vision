@@ -47,7 +47,7 @@ function CatalogContent() {
   const [worlds, setWorlds] = useState<World[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [fichas, setFichas] = useState<Ficha[]>([]);
-  const [episodes, setEpisodes] = useState<Episode[]>([]);
+  // Estado episodes removido - sinopses agora são fichas
   
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
@@ -193,7 +193,6 @@ function CatalogContent() {
         setFichas(data.fichas || []);
         
         // Sinopses agora são fichas tipo 'sinopse', não precisamos carregar episodes separadamente
-        setEpisodes([]);
       } else {
         toast.error(data.error || t.errors.generic);
       }
