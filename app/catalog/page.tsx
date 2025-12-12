@@ -974,14 +974,15 @@ function CatalogContent() {
                           />
                         </div>
                       )}
-                      <div
+                      <button
+                        type="button"
                         onClick={() => {
                           if (!isSelectionMode) {
                             setViewingSinopse(episode);
                             setShowSinopseViewModal(true);
                           }
                         }}
-                        className={`bg-light-raised dark:bg-dark-raised rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-border-light-default dark:border-border-dark-default min-h-[160px] ${
+                        className={`w-full text-left bg-light-raised dark:bg-dark-raised rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-border-light-default dark:border-border-dark-default min-h-[160px] ${
                           isSelectionMode && selectedFichaIds.includes(episode.id) ? 'ring-2 ring-primary-500' : ''
                         }`}
                       >
@@ -1013,7 +1014,7 @@ function CatalogContent() {
                             {episode.logline}
                           </p>
                         )}
-                      </div>
+                      </button>
                     </div>
                   );
                 })}
