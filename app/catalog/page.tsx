@@ -607,10 +607,9 @@ function CatalogContent() {
     );
   };
 
-  // Get unique episode numbers from fichas and episodes
+  // Get unique episode numbers from fichas (sinopses agora são fichas tipo 'sinopse')
   const episodeNumbersFromFichas = fichas.filter(f => f.episodio).map(f => f.episodio);
-  const episodeNumbersFromEpisodes = episodes.map(e => e.numero.toString());
-  const uniqueEpisodeNumbers = Array.from(new Set([...episodeNumbersFromFichas, ...episodeNumbersFromEpisodes]));
+  const uniqueEpisodeNumbers = Array.from(new Set(episodeNumbersFromFichas));
 
   if (isLoading) {
     return <Loading fullScreen text={t.common.loading} />;
