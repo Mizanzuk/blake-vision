@@ -35,6 +35,7 @@ export default function ProjetosPage() {
   const [fichas, setFichas] = useState<Ficha[]>([]);
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [ordenacao, setOrdenacao] = useState<"asc" | "desc">("asc");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   
   // Modals
   const [showEpisodeModal, setShowEpisodeModal] = useState(false);
@@ -475,6 +476,40 @@ export default function ProjetosPage() {
       
       <div className="max-w-7xl mx-auto px-4 py-8">
 
+        {/* Action Buttons Row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleNewEpisode}
+            fullWidth
+          >
+            + Nova Sinopse
+          </Button>
+
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => handleNewConceptRule("conceito")}
+            disabled={!selectedUniverseId}
+            title={!selectedUniverseId ? "Selecione um universo primeiro" : ""}
+            fullWidth
+          >
+            + Novo Conceito
+          </Button>
+
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => handleNewConceptRule("regra")}
+            disabled={!selectedUniverseId}
+            title={!selectedUniverseId ? "Selecione um universo primeiro" : ""}
+            fullWidth
+          >
+            + Nova Regra
+          </Button>
+        </div>
+
         {/* Filters Row */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <UniverseDropdown
@@ -509,38 +544,56 @@ export default function ProjetosPage() {
           />
         </div>
 
-        {/* Action Buttons Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleNewEpisode}
-            fullWidth
-          >
-            + Nova Sinopse
-          </Button>
-
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => handleNewConceptRule("conceito")}
-            disabled={!selectedUniverseId}
-            title={!selectedUniverseId ? "Selecione um universo primeiro" : ""}
-            fullWidth
-          >
-            + Novo Conceito
-          </Button>
-
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => handleNewConceptRule("regra")}
-            disabled={!selectedUniverseId}
-            title={!selectedUniverseId ? "Selecione um universo primeiro" : ""}
-            fullWidth
-          >
-            + Nova Regra
-          </Button>
+        {/* Search and Info Row */}
+        <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-6">
+          {/* Search Input */}
+          <div className="relative flex-1 w-full">
+            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-text-light-tertiary dark:text-dark-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+            />
+          </div>
+          
+          {/* Item Count and Clear Filters */}
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-text-light-secondary dark:text-dark-secondary whitespace-nowrap">
+              {(() => {
+                const filteredEps = episodes.filter(ep => {
+                  const matchesSearch = searchQuery === "" || 
+                    ep.titulo?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    ep.logline?.toLowerCase().includes(searchQuery.toLowerCase());
+                  const matchesTipo = selectedTipos.length === 0 || selectedTipos.includes("sinopse");
+                  return matchesSearch && matchesTipo;
+                });
+                const filteredFichas = fichas.filter(f => {
+                  const matchesSearch = searchQuery === "" || 
+                    f.titulo?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    f.resumo?.toLowerCase().includes(searchQuery.toLowerCase());
+                  const matchesTipo = selectedTipos.length === 0 || selectedTipos.includes(f.tipo);
+                  return matchesSearch && matchesTipo;
+                });
+                const total = filteredEps.length + filteredFichas.length;
+                return `${total} ${total === 1 ? 'item encontrado' : 'itens encontrados'}`;
+              })()}
+            </span>
+            
+            <button
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedTipos([]);
+                setOrdenacao("asc");
+              }}
+              className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors whitespace-nowrap"
+            >
+              Limpar filtros
+            </button>
+          </div>
         </div>
 
         {/* Content */}
@@ -569,7 +622,14 @@ export default function ProjetosPage() {
             {/* Renderizar sinopses da tabela episodes */}
             {episodes.length > 0 && (selectedTipos.length === 0 || selectedTipos.includes("sinopse")) && (
               <>
-                {episodes.map((episode) => {
+                {episodes
+                  .filter(ep => {
+                    const matchesSearch = searchQuery === "" || 
+                      ep.titulo?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      ep.logline?.toLowerCase().includes(searchQuery.toLowerCase());
+                    return matchesSearch;
+                  })
+                  .map((episode) => {
                   const worldName = episode.world_id 
                     ? allWorlds.find(w => w.id === episode.world_id)?.nome 
                     : undefined;
@@ -620,7 +680,14 @@ export default function ProjetosPage() {
             {/* Renderizar conceitos e regras */}
             {fichas.length > 0 && (
               <>
-                  {fichas.map((ficha) => {
+                  {fichas
+                    .filter(f => {
+                      const matchesSearch = searchQuery === "" || 
+                        f.titulo?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        f.resumo?.toLowerCase().includes(searchQuery.toLowerCase());
+                      return matchesSearch;
+                    })
+                    .map((ficha) => {
                     // Encontrar o nome do mundo se a ficha pertence a um mundo específico
                     const worldName = ficha.world_id 
                       ? allWorlds.find(w => w.id === ficha.world_id)?.nome 
