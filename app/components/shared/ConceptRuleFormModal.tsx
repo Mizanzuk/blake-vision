@@ -27,7 +27,6 @@ export default function ConceptRuleFormModal({
   onDelete,
   onClose,
 }: ConceptRuleFormModalProps) {
-  console.log('[ConceptRuleFormModal] Component rendered', { isOpen, tipo, item });
   const [selectedUniverseId, setSelectedUniverseId] = useState(preSelectedUniverseId);
   const [selectedWorldId, setSelectedWorldId] = useState("");
   const [titulo, setTitulo] = useState("");
@@ -97,6 +96,8 @@ export default function ConceptRuleFormModal({
   }
 
   if (!isOpen) return null;
+
+  console.log('[ConceptRuleFormModal] Modal OPENED', { tipo, item, selectedUniverseId });
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
