@@ -927,7 +927,7 @@ function CatalogContent() {
             {/* Search, Counter and Action Buttons */}
             <div className="flex items-center gap-4 mb-6">
               {/* Search Input */}
-              <div className="flex-1">
+              <div className="flex-1 max-w-md">
                 <Input
                   placeholder={t.common.search}
                   value={searchTerm}
@@ -948,18 +948,17 @@ function CatalogContent() {
               </div>
               
               {/* Clear Filters Button */}
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
                 onClick={() => {
                   setSearchTerm("");
                   setSelectedWorldIds([]);
                   setSelectedTypes([]);
                   setSelectedEpisodes([]);
                 }}
+                className="px-3 py-2 text-sm text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary transition-colors whitespace-nowrap"
               >
                 Limpar filtros
-              </Button>
+              </button>
             </div>
 
             {/* Action Buttons */}
@@ -1186,7 +1185,7 @@ function CatalogContent() {
                             setShowSinopseViewModal(true);
                           }
                         }}
-                        className={`bg-light-raised dark:bg-dark-raised rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-border-light-default dark:border-border-dark-default ${
+                        className={`bg-light-raised dark:bg-dark-raised rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-border-light-default dark:border-border-dark-default min-h-[160px] ${
                           isSelectionMode && selectedFichaIds.includes(episode.id) ? 'ring-2 ring-primary-500' : ''
                         }`}
                       >

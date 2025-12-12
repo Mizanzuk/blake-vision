@@ -547,7 +547,7 @@ export default function ProjetosPage() {
         {/* Search and Info Row */}
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-6">
           {/* Search Input */}
-          <div className="relative flex-1 w-full">
+          <div className="relative flex-1 w-full max-w-md">
             <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-text-light-tertiary dark:text-dark-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -562,7 +562,8 @@ export default function ProjetosPage() {
           
           {/* Item Count and Clear Filters */}
           <div className="flex items-center gap-4">
-            <span className="text-sm text-text-light-secondary dark:text-dark-secondary whitespace-nowrap">
+            <div className="px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised">
+              <span className="text-sm text-text-light-tertiary dark:text-dark-tertiary whitespace-nowrap">
               {(() => {
                 const filteredEps = episodes.filter(ep => {
                   const matchesSearch = searchQuery === "" || 
@@ -581,7 +582,8 @@ export default function ProjetosPage() {
                 const total = filteredEps.length + filteredFichas.length;
                 return `${total} ${total === 1 ? 'item encontrado' : 'itens encontrados'}`;
               })()}
-            </span>
+              </span>
+            </div>
             
             <button
               onClick={() => {
@@ -589,7 +591,7 @@ export default function ProjetosPage() {
                 setSelectedTipos([]);
                 setOrdenacao("asc");
               }}
-              className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors whitespace-nowrap"
+              className="px-3 py-2 text-sm text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary transition-colors whitespace-nowrap"
             >
               Limpar filtros
             </button>
