@@ -59,6 +59,7 @@ export default function FichaViewModal({
   };
 
   const getTitle = () => {
+    console.log('DEBUG getTitle:', { tipo: ficha.tipo, episodio: ficha.episodio, titulo: ficha.titulo });
     if ((ficha.tipo === "episodio" || ficha.tipo === "sinopse") && ficha.episodio) {
       return `${ficha.episodio} ${ficha.titulo}`;
     }
