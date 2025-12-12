@@ -87,6 +87,39 @@ export async function POST(req: NextRequest) {
     // world_id pode ser null para Conceitos e Regras (aplicados ao universo inteiro)
     const allowNullWorld = tipo === 'conceito' || tipo === 'regra';
     
+    // Validações especiais para Sinopse
+    if (tipo === 'sinopse') {
+      if (!world_id) {
+        return NextResponse.json(
+          { error: "Sinopse deve ter um mundo obrigatório" },
+          { status: 400 }
+        );
+      }
+      if (!episodio) {
+        return NextResponse.json(
+          { error: "Sinopse deve ter um episódio obrigatório" },
+          { status: 400 }
+        );
+      }
+      
+      // Verificar se já existe sinopse para este episódio
+      const { data: existingSinopse } = await supabase
+        .from("fichas")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("world_id", world_id)
+        .eq("tipo", "sinopse")
+        .eq("episodio", episodio)
+        .single();
+      
+      if (existingSinopse) {
+        return NextResponse.json(
+          { error: "Já existe uma sinopse para este episódio" },
+          { status: 400 }
+        );
+      }
+    }
+    
     if (!tipo || !titulo) {
       return NextResponse.json(
         { error: "tipo e titulo são obrigatórios" },
@@ -168,6 +201,42 @@ export async function PUT(req: NextRequest) {
 
     if (!id) {
       return NextResponse.json({ error: "ID é obrigatório" }, { status: 400 });
+    }
+    
+    // Validações especiais para Sinopse (ao atualizar)
+    if (updateData.tipo === 'sinopse') {
+      if (updateData.world_id === null || updateData.world_id === '') {
+        return NextResponse.json(
+          { error: "Sinopse deve ter um mundo obrigatório" },
+          { status: 400 }
+        );
+      }
+      if (updateData.episodio === null || updateData.episodio === '') {
+        return NextResponse.json(
+          { error: "Sinopse deve ter um episódio obrigatório" },
+          { status: 400 }
+        );
+      }
+      
+      // Se está mudando o episódio, verificar se já existe sinopse para o novo episódio
+      if (updateData.episodio && updateData.world_id) {
+        const { data: existingSinopse } = await supabase
+          .from("fichas")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("world_id", updateData.world_id)
+          .eq("tipo", "sinopse")
+          .eq("episodio", updateData.episodio)
+          .neq("id", id)
+          .maybeSingle();
+        
+        if (existingSinopse) {
+          return NextResponse.json(
+            { error: "Já existe uma sinopse para este episódio" },
+            { status: 400 }
+          );
+        }
+      }
     }
 
     // Generate new embedding if content changed

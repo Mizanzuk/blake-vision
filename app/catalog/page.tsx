@@ -196,8 +196,8 @@ function CatalogContent() {
         
         setFichas(data.fichas || []);
         
-        // Carregar episodes (sinopses) usando worlds do response
-        await loadEpisodesForWorlds(data.worlds || []);
+        // Sinopses agora são fichas tipo 'sinopse', não precisamos carregar episodes separadamente
+        setEpisodes([]);
       } else {
         toast.error(data.error || t.errors.generic);
       }
@@ -207,29 +207,7 @@ function CatalogContent() {
     }
   }
 
-  async function loadEpisodesForWorlds(worldsList: World[]) {
-    try {
-      // Carregar episodes de todos os mundos do universo
-      const worldIds = worldsList.map(w => w.id).join(',');
-      if (!worldIds) {
-        setEpisodes([]);
-        return;
-      }
-      
-      const response = await fetch(`/api/episodes?worldIds=${worldIds}`);
-      const data = await response.json();
-      
-      if (response.ok) {
-        setEpisodes(data.episodes || []);
-      } else {
-        console.error("Error loading episodes:", data.error);
-        setEpisodes([]);
-      }
-    } catch (error) {
-      console.error("Error loading episodes:", error);
-      setEpisodes([]);
-    }
-  }
+  // Função removida: sinopses agora são fichas tipo 'sinopse'
 
   function handleUniverseChange(universeId: string) {
     if (universeId === "create_new_universe") {
@@ -619,25 +597,8 @@ function CatalogContent() {
     return true;
   });
 
-  // Filter episodes (sinopses)
-  const filteredEpisodes = episodes.filter(episode => {
-    if (searchTerm && !episode.titulo.toLowerCase().includes(searchTerm.toLowerCase())) {
-      return false;
-    }
-    if (selectedWorldIds.length > 0 && !selectedWorldIds.includes(episode.world_id)) {
-      return false;
-    }
-    if (selectedTypes.length > 0 && !selectedTypes.includes("sinopse")) {
-      return false;
-    }
-    if (selectedEpisodes.length > 0 && !selectedEpisodes.includes(episode.numero.toString())) {
-      return false;
-    }
-    return true;
-  });
-
-  // Combinar fichas e episodes para contagem total
-  const totalItems = filteredFichas.length + filteredEpisodes.length;
+  // Sinopses agora são fichas tipo 'sinopse'
+  const totalItems = filteredFichas.length;
 
   // Use filtered fichas directly (no custom ordering)
   const sortedFichas = filteredFichas;
@@ -944,80 +905,7 @@ function CatalogContent() {
                     />
                   </div>
                 ))}
-                
-                {/* Sinopses (sem drag and drop) */}
-                {filteredEpisodes.length > 0 && filteredEpisodes.map(episode => {
-                  const worldName = episode.world_id 
-                    ? worlds.find(w => w.id === episode.world_id)?.nome 
-                    : undefined;
-                  
-                  return (
-                    <div
-                      key={episode.id}
-                      className="relative"
-                    >
-                      {/* Checkbox for selection mode */}
-                      {isSelectionMode && (
-                        <div className="absolute top-2 left-2 z-50">
-                          <input
-                            type="checkbox"
-                            checked={selectedFichaIds.includes(episode.id)}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              if (selectedFichaIds.includes(episode.id)) {
-                                setSelectedFichaIds(selectedFichaIds.filter(id => id !== episode.id));
-                              } else {
-                                setSelectedFichaIds([...selectedFichaIds, episode.id]);
-                              }
-                            }}
-                            className="w-5 h-5 rounded border-border-light-default dark:border-border-dark-default text-primary-500 focus:ring-primary-500 cursor-pointer"
-                          />
-                        </div>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (!isSelectionMode) {
-                            setViewingSinopse(episode);
-                            setShowSinopseViewModal(true);
-                          }
-                        }}
-                        className={`w-full text-left bg-light-raised dark:bg-dark-raised rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-border-light-default dark:border-border-dark-default min-h-[160px] ${
-                          isSelectionMode && selectedFichaIds.includes(episode.id) ? 'ring-2 ring-primary-500' : ''
-                        }`}
-                      >
-                        {/* Badge de tipo e mundo */}
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                            Sinopse
-                          </span>
-                          {worldName && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                              {worldName}
-                            </span>
-                          )}
-                        </div>
-                        
-                        {/* Número e Título na mesma linha */}
-                        <div className="flex items-baseline gap-2 mb-2">
-                          <span className="text-lg font-semibold text-text-light-primary dark:text-dark-primary">
-                            {episode.numero}
-                          </span>
-                          <h3 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary flex-1">
-                            {episode.titulo}
-                          </h3>
-                        </div>
-                        
-                        {/* Logline alinhado com título */}
-                        {episode.logline && (
-                          <p className="text-sm text-text-light-secondary dark:text-dark-secondary line-clamp-2">
-                            {episode.logline}
-                          </p>
-                        )}
-                      </button>
-                    </div>
-                  );
-                })}
+
               </div>
             )}
           </>
