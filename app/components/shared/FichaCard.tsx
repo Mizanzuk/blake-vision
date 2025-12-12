@@ -21,6 +21,7 @@ export default function FichaCard({ ficha, onClick, withIndent = false, worldNam
       conceito: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200",
       regra: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
       objeto: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200",
+      sinopse: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
     };
     return colors[ficha.tipo] || "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
   };
@@ -34,13 +35,14 @@ export default function FichaCard({ ficha, onClick, withIndent = false, worldNam
       conceito: "Conceito",
       regra: "Regra",
       objeto: "Objeto",
+      sinopse: "SINOPSE",
     };
     return labels[ficha.tipo] || ficha.tipo.toUpperCase();
   };
 
   const getTitle = () => {
-    if (ficha.tipo === "episodio" && ficha.episodio) {
-      return `${ficha.episodio}. ${ficha.titulo}`;
+    if ((ficha.tipo === "episodio" || ficha.tipo === "sinopse") && ficha.episodio) {
+      return `${ficha.episodio} ${ficha.titulo}`;
     }
     return ficha.titulo;
   };
@@ -127,7 +129,7 @@ export default function FichaCard({ ficha, onClick, withIndent = false, worldNam
       onClick={onClick}
       className="group relative bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg p-4 hover:shadow-md transition-all cursor-pointer h-48 flex flex-col"
     >
-      {ficha.tipo === "episodio" ? renderEpisodeCard() : renderDefaultCard()}
+      {(ficha.tipo === "episodio" || ficha.tipo === "sinopse") ? renderEpisodeCard() : renderDefaultCard()}
     </div>
   );
 }
