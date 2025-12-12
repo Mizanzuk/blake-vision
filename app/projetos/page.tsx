@@ -565,15 +565,16 @@ export default function ProjetosPage() {
             description="Crie episódios, conceitos ou regras para começar a planejar seu projeto"
           />
         ) : (
-          <div className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Renderizar sinopses da tabela episodes */}
             {episodes.length > 0 && (selectedTipos.length === 0 || selectedTipos.includes("sinopse")) && (
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                  Sinopses
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {episodes.map((episode) => (
+              <>
+                {episodes.map((episode) => {
+                  const worldName = episode.world_id 
+                    ? allWorlds.find(w => w.id === episode.world_id)?.nome 
+                    : undefined;
+                  
+                  return (
                     <div
                       key={episode.id}
                       onClick={() => {
@@ -582,34 +583,43 @@ export default function ProjetosPage() {
                       }}
                       className="bg-light-raised dark:bg-dark-raised rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-border-light-default dark:border-border-dark-default"
                     >
-                      <div className="flex items-start justify-between mb-2">
-                        <span className="text-2xl font-bold text-primary-600 dark:text-primary-400">
+                      {/* Badge de tipo e mundo */}
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                          Sinopse
+                        </span>
+                        {worldName && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                            {worldName}
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* Número e Título na mesma linha */}
+                      <div className="flex items-baseline gap-2 mb-2">
+                        <span className="text-2xl font-bold text-primary-600 dark:text-primary-400 -ml-1">
                           {episode.numero}
                         </span>
+                        <h3 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary flex-1">
+                          {episode.titulo}
+                        </h3>
                       </div>
-                      <h3 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary mb-2">
-                        {episode.titulo}
-                      </h3>
+                      
+                      {/* Logline alinhado com título */}
                       {episode.logline && (
-                        <p className="text-sm text-text-light-secondary dark:text-dark-secondary line-clamp-2">
+                        <p className="text-sm text-text-light-secondary dark:text-dark-secondary line-clamp-2 ml-6">
                           {episode.logline}
                         </p>
                       )}
                     </div>
-                  ))}
-                </div>
-              </div>
+                  );
+                })}
+              </>
             )}
             
             {/* Renderizar conceitos e regras */}
             {fichas.length > 0 && (
-              <div>
-                {episodes.length > 0 && (
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                    Conceitos e Regras
-                  </h2>
-                )}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <>
                   {fichas.map((ficha) => {
                     // Encontrar o nome do mundo se a ficha pertence a um mundo específico
                     const worldName = ficha.world_id 
@@ -625,8 +635,7 @@ export default function ProjetosPage() {
                       />
                     );
                   })}
-                </div>
-              </div>
+              </>
             )}
           </div>
         )}

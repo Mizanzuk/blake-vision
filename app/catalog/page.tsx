@@ -1113,6 +1113,7 @@ function CatalogContent() {
                   strategy={rectSortingStrategy}
                 >
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Fichas */}
                     {sortedFichas.map(ficha => (
                       <SortableCard key={ficha.id} id={ficha.id} isDragging={isDragging}>
                         <div className={`relative ${isSelectionMode && selectedFichaIds.includes(ficha.id) ? 'ring-2 ring-primary-500 rounded-lg' : ''}`}>
@@ -1137,48 +1138,87 @@ function CatalogContent() {
                           <FichaCard
                             ficha={ficha}
                             onClick={() => !isSelectionMode && openViewFichaModal(ficha)}
+                            worldName={ficha.world_id ? worlds.find(w => w.id === ficha.world_id)?.nome : undefined}
                           />
                         </div>
                       </SortableCard>
                     ))}
+                    
+                    {/* Sinopses (sem drag and drop) */}
+                    {filteredEpisodes.length > 0 && filteredEpisodes.map(episode => {
+                  const worldName = episode.world_id 
+                    ? worlds.find(w => w.id === episode.world_id)?.nome 
+                    : undefined;
+                  
+                  return (
+                    <div
+                      key={episode.id}
+                      className="relative"
+                    >
+                      {/* Checkbox for selection mode */}
+                      {isSelectionMode && (
+                        <div className="absolute top-2 left-2 z-50">
+                          <input
+                            type="checkbox"
+                            checked={selectedFichaIds.includes(episode.id)}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              if (selectedFichaIds.includes(episode.id)) {
+                                setSelectedFichaIds(selectedFichaIds.filter(id => id !== episode.id));
+                              } else {
+                                setSelectedFichaIds([...selectedFichaIds, episode.id]);
+                              }
+                            }}
+                            className="w-5 h-5 rounded border-border-light-default dark:border-border-dark-default text-primary-500 focus:ring-primary-500 cursor-pointer"
+                          />
+                        </div>
+                      )}
+                      <div
+                        onClick={() => {
+                          if (!isSelectionMode) {
+                            setViewingSinopse(episode);
+                            setShowSinopseViewModal(true);
+                          }
+                        }}
+                        className={`bg-light-raised dark:bg-dark-raised rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-border-light-default dark:border-border-dark-default ${
+                          isSelectionMode && selectedFichaIds.includes(episode.id) ? 'ring-2 ring-primary-500' : ''
+                        }`}
+                      >
+                        {/* Badge de tipo e mundo */}
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                            Sinopse
+                          </span>
+                          {worldName && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                              {worldName}
+                            </span>
+                          )}
+                        </div>
+                        
+                        {/* Número e Título na mesma linha */}
+                        <div className="flex items-baseline gap-2 mb-2">
+                          <span className="text-2xl font-bold text-primary-600 dark:text-primary-400 -ml-1">
+                            {episode.numero}
+                          </span>
+                          <h3 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary flex-1">
+                            {episode.titulo}
+                          </h3>
+                        </div>
+                        
+                        {/* Logline alinhado com título */}
+                        {episode.logline && (
+                          <p className="text-sm text-text-light-secondary dark:text-dark-secondary line-clamp-2 ml-6">
+                            {episode.logline}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
                   </div>
                 </SortableContext>
               </DndContext>
-            )}
-
-            {/* Sinopses Grid (sem drag and drop) */}
-            {filteredEpisodes.length > 0 && (
-              <div className="mt-8">
-                <h2 className="text-xl font-semibold text-text-light-primary dark:text-dark-primary mb-4">
-                  Sinopses
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredEpisodes.map(episode => (
-                    <div
-                      key={episode.id}
-                      onClick={() => {
-                        // Abrir modal de visualização de sinopse
-                        // TODO: Implementar modal de visualização no catálogo
-                      }}
-                      className="bg-light-raised dark:bg-dark-raised rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-border-light-default dark:border-border-dark-default"
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <span className="text-2xl font-bold text-primary-600 dark:text-primary-400">
-                          {episode.numero}
-                        </span>
-                      </div>
-                      <h3 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary mb-2">
-                        {episode.titulo}
-                      </h3>
-                      {episode.logline && (
-                        <p className="text-sm text-text-light-secondary dark:text-dark-secondary line-clamp-2">
-                          {episode.logline}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
             )}
           </>
         ) : (
