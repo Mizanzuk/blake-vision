@@ -41,17 +41,20 @@ export default function NewConceptRuleModal({
       // Se a ficha tem world_id, buscar o universe_id do mundo
       if (item.world_id) {
         const world = worlds.find(w => w.id === item.world_id);
-        setSelectedUniverseId(world?.universe_id || preSelectedUniverseId);
+        const universeId = world?.universe_id || preSelectedUniverseId;
+        setSelectedUniverseId(universeId);
         setSelectedWorldId(item.world_id);
       } else {
-        // Se não tem world_id, usar o preSelectedUniverseId
-        setSelectedUniverseId(preSelectedUniverseId);
+        // Se não tem world_id, é um conceito/regra de universo
+        // Usar o preSelectedUniverseId que vem da página
+        setSelectedUniverseId(preSelectedUniverseId || "");
         setSelectedWorldId("");
       }
       setTitulo(item.titulo || "");
       setResumo(item.resumo || "");
     } else {
-      setSelectedUniverseId(preSelectedUniverseId);
+      // Modo criação
+      setSelectedUniverseId(preSelectedUniverseId || "");
       setSelectedWorldId("");
       setTitulo("");
       setResumo("");
