@@ -264,7 +264,7 @@ export default function EpisodeModal({
           />
 
           <WorldsDropdownSingle
-            label="MUNDOS"
+            label="Mundos"
             worlds={worlds}
             selectedId={selectedWorldId}
             onSelect={(id) => {
@@ -280,7 +280,7 @@ export default function EpisodeModal({
 
         {/* Número do Episódio */}
         <Input
-          label="Número do Episódio"
+          label="Número do episódio"
           type="number"
           value={numeroEpisodio}
           onChange={(e) => {
@@ -299,7 +299,7 @@ export default function EpisodeModal({
 
         {/* Título */}
         <Input
-          label="Título do Episódio"
+          label="Título do episódio"
           type="text"
           value={titulo}
           onChange={(e) => {

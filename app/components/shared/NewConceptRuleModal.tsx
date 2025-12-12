@@ -136,7 +136,7 @@ export default function NewConceptRuleModal({
         <div className="p-6 space-y-4">
           {/* Universo */}
           <div>
-            <label className="block text-sm font-semibold text-text-light-primary dark:text-dark-primary mb-2">
+            <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
               Universo <span className="text-red-500">*</span>
             </label>
             <UniverseDropdown
@@ -151,7 +151,7 @@ export default function NewConceptRuleModal({
 
           {/* Mundo */}
           <div>
-            <label className="block text-sm font-semibold text-text-light-primary dark:text-dark-primary mb-2">
+            <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
               Mundo
             </label>
             <WorldsDropdownSingle
@@ -172,7 +172,7 @@ export default function NewConceptRuleModal({
 
           {/* Título */}
           <div>
-            <label className="block text-sm font-semibold text-text-light-primary dark:text-dark-primary mb-2">
+            <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
               Título <span className="text-red-500">*</span>
             </label>
             <input
@@ -186,7 +186,7 @@ export default function NewConceptRuleModal({
 
           {/* Resumo */}
           <div>
-            <label className="block text-sm font-semibold text-text-light-primary dark:text-dark-primary mb-2">
+            <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
               Descrição <span className="text-red-500">*</span>
             </label>
             <textarea
