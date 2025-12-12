@@ -44,6 +44,14 @@ export default function FichaViewModal({
   
   if (!isOpen || !ficha) return null;
   
+  console.log('FichaViewModal DEBUG:', { 
+    hasNext, 
+    hasPrevious, 
+    fichaId: ficha.id,
+    fichaTipo: ficha.tipo,
+    fichaTitulo: ficha.titulo
+  });
+  
   const getTypeLabel = () => {
     const labels: Record<string, string> = {
       episodio: "Episódio",
