@@ -27,6 +27,7 @@ export default function ConceptRuleFormModal({
   onDelete,
   onClose,
 }: ConceptRuleFormModalProps) {
+  console.log('[ConceptRuleFormModal] Component rendered', { isOpen, tipo, item });
   const [selectedUniverseId, setSelectedUniverseId] = useState(preSelectedUniverseId);
   const [selectedWorldId, setSelectedWorldId] = useState("");
   const [titulo, setTitulo] = useState("");
