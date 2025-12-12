@@ -24,12 +24,11 @@ import FichaCard from "@/app/components/shared/FichaCard";
 import FichaViewModal from "@/app/components/shared/FichaViewModal";
 import NewConceptRuleModal from "@/app/components/shared/NewConceptRuleModal";
 import ConceptRuleViewModal from "@/app/components/shared/ConceptRuleViewModal";
-import EpisodeModal from "@/app/components/projetos/EpisodeModal";
-import SinopseViewModal from "@/app/components/projetos/SinopseViewModal";
+
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
-import type { Universe, World, Ficha, Category, Episode } from "@/app/types";
+import type { Universe, World, Ficha, Category } from "@/app/types";
 
 // Componente interno que usa searchParams
 function CatalogContent() {
@@ -78,9 +77,6 @@ function CatalogContent() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewingFicha, setViewingFicha] = useState<Ficha | null>(null);
-  const [showSinopseViewModal, setShowSinopseViewModal] = useState(false);
-  const [viewingSinopse, setViewingSinopse] = useState<Episode | null>(null);
-  const [showEpisodeModal, setShowEpisodeModal] = useState(false);
   
   // Fechar modais com ESC
   useEffect(() => {
