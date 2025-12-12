@@ -5,6 +5,8 @@ import { useState, useEffect } from "react";
 import type { Ficha, Universe, World } from "@/app/types";
 import { toast } from "sonner";
 import DeleteConfirmModal from "./DeleteConfirmModal";
+import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
+import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 
 interface NewConceptRuleModalProps {
   isOpen: boolean;
@@ -137,21 +139,14 @@ export default function NewConceptRuleModal({
             <label className="block text-sm font-semibold text-text-light-primary dark:text-dark-primary mb-2">
               Universo <span className="text-red-500">*</span>
             </label>
-            <select
-              value={selectedUniverseId}
-              onChange={(e) => {
-                setSelectedUniverseId(e.target.value);
+            <UniverseDropdown
+              universes={universes}
+              selectedId={selectedUniverseId}
+              onSelect={(id) => {
+                setSelectedUniverseId(id);
                 setSelectedWorldId(""); // Reset mundo ao mudar universo
               }}
-              className="w-full px-3 py-2.5 border border-border-light-default dark:border-border-dark-default rounded-lg bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-            >
-              <option value="">Selecione um Universo</option>
-              {universes.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.nome}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           {/* Mundo */}
@@ -159,25 +154,19 @@ export default function NewConceptRuleModal({
             <label className="block text-sm font-semibold text-text-light-primary dark:text-dark-primary mb-2">
               Mundo
             </label>
-            <select
-              value={selectedWorldId}
-              onChange={(e) => setSelectedWorldId(e.target.value)}
-              className="w-full px-3 py-2.5 border border-border-light-default dark:border-border-dark-default rounded-lg bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            <WorldsDropdownSingle
+              worlds={filteredWorlds}
+              selectedId={selectedWorldId}
+              onSelect={(id) => setSelectedWorldId(id)}
+              onEdit={() => {}} // No modal, não permitimos editar mundos
+              onDelete={() => {}} // No modal, não permitimos deletar mundos
+              onCreate={() => {}} // No modal, não permitimos criar mundos
               disabled={!selectedUniverseId}
-            >
-              <option value="">Selecione um Mundo</option>
-              {filteredWorlds.map((w) => (
-                <option key={w.id} value={w.id}>
-                  {w.nome}
-                </option>
-              ))}
-            </select>
+            />
             {selectedUniverseId && !selectedWorldId && (
-              <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900/40 rounded-lg">
-                <p className="text-sm text-blue-700 dark:text-blue-300">
-                  ℹ️ Esse {tipo} será aplicado em todo o universo {universes.find(u => u.id === selectedUniverseId)?.nome}
-                </p>
-              </div>
+              <p className="mt-2 text-xs font-bold text-primary-600 dark:text-primary-400">
+                Este {tipo} será aplicado em todo o universo {universes.find(u => u.id === selectedUniverseId)?.nome}
+              </p>
             )}
           </div>
 
