@@ -1,6 +1,7 @@
 "use client";
 
 import { Episode } from "@/app/types";
+import { PencilIcon } from "@heroicons/react/24/outline";
 
 interface SinopseViewModalProps {
   sinopse: Episode | null;
@@ -23,15 +24,26 @@ export default function SinopseViewModal({
           <h2 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
             Sinopse {sinopse.numero}
           </h2>
-          <button
-            onClick={onClose}
-            className="text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary transition-colors"
-            aria-label="Fechar"
-          >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Botão de editar */}
+            <button
+              onClick={onEdit}
+              className="p-1.5 rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover transition-colors"
+              aria-label="Editar"
+            >
+              <PencilIcon className="w-4 h-4 text-text-light-secondary dark:text-dark-secondary hover:text-primary-600 dark:hover:text-primary-400" strokeWidth={1.5} />
+            </button>
+            {/* Botão de fechar */}
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover transition-colors"
+              aria-label="Fechar"
+            >
+              <svg className="w-4 h-4 text-text-light-secondary dark:text-dark-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Content */}
@@ -95,21 +107,7 @@ export default function SinopseViewModal({
           )}
         </div>
 
-        {/* Footer */}
-        <div className="sticky bottom-0 bg-light-raised dark:bg-dark-raised border-t border-border-light-default dark:border-border-dark-default p-6 flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary transition-colors"
-          >
-            Fechar
-          </button>
-          <button
-            onClick={onEdit}
-            className="px-4 py-2 text-sm font-medium bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
-          >
-            Editar
-          </button>
-        </div>
+
       </div>
     </div>
   );

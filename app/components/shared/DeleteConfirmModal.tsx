@@ -27,8 +27,8 @@ export default function DeleteConfirmModal({
         {/* Header com ícone de alerta */}
         <div className="bg-red-50 dark:bg-red-900/20 p-6 border-b border-red-100 dark:border-red-900/40">
           <div className="flex items-center gap-4">
-            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
-              <ExclamationTriangleIcon className="w-6 h-6 text-red-600 dark:text-red-400" />
+            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
+              <ExclamationTriangleIcon className="w-5 h-5 text-red-600 dark:text-red-400" strokeWidth={1.5} />
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-bold text-red-900 dark:text-red-100">

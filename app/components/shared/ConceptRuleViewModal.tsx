@@ -81,10 +81,10 @@ export default function ConceptRuleViewModal({
             {/* Botão de editar */}
             <button
               onClick={onEdit}
-              className="p-2 rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover transition-colors"
+              className="p-1.5 rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover transition-colors"
               aria-label="Editar"
             >
-              <PencilIcon className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary hover:text-primary-600 dark:hover:text-primary-400" />
+              <PencilIcon className="w-4 h-4 text-text-light-secondary dark:text-dark-secondary hover:text-primary-600 dark:hover:text-primary-400" strokeWidth={1.5} />
             </button>
           </div>
         </div>
