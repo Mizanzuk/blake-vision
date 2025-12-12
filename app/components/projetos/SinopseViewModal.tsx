@@ -82,18 +82,6 @@ export default function SinopseViewModal({
             </div>
           )}
 
-          {/* Status */}
-          {sinopse.status && (
-            <div>
-              <h3 className="text-sm font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-2">
-                Status
-              </h3>
-              <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300">
-                {sinopse.status}
-              </span>
-            </div>
-          )}
-
           {/* Data de Lançamento */}
           {sinopse.data_lancamento && (
             <div>

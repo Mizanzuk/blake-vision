@@ -34,7 +34,6 @@ export type Episode = {
   ordem?: number | null;
   duracao_minutos?: number | null;
   data_lancamento?: string | null;
-  status?: 'rascunho' | 'revisao' | 'finalizado' | 'publicado' | null;
   created_at: string;
   updated_at: string;
 };

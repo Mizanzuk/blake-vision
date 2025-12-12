@@ -51,8 +51,8 @@ export default function ConceptRuleViewModal({
       size="lg"
     >
       <div className="space-y-6">
-        {/* Header com gradiente sutil */}
-        <div className="relative bg-gradient-to-br from-light-raised to-light-hover dark:from-dark-raised dark:to-dark-hover rounded-lg p-6 border border-border-light-default dark:border-border-dark-default">
+        {/* Header */}
+        <div className="relative bg-light-raised dark:bg-dark-raised rounded-lg p-6 border border-border-light-default dark:border-border-dark-default">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               {/* Badges */}
@@ -73,16 +73,9 @@ export default function ConceptRuleViewModal({
               </div>
               
               {/* Título */}
-              <h2 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary mb-2">
+              <h2 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
                 {ficha.titulo}
               </h2>
-              
-              {/* Escopo */}
-              {getScope() && (
-                <p className="text-sm text-text-light-secondary dark:text-dark-secondary">
-                  {getScope()}
-                </p>
-              )}
             </div>
             
             {/* Botão de editar */}
