@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Modal, Badge } from "@/app/components/ui";
+import { Modal } from "@/app/components/ui";
 import type { Ficha, Universe, World } from "@/app/types";
 import { PencilIcon } from "@heroicons/react/24/outline";
 
@@ -29,7 +29,6 @@ export default function ConceptRuleViewModal({
   hasPrevious = false,
 }: ConceptRuleViewModalProps) {
   
-  // Navegação por teclado
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft' && hasPrevious && onPrevious) {
@@ -43,12 +42,21 @@ export default function ConceptRuleViewModal({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [hasNext, hasPrevious, onNext, onPrevious]);
   
-  const universe = universes.find(u => u.id === ficha.universe_id);
-  const world = worlds.find(w => w.id === ficha.world_id);
-  
   const getTypeLabel = () => {
-    return ficha.tipo === "conceito" ? "Conceito" : "Regra";
+    const labels: Record<string, string> = {
+      conceito: "Conceito",
+      regra: "Regra",
+    };
+    return labels[ficha.tipo] || ficha.tipo;
   };
+
+  const universe = ficha.universe_id 
+    ? universes.find(u => u.id === ficha.universe_id) 
+    : undefined;
+  
+  const world = ficha.world_id 
+    ? worlds.find(w => w.id === ficha.world_id) 
+    : undefined;
 
   return (
     <div className="relative">
@@ -84,89 +92,95 @@ export default function ConceptRuleViewModal({
         title=""
         size="lg"
       >
-        <div className="p-6 space-y-6">
-          {/* Header com badge e título */}
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              {/* Badge do tipo */}
-              <Badge variant={ficha.tipo === "conceito" ? "primary" : "warning"} className="mb-2">
-                {getTypeLabel()}
-              </Badge>
-              
-              {/* Título */}
-              <h2 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary break-words">
-                {ficha.titulo}
-              </h2>
-              
-              {/* Código e Mundo */}
-              {(ficha.codigo || world) && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {ficha.codigo && (
-                    <span className="text-sm text-text-light-secondary dark:text-dark-secondary">
-                      {ficha.codigo}
-                    </span>
-                  )}
-                  {world && (
-                    <span className="text-sm text-text-light-secondary dark:text-dark-secondary">
-                      • {world.nome}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
+        <div className="max-h-[70vh] overflow-y-auto px-6 py-6">
+          {/* Layout Minimalista */}
+          <div className="space-y-6">
             
-            {/* Botão de editar */}
-            <button
-              onClick={onEdit}
-              className="flex-shrink-0 p-2 rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover transition-colors"
-              aria-label="Editar"
-            >
-              <PencilIcon className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary" strokeWidth={1.5} />
-            </button>
-          </div>
-
-          {/* Descrição */}
-          {ficha.resumo && (
-            <div>
-              <h3 className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
-                Descrição
-              </h3>
-              <p className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap">
-                {ficha.resumo}
-              </p>
-            </div>
-          )}
-
-          {/* Conteúdo */}
-          {ficha.conteudo && (
-            <div>
-              <h3 className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
-                Conteúdo
-              </h3>
-              <div className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap prose dark:prose-invert max-w-none">
-                {ficha.conteudo}
-              </div>
-            </div>
-          )}
-
-          {/* Tags */}
-          {ficha.tags && ficha.tags.trim() !== '' && (
-            <div>
-              <h3 className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
-                Tags
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {ficha.tags.split(',').map((tag, index) => (
-                  <span 
-                    key={index} 
-                    className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
-                  >
-                    {tag.trim()}
+            {/* Header: Badge + Título + Botão Editar */}
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                {/* Badge do tipo */}
+                <div className="mb-3">
+                  <span className="inline-block text-xs font-medium text-primary-600 dark:text-primary-400">
+                    {getTypeLabel()}
                   </span>
-                ))}
+                </div>
+                
+                {/* Título */}
+                <h2 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
+                  {ficha.titulo}
+                </h2>
+                
+                {/* Código e Mundo */}
+                {(ficha.codigo || world) && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {ficha.codigo && (
+                      <span className="text-sm text-text-light-secondary dark:text-dark-secondary">
+                        {ficha.codigo}
+                      </span>
+                    )}
+                    {world && (
+                      <span className="text-sm text-text-light-secondary dark:text-dark-secondary">
+                        • {world.nome}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
+              
+              {/* Botão Editar */}
+              <button
+                onClick={onEdit}
+                className="p-1.5 rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover transition-colors flex-shrink-0"
+                aria-label="Editar"
+              >
+                <PencilIcon className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary hover:text-primary-600 dark:hover:text-primary-400" strokeWidth={1.5} />
+              </button>
             </div>
-          )}
+
+            {/* Descrição */}
+            {ficha.resumo && (
+              <div>
+                <h3 className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
+                  Descrição
+                </h3>
+                <p className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap">
+                  {ficha.resumo}
+                </p>
+              </div>
+            )}
+
+            {/* Conteúdo */}
+            {ficha.conteudo && (
+              <div>
+                <h3 className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
+                  Conteúdo
+                </h3>
+                <div className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap prose dark:prose-invert max-w-none">
+                  {ficha.conteudo}
+                </div>
+              </div>
+            )}
+
+            {/* Tags */}
+            {ficha.tags && ficha.tags.trim() !== '' && (
+              <div>
+                <h3 className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
+                  Tags
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {ficha.tags.split(',').map((tag, index) => (
+                    <span 
+                      key={index} 
+                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                    >
+                      {tag.trim()}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </Modal>
     </div>
