@@ -72,7 +72,6 @@ export default function NewConceptRuleModal({
 
     const itemData = {
       id: item?.id,
-      universe_id: selectedUniverseId,
       world_id: selectedWorldId || null,
       tipo,
       titulo: titulo.trim(),
