@@ -1159,6 +1159,7 @@ function CatalogContent() {
                     <div
                       key={episode.id}
                       className="relative"
+                      data-no-dnd="true"
                     >
                       {/* Checkbox for selection mode */}
                       {isSelectionMode && (
@@ -1179,6 +1180,7 @@ function CatalogContent() {
                         </div>
                       )}
                       <div
+                        onPointerDown={(e) => e.stopPropagation()}
                         onClick={() => {
                           if (!isSelectionMode) {
                             setViewingSinopse(episode);
