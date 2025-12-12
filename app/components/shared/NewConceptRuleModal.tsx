@@ -180,7 +180,7 @@ export default function NewConceptRuleModal({
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
               placeholder={`Ex: ${tipo === "conceito" ? "Toda experiência gera uma lição" : "Ninguém pode viajar no tempo"}`}
-              className="w-full px-3 py-2.5 border border-border-light-default dark:border-border-dark-default rounded-lg bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder:text-text-light-secondary/50 dark:placeholder:text-dark-secondary/50 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+              className="w-full px-3 py-2.5 border border-border-light-default dark:border-border-dark-default rounded-lg bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder:text-text-light-secondary/50 dark:placeholder:text-dark-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
             />
           </div>
 
@@ -194,7 +194,7 @@ export default function NewConceptRuleModal({
               onChange={(e) => setResumo(e.target.value)}
               placeholder={`Descreva ${tipo === "conceito" ? "o conceito fundamental que guia este universo ou mundo" : "a regra que define os limites e possibilidades deste universo ou mundo"}`}
               rows={6}
-              className="w-full px-3 py-2.5 border border-border-light-default dark:border-border-dark-default rounded-lg bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder:text-text-light-secondary/50 dark:placeholder:text-dark-secondary/50 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors resize-none"
+              className="w-full px-3 py-2.5 border border-border-light-default dark:border-border-dark-default rounded-lg bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder:text-text-light-secondary/50 dark:placeholder:text-dark-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors resize-none"
             />
           </div>
         </div>

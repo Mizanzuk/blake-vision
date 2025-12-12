@@ -52,7 +52,7 @@ export default function ConceptRuleViewModal({
     >
       <div className="space-y-6">
         {/* Header */}
-        <div className="relative bg-light-raised dark:bg-dark-raised rounded-lg p-6 border border-border-light-default dark:border-border-dark-default">
+        <div className="relative p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               {/* Badges */}
@@ -91,7 +91,7 @@ export default function ConceptRuleViewModal({
 
         {/* Descrição (resumo) */}
         {ficha.resumo && (
-          <div className="bg-light-raised dark:bg-dark-raised rounded-lg p-5 border border-border-light-default dark:border-border-dark-default">
+          <div className="p-5">
             <h3 className="text-xs font-bold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wider mb-3">
               Descrição
             </h3>
@@ -103,7 +103,7 @@ export default function ConceptRuleViewModal({
 
         {/* Conteúdo */}
         {ficha.conteudo && (
-          <div className="bg-light-raised dark:bg-dark-raised rounded-lg p-5 border border-border-light-default dark:border-border-dark-default">
+          <div className="p-5">
             <h3 className="text-xs font-bold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wider mb-3">
               Conteúdo
             </h3>
@@ -115,7 +115,7 @@ export default function ConceptRuleViewModal({
 
         {/* Tags */}
         {ficha.tags && ficha.tags.trim() !== '' && (
-          <div className="bg-light-raised dark:bg-dark-raised rounded-lg p-5 border border-border-light-default dark:border-border-dark-default">
+          <div className="p-5">
             <h3 className="text-xs font-bold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wider mb-3">
               Tags
             </h3>
