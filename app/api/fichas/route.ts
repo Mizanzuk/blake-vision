@@ -123,7 +123,6 @@ export async function POST(req: NextRequest) {
         slug: slug || null,
         codigo: codigo || null,
         resumo: resumo || null,
-        descricao: descricao || null,
         conteudo: conteudo || null,
         ano_diegese: ano_diegese || null,
         tags: tags || null,
