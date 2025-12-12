@@ -71,7 +71,13 @@ function SortableCard({ id, children, isDragging }: SortableCardProps) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="relative cursor-move">
+    <div ref={setNodeRef} style={style} {...attributes} className="relative">
+      {/* Drag handle - apenas esta área permite arrastar */}
+      <div {...listeners} className="absolute top-2 right-2 z-10 p-2 cursor-move hover:bg-light-hover dark:hover:bg-dark-hover rounded-lg transition-colors">
+        <svg className="w-4 h-4 text-text-light-tertiary dark:text-dark-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+        </svg>
+      </div>
       {children}
     </div>
   );
@@ -1251,7 +1257,7 @@ function CatalogContent() {
       />
 
       {/* Modal para outras categorias */}
-      {showFichaModal && selectedFicha && selectedFicha.tipo !== "conceito" && selectedFicha.tipo !== "regra" && (
+      {showFichaModal && (!selectedFicha || (selectedFicha.tipo !== "conceito" && selectedFicha.tipo !== "regra")) && (
         <FichaModal
           isOpen={showFichaModal}
           onClose={() => {
