@@ -1,23 +1,6 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  rectSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
 import {
@@ -48,41 +31,6 @@ import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
 import type { Universe, World, Ficha, Category, Episode } from "@/app/types";
 
-// Sortable Card Component
-interface SortableCardProps {
-  id: string;
-  children: React.ReactNode;
-  isDragging?: boolean;
-}
-
-function SortableCard({ id, children, isDragging }: SortableCardProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  return (
-    <div ref={setNodeRef} style={style} {...attributes} className="relative">
-      {/* Drag handle - apenas esta área permite arrastar */}
-      <div {...listeners} className="absolute top-2 right-2 z-10 p-2 cursor-move hover:bg-light-hover dark:hover:bg-dark-hover rounded-lg transition-colors">
-        <svg className="w-4 h-4 text-text-light-tertiary dark:text-dark-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
-        </svg>
-      </div>
-      {children}
-    </div>
-  );
-}
-
 // Componente interno que usa searchParams
 function CatalogContent() {
   const router = useRouter();
@@ -112,22 +60,6 @@ function CatalogContent() {
   // Multiple selection
   const [selectedFichaIds, setSelectedFichaIds] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
-  
-  // Drag and drop
-  const [customOrder, setCustomOrder] = useState<Record<string, number>>({});
-  const [isDragging, setIsDragging] = useState(false);
-  
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        delay: 150,
-        tolerance: 5,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
   
   // Modals
   const [showFichaModal, setShowFichaModal] = useState(false);
@@ -188,7 +120,6 @@ function CatalogContent() {
   useEffect(() => {
     if (selectedUniverseId) {
       loadCatalogData();
-      loadCustomOrder();
     }
   }, [selectedUniverseId]);
 
@@ -610,99 +541,6 @@ function CatalogContent() {
     }
   }
 
-  // Drag and drop functions
-  async function loadCustomOrder() {
-    if (!selectedUniverseId) return;
-    
-    try {
-      const response = await fetch(`/api/card-order?universe_id=${selectedUniverseId}`);
-      if (response.ok) {
-        const data = await response.json();
-        const orderMap: Record<string, number> = {};
-        data.orders.forEach((item: { ficha_id: string; custom_order: number }) => {
-          orderMap[item.ficha_id] = item.custom_order;
-        });
-        setCustomOrder(orderMap);
-      }
-    } catch (error) {
-      console.error("Error loading custom order:", error);
-    }
-  }
-
-  async function saveCustomOrder(fichaIds: string[]) {
-    if (!selectedUniverseId) return;
-    
-    try {
-      const response = await fetch("/api/card-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          universe_id: selectedUniverseId,
-          ficha_orders: fichaIds,
-        }),
-      });
-      
-      if (response.ok) {
-        toast.success("Ordem salva com sucesso!");
-      }
-    } catch (error) {
-      console.error("Error saving custom order:", error);
-      toast.error("Erro ao salvar ordem.");
-    }
-  }
-
-  async function resetCustomOrder() {
-    if (!selectedUniverseId) return;
-    
-    const confirmed = await confirm({
-      title: "Resetar Ordem",
-      message: "Tem certeza que deseja resetar a ordem das fichas? Todas as fichas voltarão à ordem padrão.",
-      confirmText: "Resetar",
-      cancelText: "Cancelar",
-      variant: "warning"
-    });
-    
-    if (!confirmed) return;
-    
-    try {
-      const response = await fetch(`/api/card-order?universe_id=${selectedUniverseId}`, {
-        method: "DELETE",
-      });
-      
-      if (response.ok) {
-        setCustomOrder({});
-        toast.success("Ordem resetada com sucesso!");
-      }
-    } catch (error) {
-      console.error("Error resetting custom order:", error);
-      toast.error("Erro ao resetar ordem.");
-    }
-  }
-
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    setIsDragging(false);
-    
-    if (!over || active.id === over.id) {
-      return;
-    }
-    
-    const oldIndex = sortedFichas.findIndex(f => f.id === active.id);
-    const newIndex = sortedFichas.findIndex(f => f.id === over.id);
-    
-    if (oldIndex !== -1 && newIndex !== -1) {
-      const newOrder = arrayMove(sortedFichas, oldIndex, newIndex);
-      const newCustomOrder: Record<string, number> = {};
-      newOrder.forEach((ficha, index) => {
-        newCustomOrder[ficha.id] = index;
-      });
-      setCustomOrder(newCustomOrder);
-      
-      // Save order to backend
-      saveCustomOrder(newOrder.map(f => f.id));
-    }
-  }
-
   // Category functions
   function openNewCategoryModal() {
     setSelectedCategory(null);
@@ -801,25 +639,8 @@ function CatalogContent() {
   // Combinar fichas e episodes para contagem total
   const totalItems = filteredFichas.length + filteredEpisodes.length;
 
-  // Sort fichas by custom order
-  const sortedFichas = [...filteredFichas].sort((a, b) => {
-    const orderA = customOrder[a.id];
-    const orderB = customOrder[b.id];
-    
-    // If both have custom order, sort by order
-    if (orderA !== undefined && orderB !== undefined) {
-      return orderA - orderB;
-    }
-    
-    // If only A has custom order, A comes first
-    if (orderA !== undefined) return -1;
-    
-    // If only B has custom order, B comes first
-    if (orderB !== undefined) return 1;
-    
-    // If neither has custom order, maintain original order
-    return 0;
-  });
+  // Use filtered fichas directly (no custom ordering)
+  const sortedFichas = filteredFichas;
 
   // Toggle world selection
   const toggleWorldSelection = (worldId: string) => {
@@ -925,9 +746,9 @@ function CatalogContent() {
         {selectedUniverseId ? (
           <>
             {/* Search, Counter and Action Buttons */}
-            <div className="flex items-center gap-4 mb-6">
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-6">
               {/* Search Input */}
-              <div className="flex-1 max-w-md">
+              <div className="relative flex-1 w-full max-w-md">
                 <Input
                   placeholder={t.common.search}
                   value={searchTerm}
@@ -940,15 +761,17 @@ function CatalogContent() {
                 />
               </div>
               
-              {/* Results Counter Box */}
-              <div className="px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised">
-                <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary whitespace-nowrap">
-                  {totalItems} {totalItems === 1 ? "item encontrado" : "itens encontrados"}
-                </p>
-              </div>
-              
-              {/* Clear Filters Button */}
-              <button
+              {/* Item Count and Clear Filters */}
+              <div className="flex items-center gap-4">
+                {/* Results Counter Box */}
+                <div className="px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised">
+                  <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary whitespace-nowrap">
+                    {totalItems} {totalItems === 1 ? "item encontrado" : "itens encontrados"}
+                  </p>
+                </div>
+                
+                {/* Clear Filters Button */}
+                <button
                 onClick={() => {
                   setSearchTerm("");
                   setSelectedWorldIds([]);
@@ -958,27 +781,12 @@ function CatalogContent() {
                 className="px-3 py-2 text-sm text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary transition-colors whitespace-nowrap"
               >
                 Limpar filtros
-              </button>
+                </button>
+              </div>
             </div>
 
             {/* Action Buttons */}
             <div className="flex items-center justify-end gap-3 mb-6">
-              {Object.keys(customOrder).length > 0 && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={resetCustomOrder}
-                  disabled={!selectedUniverseId}
-                  icon={
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                  }
-                >
-                  Resetar Ordem
-                </Button>
-              )}
-              
               <Button
                 size="sm"
                 variant="ghost"
@@ -1107,50 +915,38 @@ function CatalogContent() {
                 }
               />
             ) : (
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-                onDragStart={() => setIsDragging(true)}
-              >
-                <SortableContext
-                  items={sortedFichas.map(f => f.id)}
-                  strategy={rectSortingStrategy}
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {/* Fichas */}
-                    {sortedFichas.map(ficha => (
-                      <SortableCard key={ficha.id} id={ficha.id} isDragging={isDragging}>
-                        <div className={`relative ${isSelectionMode && selectedFichaIds.includes(ficha.id) ? 'ring-2 ring-primary-500 rounded-lg' : ''}`}>
-                          {/* Checkbox for selection mode */}
-                          {isSelectionMode && (
-                            <div className="absolute top-2 left-2 z-50">
-                              <input
-                                type="checkbox"
-                                checked={selectedFichaIds.includes(ficha.id)}
-                                onChange={(e) => {
-                                  e.stopPropagation();
-                                  if (selectedFichaIds.includes(ficha.id)) {
-                                    setSelectedFichaIds(selectedFichaIds.filter(id => id !== ficha.id));
-                                  } else {
-                                    setSelectedFichaIds([...selectedFichaIds, ficha.id]);
-                                  }
-                                }}
-                                className="w-5 h-5 rounded border-border-light-default dark:border-border-dark-default text-primary-500 focus:ring-primary-500 cursor-pointer"
-                              />
-                            </div>
-                          )}
-                          <FichaCard
-                            ficha={ficha}
-                            onClick={() => !isSelectionMode && openViewFichaModal(ficha)}
-                            worldName={ficha.world_id ? worlds.find(w => w.id === ficha.world_id)?.nome : undefined}
-                          />
-                        </div>
-                      </SortableCard>
-                    ))}
-                    
-                    {/* Sinopses (sem drag and drop) */}
-                    {filteredEpisodes.length > 0 && filteredEpisodes.map(episode => {
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Fichas */}
+                {sortedFichas.map(ficha => (
+                  <div key={ficha.id} className={`relative ${isSelectionMode && selectedFichaIds.includes(ficha.id) ? 'ring-2 ring-primary-500 rounded-lg' : ''}`}>
+                    {/* Checkbox for selection mode */}
+                    {isSelectionMode && (
+                      <div className="absolute top-2 left-2 z-50">
+                        <input
+                          type="checkbox"
+                          checked={selectedFichaIds.includes(ficha.id)}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            if (selectedFichaIds.includes(ficha.id)) {
+                              setSelectedFichaIds(selectedFichaIds.filter(id => id !== ficha.id));
+                            } else {
+                              setSelectedFichaIds([...selectedFichaIds, ficha.id]);
+                            }
+                          }}
+                          className="w-5 h-5 rounded border-border-light-default dark:border-border-dark-default text-primary-500 focus:ring-primary-500 cursor-pointer"
+                        />
+                      </div>
+                    )}
+                    <FichaCard
+                      ficha={ficha}
+                      onClick={() => !isSelectionMode && openViewFichaModal(ficha)}
+                      worldName={ficha.world_id ? worlds.find(w => w.id === ficha.world_id)?.nome : undefined}
+                    />
+                  </div>
+                ))}
+                
+                {/* Sinopses (sem drag and drop) */}
+                {filteredEpisodes.length > 0 && filteredEpisodes.map(episode => {
                   const worldName = episode.world_id 
                     ? worlds.find(w => w.id === episode.world_id)?.nome 
                     : undefined;
@@ -1158,8 +954,7 @@ function CatalogContent() {
                   return (
                     <div
                       key={episode.id}
-                      className="relative pointer-events-none"
-                      data-no-dnd="true"
+                      className="relative"
                     >
                       {/* Checkbox for selection mode */}
                       {isSelectionMode && (
@@ -1180,14 +975,13 @@ function CatalogContent() {
                         </div>
                       )}
                       <div
-                        onPointerDown={(e) => e.stopPropagation()}
                         onClick={() => {
                           if (!isSelectionMode) {
                             setViewingSinopse(episode);
                             setShowSinopseViewModal(true);
                           }
                         }}
-                        className={`pointer-events-auto bg-light-raised dark:bg-dark-raised rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-border-light-default dark:border-border-dark-default min-h-[160px] ${
+                        className={`bg-light-raised dark:bg-dark-raised rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-border-light-default dark:border-border-dark-default min-h-[160px] ${
                           isSelectionMode && selectedFichaIds.includes(episode.id) ? 'ring-2 ring-primary-500' : ''
                         }`}
                       >
@@ -1223,9 +1017,7 @@ function CatalogContent() {
                     </div>
                   );
                 })}
-                  </div>
-                </SortableContext>
-              </DndContext>
+              </div>
             )}
           </>
         ) : (
