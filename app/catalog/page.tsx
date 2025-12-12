@@ -39,7 +39,7 @@ import WorldModal from "@/app/components/catalog/WorldModal";
 import CategoryModal from "@/app/components/catalog/CategoryModal";
 import FichaCard from "@/app/components/shared/FichaCard";
 import FichaViewModal from "@/app/components/shared/FichaViewModal";
-import ConceptRuleModal from "@/app/components/shared/ConceptRuleModal";
+import ConceptRuleFormModal from "@/app/components/shared/ConceptRuleFormModal";
 import ConceptRuleViewModal from "@/app/components/shared/ConceptRuleViewModal";
 import EpisodeModal from "@/app/components/projetos/EpisodeModal";
 import SinopseViewModal from "@/app/components/projetos/SinopseViewModal";
@@ -1196,20 +1196,19 @@ function CatalogContent() {
 
       {/* Modals */}
       {/* Modal para Conceitos e Regras */}
-      {showFichaModal && selectedFicha && (selectedFicha.tipo === "conceito" || selectedFicha.tipo === "regra") && (
-        <ConceptRuleModal
-          item={selectedFicha}
-          tipo={selectedFicha.tipo as "conceito" | "regra"}
-          universes={universes}
-          worlds={worlds}
-          onSave={handleSaveFicha}
-          onDelete={handleDeleteFicha}
-          onClose={() => {
-            setShowFichaModal(false);
-            setSelectedFicha(null);
-          }}
-        />
-      )}
+      <ConceptRuleFormModal
+        isOpen={showFichaModal && selectedFicha !== null && (selectedFicha.tipo === "conceito" || selectedFicha.tipo === "regra")}
+        item={selectedFicha}
+        tipo={(selectedFicha?.tipo as "conceito" | "regra") || "conceito"}
+        universes={universes}
+        worlds={worlds}
+        onSave={handleSaveFicha}
+        onDelete={handleDeleteFicha}
+        onClose={() => {
+          setShowFichaModal(false);
+          setSelectedFicha(null);
+        }}
+      />
 
       {/* Modal para outras categorias */}
       {showFichaModal && selectedFicha && selectedFicha.tipo !== "conceito" && selectedFicha.tipo !== "regra" && (

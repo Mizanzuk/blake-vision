@@ -8,7 +8,7 @@ import { Button, Loading, EmptyState } from "@/app/components/ui";
 import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
 import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import EpisodeModal from "@/app/components/projetos/EpisodeModal";
-import ConceptRuleModal from "@/app/components/shared/ConceptRuleModal";
+import ConceptRuleFormModal from "@/app/components/shared/ConceptRuleFormModal";
 import ConceptRuleViewModal from "@/app/components/shared/ConceptRuleViewModal";
 import WorldModal from "@/app/components/projetos/WorldModal";
 import SinopseViewModal from "@/app/components/projetos/SinopseViewModal";
@@ -640,22 +640,20 @@ export default function ProjetosPage() {
       )}
 
       {/* Concept/Rule Modal */}
-      {showConceptRuleModal && (
-        <ConceptRuleModal
-          item={selectedFicha}
-          tipo={conceptRuleType}
-          universes={universes}
-          worlds={allWorlds}
-          preSelectedUniverseId={selectedUniverseId}
-          preSelectedWorldId={selectedWorldId}
-          onSave={handleSaveFicha}
-          onDelete={handleDeleteFicha}
-          onClose={() => {
-            setShowConceptRuleModal(false);
-            setSelectedFicha(null);
-          }}
-        />
-      )}
+      <ConceptRuleFormModal
+        isOpen={showConceptRuleModal}
+        item={selectedFicha}
+        tipo={conceptRuleType}
+        universes={universes}
+        worlds={allWorlds}
+        preSelectedUniverseId={selectedUniverseId}
+        onSave={handleSaveFicha}
+        onDelete={handleDeleteFicha}
+        onClose={() => {
+          setShowConceptRuleModal(false);
+          setSelectedFicha(null);
+        }}
+      />
 
       {/* World Modal */}
       {showWorldModal && (
