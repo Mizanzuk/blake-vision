@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import type { Ficha, Universe, World } from "@/app/types";
 import { toast } from "sonner";
 
-interface ConceptRuleFormModalProps {
+interface NewConceptRuleModalProps {
   isOpen: boolean;
   item: Ficha | null;
   tipo: "conceito" | "regra";
@@ -17,7 +17,7 @@ interface ConceptRuleFormModalProps {
   onClose: () => void;
 }
 
-export default function ConceptRuleFormModal({
+export default function NewConceptRuleModal({
   isOpen,
   item,
   tipo,
@@ -27,7 +27,7 @@ export default function ConceptRuleFormModal({
   onSave,
   onDelete,
   onClose,
-}: ConceptRuleFormModalProps) {
+}: NewConceptRuleModalProps) {
   const [selectedUniverseId, setSelectedUniverseId] = useState(preSelectedUniverseId);
   const [selectedWorldId, setSelectedWorldId] = useState("");
   const [titulo, setTitulo] = useState("");
@@ -52,7 +52,7 @@ export default function ConceptRuleFormModal({
   const filteredWorlds = worlds.filter(w => w.universe_id === selectedUniverseId);
 
   function handleSave() {
-    console.log("[ConceptRuleFormModal] Salvando...", { selectedUniverseId, titulo, descricao });
+    console.log("[NewConceptRuleModal] Salvando...", { selectedUniverseId, titulo, descricao });
 
     // Validações
     if (!selectedUniverseId) {
@@ -80,7 +80,7 @@ export default function ConceptRuleFormModal({
       episodio: null,
     };
 
-    console.log("[ConceptRuleFormModal] Dados a salvar:", itemData);
+    console.log("[NewConceptRuleModal] Dados a salvar:", itemData);
     onSave(itemData);
   }
 
@@ -98,8 +98,8 @@ export default function ConceptRuleFormModal({
 
   if (!isOpen) return null;
 
-  console.log('[ConceptRuleFormModal] Modal OPENED', { tipo, item, selectedUniverseId });
-  alert('ConceptRuleFormModal RENDERIZADO!');
+  console.log('[NewConceptRuleModal] Modal OPENED', { tipo, item, selectedUniverseId });
+  alert('NewConceptRuleModal RENDERIZADO - VERSÃO NOVA!');
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">

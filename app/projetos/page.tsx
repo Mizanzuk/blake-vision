@@ -8,7 +8,7 @@ import { Button, Loading, EmptyState } from "@/app/components/ui";
 import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
 import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import EpisodeModal from "@/app/components/projetos/EpisodeModal";
-import ConceptRuleFormModal from "@/app/components/shared/ConceptRuleFormModal";
+import NewConceptRuleModal from "@/app/components/shared/NewConceptRuleModal";
 import ConceptRuleViewModal from "@/app/components/shared/ConceptRuleViewModal";
 import WorldModal from "@/app/components/projetos/WorldModal";
 import SinopseViewModal from "@/app/components/projetos/SinopseViewModal";
@@ -640,7 +640,7 @@ export default function ProjetosPage() {
       )}
 
       {/* Concept/Rule Modal */}
-      <ConceptRuleFormModal
+      <NewConceptRuleModal
         isOpen={showConceptRuleModal}
         item={selectedFicha}
         tipo={conceptRuleType}
