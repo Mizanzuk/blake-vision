@@ -31,7 +31,7 @@ export default function NewConceptRuleModal({
   const [selectedUniverseId, setSelectedUniverseId] = useState(preSelectedUniverseId);
   const [selectedWorldId, setSelectedWorldId] = useState("");
   const [titulo, setTitulo] = useState("");
-  const [descricao, setDescricao] = useState("");
+  const [resumo, setResumo] = useState("");
 
   // Carregar dados do item ao editar
   useEffect(() => {
@@ -39,12 +39,12 @@ export default function NewConceptRuleModal({
       setSelectedUniverseId(item.universe_id || "");
       setSelectedWorldId(item.world_id || "");
       setTitulo(item.titulo || "");
-      setDescricao(item.descricao || "");
+      setResumo(item.resumo || "");
     } else {
       setSelectedUniverseId(preSelectedUniverseId);
       setSelectedWorldId("");
       setTitulo("");
-      setDescricao("");
+      setResumo("");
     }
   }, [item, preSelectedUniverseId]);
 
@@ -52,7 +52,7 @@ export default function NewConceptRuleModal({
   const filteredWorlds = worlds.filter(w => w.universe_id === selectedUniverseId);
 
   function handleSave() {
-    console.log("[NewConceptRuleModal] Salvando...", { selectedUniverseId, titulo, descricao });
+    console.log("[NewConceptRuleModal] Salvando...", { selectedUniverseId, titulo, resumo });
 
     // Validações
     if (!selectedUniverseId) {
@@ -65,8 +65,8 @@ export default function NewConceptRuleModal({
       return;
     }
 
-    if (!descricao.trim()) {
-      toast.error("Descrição é obrigatória");
+    if (!resumo.trim()) {
+      toast.error("Resumo é obrigatório");
       return;
     }
 
@@ -75,7 +75,7 @@ export default function NewConceptRuleModal({
       world_id: selectedWorldId || null,
       tipo,
       titulo: titulo.trim(),
-      descricao: descricao.trim(),
+      resumo: resumo.trim(),
       episodio: null,
     };
 
@@ -178,14 +178,14 @@ export default function NewConceptRuleModal({
             />
           </div>
 
-          {/* Descrição */}
+          {/* Resumo */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Descrição <span className="text-red-500">*</span>
+              Resumo <span className="text-red-500">*</span>
             </label>
             <textarea
-              value={descricao}
-              onChange={(e) => setDescricao(e.target.value)}
+              value={resumo}
+              onChange={(e) => setResumo(e.target.value)}
               placeholder={`Descreva ${tipo === "conceito" ? "o conceito fundamental que guia este universo ou mundo" : "a regra que define os limites e possibilidades deste universo ou mundo"}`}
               rows={6}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
