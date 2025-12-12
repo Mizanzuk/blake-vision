@@ -107,7 +107,7 @@ export default function NewConceptRuleModal({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            {item ? `Editar ${tipo === "conceito" ? "Conceito" : "Regra"}` : `Novo ${tipo === "conceito" ? "Conceito" : "Regra"}`}
+            🚀 VERSÃO NOVA - {item ? `Editar ${tipo === "conceito" ? "Conceito" : "Regra"}` : `Novo ${tipo === "conceito" ? "Conceito" : "Regra"}`}
           </h2>
           <button
             onClick={onClose}
