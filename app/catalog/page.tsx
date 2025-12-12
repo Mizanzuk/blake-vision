@@ -1158,7 +1158,7 @@ function CatalogContent() {
                   return (
                     <div
                       key={episode.id}
-                      className="relative"
+                      className="relative pointer-events-none"
                       data-no-dnd="true"
                     >
                       {/* Checkbox for selection mode */}
@@ -1187,7 +1187,7 @@ function CatalogContent() {
                             setShowSinopseViewModal(true);
                           }
                         }}
-                        className={`bg-light-raised dark:bg-dark-raised rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-border-light-default dark:border-border-dark-default min-h-[160px] ${
+                        className={`pointer-events-auto bg-light-raised dark:bg-dark-raised rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-border-light-default dark:border-border-dark-default min-h-[160px] ${
                           isSelectionMode && selectedFichaIds.includes(episode.id) ? 'ring-2 ring-primary-500' : ''
                         }`}
                       >
