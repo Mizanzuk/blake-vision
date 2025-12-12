@@ -81,6 +81,7 @@ export default function ConceptRuleModal({
   }
 
   function handleSave() {
+    console.log('[ConceptRuleModal] handleSave called', { selectedUniverseId, titulo, descricao });
     // Validation
     if (!selectedUniverseId) {
       toast.error("Selecione um universo");
