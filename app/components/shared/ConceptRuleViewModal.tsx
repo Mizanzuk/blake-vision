@@ -108,7 +108,7 @@ export default function ConceptRuleViewModal({
       >
         {/* Conteúdo centralizado verticalmente */}
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="w-full space-y-8 py-8 px-2">
+          <div className="w-full space-y-6 md:space-y-8 py-6 md:py-8 px-2">
             
             {/* Header: Badge + Título */}
             <div>
@@ -120,7 +120,7 @@ export default function ConceptRuleViewModal({
               </div>
               
               {/* Título */}
-              <h2 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
+              <h2 className="text-xl md:text-2xl font-bold text-text-light-primary dark:text-dark-primary">
                 {ficha.titulo}
               </h2>
               
@@ -139,6 +139,16 @@ export default function ConceptRuleViewModal({
                   )}
                 </div>
               )}
+              
+              {/* Metadados de data */}
+              <div className="flex flex-wrap gap-2 md:gap-3 mt-2 md:mt-3 text-xs md:text-sm text-gray-500 dark:text-gray-400">
+                {ficha.created_at && (
+                  <span>Criado em {new Date(ficha.created_at).toLocaleDateString('pt-BR')}</span>
+                )}
+                {ficha.updated_at && ficha.updated_at !== ficha.created_at && (
+                  <span>• Atualizado em {new Date(ficha.updated_at).toLocaleDateString('pt-BR')}</span>
+                )}
+              </div>
             </div>
 
             {/* Descrição */}
@@ -147,7 +157,7 @@ export default function ConceptRuleViewModal({
                 <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-3">
                   Descrição
                 </h3>
-                <p className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap">
+                <p className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap max-h-96 overflow-y-auto">
                   {ficha.resumo}
                 </p>
               </div>
@@ -159,7 +169,7 @@ export default function ConceptRuleViewModal({
                 <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-3">
                   Conteúdo
                 </h3>
-                <div className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap prose dark:prose-invert max-w-none">
+                <div className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap prose dark:prose-invert max-w-none max-h-96 overflow-y-auto">
                   {ficha.conteudo}
                 </div>
               </div>
