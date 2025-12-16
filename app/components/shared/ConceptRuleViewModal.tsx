@@ -46,6 +46,14 @@ export default function ConceptRuleViewModal({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [hasNext, hasPrevious, onNext, onPrevious]);
   
+  const getTypeColor = () => {
+    const colors: Record<string, string> = {
+      conceito: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200",
+      regra: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
+    };
+    return colors[ficha.tipo] || "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+  };
+
   const getTypeLabel = () => {
     const labels: Record<string, string> = {
       conceito: "Conceito",
@@ -106,15 +114,15 @@ export default function ConceptRuleViewModal({
           </button>
         }
       >
-        {/* Conteúdo centralizado verticalmente */}
-        <div className="flex items-center justify-center min-h-[60vh]">
+        {/* Conteúdo */}
+        <div>
           <div className="w-full space-y-6 md:space-y-8 py-6 md:py-8 px-2">
             
             {/* Header: Badge + Título */}
             <div>
               {/* Badge do tipo */}
               <div className="mb-4">
-                <span className="inline-block text-xs font-medium text-primary-600 dark:text-primary-400">
+                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getTypeColor()}`}>
                   {getTypeLabel()}
                 </span>
               </div>
@@ -149,6 +157,17 @@ export default function ConceptRuleViewModal({
                   <span>• Atualizado em {new Date(ficha.updated_at).toLocaleDateString('pt-BR')}</span>
                 )}
               </div>
+              
+              {/* Tags */}
+              {ficha.tags && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {ficha.tags.split(',').map((tag, idx) => (
+                    <span key={idx} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                      {tag.trim()}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Descrição */}

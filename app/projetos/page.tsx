@@ -616,6 +616,7 @@ export default function ProjetosPage() {
           hasPrevious={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) > 0 : false}
           currentIndex={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) : undefined}
           totalCount={fichas.length}
+          worldName={viewingFicha?.world_id ? worlds.find(w => w.id === viewingFicha.world_id)?.nome : undefined}
         />
       )}
 
@@ -632,6 +633,7 @@ export default function ProjetosPage() {
           hasPrevious={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) > 0 : false}
           currentIndex={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) : undefined}
           totalCount={fichas.length}
+          worldName={viewingFicha?.world_id ? worlds.find(w => w.id === viewingFicha.world_id)?.nome : undefined}
         />
       )}
 

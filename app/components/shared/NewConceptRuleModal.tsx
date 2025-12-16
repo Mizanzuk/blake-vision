@@ -63,6 +63,23 @@ export default function NewConceptRuleModal({
     }
   }, [item, preSelectedUniverseId, worlds]);
 
+  // Fechar modal com Esc
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   // Filtrar mundos do universo selecionado
   const filteredWorlds = worlds.filter(w => w.universe_id === selectedUniverseId);
 
