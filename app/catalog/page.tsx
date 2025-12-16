@@ -990,6 +990,8 @@ function CatalogContent() {
           onPrevious={handlePreviousFicha}
           hasNext={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) < fichas.length - 1 : false}
           hasPrevious={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) > 0 : false}
+          currentIndex={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) : undefined}
+          totalCount={fichas.length}
         />
       )}
 
@@ -1004,6 +1006,8 @@ function CatalogContent() {
           onPrevious={handlePreviousFicha}
           hasNext={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) < fichas.length - 1 : false}
           hasPrevious={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) > 0 : false}
+          currentIndex={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) : undefined}
+          totalCount={fichas.length}
         />
       )}
 

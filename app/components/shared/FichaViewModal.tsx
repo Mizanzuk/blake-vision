@@ -14,6 +14,8 @@ interface FichaViewModalProps {
   onPrevious?: () => void;
   hasNext?: boolean;
   hasPrevious?: boolean;
+  currentIndex?: number;
+  totalCount?: number;
 }
 
 export default function FichaViewModal({
@@ -25,6 +27,8 @@ export default function FichaViewModal({
   onPrevious,
   hasNext = false,
   hasPrevious = false,
+  currentIndex,
+  totalCount,
 }: FichaViewModalProps) {
   
   useEffect(() => {
@@ -111,12 +115,12 @@ export default function FichaViewModal({
       >
         {/* Conteúdo centralizado verticalmente */}
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="w-full space-y-6 py-6">
+          <div className="w-full space-y-8 py-8 px-2">
             
             {/* Header: Badge + Título */}
             <div>
               {/* Badge do tipo */}
-              <div className="mb-3">
+              <div className="mb-4">
                 <span className="inline-block text-xs font-medium text-primary-600 dark:text-primary-400">
                   {getTypeLabel()}
                 </span>
@@ -142,7 +146,7 @@ export default function FichaViewModal({
             {/* Logline (para sinopses e episódios) */}
             {(ficha.tipo === "sinopse" || ficha.tipo === "episodio") && ficha.conteudo && (
               <div>
-                <h3 className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
+                <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-3">
                   Logline
                 </h3>
                 <p className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap">
@@ -154,7 +158,7 @@ export default function FichaViewModal({
             {/* Sinopse */}
             {(ficha.tipo === "sinopse" || ficha.tipo === "episodio") && ficha.resumo && (
               <div>
-                <h3 className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
+                <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-3">
                   Sinopse
                 </h3>
                 <p className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap">
@@ -166,7 +170,7 @@ export default function FichaViewModal({
             {/* Descrição (para outros tipos) */}
             {ficha.tipo !== "sinopse" && ficha.tipo !== "episodio" && ficha.resumo && (
               <div>
-                <h3 className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
+                <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-3">
                   Descrição
                 </h3>
                 <p className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap">
@@ -178,7 +182,7 @@ export default function FichaViewModal({
             {/* Conteúdo (para tipos que não são sinopse/episódio) */}
             {ficha.tipo !== "sinopse" && ficha.tipo !== "episodio" && ficha.conteudo && (
               <div>
-                <h3 className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
+                <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-3">
                   Conteúdo
                 </h3>
                 <div className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap prose dark:prose-invert max-w-none">
@@ -190,7 +194,7 @@ export default function FichaViewModal({
             {/* Tags */}
             {ficha.tags && ficha.tags.trim() !== '' && (
               <div>
-                <h3 className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
+                <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-3">
                   Tags
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -205,6 +209,25 @@ export default function FichaViewModal({
                 </div>
               </div>
             )}
+
+            {/* Indicadores de navegação */}
+            {(currentIndex !== undefined && totalCount !== undefined) || (hasNext || hasPrevious) ? (
+              <div className="flex items-center justify-between pt-4 border-t border-border-light-default dark:border-border-dark-default mt-8">
+                {/* Contador de fichas */}
+                {currentIndex !== undefined && totalCount !== undefined && (
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    {currentIndex + 1} / {totalCount}
+                  </div>
+                )}
+                
+                {/* Hint de navegação por teclado */}
+                {(hasNext || hasPrevious) && (
+                  <div className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                    <span>← → para navegar</span>
+                  </div>
+                )}
+              </div>
+            ) : null}
           </div>
         </div>
       </Modal>
