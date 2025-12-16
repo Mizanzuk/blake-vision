@@ -17,6 +17,7 @@ interface ConceptRuleViewModalProps {
   hasPrevious?: boolean;
   currentIndex?: number;
   totalCount?: number;
+  worldName?: string;
 }
 
 export default function ConceptRuleViewModal({
@@ -31,6 +32,7 @@ export default function ConceptRuleViewModal({
   hasPrevious = false,
   currentIndex,
   totalCount,
+  worldName,
 }: ConceptRuleViewModalProps) {
   
   useEffect(() => {
