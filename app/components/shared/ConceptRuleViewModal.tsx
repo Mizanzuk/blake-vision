@@ -112,7 +112,7 @@ export default function ConceptRuleViewModal({
             className="p-1 rounded-lg text-text-light-tertiary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-tertiary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
             aria-label="Editar"
           >
-            <PencilIcon className="w-5 h-5" strokeWidth={1.5} />
+            <PencilIcon className="w-4 h-4" strokeWidth={1.5} />
           </button>
         }
       >
@@ -122,11 +122,16 @@ export default function ConceptRuleViewModal({
             
             {/* Header: Badge + Título */}
             <div>
-              {/* Badge do tipo */}
-              <div className="mb-4">
+              {/* Badge do tipo + Mundo na mesma linha */}
+              <div className="mb-4 flex items-center gap-2">
                 <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getTypeColor()}`}>
                   {getTypeLabel()}
                 </span>
+                {worldName && (
+                  <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                    {worldName}
+                  </span>
+                )}
               </div>
               
               {/* Título */}
@@ -134,19 +139,12 @@ export default function ConceptRuleViewModal({
                 {ficha.titulo}
               </h2>
               
-              {/* Código e Mundo */}
-              {(ficha.codigo || world) && (
+              {/* Código */}
+              {ficha.codigo && (
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {ficha.codigo && (
-                    <span className="text-sm text-text-light-secondary dark:text-dark-secondary">
-                      {ficha.codigo}
-                    </span>
-                  )}
-                  {world && (
-                    <span className="text-sm text-text-light-secondary dark:text-dark-secondary">
-                      • {world.nome}
-                    </span>
-                  )}
+                  <span className="text-sm text-text-light-secondary dark:text-dark-secondary">
+                    {ficha.codigo}
+                  </span>
                 </div>
               )}
               

@@ -125,7 +125,7 @@ export default function FichaViewModal({
             className="p-1 rounded-lg text-text-light-tertiary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-tertiary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
             aria-label="Editar ficha"
           >
-            <PencilIcon className="w-5 h-5" strokeWidth={1.5} />
+            <PencilIcon className="w-4 h-4" strokeWidth={1.5} />
           </button>
         }
       >
@@ -135,11 +135,16 @@ export default function FichaViewModal({
             
             {/* Header: Badge + Título */}
             <div>
-              {/* Badge do tipo */}
-              <div className="mb-4">
+              {/* Badge do tipo + Mundo na mesma linha */}
+              <div className="mb-4 flex items-center gap-2">
                 <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getTypeColor()}`}>
                   {getTypeLabel()}
                 </span>
+                {worldName && (
+                  <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                    {worldName}
+                  </span>
+                )}
               </div>
               
               {/* Título */}
@@ -157,15 +162,10 @@ export default function FichaViewModal({
                 )}
               </div>
               
-              {/* Tags e Mundo */}
-              {(ficha.tags || worldName) && (
+              {/* Tags */}
+              {ficha.tags && (
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {worldName && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                      {worldName}
-                    </span>
-                  )}
-                  {ficha.tags && ficha.tags.split(',').map((tag, idx) => (
+                  {ficha.tags.split(',').map((tag, idx) => (
                     <span key={idx} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
                       {tag.trim()}
                     </span>

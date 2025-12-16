@@ -51,12 +51,19 @@ export default function FichaCard({ ficha, onClick, withIndent = false, worldNam
     <>
       {/* Type Badge */}
       <div className="flex items-center justify-between mb-2">
-        <span className={clsx(
-          "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium",
-          getTypeColor()
-        )}>
-          {getTypeLabel()}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className={clsx(
+            "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium",
+            getTypeColor()
+          )}>
+            {getTypeLabel()}
+          </span>
+          {worldName && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+              {worldName}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Title */}
@@ -98,7 +105,7 @@ export default function FichaCard({ ficha, onClick, withIndent = false, worldNam
             {getTypeLabel()}
           </span>
           {worldName && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
               {worldName}
             </span>
           )}
