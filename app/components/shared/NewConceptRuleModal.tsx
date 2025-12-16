@@ -67,6 +67,8 @@ export default function NewConceptRuleModal({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
+        e.preventDefault();
+        e.stopPropagation();
         onClose();
       }
     };
