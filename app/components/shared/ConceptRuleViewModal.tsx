@@ -118,7 +118,7 @@ export default function ConceptRuleViewModal({
       >
         {/* Conteúdo */}
         <div>
-          <div className="w-full space-y-6 md:space-y-8 py-2 md:py-3 px-2">
+          <div className="w-full space-y-6 md:space-y-8 pt-0 pb-6 md:pb-8 px-2">
             
             {/* Header: Badge + Título */}
             <div>
