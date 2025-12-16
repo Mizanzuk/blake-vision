@@ -131,7 +131,7 @@ export default function FichaViewModal({
       >
         {/* Conteúdo */}
         <div>
-          <div className="w-full space-y-6 md:space-y-8 py-6 md:py-8 px-2">
+          <div className="w-full space-y-6 md:space-y-8 py-2 md:py-3 px-2">
             
             {/* Header: Badge + Título */}
             <div>
