@@ -929,6 +929,10 @@ function CatalogContent() {
         onClose={() => {
           setShowFichaModal(false);
           setSelectedFicha(null);
+          // Se havia uma ficha sendo visualizada, reabrir o modal de visualização
+          if (viewingFicha) {
+            setShowViewModal(true);
+          }
         }}
       />
 
@@ -939,6 +943,10 @@ function CatalogContent() {
           onClose={() => {
             setShowFichaModal(false);
             setSelectedFicha(null);
+            // Se havia uma ficha sendo visualizada, reabrir o modal de visualização
+            if (viewingFicha) {
+              setShowViewModal(true);
+            }
           }}
           ficha={selectedFicha}
           worlds={worlds}

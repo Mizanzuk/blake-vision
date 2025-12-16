@@ -581,6 +581,10 @@ export default function ProjetosPage() {
         onClose={() => {
           setShowConceptRuleModal(false);
           setSelectedFicha(null);
+          // Se havia uma ficha sendo visualizada, reabrir o modal de visualização
+          if (viewingFicha) {
+            setShowViewModal(true);
+          }
         }}
       />
 
