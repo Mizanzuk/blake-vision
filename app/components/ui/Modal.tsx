@@ -16,6 +16,8 @@ export interface ModalProps {
   closeOnBackdrop?: boolean;
   closeOnEscape?: boolean;
   showCloseButton?: boolean;
+  headerActions?: ReactNode;
+  noBorder?: boolean;
 }
 
 export function Modal({
@@ -29,6 +31,8 @@ export function Modal({
   closeOnBackdrop = true,
   closeOnEscape = true,
   showCloseButton = true,
+  headerActions,
+  noBorder = false,
 }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const [isResizing, setIsResizing] = useState(false);
@@ -124,8 +128,11 @@ export function Modal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        {(title || showCloseButton) && (
-          <div className="flex items-start justify-between p-6 border-b border-border-light-default dark:border-border-dark-default">
+        {(title || showCloseButton || headerActions) && (
+          <div className={clsx(
+            "flex items-start justify-between p-6",
+            !noBorder && "border-b border-border-light-default dark:border-border-dark-default"
+          )}>
             <div className="flex-1">
               {title && (
                 <h3
@@ -145,27 +152,30 @@ export function Modal({
               )}
             </div>
             
-            {showCloseButton && (
-              <button
-                onClick={onClose}
-                className="ml-4 p-1 rounded-lg text-text-light-tertiary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-tertiary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
-                aria-label="Fechar modal"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+            <div className="flex items-center gap-2 ml-4">
+              {headerActions}
+              {showCloseButton && (
+                <button
+                  onClick={onClose}
+                  className="p-1 rounded-lg text-text-light-tertiary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-tertiary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
+                  aria-label="Fechar modal"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            )}
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              )}
+            </div>
           </div>
         )}
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Modal, Badge } from "@/app/components/ui";
+import { Modal } from "@/app/components/ui";
 import type { Ficha } from "@/app/types";
 import { PencilIcon } from "@heroicons/react/24/outline";
 
@@ -43,15 +43,7 @@ export default function FichaViewModal({
   }, [isOpen, hasNext, hasPrevious, onNext, onPrevious]);
   
   if (!isOpen || !ficha) return null;
-  
-  console.log('FichaViewModal DEBUG:', { 
-    hasNext, 
-    hasPrevious, 
-    fichaId: ficha.id,
-    fichaTipo: ficha.tipo,
-    fichaTitulo: ficha.titulo
-  });
-  
+
   const getTypeLabel = () => {
     const labels: Record<string, string> = {
       episodio: "Episódio",
@@ -106,35 +98,34 @@ export default function FichaViewModal({
         onClose={onClose}
         title=""
         size="lg"
+        noBorder={true}
+        headerActions={
+          <button
+            onClick={onEdit}
+            className="p-1 rounded-lg text-text-light-tertiary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-tertiary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
+            aria-label="Editar ficha"
+          >
+            <PencilIcon className="w-5 h-5" strokeWidth={1.5} />
+          </button>
+        }
       >
-        <div className="max-h-[70vh] overflow-y-auto px-6 py-6">
-          {/* Layout Minimalista Unificado */}
-          <div className="space-y-6">
+        {/* Conteúdo centralizado verticalmente */}
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="w-full space-y-6 py-6">
             
-            {/* Header: Badge + Título + Botão Editar */}
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                {/* Badge do tipo */}
-                <div className="mb-3">
-                  <span className="inline-block text-xs font-medium text-primary-600 dark:text-primary-400">
-                    {getTypeLabel()}
-                  </span>
-                </div>
-                
-                {/* Título */}
-                <h2 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
-                  {getTitle()}
-                </h2>
+            {/* Header: Badge + Título */}
+            <div>
+              {/* Badge do tipo */}
+              <div className="mb-3">
+                <span className="inline-block text-xs font-medium text-primary-600 dark:text-primary-400">
+                  {getTypeLabel()}
+                </span>
               </div>
               
-              {/* Botão Editar */}
-              <button
-                onClick={onEdit}
-                className="p-1.5 rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover transition-colors flex-shrink-0"
-                aria-label="Editar ficha"
-              >
-                <PencilIcon className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary hover:text-primary-600 dark:hover:text-primary-400" strokeWidth={1.5} />
-              </button>
+              {/* Título */}
+              <h2 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
+                {getTitle()}
+              </h2>
             </div>
 
             {/* Imagem de capa (se houver) */}
@@ -148,35 +139,35 @@ export default function FichaViewModal({
               </div>
             )}
 
-            {/* Logline (para sinopses/episódios) */}
-            {(ficha.tipo === "sinopse" || ficha.tipo === "episodio") && ficha.resumo && (
+            {/* Logline (para sinopses e episódios) */}
+            {(ficha.tipo === "sinopse" || ficha.tipo === "episodio") && ficha.conteudo && (
               <div>
                 <h3 className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
                   Logline
                 </h3>
                 <p className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap">
-                  {ficha.resumo}
+                  {ficha.conteudo}
                 </p>
               </div>
             )}
 
-            {/* Sinopse/Conteúdo (para sinopses/episódios) */}
-            {(ficha.tipo === "sinopse" || ficha.tipo === "episodio") && ficha.conteudo && (
+            {/* Sinopse */}
+            {(ficha.tipo === "sinopse" || ficha.tipo === "episodio") && ficha.resumo && (
               <div>
                 <h3 className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
                   Sinopse
                 </h3>
                 <p className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap">
-                  {ficha.conteudo}
+                  {ficha.resumo}
                 </p>
               </div>
             )}
 
-            {/* Resumo (para outras fichas) */}
+            {/* Descrição (para outros tipos) */}
             {ficha.tipo !== "sinopse" && ficha.tipo !== "episodio" && ficha.resumo && (
               <div>
                 <h3 className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
-                  Resumo
+                  Descrição
                 </h3>
                 <p className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap">
                   {ficha.resumo}
@@ -184,39 +175,15 @@ export default function FichaViewModal({
               </div>
             )}
 
-            {/* Descrição (para outras fichas) */}
-            {ficha.tipo !== "sinopse" && ficha.tipo !== "episodio" && ficha.descricao && (
-              <div>
-                <h3 className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
-                  Descrição
-                </h3>
-                <p className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap">
-                  {ficha.descricao}
-                </p>
-              </div>
-            )}
-
-            {/* Conteúdo adicional (para outras fichas) */}
+            {/* Conteúdo (para tipos que não são sinopse/episódio) */}
             {ficha.tipo !== "sinopse" && ficha.tipo !== "episodio" && ficha.conteudo && (
               <div>
                 <h3 className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
                   Conteúdo
                 </h3>
-                <p className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap">
+                <div className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap prose dark:prose-invert max-w-none">
                   {ficha.conteudo}
-                </p>
-              </div>
-            )}
-
-            {/* Ano Diegese */}
-            {ficha.ano_diegese && (
-              <div>
-                <h3 className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
-                  Ano Diegese
-                </h3>
-                <p className="text-base text-text-light-primary dark:text-dark-primary">
-                  {ficha.ano_diegese}
-                </p>
+                </div>
               </div>
             )}
 
@@ -228,9 +195,9 @@ export default function FichaViewModal({
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {ficha.tags.split(',').map((tag, index) => (
-                    <span
-                      key={index}
-                      className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                    <span 
+                      key={index} 
+                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
                     >
                       {tag.trim()}
                     </span>
@@ -238,7 +205,6 @@ export default function FichaViewModal({
                 </div>
               </div>
             )}
-
           </div>
         </div>
       </Modal>

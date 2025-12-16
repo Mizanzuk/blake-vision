@@ -91,51 +91,50 @@ export default function ConceptRuleViewModal({
         onClose={onClose}
         title=""
         size="lg"
+        noBorder={true}
+        headerActions={
+          <button
+            onClick={onEdit}
+            className="p-1 rounded-lg text-text-light-tertiary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-tertiary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
+            aria-label="Editar"
+          >
+            <PencilIcon className="w-5 h-5" strokeWidth={1.5} />
+          </button>
+        }
       >
-        <div className="max-h-[70vh] overflow-y-auto px-6 py-6">
-          {/* Layout Minimalista */}
-          <div className="space-y-6">
+        {/* Conteúdo centralizado verticalmente */}
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="w-full space-y-6 py-6">
             
-            {/* Header: Badge + Título + Botão Editar */}
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                {/* Badge do tipo */}
-                <div className="mb-3">
-                  <span className="inline-block text-xs font-medium text-primary-600 dark:text-primary-400">
-                    {getTypeLabel()}
-                  </span>
-                </div>
-                
-                {/* Título */}
-                <h2 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
-                  {ficha.titulo}
-                </h2>
-                
-                {/* Código e Mundo */}
-                {(ficha.codigo || world) && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {ficha.codigo && (
-                      <span className="text-sm text-text-light-secondary dark:text-dark-secondary">
-                        {ficha.codigo}
-                      </span>
-                    )}
-                    {world && (
-                      <span className="text-sm text-text-light-secondary dark:text-dark-secondary">
-                        • {world.nome}
-                      </span>
-                    )}
-                  </div>
-                )}
+            {/* Header: Badge + Título */}
+            <div>
+              {/* Badge do tipo */}
+              <div className="mb-3">
+                <span className="inline-block text-xs font-medium text-primary-600 dark:text-primary-400">
+                  {getTypeLabel()}
+                </span>
               </div>
               
-              {/* Botão Editar */}
-              <button
-                onClick={onEdit}
-                className="p-1.5 rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover transition-colors flex-shrink-0"
-                aria-label="Editar"
-              >
-                <PencilIcon className="w-5 h-5 text-text-light-secondary dark:text-dark-secondary hover:text-primary-600 dark:hover:text-primary-400" strokeWidth={1.5} />
-              </button>
+              {/* Título */}
+              <h2 className="text-2xl font-bold text-text-light-primary dark:text-dark-primary">
+                {ficha.titulo}
+              </h2>
+              
+              {/* Código e Mundo */}
+              {(ficha.codigo || world) && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {ficha.codigo && (
+                    <span className="text-sm text-text-light-secondary dark:text-dark-secondary">
+                      {ficha.codigo}
+                    </span>
+                  )}
+                  {world && (
+                    <span className="text-sm text-text-light-secondary dark:text-dark-secondary">
+                      • {world.nome}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Descrição */}
