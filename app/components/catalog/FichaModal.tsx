@@ -49,6 +49,7 @@ export default function FichaModal({
     ano_diegese: "",
     tags: "",
     episodio: "",
+    episode_id: null,
     imagem_capa: "",
     descricao_data: "",
     data_inicio: "",
@@ -58,7 +59,7 @@ export default function FichaModal({
   });
 
   // Episodes from selected world
-  const [episodes, setEpisodes] = useState<string[]>([]);
+  const [episodes, setEpisodes] = useState<any[]>([]);
   const [showNewEpisodeInput, setShowNewEpisodeInput] = useState(false);
   const [newEpisode, setNewEpisode] = useState("");
 
@@ -96,14 +97,33 @@ export default function FichaModal({
 
   useEffect(() => {
     // Load episodes for selected world
-    if (formData.world_id) {
-      const selectedWorld = worlds.find(w => w.id === formData.world_id);
-      if (selectedWorld?.has_episodes) {
-        // TODO: Fetch episodes from API
-        // For now, extract unique episodes from existing fichas
+    async function loadEpisodes() {
+      if (formData.world_id) {
+        const selectedWorld = worlds.find(w => w.id === formData.world_id);
+        if (selectedWorld?.has_episodes) {
+          try {
+            const response = await fetch(`/api/episodes?world_id=${formData.world_id}`);
+            const data = await response.json();
+            
+            if (response.ok) {
+              setEpisodes(data.episodes || []);
+            } else {
+              console.error('Erro ao buscar episódios:', data.error);
+              setEpisodes([]);
+            }
+          } catch (error) {
+            console.error('Erro ao buscar episódios:', error);
+            setEpisodes([]);
+          }
+        } else {
+          setEpisodes([]);
+        }
+      } else {
         setEpisodes([]);
       }
     }
+    
+    loadEpisodes();
   }, [formData.world_id, worlds]);
 
   function handleChange(field: string, value: any) {
@@ -339,15 +359,30 @@ export default function FichaModal({
                   label="Episódio"
                   options={[
                     { value: "", label: "Nenhum episódio" },
-                    ...episodes.map(e => ({ value: e, label: e })),
+                    ...episodes.map(e => ({ value: e.id, label: `Episódio ${e.numero}: ${e.titulo}` })),
                     { value: "__new__", label: "+ Novo Episódio" },
                   ]}
-                  value={formData.episodio}
+                  value={formData.episode_id || ""}
                   onChange={(e) => {
                     if (e.target.value === "__new__") {
                       setShowNewEpisodeInput(true);
+                    } else if (e.target.value) {
+                      // Encontrar episódio selecionado para obter número
+                      const selectedEpisode = episodes.find(ep => ep.id === e.target.value);
+                      if (selectedEpisode) {
+                        setFormData((prev: any) => ({
+                          ...prev,
+                          episode_id: selectedEpisode.id,
+                          episodio: String(selectedEpisode.numero)
+                        }));
+                      }
                     } else {
-                      handleChange("episodio", e.target.value);
+                      // Limpar seleção
+                      setFormData((prev: any) => ({
+                        ...prev,
+                        episode_id: null,
+                        episodio: ""
+                      }));
                     }
                   }}
                   fullWidth
