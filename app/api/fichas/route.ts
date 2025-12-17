@@ -178,7 +178,7 @@ export async function POST(req: NextRequest) {
       
       // Buscar categoria para obter o prefix
       const { data: category, error: categoryError } = await supabase
-        .from("categories")
+        .from("lore_categories")
         .select("prefix")
         .eq("slug", tipo)
         .eq("user_id", user.id)
