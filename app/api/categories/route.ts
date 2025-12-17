@@ -3,6 +3,61 @@ import { createClient, createAdminClient } from "@/app/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
+// Função para gerar prefix único para categoria
+async function generateCategoryPrefix(supabase: any, label: string, user: any): Promise<string> {
+  // 1. Extrair iniciais do label (primeiras letras de cada palavra)
+  const words = label.trim().split(/\s+/);
+  let prefix = '';
+  
+  if (words.length === 1) {
+    // Label de uma palavra: pegar primeiras 2-3 letras
+    prefix = words[0].substring(0, Math.min(3, words[0].length)).toUpperCase();
+  } else {
+    // Label de múltiplas palavras: pegar primeira letra de cada palavra
+    prefix = words.map(w => w[0]).join('').toUpperCase();
+    // Limitar a 4 caracteres
+    if (prefix.length > 4) {
+      prefix = prefix.substring(0, 4);
+    }
+  }
+  
+  // 2. Buscar todos os prefixes existentes (base E personalizados)
+  const { data: existingCategories } = await supabase
+    .from('lore_categories')
+    .select('prefix')
+    .or(`user_id.is.null,user_id.eq.${user.id}`)
+    .not('prefix', 'is', null);
+  
+  const existingPrefixes = new Set((existingCategories || []).map((c: any) => c.prefix));
+  
+  // 3. Se prefix já existe, tentar variações inteligentes
+  let finalPrefix = prefix;
+  
+  if (existingPrefixes.has(finalPrefix)) {
+    // Tentar adicionar mais letras da primeira palavra
+    if (words.length === 1 && words[0].length > prefix.length) {
+      for (let len = prefix.length + 1; len <= Math.min(4, words[0].length); len++) {
+        const candidate = words[0].substring(0, len).toUpperCase();
+        if (!existingPrefixes.has(candidate)) {
+          finalPrefix = candidate;
+          break;
+        }
+      }
+    }
+    
+    // Se ainda conflita, adicionar número
+    if (existingPrefixes.has(finalPrefix)) {
+      let counter = 2;
+      while (existingPrefixes.has(`${prefix}${counter}`)) {
+        counter++;
+      }
+      finalPrefix = `${prefix}${counter}`;
+    }
+  }
+  
+  return finalPrefix;
+}
+
 // Categorias padrão (mesmas do Catálogo)
 const DEFAULT_CATEGORIES = [
   { slug: "personagem", label: "Personagem" },
@@ -90,6 +145,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Gerar prefix automaticamente se não fornecido
+    const finalPrefix = prefix || await generateCategoryPrefix(supabase, label, user);
+    console.log('[API /api/categories POST] Prefix gerado:', finalPrefix);
+
     const { data: category, error } = await supabase
       .from("lore_categories")
       .insert({
@@ -97,7 +156,7 @@ export async function POST(req: NextRequest) {
         slug,
         label,
         description: description || null,
-        prefix: prefix || null,
+        prefix: finalPrefix,
         user_id: user.id,
       })
       .select()

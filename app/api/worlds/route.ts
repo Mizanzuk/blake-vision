@@ -4,6 +4,45 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const dynamic = "force-dynamic";
 
+// Função para gerar prefix único para mundo
+async function generateWorldPrefix(supabase: any, nome: string, user: any): Promise<string> {
+  // 1. Extrair iniciais do nome (primeiras letras de cada palavra)
+  const words = nome.trim().split(/\s+/);
+  let prefix = '';
+  
+  if (words.length === 1) {
+    // Nome de uma palavra: pegar primeiras 2-3 letras
+    prefix = words[0].substring(0, Math.min(3, words[0].length)).toUpperCase();
+  } else {
+    // Nome de múltiplas palavras: pegar primeira letra de cada palavra
+    prefix = words.map(w => w[0]).join('').toUpperCase();
+    // Limitar a 4 caracteres
+    if (prefix.length > 4) {
+      prefix = prefix.substring(0, 4);
+    }
+  }
+  
+  // 2. Verificar se prefix já existe
+  const { data: existingWorlds } = await supabase
+    .from('worlds')
+    .select('prefix')
+    .eq('user_id', user.id)
+    .not('prefix', 'is', null);
+  
+  const existingPrefixes = new Set((existingWorlds || []).map((w: any) => w.prefix));
+  
+  // 3. Se prefix já existe, adicionar número
+  let finalPrefix = prefix;
+  let counter = 2;
+  
+  while (existingPrefixes.has(finalPrefix)) {
+    finalPrefix = `${prefix}${counter}`;
+    counter++;
+  }
+  
+  return finalPrefix;
+}
+
 export async function GET(req: NextRequest) {
   try {
     const supabase = await createClient();
@@ -58,12 +97,17 @@ export async function POST(req: NextRequest) {
     // Remover id explicitamente se vier no body
     const { id, universe_id, nome, descricao, is_root, has_episodes, ordem } = body;
     
+    // Gerar prefix automático
+    const prefix = await generateWorldPrefix(supabase, nome, user);
+    console.log('[API /api/worlds POST] Prefix gerado:', prefix);
+    
     // Criar objeto limpo apenas com os campos necessários, removendo campos null
     const dataToInsert: any = {
       id: uuidv4(), // Gerar UUID manualmente para evitar erro de null
       user_id: user.id,
       universe_id,
       nome,
+      prefix,
       is_root: is_root || false,
       has_episodes: has_episodes || false,
     };

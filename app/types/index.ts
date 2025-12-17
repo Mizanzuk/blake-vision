@@ -14,6 +14,7 @@ export type World = {
   user_id: string;
   nome: string;
   descricao?: string | null;
+  prefix?: string | null;
   is_root?: boolean;
   has_episodes?: boolean;
   tem_episodios?: boolean;

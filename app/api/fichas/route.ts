@@ -5,40 +5,65 @@ import { generateEmbedding } from "@/app/lib/rag";
 export const dynamic = "force-dynamic";
 
 // Função para gerar próximo código único
-async function getNextCode(supabase: any, userId: string, tipo: string, prefix: string): Promise<string> {
-  // Buscar último código com esse prefixo para este usuário e tipo
+// Formato: [MUNDO][EPISÓDIO]-[CATEGORIA][NÚMERO]
+// Exemplo: AV7-PS4 = Arquivos Vermelhos, Episódio 7, Personagem 4
+async function getNextCode(
+  supabase: any,
+  userId: string,
+  worldId: string,
+  episodeNumber: number | null,
+  tipo: string,
+  categoryPrefix: string
+): Promise<string> {
+  // 1. Buscar prefix do mundo
+  const { data: world } = await supabase
+    .from('worlds')
+    .select('prefix')
+    .eq('id', worldId)
+    .single();
+  
+  const worldPrefix = world?.prefix || 'XX';
+  
+  // 2. Montar prefix completo: [MUNDO][EPISÓDIO]-[CATEGORIA]
+  const episodePart = episodeNumber ? String(episodeNumber) : '';
+  const fullPrefix = `${worldPrefix}${episodePart}-${categoryPrefix}`;
+  
+  console.log('[DEBUG] Prefix completo:', fullPrefix);
+  
+  // 3. Buscar último código com esse prefix completo
   const { data, error } = await supabase
-    .from("fichas")
-    .select("codigo")
-    .eq("user_id", userId)
-    .eq("tipo", tipo)
-    .like("codigo", `${prefix}-%`)
-    .order("codigo", { ascending: false })
+    .from('fichas')
+    .select('codigo')
+    .eq('user_id', userId)
+    .eq('world_id', worldId)
+    .eq('tipo', tipo)
+    .like('codigo', `${fullPrefix}%`)
+    .order('codigo', { ascending: false })
     .limit(1);
 
   if (error) {
-    console.error("Erro ao buscar último código:", error);
-    return `${prefix}-001`;
+    console.error('Erro ao buscar último código:', error);
+    return `${fullPrefix}1`;
   }
 
-  // Se não há códigos anteriores, começar com 001
+  // 4. Se não há códigos anteriores, começar com 1
   if (!data || data.length === 0) {
-    return `${prefix}-001`;
+    return `${fullPrefix}1`;
   }
 
-  // Extrair número do último código e incrementar
+  // 5. Extrair número do último código e incrementar
   const lastCode = data[0].codigo;
-  const match = lastCode?.match(/-([0-9]+)$/);
+  const match = lastCode?.match(/-([A-Z]+)([0-9]+)$/);
   
   if (!match) {
-    return `${prefix}-001`;
+    return `${fullPrefix}1`;
   }
 
-  const lastNumber = parseInt(match[1], 10);
+  const lastNumber = parseInt(match[2], 10);
   const nextNumber = lastNumber + 1;
   
-  // Formatar com padding de zeros (3 dígitos)
-  return `${prefix}-${String(nextNumber).padStart(3, '0')}`;
+  // 6. Retornar código no formato: [MUNDO][EPISÓDIO]-[CATEGORIA][NÚMERO]
+  return `${fullPrefix}${nextNumber}`;
 }
 
 export async function GET(req: NextRequest) {
@@ -187,12 +212,23 @@ export async function POST(req: NextRequest) {
       console.log("[DEBUG] Categoria encontrada:", category);
       console.log("[DEBUG] Erro ao buscar categoria:", categoryError);
       
-      if (category?.prefix) {
+      if (category?.prefix && world_id) {
         console.log("[DEBUG] Prefix da categoria:", category.prefix);
-        finalCodigo = await getNextCode(supabase, user.id, tipo, category.prefix);
+        console.log("[DEBUG] World ID:", world_id);
+        console.log("[DEBUG] Número do episódio:", numero_episodio);
+        
+        finalCodigo = await getNextCode(
+          supabase,
+          user.id,
+          world_id,
+          numero_episodio || null,
+          tipo,
+          category.prefix
+        );
+        
         console.log("[DEBUG] Código gerado:", finalCodigo);
       } else {
-        console.log("[DEBUG] Categoria não tem prefix ou não foi encontrada");
+        console.log("[DEBUG] Categoria não tem prefix ou world_id não fornecido");
       }
     } else {
       console.log("[DEBUG] Código já fornecido:", codigo);
