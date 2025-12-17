@@ -138,6 +138,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Erro ao criar episódio", details: error.message }, { status: 500 });
     }
 
+    // Criar ficha tipo "sinopse" automaticamente para o episódio
+    try {
+      const fichaData: any = {
+        user_id: user.id,
+        world_id,
+        episode_id: episode.id,
+        tipo: 'sinopse',
+        titulo,
+        episodio: String(numero),
+        resumo: logline || '',
+        conteudo: sinopse || '',
+      };
+
+      const { error: fichaError } = await supabase
+        .from('fichas')
+        .insert(fichaData);
+
+      if (fichaError) {
+        console.error('Erro ao criar ficha de sinopse:', fichaError);
+        // Não retornar erro, apenas logar (episódio já foi criado)
+      }
+    } catch (fichaErr) {
+      console.error('Erro ao criar ficha de sinopse:', fichaErr);
+    }
+
     return NextResponse.json({ episode }, { status: 201 });
 
   } catch (error: any) {
