@@ -298,6 +298,9 @@ export async function PUT(req: NextRequest) {
 
     const body = await req.json();
     const { id, ...updateData } = body;
+    
+    console.log("[DEBUG PUT] ID:", id);
+    console.log("[DEBUG PUT] updateData:", JSON.stringify(updateData, null, 2));
 
     if (!id) {
       return NextResponse.json({ error: "ID é obrigatório" }, { status: 400 });
@@ -392,6 +395,8 @@ export async function PUT(req: NextRequest) {
     }
 
     updateData.updated_at = new Date().toISOString();
+    
+    console.log("[DEBUG PUT] Final updateData:", JSON.stringify(updateData, null, 2));
 
     const { data: ficha, error } = await supabase
       .from("fichas")
@@ -402,9 +407,11 @@ export async function PUT(req: NextRequest) {
       .single();
 
     if (error) {
-      console.error("Erro ao atualizar ficha:", error);
+      console.error("[DEBUG PUT] Erro ao atualizar ficha:", error);
       return NextResponse.json({ error: "Erro ao atualizar ficha" }, { status: 500 });
     }
+    
+    console.log("[DEBUG PUT] Ficha atualizada com sucesso:", JSON.stringify(ficha, null, 2));
 
     return NextResponse.json({ ficha });
 
