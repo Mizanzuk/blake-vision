@@ -353,12 +353,12 @@ export async function PUT(req: NextRequest) {
       }
     }
 
-    // Regenerar código se episódio ou world_id mudaram
-    if (updateData.episodio !== undefined || updateData.world_id !== undefined) {
+    // Regenerar código se episódio ou world_id mudaram OU se código está no formato antigo
+    if (updateData.episodio !== undefined || updateData.world_id !== undefined || updateData.codigo) {
       // Buscar ficha atual para comparar
       const { data: currentFicha } = await supabase
         .from("fichas")
-        .select("episodio, world_id, tipo")
+        .select("episodio, world_id, tipo, codigo")
         .eq("id", id)
         .eq("user_id", user.id)
         .single();
@@ -367,7 +367,15 @@ export async function PUT(req: NextRequest) {
         const episodioChanged = updateData.episodio !== undefined && updateData.episodio !== currentFicha.episodio;
         const worldChanged = updateData.world_id !== undefined && updateData.world_id !== currentFicha.world_id;
         
-        if (episodioChanged || worldChanged) {
+        // Verificar se código está no formato antigo (sem número de episódio)
+        // Formato antigo: AV-PS1 (sem número entre mundo e categoria)
+        // Formato novo: AV8-PS001 (com número de episódio)
+        const currentCodigo = updateData.codigo || currentFicha.codigo;
+        const finalEpisodio = updateData.episodio !== undefined ? updateData.episodio : currentFicha.episodio;
+        const needsRegeneration = episodioChanged || worldChanged || 
+          (currentCodigo && finalEpisodio && !currentCodigo.match(/^[A-Z]+\d+-[A-Z]+\d+$/));
+        
+        if (needsRegeneration) {
           // Buscar categoria para obter prefix
           const tipo = updateData.tipo || currentFicha.tipo;
           const { data: category } = await supabase
@@ -379,7 +387,8 @@ export async function PUT(req: NextRequest) {
           
           if (category?.prefix) {
             const finalWorldId = updateData.world_id !== undefined ? updateData.world_id : currentFicha.world_id;
-            const finalEpisodio = updateData.episodio !== undefined ? updateData.episodio : currentFicha.episodio;
+            
+            console.log("[DEBUG PUT] Regenerando código - episodioChanged:", episodioChanged, "worldChanged:", worldChanged, "currentCodigo:", currentCodigo);
             
             updateData.codigo = await getNextCode(
               supabase,
@@ -389,6 +398,8 @@ export async function PUT(req: NextRequest) {
               tipo,
               category.prefix
             );
+            
+            console.log("[DEBUG PUT] Novo código gerado:", updateData.codigo);
           }
         }
       }
