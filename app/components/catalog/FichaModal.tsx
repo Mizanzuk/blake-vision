@@ -50,7 +50,7 @@ export default function FichaModal({
     tags: "",
     episodio: "",
     episode_id: null,
-    imagem_capa: "",
+    imagem_url: "",
     descricao_data: "",
     data_inicio: "",
     data_fim: "",
@@ -84,7 +84,7 @@ export default function FichaModal({
         ano_diegese: "",
         tags: "",
         episodio: "",
-        imagem_capa: "",
+        imagem_url: "",
         descricao_data: "",
         data_inicio: "",
         data_fim: "",
@@ -173,7 +173,7 @@ export default function FichaModal({
     setIsSubmitting(true);
 
     try {
-      let imagemCapaUrl = formData.imagem_capa;
+      let imagemUrl = formData.imagem_url;
 
       // Upload image if file is selected
       if (imageFile) {
@@ -204,7 +204,7 @@ export default function FichaModal({
         ano_diegese: formData.ano_diegese ? parseInt(formData.ano_diegese) : null,
         tags: formData.tags || null,
         episodio: formData.episodio || null,
-        imagem_capa: imagemCapaUrl || null,
+        imagem_url: imagemUrl || null,
         descricao_data: formData.descricao_data || null,
         data_inicio: formData.data_inicio || null,
         data_fim: formData.data_fim || null,
@@ -593,7 +593,7 @@ export default function FichaModal({
                       // Preview
                       const reader = new FileReader();
                       reader.onload = (e) => {
-                        handleChange("imagem_capa", e.target?.result as string);
+                        handleChange("imagem_url", e.target?.result as string);
                       };
                       reader.readAsDataURL(file);
                     }
@@ -647,19 +647,19 @@ export default function FichaModal({
 
             <Input
               label="URL da Imagem de Capa"
-              value={formData.imagem_capa}
-              onChange={(e) => handleChange("imagem_capa", e.target.value)}
+              value={formData.imagem_url}
+              onChange={(e) => handleChange("imagem_url", e.target.value)}
               placeholder="https://exemplo.com/imagem.jpg"
               fullWidth
             />
 
-            {formData.imagem_capa && (
+            {formData.imagem_url && (
               <div className="mt-4">
                 <p className="text-sm font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
                   Preview:
                 </p>
                 <img
-                  src={formData.imagem_capa}
+                  src={formData.imagem_url}
                   alt="Preview"
                   className="w-full h-48 object-cover rounded-lg"
                   onError={(e) => {
