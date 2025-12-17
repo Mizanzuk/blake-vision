@@ -214,16 +214,6 @@ export default function ProjetosPage() {
 
 
   function handleNewSinopse() {
-    if (!selectedUniverseId) {
-      toast.error("Selecione um universo antes de criar uma sinopse");
-      return;
-    }
-    
-    if (!selectedWorldId) {
-      toast.error("Selecione um mundo antes de criar uma sinopse");
-      return;
-    }
-    
     setSelectedEpisode(null);
     setShowEpisodeModal(true);
   }
