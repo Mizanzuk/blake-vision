@@ -189,7 +189,7 @@ export default function FichaModal({
 
         if (uploadResponse.ok) {
           const uploadData = await uploadResponse.json();
-          imagemCapaUrl = uploadData.url;
+          imagemUrl = uploadData.url;
           toast.success("Imagem enviada com sucesso!");
         } else {
           const uploadError = await uploadResponse.json();
