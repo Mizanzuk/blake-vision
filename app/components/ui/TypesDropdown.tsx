@@ -117,7 +117,8 @@ function SortableTypeItem({
               </svg>
             </button>
           )}
-          {onDelete && (
+          {/* Apenas mostrar botão deletar para categorias customizadas (user_id != null) */}
+          {onDelete && type.user_id && (
             <button
               onClick={(e) => {
                 e.stopPropagation();

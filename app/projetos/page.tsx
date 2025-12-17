@@ -46,6 +46,10 @@ export default function ProjetosPage() {
   const [selectedEpisode, setSelectedEpisode] = useState<any | null>(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewingFicha, setViewingFicha] = useState<Ficha | null>(null);
+  const [showNewUniverseModal, setShowNewUniverseModal] = useState(false);
+  const [newUniverseName, setNewUniverseName] = useState("");
+  const [newUniverseDescription, setNewUniverseDescription] = useState("");
+  const [isCreatingUniverse, setIsCreatingUniverse] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -190,6 +194,50 @@ export default function ProjetosPage() {
     localStorage.setItem("selectedUniverseId", universeId);
     setSelectedWorldId("");
     localStorage.removeItem("selectedWorldId");
+  }
+
+  function openCreateUniverseModal() {
+    setNewUniverseName("");
+    setNewUniverseDescription("");
+    setShowNewUniverseModal(true);
+  }
+
+  async function handleCreateUniverse() {
+    if (!newUniverseName.trim()) {
+      toast.error("Dê um nome ao universo.");
+      return;
+    }
+    
+    setIsCreatingUniverse(true);
+    
+    try {
+      const { data: inserted, error: insertError } = await supabase
+        .from("universes")
+        .insert({
+          nome: newUniverseName.trim(),
+          descricao: newUniverseDescription.trim() || null
+        })
+        .select("*")
+        .single();
+      
+      if (insertError) throw insertError;
+      
+      if (inserted) {
+        setUniverses(prev => [...prev, inserted as Universe]);
+        setSelectedUniverseId(inserted.id);
+        localStorage.setItem("selectedUniverseId", inserted.id);
+        toast.success("Novo Universo criado com sucesso.");
+      }
+      
+      setShowNewUniverseModal(false);
+      setNewUniverseName("");
+      setNewUniverseDescription("");
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao criar universo.");
+    } finally {
+      setIsCreatingUniverse(false);
+    }
   }
 
   function handleWorldChange(worldId: string) {
@@ -485,7 +533,7 @@ export default function ProjetosPage() {
             universes={universes}
             selectedId={selectedUniverseId}
             onSelect={handleUniverseChange}
-            onCreate={loadUniverses}
+            onCreate={openCreateUniverseModal}
           />
 
           <WorldsDropdownSingle
@@ -694,6 +742,70 @@ export default function ProjetosPage() {
         />
       )}
 
+      {/* Modal de Novo Universo */}
+      {showNewUniverseModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+          onClick={() => setShowNewUniverseModal(false)}
+        >
+          <form
+            onSubmit={e => {
+              e.preventDefault();
+              handleCreateUniverse();
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md border border-border-light-default dark:border-border-dark-default rounded-lg p-6 bg-light-base dark:bg-dark-base space-y-4 mx-4"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold">Novo Universo</h3>
+              <button
+                type="button"
+                onClick={() => setShowNewUniverseModal(false)}
+                className="text-2xl leading-none"
+              >
+                &times;
+              </button>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold mb-2">Nome do Universo</label>
+              <input
+                type="text"
+                value={newUniverseName}
+                onChange={(e) => setNewUniverseName(e.target.value)}
+                placeholder="Ex: Antiverso"
+                className="w-full rounded-md bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold mb-2">Descrição</label>
+              <textarea
+                className="w-full rounded-md bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default px-3 py-2 text-sm min-h-[100px]"
+                value={newUniverseDescription}
+                onChange={(e) => setNewUniverseDescription(e.target.value)}
+                placeholder="Resumo do Universo…"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                size="sm"
+                type="button"
+                variant="ghost"
+                onClick={() => setShowNewUniverseModal(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                size="sm"
+                type="submit"
+                variant="primary"
+                disabled={isCreatingUniverse}
+              >
+                {isCreatingUniverse ? "Criando..." : "Criar Universo"}
+              </Button>
+            </div>
+          </form>
+        </div>
+      )}
 
     </div>
   );

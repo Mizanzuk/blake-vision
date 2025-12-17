@@ -173,22 +173,7 @@ function CatalogContent() {
       
       if (response.ok) {
         setWorlds(data.worlds || []);
-        
-        // Adicionar categoria "Sinopse" se houver episodes
-        const sinopseCategory: Category = {
-          slug: "sinopse",
-          universe_id: selectedUniverseId,
-          user_id: userId || "",
-          label: "Sinopse",
-          description: "Sinopses de episódios do universo narrativo",
-          prefix: "SIN",
-          created_at: new Date().toISOString(),
-        };
-        const categoriesWithSinopse = [
-          sinopseCategory,
-          ...(data.types || [])
-        ];
-        setCategories(categoriesWithSinopse);
+        setCategories(data.types || []);
         
         setFichas(data.fichas || []);
         

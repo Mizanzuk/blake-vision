@@ -246,6 +246,21 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
+    // Verificar se categoria é base (user_id = NULL) antes de deletar
+    const { data: category } = await supabase
+      .from("lore_categories")
+      .select("user_id")
+      .eq("universe_id", universe_id)
+      .eq("slug", slug)
+      .single();
+    
+    if (category && !category.user_id) {
+      return NextResponse.json(
+        { error: "Categorias base não podem ser deletadas" },
+        { status: 403 }
+      );
+    }
+
     const { error } = await supabase
       .from("lore_categories")
       .delete()
