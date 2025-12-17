@@ -4,6 +4,43 @@ import { generateEmbedding } from "@/app/lib/rag";
 
 export const dynamic = "force-dynamic";
 
+// Função para gerar próximo código único
+async function getNextCode(supabase: any, userId: string, tipo: string, prefix: string): Promise<string> {
+  // Buscar último código com esse prefixo para este usuário e tipo
+  const { data, error } = await supabase
+    .from("fichas")
+    .select("codigo")
+    .eq("user_id", userId)
+    .eq("tipo", tipo)
+    .like("codigo", `${prefix}-%`)
+    .order("codigo", { ascending: false })
+    .limit(1);
+
+  if (error) {
+    console.error("Erro ao buscar último código:", error);
+    return `${prefix}-001`;
+  }
+
+  // Se não há códigos anteriores, começar com 001
+  if (!data || data.length === 0) {
+    return `${prefix}-001`;
+  }
+
+  // Extrair número do último código e incrementar
+  const lastCode = data[0].codigo;
+  const match = lastCode?.match(/-([0-9]+)$/);
+  
+  if (!match) {
+    return `${prefix}-001`;
+  }
+
+  const lastNumber = parseInt(match[1], 10);
+  const nextNumber = lastNumber + 1;
+  
+  // Formatar com padding de zeros (3 dígitos)
+  return `${prefix}-${String(nextNumber).padStart(3, '0')}`;
+}
+
 export async function GET(req: NextRequest) {
   try {
     const supabase = await createClient();
@@ -134,6 +171,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Generate codigo automatically if not provided
+    let finalCodigo = codigo;
+    if (!finalCodigo) {
+      // Buscar categoria para obter o prefix
+      const { data: category } = await supabase
+        .from("categories")
+        .select("prefix")
+        .eq("slug", tipo)
+        .eq("user_id", user.id)
+        .single();
+      
+      if (category?.prefix) {
+        finalCodigo = await getNextCode(supabase, user.id, tipo, category.prefix);
+      }
+    }
+
     // Generate embedding
     const textForEmbedding = `${titulo} ${resumo || ""} ${descricao || ""} ${conteudo || ""}`.trim();
     let embedding: number[] | null = null;
@@ -154,7 +207,7 @@ export async function POST(req: NextRequest) {
         tipo,
         titulo,
         slug: slug || null,
-        codigo: codigo || null,
+        codigo: finalCodigo || null,
         resumo: resumo || null,
         conteudo: conteudo || null,
         ano_diegese: ano_diegese || null,
