@@ -215,13 +215,13 @@ export async function POST(req: NextRequest) {
       if (category?.prefix && world_id) {
         console.log("[DEBUG] Prefix da categoria:", category.prefix);
         console.log("[DEBUG] World ID:", world_id);
-        console.log("[DEBUG] Número do episódio:", numero_episodio);
+        console.log("[DEBUG] Episódio:", episodio);
         
         finalCodigo = await getNextCode(
           supabase,
           user.id,
           world_id,
-          numero_episodio || null,
+          episodio || null,
           tipo,
           category.prefix
         );
