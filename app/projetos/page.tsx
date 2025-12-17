@@ -11,6 +11,7 @@ import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import NewConceptRuleModal from "@/app/components/shared/NewConceptRuleModal";
 import ConceptRuleViewModal from "@/app/components/shared/ConceptRuleViewModal";
 import WorldModal from "@/app/components/projetos/WorldModal";
+import EpisodeModal from "@/app/components/projetos/EpisodeModal";
 import FichaCard from "@/app/components/shared/FichaCard";
 import FichaViewModal from "@/app/components/shared/FichaViewModal";
 import TipoDropdown from "@/app/components/projetos/TipoDropdown";
@@ -41,6 +42,8 @@ export default function ProjetosPage() {
   const [selectedFicha, setSelectedFicha] = useState<Ficha | null>(null);
   const [showWorldModal, setShowWorldModal] = useState(false);
   const [selectedWorld, setSelectedWorld] = useState<World | null>(null);
+  const [showEpisodeModal, setShowEpisodeModal] = useState(false);
+  const [selectedEpisode, setSelectedEpisode] = useState<any | null>(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewingFicha, setViewingFicha] = useState<Ficha | null>(null);
 
@@ -216,9 +219,13 @@ export default function ProjetosPage() {
       return;
     }
     
-    setSelectedFicha(null);
-    setShowConceptRuleModal(true);
-    setConceptRuleType("conceito"); // Temporário - vamos criar modal específico depois
+    if (!selectedWorldId) {
+      toast.error("Selecione um mundo antes de criar uma sinopse");
+      return;
+    }
+    
+    setSelectedEpisode(null);
+    setShowEpisodeModal(true);
   }
 
   function handleNewConceptRule(tipo: "conceito" | "regra") {
@@ -357,6 +364,52 @@ export default function ProjetosPage() {
     } catch (error) {
       console.error("Error saving world:", error);
       toast.error("Erro de rede ao salvar mundo");
+    }
+  }
+
+  async function handleSaveEpisode(episodeData: any) {
+    try {
+      const method = episodeData.id ? "PUT" : "POST";
+      const response = await fetch("/api/episodes", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(episodeData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success(episodeData.id ? "Episódio atualizado" : "Episódio criado");
+        await loadFichas(); // Recarregar fichas para mostrar novo episódio
+        setShowEpisodeModal(false);
+        setSelectedEpisode(null);
+      } else {
+        toast.error(data.error || "Erro ao salvar episódio");
+      }
+    } catch (error) {
+      console.error("Error saving episode:", error);
+      toast.error("Erro de rede ao salvar episódio");
+    }
+  }
+
+  async function handleDeleteEpisode(id: string) {
+    try {
+      const response = await fetch(`/api/episodes?id=${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        toast.success("Episódio deletado");
+        await loadFichas();
+        setShowEpisodeModal(false);
+        setSelectedEpisode(null);
+      } else {
+        const data = await response.json();
+        toast.error(data.error || "Erro ao deletar episódio");
+      }
+    } catch (error) {
+      console.error("Error deleting episode:", error);
+      toast.error("Erro de rede ao deletar episódio");
     }
   }
 
@@ -598,6 +651,20 @@ export default function ProjetosPage() {
           onClose={() => {
             setShowWorldModal(false);
             setSelectedWorld(null);
+          }}
+        />
+      )}
+
+      {/* Episode Modal */}
+      {showEpisodeModal && (
+        <EpisodeModal
+          episode={selectedEpisode}
+          worldId={selectedWorldId!}
+          onSave={handleSaveEpisode}
+          onDelete={handleDeleteEpisode}
+          onClose={() => {
+            setShowEpisodeModal(false);
+            setSelectedEpisode(null);
           }}
         />
       )}
