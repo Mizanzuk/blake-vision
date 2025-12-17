@@ -174,17 +174,28 @@ export async function POST(req: NextRequest) {
     // Generate codigo automatically if not provided
     let finalCodigo = codigo;
     if (!finalCodigo) {
+      console.log("[DEBUG] Gerando código automático para tipo:", tipo);
+      
       // Buscar categoria para obter o prefix
-      const { data: category } = await supabase
+      const { data: category, error: categoryError } = await supabase
         .from("categories")
         .select("prefix")
         .eq("slug", tipo)
         .eq("user_id", user.id)
         .single();
       
+      console.log("[DEBUG] Categoria encontrada:", category);
+      console.log("[DEBUG] Erro ao buscar categoria:", categoryError);
+      
       if (category?.prefix) {
+        console.log("[DEBUG] Prefix da categoria:", category.prefix);
         finalCodigo = await getNextCode(supabase, user.id, tipo, category.prefix);
+        console.log("[DEBUG] Código gerado:", finalCodigo);
+      } else {
+        console.log("[DEBUG] Categoria não tem prefix ou não foi encontrada");
       }
+    } else {
+      console.log("[DEBUG] Código já fornecido:", codigo);
     }
 
     // Generate embedding
