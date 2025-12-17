@@ -92,12 +92,19 @@ export async function GET(req: NextRequest) {
     
     let fichas: any[] = [];
     if (worldIds.length > 0) {
-      // Buscar fichas do universo (world_id null) E fichas dos mundos específicos
+      // Buscar fichas com lógica de filtro correta
       let query = supabase
         .from("fichas")
         .select("id, world_id, tipo, titulo, slug, codigo, resumo, conteudo, ano_diegese, tags, episodio, imagem_url, aparece_em")
-        .eq("user_id", user.id)
-        .or(`world_id.in.(${worldIds.join(',')}),world_id.is.null`);
+        .eq("user_id", user.id);
+      
+      if (worldId) {
+        // Se um mundo específico foi selecionado, buscar APENAS daquele mundo
+        query = query.eq("world_id", worldId);
+      } else {
+        // Se nenhum mundo específico, buscar de todos os mundos do universo + NULL
+        query = query.or(`world_id.in.(${worldIds.join(',')}),world_id.is.null`);
+      }
 
       // Filter by tipo if provided
       if (tipoParam) {
