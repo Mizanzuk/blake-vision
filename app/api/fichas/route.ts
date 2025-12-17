@@ -181,6 +181,7 @@ export async function POST(req: NextRequest) {
         .from("lore_categories")
         .select("prefix")
         .eq("slug", tipo)
+        .or(`user_id.is.null,user_id.eq.${user.id}`)
         .single();
       
       console.log("[DEBUG] Categoria encontrada:", category);
