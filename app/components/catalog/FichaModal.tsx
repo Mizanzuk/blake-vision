@@ -203,6 +203,7 @@ export default function FichaModal({
         ...formData,
         ano_diegese: formData.ano_diegese ? parseInt(formData.ano_diegese) : null,
         tags: formData.tags || null,
+        episode_id: formData.episode_id || null,
         episodio: formData.episodio || null,
         imagem_url: imagemUrl || null,
         descricao_data: formData.descricao_data || null,

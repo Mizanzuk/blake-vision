@@ -350,6 +350,47 @@ export async function PUT(req: NextRequest) {
       }
     }
 
+    // Regenerar código se episódio ou world_id mudaram
+    if (updateData.episodio !== undefined || updateData.world_id !== undefined) {
+      // Buscar ficha atual para comparar
+      const { data: currentFicha } = await supabase
+        .from("fichas")
+        .select("episodio, world_id, tipo")
+        .eq("id", id)
+        .eq("user_id", user.id)
+        .single();
+      
+      if (currentFicha) {
+        const episodioChanged = updateData.episodio !== undefined && updateData.episodio !== currentFicha.episodio;
+        const worldChanged = updateData.world_id !== undefined && updateData.world_id !== currentFicha.world_id;
+        
+        if (episodioChanged || worldChanged) {
+          // Buscar categoria para obter prefix
+          const tipo = updateData.tipo || currentFicha.tipo;
+          const { data: category } = await supabase
+            .from("lore_categories")
+            .select("prefix")
+            .eq("slug", tipo)
+            .or(`user_id.is.null,user_id.eq.${user.id}`)
+            .single();
+          
+          if (category?.prefix) {
+            const finalWorldId = updateData.world_id !== undefined ? updateData.world_id : currentFicha.world_id;
+            const finalEpisodio = updateData.episodio !== undefined ? updateData.episodio : currentFicha.episodio;
+            
+            updateData.codigo = await getNextCode(
+              supabase,
+              user.id,
+              finalWorldId,
+              finalEpisodio || null,
+              tipo,
+              category.prefix
+            );
+          }
+        }
+      }
+    }
+
     updateData.updated_at = new Date().toISOString();
 
     const { data: ficha, error } = await supabase
