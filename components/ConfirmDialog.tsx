@@ -24,9 +24,9 @@ export default function ConfirmDialog({
   if (!isOpen) return null;
 
   const variantStyles = {
-    danger: 'bg-red-500 hover:bg-red-600',
-    warning: 'bg-yellow-500 hover:bg-yellow-600',
-    info: 'bg-primary-500 hover:bg-primary-600'
+    danger: 'bg-error-light hover:bg-error-light/90 dark:bg-error-dark dark:hover:bg-error-dark/90',
+    warning: 'bg-warning-light hover:bg-warning-light/90 dark:bg-warning-dark dark:hover:bg-warning-dark/90',
+    info: 'bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600'
   };
 
   // Handle ESC key
@@ -55,19 +55,19 @@ export default function ConfirmDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Overlay */}
       <div 
-        className="absolute inset-0 bg-black bg-opacity-50"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onCancel}
       />
       
       {/* Modal */}
-      <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+      <div className="relative bg-light-raised dark:bg-dark-raised rounded-xl shadow-xl max-w-md w-full mx-4 p-6 border border-border-light-default dark:border-border-dark-default">
         {/* Title */}
-        <h3 className="text-xl font-bold mb-2">
+        <h3 className="text-xl font-bold mb-2 text-text-light-primary dark:text-dark-primary">
           {title}
         </h3>
         
         {/* Message */}
-        <p className="text-gray-700 mb-6">
+        <p className="text-text-light-secondary dark:text-dark-secondary mb-6">
           {message}
         </p>
         
@@ -75,14 +75,14 @@ export default function ConfirmDialog({
         <div className="flex gap-3 justify-end">
           <button
             onClick={onCancel}
-            className="px-4 py-2 border-2 border-gray-300 rounded-lg hover:bg-gray-100 transition-colors font-medium"
+            className="px-3 py-1.5 text-sm border border-border-light-default dark:border-border-dark-default rounded-lg hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors font-medium text-text-light-primary dark:text-dark-primary"
             autoFocus
           >
             {cancelText}
           </button>
           <button
             onClick={onConfirm}
-            className={`px-4 py-2 text-white rounded-lg transition-colors font-medium ${variantStyles[variant]}`}
+            className={`px-3 py-1.5 text-sm text-white rounded-lg transition-colors font-medium ${variantStyles[variant]}`}
           >
             {confirmText}
           </button>
