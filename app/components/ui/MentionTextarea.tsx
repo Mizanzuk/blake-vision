@@ -187,7 +187,7 @@ export function MentionTextarea({
             }
             text-text-light-primary dark:text-dark-primary
             placeholder:text-text-light-tertiary dark:placeholder:text-dark-tertiary
-            focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
+            focus:outline-none focus:border-primary-500
             transition-all duration-200
             resize-y
             font-sans

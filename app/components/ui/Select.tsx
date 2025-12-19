@@ -39,12 +39,12 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
     },
     ref
   ) => {
-    const baseStyles = "rounded-lg border bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed appearance-none cursor-pointer";
+    const baseStyles = "rounded-lg border bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed appearance-none cursor-pointer";
 
     const variants = {
-      default: "border-border-light-default dark:border-border-dark-default focus:border-primary-500 focus:ring-primary-500",
-      error: "border-error-light dark:border-error-dark focus:border-error-light focus:ring-error-light",
-      success: "border-success-light dark:border-success-dark focus:border-success-light focus:ring-success-light",
+      default: "border-border-light-default dark:border-border-dark-default focus:border-primary-500",
+      error: "border-error-light dark:border-error-dark focus:border-error-light",
+      success: "border-success-light dark:border-success-dark focus:border-success-light",
     };
 
     const sizes = {
