@@ -58,7 +58,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             baseStyles,
             variants[actualVariant],
             resizeStyles[resize],
-            "px-4 py-3 text-base min-h-[120px]",
+            "px-4 py-3 text-base min-h-[200px]",
             className
           )}
           required={required}

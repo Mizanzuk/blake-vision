@@ -159,7 +159,8 @@ export default function CategoryModal({
       title={category ? "Editar Categoria" : "Nova Categoria"}
       footer={
         <>
-          {category && onDelete && (
+          {/* Apenas mostrar botão deletar para categorias customizadas (user_id != null) */}
+          {category && onDelete && category.user_id && (
             <Button
               size="sm"
               variant="danger"

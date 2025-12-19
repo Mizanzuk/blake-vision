@@ -48,12 +48,12 @@ export async function GET(req: NextRequest) {
     }
 
     // Fetch categories - com fallback para categorias padrão
-    let categories: { slug: string; label: string; description?: string | null; prefix?: string | null }[] = [];
+    let categories: { slug: string; label: string; description?: string | null; prefix?: string | null; user_id?: string | null }[] = [];
     
     try {
       const { data: categoriesData, error: categoriesError } = await supabase
         .from("lore_categories")
-        .select("slug, label, description, prefix")
+        .select("slug, label, description, prefix, user_id")
         .eq("universe_id", universeId)
         .order("label", { ascending: true });
 
