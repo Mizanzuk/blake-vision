@@ -1159,7 +1159,7 @@ function CatalogContent() {
             </Button>
 
             <div className="space-y-2">
-              {categories.map(category => (
+              {(categories || []).map(category => (
                 <div
                   key={category.slug}
                   className="flex items-center justify-between p-4 rounded-lg bg-light-base dark:bg-dark-base border border-border-light-default dark:border-border-dark-default"
