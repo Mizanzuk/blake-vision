@@ -936,7 +936,7 @@ function CatalogContent() {
       />
 
       {/* Modais específicos por categoria */}
-      {selectedCategorySlug === "sinopse" && (
+      {selectedCategorySlug === "sinopse" && worlds && worlds.length > 0 && (
         <SinopseModal
           isOpen={true}
           onClose={() => setSelectedCategorySlug("")}
@@ -947,7 +947,7 @@ function CatalogContent() {
         />
       )}
 
-      {selectedCategorySlug === "conceito" && (
+      {selectedCategorySlug === "conceito" && worlds && worlds.length > 0 && (
         <ConceitoModal
           isOpen={true}
           onClose={() => setSelectedCategorySlug("")}
@@ -958,7 +958,7 @@ function CatalogContent() {
         />
       )}
 
-      {selectedCategorySlug === "regra" && (
+      {selectedCategorySlug === "regra" && worlds && worlds.length > 0 && (
         <RegraModal
           isOpen={true}
           onClose={() => setSelectedCategorySlug("")}
@@ -969,7 +969,7 @@ function CatalogContent() {
         />
       )}
 
-      {selectedCategorySlug === "evento" && (
+      {selectedCategorySlug === "evento" && worlds && worlds.length > 0 && (
         <EventoModal
           isOpen={true}
           onClose={() => setSelectedCategorySlug("")}
@@ -980,7 +980,7 @@ function CatalogContent() {
         />
       )}
 
-      {selectedCategorySlug === "local" && (
+      {selectedCategorySlug === "local" && worlds && worlds.length > 0 && (
         <LocalModal
           isOpen={true}
           onClose={() => setSelectedCategorySlug("")}
@@ -991,7 +991,7 @@ function CatalogContent() {
         />
       )}
 
-      {selectedCategorySlug === "personagem" && (
+      {selectedCategorySlug === "personagem" && worlds && worlds.length > 0 && (
         <PersonagemModal
           isOpen={true}
           onClose={() => setSelectedCategorySlug("")}
@@ -1002,7 +1002,7 @@ function CatalogContent() {
         />
       )}
 
-      {selectedCategorySlug === "roteiro" && (
+      {selectedCategorySlug === "roteiro" && worlds && worlds.length > 0 && (
         <RoteiroModal
           isOpen={true}
           onClose={() => setSelectedCategorySlug("")}
