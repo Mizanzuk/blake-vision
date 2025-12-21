@@ -28,8 +28,11 @@ export default function SinopseModal({
   onSave,
   onDelete,
 }: SinopseModalProps) {
+  console.log('[SinopseModal] Props recebidas:', { isOpen, worlds, worldsType: typeof worlds, worldsIsArray: Array.isArray(worlds), worldsLength: worlds?.length });
+  
   // Garantir que worlds seja sempre um array
-  const safeWorlds = worlds || [];
+  const safeWorlds = Array.isArray(worlds) ? worlds : [];
+  console.log('[SinopseModal] safeWorlds criado:', { safeWorlds, length: safeWorlds.length });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -244,7 +247,10 @@ export default function SinopseModal({
         {/* Mundo */}
         <Select
           label="Mundo"
-          options={safeWorlds.map(w => ({ value: w.id, label: w.nome }))}
+          options={(() => {
+            console.log('[SinopseModal] Mapeando safeWorlds para Select:', safeWorlds);
+            return safeWorlds.map(w => ({ value: w.id, label: w.nome }));
+          })()}
           value={formData.world_id}
           onChange={(e) => handleChange("world_id", e.target.value)}
           required
