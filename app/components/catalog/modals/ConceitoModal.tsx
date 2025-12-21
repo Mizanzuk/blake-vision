@@ -204,6 +204,8 @@ export default function ConceitoModal({
 
   const selectedWorld = safeWorlds.find(w => w.id === formData.world_id);
 
+  if (!isOpen) return null;
+
   return (
     <Modal
       isOpen={isOpen}
