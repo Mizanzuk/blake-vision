@@ -299,7 +299,7 @@ export default function EventoModal({
               label="Episódio"
               options={[
                 { value: "", label: "Nenhum episódio" },
-                ...episodes.map(e => ({ value: e.id, label: `Episódio ${e.numero}: ${e.titulo}` })),
+                ...(episodes || []).map(e => ({ value: e.id, label: `Episódio ${e.numero}: ${e.titulo}` })),
                 { value: "__new__", label: "+ Novo Episódio" },
               ]}
               value={formData.episode_id || ""}
