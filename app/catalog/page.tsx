@@ -20,15 +20,7 @@ import { EpisodesDropdown } from "@/app/components/ui/EpisodesDropdown";
 import FichaModal from "@/app/components/catalog/FichaModal";
 import WorldModal from "@/app/components/catalog/WorldModal";
 import CategoryModal from "@/app/components/catalog/CategoryModal";
-import CategorySelectModal from "@/app/components/catalog/modals/CategorySelectModal";
-import SinopseModal from "@/app/components/catalog/modals/SinopseModal";
-import ConceitoModal from "@/app/components/catalog/modals/ConceitoModal";
-import RegraModal from "@/app/components/catalog/modals/RegraModal";
-import EventoModal from "@/app/components/catalog/modals/EventoModal";
-import LocalModal from "@/app/components/catalog/modals/LocalModal";
-import PersonagemModal from "@/app/components/catalog/modals/PersonagemModal";
-import RoteiroModal from "@/app/components/catalog/modals/RoteiroModal";
-import GenericCategoryModal from "@/app/components/catalog/modals/GenericCategoryModal";
+import { NewFichaModal } from "@/app/components/catalog/modals/NewFichaModal";
 import FichaCard from "@/app/components/shared/FichaCard";
 import FichaViewModal from "@/app/components/shared/FichaViewModal";
 import NewConceptRuleModal from "@/app/components/shared/NewConceptRuleModal";
@@ -70,8 +62,7 @@ function CatalogContent() {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   
   // Modals
-  const [showCategorySelectModal, setShowCategorySelectModal] = useState(false);
-  const [selectedCategorySlug, setSelectedCategorySlug] = useState<string>("");
+  const [showNewFichaModal, setShowNewFichaModal] = useState(false);
   const [showFichaModal, setShowFichaModal] = useState(false);
   const [showWorldModal, setShowWorldModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -350,14 +341,7 @@ function CatalogContent() {
   // Ficha functions
   function openNewFichaModal() {
     setSelectedFicha(null);
-    setSelectedCategorySlug("");
-    setShowCategorySelectModal(true);
-  }
-
-  function handleCategorySelected(categorySlug: string) {
-    setSelectedCategorySlug(categorySlug);
-    setShowCategorySelectModal(false);
-    // Os modais específicos serão abertos via renderização condicional
+    setShowNewFichaModal(true);
   }
 
   function handleCreateCategory() {
@@ -926,106 +910,15 @@ function CatalogContent() {
       </div>
 
       {/* Modals */}
-      {/* Modal de seleção de categoria */}
-      <CategorySelectModal
-        isOpen={showCategorySelectModal}
-        onClose={() => setShowCategorySelectModal(false)}
+      {/* Novo modal unificado */}
+      <NewFichaModal
+        isOpen={showNewFichaModal}
+        onClose={() => setShowNewFichaModal(false)}
+        universeId={selectedUniverseId}
+        worlds={worlds}
         categories={categories}
-        onSelectCategory={handleCategorySelected}
-        onCreateCategory={handleCreateCategory}
+        onSave={handleSaveFicha}
       />
-
-      {/* Modais específicos por categoria */}
-      {selectedCategorySlug === "sinopse" && worlds && worlds.length > 0 && (
-        <SinopseModal
-          isOpen={true}
-          onClose={() => setSelectedCategorySlug("")}
-          ficha={selectedFicha}
-          worlds={worlds}
-          onSave={handleSaveFicha}
-          onDelete={selectedFicha ? handleDeleteFicha : undefined}
-        />
-      )}
-
-      {selectedCategorySlug === "conceito" && worlds && worlds.length > 0 && (
-        <ConceitoModal
-          isOpen={true}
-          onClose={() => setSelectedCategorySlug("")}
-          ficha={selectedFicha}
-          worlds={worlds}
-          onSave={handleSaveFicha}
-          onDelete={selectedFicha ? handleDeleteFicha : undefined}
-        />
-      )}
-
-      {selectedCategorySlug === "regra" && worlds && worlds.length > 0 && (
-        <RegraModal
-          isOpen={true}
-          onClose={() => setSelectedCategorySlug("")}
-          ficha={selectedFicha}
-          worlds={worlds}
-          onSave={handleSaveFicha}
-          onDelete={selectedFicha ? handleDeleteFicha : undefined}
-        />
-      )}
-
-      {selectedCategorySlug === "evento" && worlds && worlds.length > 0 && (
-        <EventoModal
-          isOpen={true}
-          onClose={() => setSelectedCategorySlug("")}
-          ficha={selectedFicha}
-          worlds={worlds}
-          onSave={handleSaveFicha}
-          onDelete={selectedFicha ? handleDeleteFicha : undefined}
-        />
-      )}
-
-      {selectedCategorySlug === "local" && worlds && worlds.length > 0 && (
-        <LocalModal
-          isOpen={true}
-          onClose={() => setSelectedCategorySlug("")}
-          ficha={selectedFicha}
-          worlds={worlds}
-          onSave={handleSaveFicha}
-          onDelete={selectedFicha ? handleDeleteFicha : undefined}
-        />
-      )}
-
-      {selectedCategorySlug === "personagem" && worlds && worlds.length > 0 && (
-        <PersonagemModal
-          isOpen={true}
-          onClose={() => setSelectedCategorySlug("")}
-          ficha={selectedFicha}
-          worlds={worlds}
-          onSave={handleSaveFicha}
-          onDelete={selectedFicha ? handleDeleteFicha : undefined}
-        />
-      )}
-
-      {selectedCategorySlug === "roteiro" && worlds && worlds.length > 0 && (
-        <RoteiroModal
-          isOpen={true}
-          onClose={() => setSelectedCategorySlug("")}
-          ficha={selectedFicha}
-          worlds={worlds}
-          onSave={handleSaveFicha}
-          onDelete={selectedFicha ? handleDeleteFicha : undefined}
-        />
-      )}
-
-      {/* Modal genérico para categorias customizadas */}
-      {selectedCategorySlug && 
-       !['sinopse', 'conceito', 'regra', 'evento', 'local', 'personagem', 'roteiro'].includes(selectedCategorySlug) && (
-        <GenericCategoryModal
-          isOpen={true}
-          onClose={() => setSelectedCategorySlug("")}
-          ficha={selectedFicha}
-          worlds={worlds}
-          category={categories.find(c => c.slug === selectedCategorySlug)!}
-          onSave={handleSaveFicha}
-          onDelete={selectedFicha ? handleDeleteFicha : undefined}
-        />
-      )}
 
       {/* Modal para Conceitos e Regras */}
       <NewConceptRuleModal
