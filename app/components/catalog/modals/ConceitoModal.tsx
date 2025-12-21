@@ -277,7 +277,7 @@ export default function ConceitoModal({
                 if (e.target.value === "__new__") {
                   setShowNewEpisodeInput(true);
                 } else if (e.target.value) {
-                  const selectedEpisode = episodes.find(ep => ep.id === e.target.value);
+                  const selectedEpisode = (episodes || []).find(ep => ep.id === e.target.value);
                   if (selectedEpisode) {
                     setFormData((prev: any) => ({
                       ...prev,
