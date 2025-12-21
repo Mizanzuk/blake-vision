@@ -285,7 +285,7 @@ export default function EventoModal({
         {/* Mundo */}
         <Select
           label="Mundo"
-          options={worlds.map(w => ({ value: w.id, label: w.nome }))}
+          options={(worlds || []).map(w => ({ value: w.id, label: w.nome }))}
           value={formData.world_id}
           onChange={(e) => handleChange("world_id", e.target.value)}
           required
