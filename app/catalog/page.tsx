@@ -615,7 +615,7 @@ function CatalogContent() {
   };
 
   // Get unique episode numbers from fichas (sinopses agora são fichas tipo 'sinopse')
-  const episodeNumbersFromFichas = fichas.filter(f => f.episodio).map(f => f.episodio);
+  const episodeNumbersFromFichas = (fichas || []).filter(f => f.episodio).map(f => f.episodio);
   const uniqueEpisodeNumbers = Array.from(new Set(episodeNumbersFromFichas));
 
   if (isLoading) {
@@ -881,7 +881,7 @@ function CatalogContent() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Fichas */}
-                {sortedFichas.map(ficha => (
+                {(sortedFichas || []).map(ficha => (
                   <div key={ficha.id} className={`relative ${isSelectionMode && selectedFichaIds.includes(ficha.id) ? 'ring-2 ring-primary-500 rounded-lg' : ''}`}>
                     {/* Checkbox for selection mode */}
                     {isSelectionMode && (
