@@ -51,6 +51,9 @@ export default function EventoModal({
   onSave,
   onDelete,
 }: EventoModalProps) {
+  // Garantir que worlds seja sempre um array
+  const safeWorlds = worlds || [];
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
@@ -88,7 +91,7 @@ export default function EventoModal({
       // TODO: Carregar imagens do álbum se existirem
     } else {
       setFormData({
-        world_id: worlds.length > 0 ? worlds[0].id : "",
+        world_id: safeWorlds.length > 0 ? safeWorlds[0].id : "",
         tipo: "evento",
         titulo: "",
         resumo: "",
@@ -104,7 +107,7 @@ export default function EventoModal({
       });
       setImages([]);
     }
-  }, [ficha, isOpen, worlds]);
+  }, [ficha, isOpen, safeWorlds]);
 
   useEffect(() => {
     async function loadEpisodes() {
@@ -285,7 +288,7 @@ export default function EventoModal({
         {/* Mundo */}
         <Select
           label="Mundo"
-          options={(worlds || []).map(w => ({ value: w.id, label: w.nome }))}
+          options={safeWorlds.map(w => ({ value: w.id, label: w.nome }))}
           value={formData.world_id}
           onChange={(e) => handleChange("world_id", e.target.value)}
           required
