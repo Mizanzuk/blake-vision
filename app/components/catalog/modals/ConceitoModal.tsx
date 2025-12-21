@@ -28,8 +28,11 @@ export default function ConceitoModal({
   onSave,
   onDelete,
 }: ConceitoModalProps) {
+  console.log('[ConceitoModal] Renderizando com:', { isOpen, worlds, worldsType: typeof worlds, worldsIsArray: Array.isArray(worlds) });
+  
   // Garantir que worlds seja sempre um array
   const safeWorlds = worlds || [];
+  console.log('[ConceitoModal] safeWorlds:', { safeWorlds, length: safeWorlds.length });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -203,9 +206,14 @@ export default function ConceitoModal({
   }
 
   const selectedWorld = safeWorlds.find(w => w.id === formData.world_id);
+  console.log('[ConceitoModal] selectedWorld:', selectedWorld);
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    console.log('[ConceitoModal] Modal não está aberto, retornando null');
+    return null;
+  }
 
+  console.log('[ConceitoModal] Renderizando JSX do modal');
   return (
     <Modal
       isOpen={isOpen}
@@ -244,7 +252,10 @@ export default function ConceitoModal({
         {/* Mundo */}
         <Select
           label="Mundo"
-          options={safeWorlds.map(w => ({ value: w.id, label: w.nome }))}
+          options={(() => {
+            console.log('[ConceitoModal] Mapeando safeWorlds:', safeWorlds);
+            return safeWorlds.map(w => ({ value: w.id, label: w.nome }));
+          })()}
           value={formData.world_id}
           onChange={(e) => handleChange("world_id", e.target.value)}
           required
