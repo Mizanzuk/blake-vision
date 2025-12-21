@@ -20,6 +20,15 @@ import { EpisodesDropdown } from "@/app/components/ui/EpisodesDropdown";
 import FichaModal from "@/app/components/catalog/FichaModal";
 import WorldModal from "@/app/components/catalog/WorldModal";
 import CategoryModal from "@/app/components/catalog/CategoryModal";
+import CategorySelectModal from "@/app/components/catalog/modals/CategorySelectModal";
+import SinopseModal from "@/app/components/catalog/modals/SinopseModal";
+import ConceitoModal from "@/app/components/catalog/modals/ConceitoModal";
+import RegraModal from "@/app/components/catalog/modals/RegraModal";
+import EventoModal from "@/app/components/catalog/modals/EventoModal";
+import LocalModal from "@/app/components/catalog/modals/LocalModal";
+import PersonagemModal from "@/app/components/catalog/modals/PersonagemModal";
+import RoteiroModal from "@/app/components/catalog/modals/RoteiroModal";
+import GenericCategoryModal from "@/app/components/catalog/modals/GenericCategoryModal";
 import FichaCard from "@/app/components/shared/FichaCard";
 import FichaViewModal from "@/app/components/shared/FichaViewModal";
 import NewConceptRuleModal from "@/app/components/shared/NewConceptRuleModal";
@@ -61,6 +70,8 @@ function CatalogContent() {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   
   // Modals
+  const [showCategorySelectModal, setShowCategorySelectModal] = useState(false);
+  const [selectedCategorySlug, setSelectedCategorySlug] = useState<string>("");
   const [showFichaModal, setShowFichaModal] = useState(false);
   const [showWorldModal, setShowWorldModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -339,7 +350,18 @@ function CatalogContent() {
   // Ficha functions
   function openNewFichaModal() {
     setSelectedFicha(null);
-    setShowFichaModal(true);
+    setSelectedCategorySlug("");
+    setShowCategorySelectModal(true);
+  }
+
+  function handleCategorySelected(categorySlug: string) {
+    setSelectedCategorySlug(categorySlug);
+    setShowCategorySelectModal(false);
+    // Os modais específicos serão abertos via renderização condicional
+  }
+
+  function handleCreateCategory() {
+    setShowCategoryModal(true);
   }
 
   function openViewFichaModal(ficha: Ficha) {
@@ -904,6 +926,107 @@ function CatalogContent() {
       </div>
 
       {/* Modals */}
+      {/* Modal de seleção de categoria */}
+      <CategorySelectModal
+        isOpen={showCategorySelectModal}
+        onClose={() => setShowCategorySelectModal(false)}
+        categories={categories}
+        onSelectCategory={handleCategorySelected}
+        onCreateCategory={handleCreateCategory}
+      />
+
+      {/* Modais específicos por categoria */}
+      {selectedCategorySlug === "sinopse" && (
+        <SinopseModal
+          isOpen={true}
+          onClose={() => setSelectedCategorySlug("")}
+          ficha={selectedFicha}
+          worlds={worlds}
+          onSave={handleSaveFicha}
+          onDelete={selectedFicha ? handleDeleteFicha : undefined}
+        />
+      )}
+
+      {selectedCategorySlug === "conceito" && (
+        <ConceitoModal
+          isOpen={true}
+          onClose={() => setSelectedCategorySlug("")}
+          ficha={selectedFicha}
+          worlds={worlds}
+          onSave={handleSaveFicha}
+          onDelete={selectedFicha ? handleDeleteFicha : undefined}
+        />
+      )}
+
+      {selectedCategorySlug === "regra" && (
+        <RegraModal
+          isOpen={true}
+          onClose={() => setSelectedCategorySlug("")}
+          ficha={selectedFicha}
+          worlds={worlds}
+          onSave={handleSaveFicha}
+          onDelete={selectedFicha ? handleDeleteFicha : undefined}
+        />
+      )}
+
+      {selectedCategorySlug === "evento" && (
+        <EventoModal
+          isOpen={true}
+          onClose={() => setSelectedCategorySlug("")}
+          ficha={selectedFicha}
+          worlds={worlds}
+          onSave={handleSaveFicha}
+          onDelete={selectedFicha ? handleDeleteFicha : undefined}
+        />
+      )}
+
+      {selectedCategorySlug === "local" && (
+        <LocalModal
+          isOpen={true}
+          onClose={() => setSelectedCategorySlug("")}
+          ficha={selectedFicha}
+          worlds={worlds}
+          onSave={handleSaveFicha}
+          onDelete={selectedFicha ? handleDeleteFicha : undefined}
+        />
+      )}
+
+      {selectedCategorySlug === "personagem" && (
+        <PersonagemModal
+          isOpen={true}
+          onClose={() => setSelectedCategorySlug("")}
+          ficha={selectedFicha}
+          worlds={worlds}
+          onSave={handleSaveFicha}
+          onDelete={selectedFicha ? handleDeleteFicha : undefined}
+        />
+      )}
+
+      {selectedCategorySlug === "roteiro" && (
+        <RoteiroModal
+          isOpen={true}
+          onClose={() => setSelectedCategorySlug("")}
+          ficha={selectedFicha}
+          worlds={worlds}
+          onSave={handleSaveFicha}
+          onDelete={selectedFicha ? handleDeleteFicha : undefined}
+        />
+      )}
+
+      {/* Modal genérico para categorias customizadas */}
+      {selectedCategorySlug && 
+       !['sinopse', 'conceito', 'regra', 'evento', 'local', 'personagem', 'roteiro'].includes(selectedCategorySlug) && (
+        <GenericCategoryModal
+          isOpen={true}
+          onClose={() => setSelectedCategorySlug("")}
+          ficha={selectedFicha}
+          worlds={worlds}
+          category={categories.find(c => c.slug === selectedCategorySlug)!}
+          onSave={handleSaveFicha}
+          onDelete={selectedFicha ? handleDeleteFicha : undefined}
+        />
+      )}
+
       {/* Modal para Conceitos e Regras */}
       <NewConceptRuleModal
         isOpen={showFichaModal && selectedFicha !== null && (selectedFicha.tipo === "conceito" || selectedFicha.tipo === "regra")}
