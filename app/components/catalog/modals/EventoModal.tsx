@@ -248,7 +248,7 @@ export default function EventoModal({
     }
   }
 
-  const selectedWorld = worlds.find(w => w.id === formData.world_id);
+  const selectedWorld = safeWorlds.find(w => w.id === formData.world_id);
 
   return (
     <Modal

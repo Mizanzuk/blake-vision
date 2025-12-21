@@ -202,7 +202,7 @@ export default function SinopseModal({
     }
   }
 
-  const selectedWorld = worlds.find(w => w.id === formData.world_id);
+  const selectedWorld = safeWorlds.find(w => w.id === formData.world_id);
 
   return (
     <Modal
