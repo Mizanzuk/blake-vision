@@ -75,9 +75,6 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
               className
             )}
             required={required}
-            style={{
-              backgroundImage: hideArrow ? 'none' : undefined,
-            }}
             {...props}
           >
             {placeholder && (
@@ -126,32 +123,6 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
             {error || helperText}
           </p>
         )}
-        
-        <style jsx>{`
-          select option {
-            padding: 12px 16px;
-            background-color: var(--option-bg);
-            color: var(--option-color);
-          }
-          select option:checked {
-            background-color: #FCE4E9 !important;
-            color: #D14D65 !important;
-          }
-          select option:hover {
-            background-color: #FEF2F4 !important;
-          }
-          :global(.dark) select option {
-            background-color: #2B2420;
-            color: #F5F1E8;
-          }
-          :global(.dark) select option:checked {
-            background-color: #6E2735 !important;
-            color: #F5A0B0 !important;
-          }
-          :global(.dark) select option:hover {
-            background-color: #4D1A25 !important;
-          }
-        `}</style>
       </div>
     );
   }
