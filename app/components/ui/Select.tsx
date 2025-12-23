@@ -39,7 +39,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
     },
     ref
   ) => {
-    const baseStyles = "rounded-lg border bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary transition-all duration-200 focus:outline-none focus:ring-0 disabled:opacity-50 disabled:cursor-not-allowed appearance-none cursor-pointer";
+    const baseStyles = "rounded-lg border bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary transition-all duration-200 focus:outline-none focus:ring-0 disabled:opacity-50 disabled:cursor-not-allowed appearance-none cursor-pointer [&>option]:bg-light-raised [&>option]:dark:bg-dark-raised [&>option]:py-2 [&>option]:px-4 [&>option:checked]:bg-primary-100 [&>option:checked]:dark:bg-primary-900 [&>option:hover]:bg-primary-50 [&>option:hover]:dark:bg-primary-950";
 
     const variants = {
       default: "border-border-light-default dark:border-border-dark-default focus:border-primary-500",

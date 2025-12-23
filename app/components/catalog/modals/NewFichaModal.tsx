@@ -12,6 +12,7 @@ interface NewFichaModalProps {
   isOpen: boolean;
   onClose: () => void;
   universeId: string;
+  universeName: string;
   worlds: World[];
   categories: Category[];
   onSave: (ficha: Partial<Ficha>) => Promise<void>;
@@ -21,6 +22,7 @@ export function NewFichaModal({
   isOpen,
   onClose,
   universeId,
+  universeName,
   worlds,
   categories,
   onSave,
@@ -33,6 +35,11 @@ export function NewFichaModal({
     titulo: "",
     resumo: "",
     descricao: "",
+    // Campos de diegese para Evento
+    data_inicio: "",
+    data_fim: "",
+    granularidade: "",
+    camada: "",
   });
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [loading, setLoading] = useState(false);
@@ -48,6 +55,10 @@ export function NewFichaModal({
         titulo: "",
         resumo: "",
         descricao: "",
+        data_inicio: "",
+        data_fim: "",
+        granularidade: "",
+        camada: "",
       });
     }
   }, [isOpen, universeId]);
@@ -94,55 +105,79 @@ export function NewFichaModal({
     }
   }
 
+  function getModalTitle() {
+    if (!selectedCategorySlug) return "Nova Ficha";
+    
+    switch (selectedCategorySlug) {
+      case "sinopse":
+        return "Nova Sinopse";
+      case "conceito":
+        return "Novo Conceito";
+      case "regra":
+        return "Nova Regra";
+      case "evento":
+        return "Novo Evento";
+      case "local":
+        return "Novo Local";
+      case "personagem":
+        return "Novo Personagem";
+      case "roteiro":
+        return "Novo Roteiro";
+      default:
+        return `Nova Ficha de ${selectedCategory?.label || ""}`;
+    }
+  }
+
   function renderCategoryFields() {
     if (!selectedCategorySlug) return null;
-
-    // Campos comuns para todas as categorias
-    const commonFields = (
-      <>
-        {/* Mundo */}
-        <Select
-          label="Mundo"
-          value={formData.world_id}
-          onChange={(e) => setFormData({ ...formData, world_id: e.target.value })}
-          required
-          fullWidth
-        >
-          <option value="">Selecione um mundo</option>
-          {worlds.map(w => (
-            <option key={w.id} value={w.id}>{w.nome}</option>
-          ))}
-        </Select>
-
-        {/* Episódio (se o mundo tiver episódios) */}
-        {selectedWorld?.has_episodes && (
-          <Select
-            label="Episódio"
-            value={formData.episode_id || ""}
-            onChange={(e) => setFormData({ ...formData, episode_id: e.target.value || null })}
-            fullWidth
-          >
-            <option value="">Nenhum episódio</option>
-            {episodes.map(ep => (
-              <option key={ep.id} value={ep.id}>
-                Episódio {ep.numero}: {ep.titulo}
-              </option>
-            ))}
-          </Select>
-        )}
-      </>
-    );
 
     // Campos específicos por categoria
     switch (selectedCategorySlug) {
       case "sinopse":
         return (
           <>
-            {commonFields}
+            {/* Universo (somente leitura para Sinopse) */}
+            <Input
+              label="Universo"
+              value={universeName}
+              disabled
+              fullWidth
+            />
+
+            {/* Mundo */}
+            <Select
+              label="Mundo"
+              value={formData.world_id}
+              onChange={(e) => setFormData({ ...formData, world_id: e.target.value })}
+              fullWidth
+            >
+              <option value="">Selecione um Mundo</option>
+              {worlds.map(w => (
+                <option key={w.id} value={w.id}>{w.nome}</option>
+              ))}
+            </Select>
+
+            {/* Episódio */}
+            <Select
+              label="Episódio"
+              value={formData.episode_id || ""}
+              onChange={(e) => setFormData({ ...formData, episode_id: e.target.value || null })}
+              required
+              fullWidth
+            >
+              <option value="">Selecione um episódio</option>
+              {(episodes || []).map(ep => (
+                <option key={ep.id} value={ep.id}>
+                  Episódio {ep.numero}: {ep.titulo}
+                </option>
+              ))}
+            </Select>
+
             <Input
               label="Logline"
               value={formData.titulo}
               onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
+              placeholder="Ex: Um jovem descobre que tem poderes mágicos"
               required
               fullWidth
             />
@@ -150,6 +185,7 @@ export function NewFichaModal({
               label="Sinopse"
               value={formData.descricao}
               onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+              placeholder="Descreva a sinopse completa do episódio"
               required
               fullWidth
               rows={6}
@@ -161,11 +197,43 @@ export function NewFichaModal({
       case "regra":
         return (
           <>
-            {commonFields}
+            {/* Universo (somente leitura) */}
+            <Input
+              label="Universo"
+              value={universeName}
+              disabled
+              fullWidth
+            />
+
+            {/* Mundo (opcional) */}
+            <Select
+              label="Mundo"
+              value={formData.world_id}
+              onChange={(e) => setFormData({ ...formData, world_id: e.target.value })}
+              fullWidth
+            >
+              <option value="">Selecione um Mundo</option>
+              {worlds.map(w => (
+                <option key={w.id} value={w.id}>{w.nome}</option>
+              ))}
+            </Select>
+
+            {/* Mensagem informativa */}
+            {!formData.world_id && (
+              <p className="text-xs font-bold text-primary-600 dark:text-primary-400">
+                Este {selectedCategorySlug} será aplicado em todo o universo {universeName}
+              </p>
+            )}
+
             <Input
               label="Título"
               value={formData.titulo}
               onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
+              placeholder={
+                selectedCategorySlug === "conceito"
+                  ? "Ex: Toda experiência gera uma lição"
+                  : "Ex: Ninguém pode viajar no tempo"
+              }
               required
               fullWidth
             />
@@ -173,6 +241,11 @@ export function NewFichaModal({
               label="Descrição"
               value={formData.descricao}
               onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+              placeholder={
+                selectedCategorySlug === "conceito"
+                  ? "Descreva o conceito fundamental que guia este universo ou mundo"
+                  : "Descreva a regra que define os limites e possibilidades deste universo ou mundo"
+              }
               required
               fullWidth
               rows={6}
@@ -181,11 +254,46 @@ export function NewFichaModal({
         );
 
       case "evento":
-      case "local":
-      case "personagem":
         return (
           <>
-            {commonFields}
+            {/* Universo */}
+            <Input
+              label="Universo"
+              value={universeName}
+              disabled
+              fullWidth
+            />
+
+            {/* Mundo (opcional) */}
+            <Select
+              label="Mundo"
+              value={formData.world_id}
+              onChange={(e) => setFormData({ ...formData, world_id: e.target.value })}
+              fullWidth
+            >
+              <option value="">Selecione um mundo</option>
+              {worlds.map(w => (
+                <option key={w.id} value={w.id}>{w.nome}</option>
+              ))}
+            </Select>
+
+            {/* Episódio (se o mundo tiver episódios) */}
+            {selectedWorld?.has_episodes && (
+              <Select
+                label="Episódio"
+                value={formData.episode_id || ""}
+                onChange={(e) => setFormData({ ...formData, episode_id: e.target.value || null })}
+                fullWidth
+              >
+                <option value="">Nenhum episódio</option>
+                {(episodes || []).map(ep => (
+                  <option key={ep.id} value={ep.id}>
+                    Episódio {ep.numero}: {ep.titulo}
+                  </option>
+                ))}
+              </Select>
+            )}
+
             <Input
               label="Título"
               value={formData.titulo}
@@ -208,13 +316,182 @@ export function NewFichaModal({
               fullWidth
               rows={6}
             />
+
+            {/* Seção de Diegese */}
+            <div className="border-t border-border-light-default dark:border-border-dark-default pt-4 mt-4">
+              <h3 className="text-sm font-semibold text-text-light-primary dark:text-dark-primary mb-4">
+                Detalhes de data do evento
+              </h3>
+              
+              <div className="space-y-4">
+                <Input
+                  label="Data de Início"
+                  type="date"
+                  value={formData.data_inicio}
+                  onChange={(e) => setFormData({ ...formData, data_inicio: e.target.value })}
+                  fullWidth
+                />
+                
+                <Input
+                  label="Data de Fim"
+                  type="date"
+                  value={formData.data_fim}
+                  onChange={(e) => setFormData({ ...formData, data_fim: e.target.value })}
+                  fullWidth
+                />
+                
+                <Select
+                  label="Granularidade"
+                  value={formData.granularidade}
+                  onChange={(e) => setFormData({ ...formData, granularidade: e.target.value })}
+                  fullWidth
+                >
+                  <option value="">Selecione</option>
+                  <option value="dia_exato">Dia exato</option>
+                  <option value="mes_ano">Mês e Ano</option>
+                  <option value="ano">Ano</option>
+                  <option value="decada">Década</option>
+                  <option value="seculo">Século</option>
+                  <option value="vago">Vago/Impreciso</option>
+                  <option value="desconhecido">Desconhecido</option>
+                </Select>
+                
+                <Select
+                  label="Camada"
+                  value={formData.camada}
+                  onChange={(e) => setFormData({ ...formData, camada: e.target.value })}
+                  fullWidth
+                >
+                  <option value="">Selecione</option>
+                  <option value="linha_principal">Linha Principal</option>
+                  <option value="flashback">Flashback</option>
+                  <option value="flashforward">Flashforward</option>
+                  <option value="sonho_visao">Sonho/Visão</option>
+                  <option value="mundo_alternativo">Mundo Alternativo</option>
+                  <option value="historico_antigo">Histórico/Antigo</option>
+                  <option value="outro">Outro</option>
+                  <option value="relato_memoria">Relato/Memória</option>
+                  <option value="publicacao">Publicação</option>
+                </Select>
+              </div>
+            </div>
+
+            {/* TODO: Álbum de imagens */}
+          </>
+        );
+
+      case "local":
+      case "personagem":
+        return (
+          <>
+            {/* Universo */}
+            <Input
+              label="Universo"
+              value={universeName}
+              disabled
+              fullWidth
+            />
+
+            {/* Mundo */}
+            <Select
+              label="Mundo"
+              value={formData.world_id}
+              onChange={(e) => setFormData({ ...formData, world_id: e.target.value })}
+              required
+              fullWidth
+            >
+              <option value="">Selecione um mundo</option>
+              {worlds.map(w => (
+                <option key={w.id} value={w.id}>{w.nome}</option>
+              ))}
+            </Select>
+
+            {/* Episódio (se o mundo tiver episódios) */}
+            {selectedWorld?.has_episodes && (
+              <Select
+                label="Episódio"
+                value={formData.episode_id || ""}
+                onChange={(e) => setFormData({ ...formData, episode_id: e.target.value || null })}
+                fullWidth
+              >
+                <option value="">Nenhum episódio</option>
+                {(episodes || []).map(ep => (
+                  <option key={ep.id} value={ep.id}>
+                    Episódio {ep.numero}: {ep.titulo}
+                  </option>
+                ))}
+              </Select>
+            )}
+
+            <Input
+              label="Título"
+              value={formData.titulo}
+              onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
+              required
+              fullWidth
+            />
+            <Input
+              label="Resumo"
+              value={formData.resumo}
+              onChange={(e) => setFormData({ ...formData, resumo: e.target.value })}
+              required
+              fullWidth
+            />
+            <Textarea
+              label="Descrição"
+              value={formData.descricao}
+              onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+              required
+              fullWidth
+              rows={6}
+            />
+
+            {/* TODO: Álbum de imagens */}
           </>
         );
 
       case "roteiro":
         return (
           <>
-            {commonFields}
+            {/* Universo */}
+            <Input
+              label="Universo"
+              value={universeName}
+              disabled
+              fullWidth
+            />
+
+            {/* Mundo */}
+            <Select
+              label="Mundo"
+              value={formData.world_id}
+              onChange={(e) => setFormData({ ...formData, world_id: e.target.value })}
+              required
+              fullWidth
+            >
+              <option value="">Selecione um mundo</option>
+              {worlds.map(w => (
+                <option key={w.id} value={w.id}>{w.nome}</option>
+              ))}
+            </Select>
+
+            {/* Episódio (se o mundo tiver episódios) */}
+            {selectedWorld?.has_episodes && (
+              <Select
+                label="Episódio"
+                value={formData.episode_id || ""}
+                onChange={(e) => setFormData({ ...formData, episode_id: e.target.value || null })}
+                fullWidth
+              >
+                <option value="">Nenhum episódio</option>
+                {(episodes || []).map(ep => (
+                  <option key={ep.id} value={ep.id}>
+                    Episódio {ep.numero}: {ep.titulo}
+                  </option>
+                ))}
+              </Select>
+            )}
+
             <Input
               label="Título"
               value={formData.titulo}
@@ -237,7 +514,45 @@ export function NewFichaModal({
         // Categoria customizada
         return (
           <>
-            {commonFields}
+            {/* Universo */}
+            <Input
+              label="Universo"
+              value={universeName}
+              disabled
+              fullWidth
+            />
+
+            {/* Mundo */}
+            <Select
+              label="Mundo"
+              value={formData.world_id}
+              onChange={(e) => setFormData({ ...formData, world_id: e.target.value })}
+              required
+              fullWidth
+            >
+              <option value="">Selecione um mundo</option>
+              {worlds.map(w => (
+                <option key={w.id} value={w.id}>{w.nome}</option>
+              ))}
+            </Select>
+
+            {/* Episódio (se o mundo tiver episódios) */}
+            {selectedWorld?.has_episodes && (
+              <Select
+                label="Episódio"
+                value={formData.episode_id || ""}
+                onChange={(e) => setFormData({ ...formData, episode_id: e.target.value || null })}
+                fullWidth
+              >
+                <option value="">Nenhum episódio</option>
+                {(episodes || []).map(ep => (
+                  <option key={ep.id} value={ep.id}>
+                    Episódio {ep.numero}: {ep.titulo}
+                  </option>
+                ))}
+              </Select>
+            )}
+
             <Input
               label="Título"
               value={formData.titulo}
@@ -268,26 +583,28 @@ export function NewFichaModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Nova Ficha"
+      title={getModalTitle()}
       size="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Dropdown de Categoria */}
-        <Select
-          label="Categoria"
-          value={selectedCategorySlug}
-          onChange={(e) => setSelectedCategorySlug(e.target.value)}
-          required
-          fullWidth
-        >
-          <option value="">Selecione uma categoria</option>
-          {categories.map(cat => (
-            <option key={cat.slug} value={cat.slug}>
-              {cat.label}
-            </option>
-          ))}
-          <option value="__new__">+ Criar Nova Categoria</option>
-        </Select>
+        {/* Dropdown de Categoria (só aparece se nenhuma categoria foi selecionada) */}
+        {!selectedCategorySlug && (
+          <Select
+            label="Categoria"
+            value={selectedCategorySlug}
+            onChange={(e) => setSelectedCategorySlug(e.target.value)}
+            required
+            fullWidth
+          >
+            <option value="">Selecione uma categoria</option>
+            {categories.map(cat => (
+              <option key={cat.slug} value={cat.slug}>
+                {cat.label}
+              </option>
+            ))}
+            <option value="__new__">+ Criar Nova Categoria</option>
+          </Select>
+        )}
 
         {/* Campos específicos da categoria */}
         {renderCategoryFields()}

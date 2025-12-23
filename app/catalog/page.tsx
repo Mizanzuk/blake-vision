@@ -915,6 +915,7 @@ function CatalogContent() {
         isOpen={showNewFichaModal}
         onClose={() => setShowNewFichaModal(false)}
         universeId={selectedUniverseId}
+        universeName={universes.find(u => u.id === selectedUniverseId)?.nome || ""}
         worlds={worlds}
         categories={categories}
         onSave={handleSaveFicha}
