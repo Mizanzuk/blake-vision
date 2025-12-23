@@ -251,13 +251,14 @@ export function ConfirmDialog({
       size="sm"
       footer={
         <>
-          <Button variant="ghost" onClick={onClose} disabled={isLoading}>
+          <Button variant="ghost" onClick={onClose} disabled={isLoading} size="sm">
             {cancelText}
           </Button>
           <Button
             variant={confirmVariant}
             onClick={onConfirm}
             loading={isLoading}
+            size="sm"
           >
             {confirmText}
           </Button>
