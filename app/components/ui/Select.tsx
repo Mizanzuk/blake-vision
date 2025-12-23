@@ -71,7 +71,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
               baseStyles,
               variants[actualVariant],
               sizes[selectSize],
-              hideArrow ? "pr-4" : "pr-9",
+              hideArrow ? "pr-4" : "pr-7",
               className
             )}
             required={required}
@@ -95,7 +95,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           
           {/* Chevron icon */}
           {!hideArrow && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-light-tertiary dark:text-dark-tertiary">
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-text-light-tertiary dark:text-dark-tertiary">
             <svg
               className="w-5 h-5"
               fill="none"
