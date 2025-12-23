@@ -39,7 +39,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
     },
     ref
   ) => {
-    const baseStyles = "rounded-lg border bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary transition-all duration-200 focus:outline-none focus:ring-0 disabled:opacity-50 disabled:cursor-not-allowed appearance-none cursor-pointer [&>option]:bg-light-raised [&>option]:dark:bg-dark-raised [&>option]:py-3 [&>option]:px-4 [&>option:checked]:bg-primary-100 [&>option:checked]:dark:bg-primary-900 [&>option:checked]:text-primary-600 [&>option:checked]:dark:text-primary-400 [&>option:hover]:bg-primary-50 [&>option:hover]:dark:bg-primary-950";
+    const baseStyles = "rounded-lg border bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary transition-all duration-200 focus:outline-none focus:ring-0 disabled:opacity-50 disabled:cursor-not-allowed appearance-none cursor-pointer";
 
     const variants = {
       default: "border-border-light-default dark:border-border-dark-default focus:border-primary-500",
@@ -48,9 +48,9 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
     };
 
     const sizes = {
-      sm: "px-3 py-2 text-sm h-10",
-      md: "px-4 py-2.5 text-base h-12",
-      lg: "px-5 py-3 text-lg h-14",
+      sm: "h-10 px-3 py-2 text-sm",
+      md: "h-11 px-4 py-2.5 text-base",
+      lg: "h-12 px-5 py-3 text-lg",
     };
 
     const actualVariant = error ? "error" : variant;
@@ -71,10 +71,13 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
               baseStyles,
               variants[actualVariant],
               sizes[selectSize],
-              hideArrow ? "pr-4" : "pr-9",
+              hideArrow ? "pr-4" : "pr-10",
               className
             )}
             required={required}
+            style={{
+              backgroundImage: hideArrow ? 'none' : undefined,
+            }}
             {...props}
           >
             {placeholder && (
@@ -123,6 +126,32 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
             {error || helperText}
           </p>
         )}
+        
+        <style jsx>{`
+          select option {
+            padding: 12px 16px;
+            background-color: var(--option-bg);
+            color: var(--option-color);
+          }
+          select option:checked {
+            background-color: #FCE4E9 !important;
+            color: #D14D65 !important;
+          }
+          select option:hover {
+            background-color: #FEF2F4 !important;
+          }
+          :global(.dark) select option {
+            background-color: #2B2420;
+            color: #F5F1E8;
+          }
+          :global(.dark) select option:checked {
+            background-color: #6E2735 !important;
+            color: #F5A0B0 !important;
+          }
+          :global(.dark) select option:hover {
+            background-color: #4D1A25 !important;
+          }
+        `}</style>
       </div>
     );
   }

@@ -39,9 +39,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     };
 
     const sizes = {
-      sm: "px-3 py-2 text-sm h-10",
-      md: "px-4 py-2.5 text-base h-12",
-      lg: "px-5 py-3 text-lg h-14",
+      sm: "h-10 px-3 py-2 text-sm",
+      md: "h-11 px-4 py-2.5 text-base",
+      lg: "h-12 px-5 py-3 text-lg",
     };
 
     const actualVariant = error ? "error" : variant;
