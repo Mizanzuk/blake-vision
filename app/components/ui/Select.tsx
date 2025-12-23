@@ -39,7 +39,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
     },
     ref
   ) => {
-    const baseStyles = "rounded-lg border bg-red-500 text-white transition-all duration-200 focus:outline-none focus:ring-0 disabled:opacity-50 disabled:cursor-not-allowed appearance-none cursor-pointer";
+    const baseStyles = "rounded-lg border bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary transition-all duration-200 focus:outline-none focus:ring-0 disabled:opacity-50 disabled:cursor-not-allowed appearance-none cursor-pointer";
 
     const variants = {
       default: "border-border-light-default dark:border-border-dark-default focus:border-primary-500",
@@ -71,7 +71,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
               baseStyles,
               variants[actualVariant],
               sizes[selectSize],
-              hideArrow ? "pr-4" : "pr-10",
+              hideArrow ? "pr-4" : "pr-9",
               className
             )}
             required={required}
