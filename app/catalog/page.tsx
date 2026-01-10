@@ -255,7 +255,7 @@ function CatalogContent() {
               onClick={() => setShowNewFichaModal(true)}
               className="bg-primary-light dark:bg-primary-dark hover:bg-primary-light/80 dark:hover:bg-primary-dark/80 text-white"
             >
-              + {t.common.createFicha}
+              + {t.common.create}
             </Button>
             <Button
               onClick={() => setShowCategoryModal(true)}
