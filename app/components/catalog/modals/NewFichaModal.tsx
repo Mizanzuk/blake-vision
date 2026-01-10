@@ -158,9 +158,8 @@ export function NewFichaModal({
             {/* Episódio */}
             <EpisodioDropdown
               episodes={episodes}
-              selectedEpisodeId={formData.episode_id}
-              onSelectEpisode={(episodeId) => setFormData({ ...formData, episode_id: episodeId })}
-              required
+              value={formData.episode_id}
+              onSelect={(episodeId) => setFormData({ ...formData, episode_id: episodeId })}
             />
 
             <Input
