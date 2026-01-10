@@ -259,7 +259,7 @@ function CatalogContent() {
             </Button>
             <Button
               onClick={() => setShowCategoryModal(true)}
-              variant="outline"
+              variant="secondary"
               className="flex items-center gap-2"
             >
               ⚙️ {t.common.categories}
