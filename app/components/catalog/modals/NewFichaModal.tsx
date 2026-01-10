@@ -161,14 +161,7 @@ export function NewFichaModal({
               selectedEpisodeId={formData.episode_id}
               onSelectEpisode={(episodeId) => setFormData({ ...formData, episode_id: episodeId })}
               required
-            >
-              <option value="">Selecione um episódio</option>
-              {(episodes || []).map(ep => (
-                <option key={ep.id} value={ep.id}>
-                  Episódio {ep.numero}: {ep.titulo}
-                </option>
-              ))}
-            </Select>
+            />
 
             <Input
               label="Logline"
