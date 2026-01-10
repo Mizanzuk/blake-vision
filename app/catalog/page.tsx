@@ -228,13 +228,7 @@ function CatalogContent() {
       return f.episodio && selectedWorldIds.includes(f.world_id);
     })
     .map(f => f.episodio);
-  const uniqueEpisodeNumbers = Array.from(new Set(episodeNumbersFromFichas));
-  
-  // DEBUG
-  console.log('selectedWorldIds:', selectedWorldIds);
-  console.log('fichas:', fichas?.map(f => ({ id: f.id, world_id: f.world_id, episodio: f.episodio })));
-  console.log('episodeNumbersFromFichas:', episodeNumbersFromFichas);
-  console.log('uniqueEpisodeNumbers:', uniqueEpisodeNumbers);
+  const uniqueEpisodeNumbers = Array.from(new Set(episodeNumbersFromFichas)).filter((ep): ep is string => !!ep);
 
   if (isLoading) {
     return <Loading fullScreen text={t.common.loading} />;
@@ -262,14 +256,14 @@ function CatalogContent() {
               variant="secondary"
               className="flex items-center gap-2"
             >
-              ⚙️ {t.common.categories}
+              ⚙️ Categorias
             </Button>
             <Button
               onClick={() => setShowWorldFilter(!showWorldFilter)}
-              variant="outline"
+              variant="secondary"
               className="flex items-center gap-2"
             >
-              📋 {t.common.select}
+              📋 Selecionar
             </Button>
           </div>
         </div>
@@ -278,7 +272,7 @@ function CatalogContent() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div>
             <label className="text-sm font-medium text-light-text dark:text-dark-text mb-2 block">
-              {t.common.universe}
+              Universo
             </label>
             <UniverseDropdown
               universes={universes}
@@ -289,29 +283,32 @@ function CatalogContent() {
 
           <div>
             <label className="text-sm font-medium text-light-text dark:text-dark-text mb-2 block">
-              {t.common.worlds}
+              Mundos
             </label>
             <WorldsDropdown
               worlds={worlds}
               selectedIds={selectedWorldIds}
               onToggle={toggleWorldSelection}
+              onEdit={() => {}}
+              onDelete={() => {}}
+              onCreate={() => {}}
             />
           </div>
 
           <div>
             <label className="text-sm font-medium text-light-text dark:text-dark-text mb-2 block">
-              {t.common.categories}
+              Categorias
             </label>
             <TypesDropdown
               types={categories}
-              selectedTypes={selectedTypes}
+              selectedSlugs={selectedTypes}
               onToggle={toggleTypeSelection}
             />
           </div>
 
           <div>
             <label className="text-sm font-medium text-light-text dark:text-dark-text mb-2 block">
-              {t.common.episodes}
+              Episódios
             </label>
             <EpisodesDropdown
               episodes={uniqueEpisodeNumbers}
@@ -334,15 +331,15 @@ function CatalogContent() {
           </div>
           <Button
             onClick={clearFilters}
-            variant="outline"
+            variant="secondary"
           >
-            {t.common.clearFilters}
+            Limpar filtros
           </Button>
         </div>
 
         {/* Results count */}
         <div className="mb-6 text-sm text-light-text-secondary dark:text-dark-text-secondary">
-          {filteredFichas.length} {t.common.itemsFound}
+          {filteredFichas.length} itens encontrados
         </div>
 
         {/* Cards grid */}
@@ -352,21 +349,17 @@ function CatalogContent() {
               <FichaCard
                 key={ficha.id}
                 ficha={ficha}
-                onView={() => {
+                onClick={() => {
                   setViewingFicha(ficha);
                   setShowViewModal(true);
-                }}
-                onEdit={() => {
-                  setSelectedFicha(ficha);
-                  setShowFichaModal(true);
                 }}
               />
             ))}
           </div>
         ) : (
           <EmptyState
-            title={t.common.noResults}
-            description={t.common.tryAdjustingFilters}
+            title="Nenhum resultado encontrado"
+            description="Tente ajustar seus filtros para encontrar o que procura."
           />
         )}
       </div>
@@ -375,11 +368,14 @@ function CatalogContent() {
       <NewFichaModal
         isOpen={showNewFichaModal}
         onClose={() => setShowNewFichaModal(false)}
-        onSuccess={() => {
+        onSave={async () => {
           loadCatalogData();
           setShowNewFichaModal(false);
         }}
         universeId={selectedUniverseId}
+        universeName={universes.find(u => u.id === selectedUniverseId)?.nome || ''}
+        worlds={worlds}
+        categories={categories}
       />
 
       <FichaModal
@@ -389,7 +385,9 @@ function CatalogContent() {
           setSelectedFicha(null);
         }}
         ficha={selectedFicha}
-        onSuccess={() => {
+        worlds={worlds}
+        categories={categories}
+        onSave={async () => {
           loadCatalogData();
           setShowFichaModal(false);
           setSelectedFicha(null);
@@ -403,8 +401,7 @@ function CatalogContent() {
           setSelectedWorld(null);
         }}
         world={selectedWorld}
-        universeId={selectedUniverseId}
-        onSuccess={() => {
+        onSave={async () => {
           loadCatalogData();
           setShowWorldModal(false);
           setSelectedWorld(null);
@@ -414,8 +411,8 @@ function CatalogContent() {
       <CategoryModal
         isOpen={showCategoryModal}
         onClose={() => setShowCategoryModal(false)}
-        universeId={selectedUniverseId}
-        onSuccess={() => {
+        category={null}
+        onSave={async () => {
           loadCatalogData();
           setShowCategoryModal(false);
         }}
