@@ -346,7 +346,6 @@ export function NewFichaModal({
               worlds={worlds}
               selectedId={formData.world_id}
               onSelect={(id) => setFormData({ ...formData, world_id: id })}
-              required
             />
 
             {/* Episódio (se o mundo tiver episódios) */}
@@ -401,7 +400,6 @@ export function NewFichaModal({
               worlds={worlds}
               selectedId={formData.world_id}
               onSelect={(id) => setFormData({ ...formData, world_id: id })}
-              required
             />
 
             {/* Episódio (se o mundo tiver episódios) */}
@@ -448,7 +446,6 @@ export function NewFichaModal({
               worlds={worlds}
               selectedId={formData.world_id}
               onSelect={(id) => setFormData({ ...formData, world_id: id })}
-              required
             />
 
             {/* Episódio (se o mundo tiver episódios) */}
