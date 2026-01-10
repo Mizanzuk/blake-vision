@@ -216,8 +216,8 @@ function CatalogContent() {
     );
   };
 
-  // Get unique episode numbers from fichas (sinopses agora são fichas tipo 'sinopse')
-  // Filtrar episódios apenas do mundo selecionado
+  // Get unique episode numbers from fichas filtered by selected world
+  // If no world is selected, show all episodes; if a world is selected, show only episodes from that world
   const episodeNumbersFromFichas = (fichas || [])
     .filter(f => {
       // Se nenhum mundo está selecionado, mostrar todos os episódios
@@ -229,20 +229,6 @@ function CatalogContent() {
     })
     .map(f => f.episodio);
   const uniqueEpisodeNumbers = Array.from(new Set(episodeNumbersFromFichas)).filter((ep): ep is string => !!ep);
-  
-  // DEBUG: Log para verificar filtragem
-  useEffect(() => {
-    console.log('DEBUG - selectedWorldIds:', selectedWorldIds);
-    console.log('DEBUG - fichas count:', fichas?.length);
-    console.log('DEBUG - episodeNumbersFromFichas:', episodeNumbersFromFichas);
-    console.log('DEBUG - uniqueEpisodeNumbers:', uniqueEpisodeNumbers);
-    if (selectedWorldIds.length > 0) {
-      const worldNames = worlds.filter(w => selectedWorldIds.includes(w.id)).map(w => w.name);
-      console.log('DEBUG - selected worlds:', worldNames);
-      const fichasForWorlds = fichas.filter(f => selectedWorldIds.includes(f.world_id));
-      console.log('DEBUG - fichas for selected worlds:', fichasForWorlds.map(f => ({ titulo: f.titulo, episodio: f.episodio, world_id: f.world_id })));
-    }
-  }, [selectedWorldIds, fichas, worlds]);
 
   if (isLoading) {
     return <Loading fullScreen text={t.common.loading} />;
