@@ -103,7 +103,7 @@ export function Modal({
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
-    if (closeOnBackdrop && e.target === e.currentTarget) {
+    if (closeOnBackdrop && !isResizing && e.target === e.currentTarget) {
       onClose();
     }
   };
@@ -120,11 +120,11 @@ export function Modal({
       <div
         ref={modalRef}
         className={clsx(
-          "relative w-full bg-light-raised dark:bg-dark-raised rounded-2xl shadow-soft-xl animate-slide-up overflow-hidden",
+          "relative w-full bg-light-raised dark:bg-dark-raised rounded-2xl shadow-soft-xl animate-slide-up",
           "border border-border-light-default dark:border-border-dark-default",
           sizes[size]
         )}
-        style={modalSize.width > 0 ? { width: `${modalSize.width}px`, height: `${modalSize.height}px`, maxWidth: "90vw", maxHeight: "90vh" } : undefined}
+        style={modalSize.width > 0 ? { width: `${modalSize.width}px`, height: `${modalSize.height}px`, maxWidth: "90vw", maxHeight: "90vh", overflow: "visible" } : { overflow: "visible" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
