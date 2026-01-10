@@ -604,6 +604,12 @@ function CatalogContent() {
     .filter(f => f.episodio && (selectedWorldIds.length === 0 || selectedWorldIds.includes(f.world_id)))
     .map(f => f.episodio);
   const uniqueEpisodeNumbers = Array.from(new Set(episodeNumbersFromFichas));
+  
+  // Debug
+  console.log('selectedWorldIds:', selectedWorldIds);
+  console.log('fichas with episodio:', (fichas || []).filter(f => f.episodio).map(f => ({ titulo: f.titulo, world_id: f.world_id, episodio: f.episodio })));
+  console.log('filtered episodeNumbers:', episodeNumbersFromFichas);
+  console.log('uniqueEpisodeNumbers:', uniqueEpisodeNumbers);
 
   if (isLoading) {
     return <Loading fullScreen text={t.common.loading} />;
