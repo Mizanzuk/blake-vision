@@ -213,6 +213,10 @@ export function NewFichaModal({
               worlds={worlds}
               selectedId={formData.world_id}
               onSelect={(id) => setFormData({ ...formData, world_id: id })}
+              onCreate={() => {
+                // Abre modal para criar novo mundo
+                // Pode ser implementado depois
+              }}
             />
 
             {/* Mensagem informativa */}
