@@ -599,7 +599,10 @@ function CatalogContent() {
   };
 
   // Get unique episode numbers from fichas (sinopses agora são fichas tipo 'sinopse')
-  const episodeNumbersFromFichas = (fichas || []).filter(f => f.episodio).map(f => f.episodio);
+  // Filtrar episódios apenas do mundo selecionado
+  const episodeNumbersFromFichas = (fichas || [])
+    .filter(f => f.episodio && (selectedWorldIds.length === 0 || selectedWorldIds.includes(f.world_id)))
+    .map(f => f.episodio);
   const uniqueEpisodeNumbers = Array.from(new Set(episodeNumbersFromFichas));
 
   if (isLoading) {
