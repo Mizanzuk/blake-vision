@@ -229,6 +229,12 @@ function CatalogContent() {
     })
     .map(f => f.episodio);
   const uniqueEpisodeNumbers = Array.from(new Set(episodeNumbersFromFichas));
+  
+  // DEBUG
+  console.log('selectedWorldIds:', selectedWorldIds);
+  console.log('fichas:', fichas?.map(f => ({ id: f.id, world_id: f.world_id, episodio: f.episodio })));
+  console.log('episodeNumbersFromFichas:', episodeNumbersFromFichas);
+  console.log('uniqueEpisodeNumbers:', uniqueEpisodeNumbers);
 
   if (isLoading) {
     return <Loading fullScreen text={t.common.loading} />;
