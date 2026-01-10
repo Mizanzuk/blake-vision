@@ -6,7 +6,8 @@ import { Input } from "@/app/components/ui/Input";
 import { Select } from "@/app/components/ui/Select";
 import { Textarea } from "@/app/components/ui/Textarea";
 import { Button } from "@/app/components/ui/Button";
-import { World, Episode, Ficha, Category } from "@/app/types";
+import { CategoryDropdown } from "@/app/components/ui/CategoryDropdown";
+import type { World, Episode, Ficha, Category } from "@/app/types";
 
 interface NewFichaModalProps {
   isOpen: boolean;
@@ -331,7 +332,6 @@ export function NewFichaModal({
                   onChange={(e) => setFormData({ ...formData, data_inicio: e.target.value })}
                   fullWidth
                 />
-                
                 <Input
                   label="Data de Fim"
                   type="date"
@@ -339,44 +339,27 @@ export function NewFichaModal({
                   onChange={(e) => setFormData({ ...formData, data_fim: e.target.value })}
                   fullWidth
                 />
-                
                 <Select
                   label="Granularidade"
                   value={formData.granularidade}
                   onChange={(e) => setFormData({ ...formData, granularidade: e.target.value })}
                   fullWidth
                 >
-                  <option value="">Selecione</option>
-                  <option value="dia_exato">Dia exato</option>
-                  <option value="mes_ano">Mês e Ano</option>
+                  <option value="">Selecione a granularidade</option>
                   <option value="ano">Ano</option>
-                  <option value="decada">Década</option>
-                  <option value="seculo">Século</option>
-                  <option value="vago">Vago/Impreciso</option>
-                  <option value="desconhecido">Desconhecido</option>
+                  <option value="mes">Mês</option>
+                  <option value="dia">Dia</option>
+                  <option value="hora">Hora</option>
                 </Select>
-                
-                <Select
-                  label="Camada"
+                <Input
+                  label="Camada (opcional)"
                   value={formData.camada}
                   onChange={(e) => setFormData({ ...formData, camada: e.target.value })}
+                  placeholder="Ex: Presente, Passado, Futuro"
                   fullWidth
-                >
-                  <option value="">Selecione</option>
-                  <option value="linha_principal">Linha Principal</option>
-                  <option value="flashback">Flashback</option>
-                  <option value="flashforward">Flashforward</option>
-                  <option value="sonho_visao">Sonho/Visão</option>
-                  <option value="mundo_alternativo">Mundo Alternativo</option>
-                  <option value="historico_antigo">Histórico/Antigo</option>
-                  <option value="outro">Outro</option>
-                  <option value="relato_memoria">Relato/Memória</option>
-                  <option value="publicacao">Publicação</option>
-                </Select>
+                />
               </div>
             </div>
-
-            {/* TODO: Álbum de imagens */}
           </>
         );
 
@@ -589,21 +572,12 @@ export function NewFichaModal({
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Dropdown de Categoria (só aparece se nenhuma categoria foi selecionada) */}
         {!selectedCategorySlug && (
-          <Select
+          <CategoryDropdown
             label="Categoria"
-            value={selectedCategorySlug}
-            onChange={(e) => setSelectedCategorySlug(e.target.value)}
-            required
-            fullWidth
-          >
-            <option value="">Selecione uma categoria</option>
-            {categories.map(cat => (
-              <option key={cat.slug} value={cat.slug}>
-                {cat.label}
-              </option>
-            ))}
-            <option value="__new__">+ Criar Nova Categoria</option>
-          </Select>
+            categories={categories}
+            selectedSlug={selectedCategorySlug}
+            onSelect={setSelectedCategorySlug}
+          />
         )}
 
         {/* Campos específicos da categoria */}
