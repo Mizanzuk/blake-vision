@@ -73,8 +73,8 @@ export function Modal({
       e.stopPropagation();
       if (!modalRef.current) return;
       const rect = modalRef.current.getBoundingClientRect();
-      const newWidth = Math.max(400, e.clientX - rect.left);
-      const newHeight = Math.max(300, e.clientY - rect.top);
+      const newWidth = Math.max(500, e.clientX - rect.left);
+      const newHeight = Math.max(400, e.clientY - rect.top);
       setModalSize({ width: newWidth, height: newHeight });
     };
 
@@ -184,7 +184,7 @@ export function Modal({
         )}
 
         {/* Content */}
-        <div className="p-6 max-h-[calc(100vh-16rem)] overflow-y-auto">
+        <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(100% - 140px)' }}>
           {children}
         </div>
 
