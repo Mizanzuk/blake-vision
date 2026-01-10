@@ -20,7 +20,7 @@ export function EpisodioDropdown({
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const selectedEpisode = episodes.find(ep => ep.id === value);
+  const selectedEpisode = Array.isArray(episodes) ? episodes.find(ep => ep.id === value) : undefined;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -76,7 +76,7 @@ export function EpisodioDropdown({
           </button>
 
           {/* Episodes */}
-          {episodes.map((episode) => (
+          {Array.isArray(episodes) && episodes.map((episode) => (
             <button
               key={episode.id}
               onClick={() => {

@@ -46,7 +46,7 @@ export function WorldsDropdownSingle({
     if (!selectedId) {
       return "Selecione um Mundo";
     }
-    const world = worlds.find(w => w.id === selectedId);
+    const world = Array.isArray(worlds) ? worlds.find(w => w.id === selectedId) : undefined;
     return world?.nome || "Selecione um Mundo";
   };
 
