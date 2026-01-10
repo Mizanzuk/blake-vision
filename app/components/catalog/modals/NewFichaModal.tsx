@@ -567,7 +567,8 @@ export function NewFichaModal({
       isOpen={isOpen}
       onClose={onClose}
       title={getModalTitle()}
-      size="lg"
+      size="sm"
+      noBorder={true}
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Dropdown de Categoria (só aparece se nenhuma categoria foi selecionada) */}
