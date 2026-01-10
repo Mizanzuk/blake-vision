@@ -151,8 +151,8 @@ export function NewFichaModal({
             {/* Mundo */}
             <WorldsDropdownSingle
               worlds={worlds}
-              selectedWorldId={formData.world_id}
-              onSelectWorld={(worldId) => setFormData({ ...formData, world_id: worldId })}
+              selectedId={formData.world_id}
+              onSelect={(id) => setFormData({ ...formData, world_id: id })}
             />
 
             {/* Episódio */}
@@ -253,7 +253,7 @@ export function NewFichaModal({
               fullWidth
             />
 
-            {/* Mundo (opcional) */}
+            {/* Mundo */}
             <WorldsDropdownSingle
               worlds={worlds}
               selectedId={formData.world_id}
