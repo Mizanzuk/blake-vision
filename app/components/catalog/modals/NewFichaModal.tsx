@@ -149,25 +149,18 @@ export function NewFichaModal({
             />
 
             {/* Mundo */}
-            <Select
-              label="Mundo"
-              value={formData.world_id}
-              onChange={(e) => setFormData({ ...formData, world_id: e.target.value })}
-              fullWidth
-            >
-              <option value="">Selecione um Mundo</option>
-              {worlds.map(w => (
-                <option key={w.id} value={w.id}>{w.nome}</option>
-              ))}
-            </Select>
+            <WorldsDropdownSingle
+              worlds={worlds}
+              selectedWorldId={formData.world_id}
+              onSelectWorld={(worldId) => setFormData({ ...formData, world_id: worldId })}
+            />
 
             {/* Episódio */}
-            <Select
-              label="Episódio"
-              value={formData.episode_id || ""}
-              onChange={(e) => setFormData({ ...formData, episode_id: e.target.value || null })}
+            <EpisodioDropdown
+              episodes={episodes}
+              selectedEpisodeId={formData.episode_id}
+              onSelectEpisode={(episodeId) => setFormData({ ...formData, episode_id: episodeId })}
               required
-              fullWidth
             >
               <option value="">Selecione um episódio</option>
               {(episodes || []).map(ep => (
