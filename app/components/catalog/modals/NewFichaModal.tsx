@@ -8,6 +8,8 @@ import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import { Textarea } from "@/app/components/ui/Textarea";
 import { Button } from "@/app/components/ui/Button";
 import { CategoryDropdown } from "@/app/components/ui/CategoryDropdown";
+import { GranularidadeDropdown } from "@/app/components/ui/GranularidadeDropdown";
+import { EpisodioDropdown } from "@/app/components/ui/EpisodioDropdown";
 import type { World, Episode, Ficha, Category } from "@/app/types";
 
 interface NewFichaModalProps {
@@ -280,19 +282,11 @@ export function NewFichaModal({
 
             {/* Episódio (se o mundo tiver episódios) */}
             {selectedWorld?.has_episodes && (
-              <Select
-                label="Episódio"
-                value={formData.episode_id || ""}
-                onChange={(e) => setFormData({ ...formData, episode_id: e.target.value || null })}
-                fullWidth
-              >
-                <option value="">Nenhum episódio</option>
-                {(episodes || []).map(ep => (
-                  <option key={ep.id} value={ep.id}>
-                    Episódio {ep.numero}: {ep.titulo}
-                  </option>
-                ))}
-              </Select>
+              <EpisodioDropdown
+                value={formData.episode_id}
+                episodes={episodes || []}
+                onSelect={(id) => setFormData({ ...formData, episode_id: id })}
+              />
             )}
 
             <Input
@@ -339,18 +333,11 @@ export function NewFichaModal({
                   onChange={(e) => setFormData({ ...formData, data_fim: e.target.value })}
                   fullWidth
                 />
-                <Select
-                  label="Granularidade"
+                <GranularidadeDropdown
                   value={formData.granularidade}
-                  onChange={(e) => setFormData({ ...formData, granularidade: e.target.value })}
-                  fullWidth
-                >
-                  <option value="">Selecione a granularidade</option>
-                  <option value="ano">Ano</option>
-                  <option value="mes">Mês</option>
-                  <option value="dia">Dia</option>
-                  <option value="hora">Hora</option>
-                </Select>
+                  onSelect={(value) => setFormData({ ...formData, granularidade: value })}
+                  required
+                />
                 <Input
                   label="Camada (opcional)"
                   value={formData.camada}
@@ -376,34 +363,20 @@ export function NewFichaModal({
             />
 
             {/* Mundo */}
-            <Select
-              label="Mundo"
-              value={formData.world_id}
-              onChange={(e) => setFormData({ ...formData, world_id: e.target.value })}
+            <WorldsDropdownSingle
+              worlds={worlds}
+              selectedId={formData.world_id}
+              onSelect={(id) => setFormData({ ...formData, world_id: id })}
               required
-              fullWidth
-            >
-              <option value="">Selecione um mundo</option>
-              {worlds.map(w => (
-                <option key={w.id} value={w.id}>{w.nome}</option>
-              ))}
-            </Select>
+            />
 
             {/* Episódio (se o mundo tiver episódios) */}
             {selectedWorld?.has_episodes && (
-              <Select
-                label="Episódio"
-                value={formData.episode_id || ""}
-                onChange={(e) => setFormData({ ...formData, episode_id: e.target.value || null })}
-                fullWidth
-              >
-                <option value="">Nenhum episódio</option>
-                {(episodes || []).map(ep => (
-                  <option key={ep.id} value={ep.id}>
-                    Episódio {ep.numero}: {ep.titulo}
-                  </option>
-                ))}
-              </Select>
+              <EpisodioDropdown
+                value={formData.episode_id}
+                episodes={episodes || []}
+                onSelect={(id) => setFormData({ ...formData, episode_id: id })}
+              />
             )}
 
             <Input
@@ -445,34 +418,20 @@ export function NewFichaModal({
             />
 
             {/* Mundo */}
-            <Select
-              label="Mundo"
-              value={formData.world_id}
-              onChange={(e) => setFormData({ ...formData, world_id: e.target.value })}
+            <WorldsDropdownSingle
+              worlds={worlds}
+              selectedId={formData.world_id}
+              onSelect={(id) => setFormData({ ...formData, world_id: id })}
               required
-              fullWidth
-            >
-              <option value="">Selecione um mundo</option>
-              {worlds.map(w => (
-                <option key={w.id} value={w.id}>{w.nome}</option>
-              ))}
-            </Select>
+            />
 
             {/* Episódio (se o mundo tiver episódios) */}
             {selectedWorld?.has_episodes && (
-              <Select
-                label="Episódio"
-                value={formData.episode_id || ""}
-                onChange={(e) => setFormData({ ...formData, episode_id: e.target.value || null })}
-                fullWidth
-              >
-                <option value="">Nenhum episódio</option>
-                {(episodes || []).map(ep => (
-                  <option key={ep.id} value={ep.id}>
-                    Episódio {ep.numero}: {ep.titulo}
-                  </option>
-                ))}
-              </Select>
+              <EpisodioDropdown
+                value={formData.episode_id}
+                episodes={episodes || []}
+                onSelect={(id) => setFormData({ ...formData, episode_id: id })}
+              />
             )}
 
             <Input
@@ -506,34 +465,20 @@ export function NewFichaModal({
             />
 
             {/* Mundo */}
-            <Select
-              label="Mundo"
-              value={formData.world_id}
-              onChange={(e) => setFormData({ ...formData, world_id: e.target.value })}
+            <WorldsDropdownSingle
+              worlds={worlds}
+              selectedId={formData.world_id}
+              onSelect={(id) => setFormData({ ...formData, world_id: id })}
               required
-              fullWidth
-            >
-              <option value="">Selecione um mundo</option>
-              {worlds.map(w => (
-                <option key={w.id} value={w.id}>{w.nome}</option>
-              ))}
-            </Select>
+            />
 
             {/* Episódio (se o mundo tiver episódios) */}
             {selectedWorld?.has_episodes && (
-              <Select
-                label="Episódio"
-                value={formData.episode_id || ""}
-                onChange={(e) => setFormData({ ...formData, episode_id: e.target.value || null })}
-                fullWidth
-              >
-                <option value="">Nenhum episódio</option>
-                {(episodes || []).map(ep => (
-                  <option key={ep.id} value={ep.id}>
-                    Episódio {ep.numero}: {ep.titulo}
-                  </option>
-                ))}
-              </Select>
+              <EpisodioDropdown
+                value={formData.episode_id}
+                episodes={episodes || []}
+                onSelect={(id) => setFormData({ ...formData, episode_id: id })}
+              />
             )}
 
             <Input
