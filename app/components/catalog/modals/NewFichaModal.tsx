@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Modal } from "@/app/components/ui/Modal";
 import { Input } from "@/app/components/ui/Input";
 import { Select } from "@/app/components/ui/Select";
+import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import { Textarea } from "@/app/components/ui/Textarea";
 import { Button } from "@/app/components/ui/Button";
 import { CategoryDropdown } from "@/app/components/ui/CategoryDropdown";
@@ -207,17 +208,12 @@ export function NewFichaModal({
             />
 
             {/* Mundo (opcional) */}
-            <Select
+            <WorldsDropdownSingle
               label="Mundo"
-              value={formData.world_id}
-              onChange={(e) => setFormData({ ...formData, world_id: e.target.value })}
-              fullWidth
-            >
-              <option value="">Selecione um Mundo</option>
-              {worlds.map(w => (
-                <option key={w.id} value={w.id}>{w.nome}</option>
-              ))}
-            </Select>
+              worlds={worlds}
+              selectedId={formData.world_id}
+              onSelect={(id) => setFormData({ ...formData, world_id: id })}
+            />
 
             {/* Mensagem informativa */}
             {!formData.world_id && (
