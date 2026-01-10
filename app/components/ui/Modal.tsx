@@ -37,6 +37,7 @@ export function Modal({
   const modalRef = useRef<HTMLDivElement>(null);
   const [isResizing, setIsResizing] = useState(false);
   const [modalSize, setModalSize] = useState({ width: 0, height: 0 });
+  const [justFinishedResizing, setJustFinishedResizing] = useState(false);
 
   // Reset modal size when modal closes
   useEffect(() => {
@@ -81,6 +82,9 @@ export function Modal({
       e.preventDefault();
       e.stopPropagation();
       setIsResizing(false);
+      setJustFinishedResizing(true);
+      // Reset the flag after a short delay to allow backdrop clicks again
+      setTimeout(() => setJustFinishedResizing(false), 100);
     };
 
     document.addEventListener("mousemove", handleMouseMove, { capture: true });
@@ -103,7 +107,7 @@ export function Modal({
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
-    if (closeOnBackdrop && !isResizing && e.target === e.currentTarget) {
+    if (closeOnBackdrop && !isResizing && !justFinishedResizing && e.target === e.currentTarget) {
       onClose();
     }
   };
