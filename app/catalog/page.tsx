@@ -174,7 +174,7 @@ function CatalogContent() {
     }
 
     // Episode filter
-    if (selectedEpisodes.length > 0 && !selectedEpisodes.includes(ficha.episodio)) {
+    if (selectedEpisodes.length > 0 && (!ficha.episodio || !selectedEpisodes.includes(ficha.episodio))) {
       return false;
     }
 
