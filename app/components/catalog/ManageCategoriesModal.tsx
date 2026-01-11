@@ -550,9 +550,9 @@ function CreateCategoryView({
   return (
     <div className="w-full flex flex-col">
       {/* Back Button */}
-      <div className="flex gap-2 p-6">
+      <div className="flex gap-2 px-6 py-3">
         <Button size="sm" variant="ghost" onClick={onCancel}>
-          Voltar
+          ← Voltar
         </Button>
       </div>
 
@@ -561,7 +561,7 @@ function CreateCategoryView({
         <div className="space-y-4">
           {/* Nome */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-2">
               Nome
             </label>
             <input
@@ -575,7 +575,7 @@ function CreateCategoryView({
 
           {/* Slug */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-2">
               Slug
             </label>
             <input
@@ -592,7 +592,7 @@ function CreateCategoryView({
 
           {/* Prefixo */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-2">
               Prefixo
             </label>
             <input
@@ -610,13 +610,13 @@ function CreateCategoryView({
 
           {/* Descrição */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-2">
               Descrição
             </label>
             <textarea
               value={newCategoryDescription}
               onChange={(e) => onDescriptionChange(e.target.value)}
-              className="w-full px-3 py-2 border border-red-400 rounded-lg min-h-[200px] bg-light-raised dark:bg-dark-raised text-gray-900 dark:text-gray-100 focus:outline-none focus:border-red-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg min-h-[200px] bg-light-raised dark:bg-dark-raised text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-0 focus:border-red-400"
               placeholder="Descrição da categoria"
             />
           </div>
