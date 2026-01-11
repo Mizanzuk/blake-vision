@@ -457,9 +457,9 @@ function CatalogContent() {
             toast.success('Categoria criada com sucesso!');
             setShowCategoryModal(false);
             loadCatalogData();
-          } catch (error) {
+          } catch (error: any) {
             console.error('[DEBUG] Erro ao salvar categoria:', error);
-            toast.error(error.message || 'Erro ao criar categoria');
+            toast.error(error?.message || 'Erro ao criar categoria');
           }
         }}
       />
