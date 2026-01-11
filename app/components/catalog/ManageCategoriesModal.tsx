@@ -737,13 +737,13 @@ function CategoryDetailView({
   return (
     <div className="w-full flex flex-col">
       {/* Back Button */}
-      <div className="flex gap-2 p-6">
+      <div className="flex gap-2 px-6 py-3">
         <Button
           size="sm"
           variant="ghost"
           onClick={onBack}
         >
-          Voltar
+          ← Voltar
         </Button>
       </div>
 
@@ -752,7 +752,7 @@ function CategoryDetailView({
         <div className="space-y-4">
           {/* Nome (não editável) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-2">
               Nome
             </label>
             <input
@@ -765,7 +765,7 @@ function CategoryDetailView({
 
           {/* Slug (não editável) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-2">
               Slug
             </label>
             <input
@@ -778,7 +778,7 @@ function CategoryDetailView({
 
           {/* Prefix (não editável) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-2">
               Prefixo
             </label>
             <input
@@ -791,7 +791,7 @@ function CategoryDetailView({
 
           {/* Descrição (editável) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-2">
               Descrição
             </label>
             <textarea
@@ -800,7 +800,7 @@ function CategoryDetailView({
               disabled={!isEditing}
               className={`w-full px-3 py-2 rounded-lg min-h-[200px] bg-light-raised dark:bg-dark-raised text-gray-900 dark:text-gray-100 transition-all ${
                 isEditing
-                  ? 'border border-red-400 focus:border-red-500 focus:outline-none'
+                  ? 'border border-gray-300 focus:border-red-400 focus:outline-none focus:ring-0'
                   : 'border border-transparent'
               }`}
               placeholder="Descrição da categoria..."
