@@ -70,6 +70,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               sizes[inputSize],
               icon && iconPosition === "left" && "pl-10",
               icon && iconPosition === "right" && "pr-10",
+              fullWidth && "w-full",
               className
             )}
             required={required}
