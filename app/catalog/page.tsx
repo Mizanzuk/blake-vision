@@ -434,9 +434,33 @@ function CatalogContent() {
         isOpen={showCategoryModal}
         onClose={() => setShowCategoryModal(false)}
         category={null}
-        onSave={async () => {
-          loadCatalogData();
-          setShowCategoryModal(false);
+        onSave={async (categoryData) => {
+          try {
+            const response = await fetch('/api/categories', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                universe_id: selectedUniverseId,
+                slug: categoryData.slug,
+                label: categoryData.label,
+                description: categoryData.description,
+                prefix: categoryData.prefix,
+              }),
+            });
+
+            if (!response.ok) {
+              const error = await response.json();
+              toast.error(error.error || 'Erro ao criar categoria');
+              return;
+            }
+
+            toast.success('Categoria criada com sucesso!');
+            loadCatalogData();
+            setShowCategoryModal(false);
+          } catch (error) {
+            console.error('Erro ao salvar categoria:', error);
+            toast.error('Erro ao criar categoria');
+          }
         }}
       />
 
