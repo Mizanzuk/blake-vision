@@ -9,6 +9,7 @@ export async function PATCH(
   { params }: { params: { slug: string } }
 ) {
   try {
+    console.log('[DEBUG PATCH] Iniciando');
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -18,8 +19,10 @@ export async function PATCH(
 
     const body = await req.json();
     const { universe_id, description } = body;
+    console.log('[DEBUG PATCH] Slug:', params.slug, 'Universe ID:', universe_id, 'Description length:', description?.length || 0);
 
     if (!universe_id) {
+      console.log('[DEBUG PATCH] Universe ID não fornecido');
       return NextResponse.json(
         { error: "universe_id é obrigatório" },
         { status: 400 }
@@ -27,6 +30,7 @@ export async function PATCH(
     }
 
     // Buscar a categoria
+    console.log('[DEBUG PATCH] Buscando categoria com slug:', params.slug, 'e universe_id:', universe_id);
     const { data: category, error: fetchError } = await supabase
       .from("lore_categories")
       .select("*")
@@ -34,12 +38,22 @@ export async function PATCH(
       .eq("universe_id", universe_id)
       .single();
 
+    if (fetchError) {
+      console.log('[DEBUG PATCH] Fetch error:', fetchError);
+    }
+    if (!category) {
+      console.log('[DEBUG PATCH] Category is null');
+    }
+
     if (fetchError || !category) {
+      console.log('[DEBUG PATCH] Categoria não encontrada');
       return NextResponse.json(
         { error: "Categoria não encontrada" },
         { status: 404 }
       );
     }
+
+    console.log('[DEBUG PATCH] Categoria encontrada:', category.id);
 
     // Verificar se é categoria base (não pode ser editada por usuários)
     const BASE_CATEGORIES = ['conceito', 'evento', 'local', 'personagem', 'regra', 'roteiro', 'sinopse'];
@@ -51,6 +65,7 @@ export async function PATCH(
     }
 
     // Atualizar apenas a descrição
+    console.log('[DEBUG PATCH] Atualizando categoria');
     const { data: updatedCategory, error: updateError } = await supabase
       .from("lore_categories")
       .update({
@@ -63,12 +78,14 @@ export async function PATCH(
       .single();
 
     if (updateError) {
+      console.log('[DEBUG PATCH] Update error:', updateError);
       return NextResponse.json(
         { error: updateError.message },
         { status: 500 }
       );
     }
 
+    console.log('[DEBUG PATCH] Categoria atualizada com sucesso');
     return NextResponse.json(updatedCategory);
   } catch (error: any) {
     console.error("Erro na API de atualizar categoria:", error);
