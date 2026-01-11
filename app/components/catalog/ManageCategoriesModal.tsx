@@ -268,6 +268,7 @@ export default function ManageCategoriesModal({
       }
 
       toast.success('Categoria deletada com sucesso!');
+      setShowDeleteConfirm(false);
       handleBackToList();
       loadCategories();
       onCategoryDeleted?.();
