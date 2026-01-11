@@ -736,17 +736,6 @@ function CategoryDetailView({
 }: CategoryDetailViewProps) {
   return (
     <div className="w-full flex flex-col">
-      {/* Back Button */}
-      <div className="flex gap-2 px-6 py-3">
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={onBack}
-        >
-          ← Voltar
-        </Button>
-      </div>
-
       {/* Content */}
       <div className="flex-1 overflow-y-auto px-6 pb-6">
         <div className="space-y-4">
@@ -808,53 +797,62 @@ function CategoryDetailView({
           </div>
 
           {/* Botões de edição/ação - alinhados à direita abaixo da descrição */}
-          <div className="flex gap-2 pt-4 justify-end">
-            {!isEditing ? (
-              <>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={onEdit}
-                >
-                  Editar
-                </Button>
-                {!isBaseCategory && (
+          <div className="flex gap-2 pt-4 justify-between">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={onBack}
+            >
+              ← Voltar
+            </Button>
+            <div className="flex gap-2">
+              {!isEditing ? (
+                <>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={onEdit}
+                  >
+                    Editar
+                  </Button>
+                  {!isBaseCategory && (
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      className="bg-red-600 hover:bg-red-700"
+                      onClick={onDelete}
+                    >
+                      Apagar
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={onCancelEdit}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={onGenerateWithAI}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? 'Gerando...' : 'Gerar com IA'}
+                  </Button>
                   <Button
                     size="sm"
                     variant="primary"
-                    className="bg-red-600 hover:bg-red-700"
-                    onClick={onDelete}
+                    onClick={onSave}
                   >
-                    Apagar
+                    Salvar
                   </Button>
-                )}
-              </>
-            ) : (
-              <>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={onCancelEdit}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={onGenerateWithAI}
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Gerando...' : 'Gerar com IA'}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="primary"
-                  onClick={onSave}
-                >
-                  Salvar
-                </Button>
-              </>
-            )}
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
