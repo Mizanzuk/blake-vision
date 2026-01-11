@@ -25,12 +25,48 @@ export default function ManageCategoriesModal({
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editDescription, setEditDescription] = useState('');
+  const [modalWidth, setModalWidth] = useState(896);
+  const [modalHeight, setModalHeight] = useState(90);
+  const [isResizing, setIsResizing] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       loadCategories();
     }
   }, [isOpen, universeId]);
+
+  // Fechar modal ao pressionar Esc
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  // Redimensionamento do modal
+  useEffect(() => {
+    function handleMouseMove(e: MouseEvent) {
+      if (!isResizing) return;
+      setModalWidth(Math.max(600, e.clientX));
+      setModalHeight(Math.max(400, window.innerHeight - e.clientY));
+    }
+
+    function handleMouseUp() {
+      setIsResizing(false);
+    }
+
+    if (isResizing) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isResizing]);
 
   async function loadCategories() {
     try {
@@ -67,12 +103,7 @@ export default function ManageCategoriesModal({
   }
 
   async function handleSaveDescription() {
-    console.log('[DEBUG] handleSaveDescription called');
-    console.log('[DEBUG] selectedCategory:', selectedCategory);
-    console.log('[DEBUG] universeId:', universeId);
-    console.log('[DEBUG] editDescription length:', editDescription.length);
     if (!selectedCategory) {
-      console.log('[DEBUG] No selectedCategory');
       return;
     }
 
@@ -87,15 +118,11 @@ export default function ManageCategoriesModal({
       });
 
       if (!response.ok) {
-        console.log('[DEBUG] Response not OK:', response.status);
         const data = await response.json();
-        console.log('[DEBUG] Error data:', data);
         toast.error(data.error || 'Erro ao atualizar categoria');
         return;
       }
-      console.log('[DEBUG] Response OK');
 
-      console.log('[DEBUG] Showing success toast');
       toast.success('Categoria atualizada com sucesso!');
       setIsEditing(false);
       
@@ -114,16 +141,12 @@ export default function ManageCategoriesModal({
   }
 
   async function handleGenerateWithAI() {
-    console.log('handleGenerateWithAI called');
     if (!selectedCategory) {
-      console.log('No selectedCategory');
       return;
     }
 
     try {
-      console.log('Starting AI generation...');
       setIsLoading(true);
-      console.log('Making fetch request to /api/generate-description');
       const response = await fetch('/api/generate-description', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -135,25 +158,18 @@ export default function ManageCategoriesModal({
       });
 
       if (!response.ok) {
-        console.log('Response not OK:', response.status);
         const data = await response.json();
-        console.log('Error data:', data);
         toast.error(data.error || 'Erro ao gerar descrição');
         return;
       }
 
-      console.log('Response OK, parsing JSON...');
       const data = await response.json();
-      console.log('Received description length:', data.description.length);
       // Complementar a descrição existente
       const newDescription = editDescription 
         ? `${editDescription}\n\n${data.description}`
         : data.description;
       
-      console.log('New description length:', newDescription.length);
-      console.log('Setting edit description...');
       setEditDescription(newDescription);
-      console.log('Toast success');
       toast.success('Descrição gerada com sucesso!');
     } catch (error) {
       console.error('Erro ao gerar descrição:', error);
@@ -201,14 +217,25 @@ export default function ManageCategoriesModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col relative"
+        style={{
+          width: `${modalWidth}px`,
+          height: `${modalHeight}vh`,
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b">
+        <div className="flex justify-between items-center p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold">Gerenciar Categorias</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+            title="Fechar (Esc)"
           >
             ✕
           </button>
@@ -219,7 +246,7 @@ export default function ManageCategoriesModal({
           {!selectedCategory ? (
             // Lista de categorias
             <div className="w-full flex flex-col">
-              <div className="p-6 border-b">
+              <div className="p-6">
                 <Button
                   size="sm"
                   variant="primary"
@@ -232,7 +259,7 @@ export default function ManageCategoriesModal({
                 </Button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-6 space-y-3">
+              <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-3">
                 {isLoading ? (
                   <div className="text-center text-gray-500">Carregando categorias...</div>
                 ) : categories.length === 0 ? (
@@ -257,7 +284,7 @@ export default function ManageCategoriesModal({
             // Detalhes da categoria
             <div className="w-full flex flex-col">
               {/* Buttons */}
-              <div className="flex gap-2 p-6 border-b">
+              <div className="flex gap-2 p-6 border-b border-gray-200">
                 <Button
                   size="sm"
                   variant="ghost"
@@ -377,6 +404,13 @@ export default function ManageCategoriesModal({
             </div>
           )}
         </div>
+
+        {/* Resize handle */}
+        <div
+          onMouseDown={() => setIsResizing(true)}
+          className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize bg-gradient-to-tl from-gray-300 to-transparent rounded-tl-lg hover:from-gray-400 transition-colors"
+          title="Arraste para redimensionar"
+        />
       </div>
     </div>
   );
