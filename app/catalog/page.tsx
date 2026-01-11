@@ -443,26 +443,23 @@ function CatalogContent() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 universe_id: selectedUniverseId,
-                slug: categoryData.slug,
-                label: categoryData.label,
-                description: categoryData.description,
-                prefix: categoryData.prefix,
+                ...categoryData,
               }),
             });
-            console.log('[DEBUG] Resposta da API:', response.status, response.ok);
-
+            console.log('[DEBUG] Response status:', response.status);
+            const responseData = await response.json();
+            console.log('[DEBUG] Response data:', responseData);
             if (!response.ok) {
-              const error = await response.json();
-              toast.error(error.error || 'Erro ao criar categoria');
+              toast.error(responseData.error || 'Erro ao criar categoria');
               return;
             }
 
             toast.success('Categoria criada com sucesso!');
-            loadCatalogData();
             setShowCategoryModal(false);
+            loadCatalogData();
           } catch (error) {
-            console.error('Erro ao salvar categoria:', error);
-            toast.error('Erro ao criar categoria');
+            console.error('[DEBUG] Erro ao salvar categoria:', error);
+            toast.error(error.message || 'Erro ao criar categoria');
           }
         }}
       />
