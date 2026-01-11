@@ -90,11 +90,14 @@ export default function ManageCategoriesModal({
     }
   }, [isOpen, initialModalSize.width]);
 
-  // Reset modal size when modal closes
+  // Reset modal size and selected category when modal closes
   useEffect(() => {
     if (!isOpen) {
       setModalSize({ width: 0, height: 0 });
       setInitialModalSize({ width: 0, height: 0 });
+      setSelectedCategory(null);
+      setIsEditing(false);
+      setEditDescription('');
     }
   }, [isOpen]);
 
