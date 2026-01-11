@@ -20,6 +20,7 @@ import { EpisodesDropdown } from "@/app/components/ui/EpisodesDropdown";
 import FichaModal from "@/app/components/catalog/FichaModal";
 import WorldModal from "@/app/components/catalog/WorldModal";
 import CategoryModal from "@/app/components/catalog/CategoryModal";
+import ManageCategoriesModal from "@/app/components/catalog/ManageCategoriesModal";
 import { NewFichaModal } from "@/app/components/catalog/modals/NewFichaModal";
 import FichaCard from "@/app/components/shared/FichaCard";
 import FichaViewModal from "@/app/components/shared/FichaViewModal";
@@ -262,7 +263,7 @@ function CatalogContent() {
             <Button
               size="sm"
               variant="ghost"
-              onClick={() => setShowCategoryModal(true)}
+              onClick={() => setShowManageCategoriesModal(true)}
               disabled={!selectedUniverseId}
               icon={
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -462,6 +463,13 @@ function CatalogContent() {
             toast.error(error?.message || 'Erro ao criar categoria');
           }
         }}
+      />
+
+      <ManageCategoriesModal
+        isOpen={showManageCategoriesModal}
+        onClose={() => setShowManageCategoriesModal(false)}
+        universeId={selectedUniverseId}
+        onCategoryDeleted={loadCatalogData}
       />
 
       <FichaViewModal
