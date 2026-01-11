@@ -436,6 +436,7 @@ function CatalogContent() {
         category={null}
         onSave={async (categoryData) => {
           try {
+            console.log('[DEBUG] Salvando categoria:', categoryData);
             const response = await fetch('/api/categories', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -447,6 +448,7 @@ function CatalogContent() {
                 prefix: categoryData.prefix,
               }),
             });
+            console.log('[DEBUG] Resposta da API:', response.status, response.ok);
 
             if (!response.ok) {
               const error = await response.json();
