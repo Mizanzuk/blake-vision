@@ -103,10 +103,16 @@ export default function ManageCategoriesModal({
   }
 
   async function handleGenerateWithAI() {
-    if (!selectedCategory) return;
+    console.log('handleGenerateWithAI called');
+    if (!selectedCategory) {
+      console.log('No selectedCategory');
+      return;
+    }
 
     try {
+      console.log('Starting AI generation...');
       setIsLoading(true);
+      console.log('Making fetch request to /api/generate-description');
       const response = await fetch('/api/generate-description', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -118,18 +124,25 @@ export default function ManageCategoriesModal({
       });
 
       if (!response.ok) {
+        console.log('Response not OK:', response.status);
         const data = await response.json();
+        console.log('Error data:', data);
         toast.error(data.error || 'Erro ao gerar descrição');
         return;
       }
 
+      console.log('Response OK, parsing JSON...');
       const data = await response.json();
+      console.log('Received description length:', data.description.length);
       // Complementar a descrição existente
       const newDescription = editDescription 
         ? `${editDescription}\n\n${data.description}`
         : data.description;
       
+      console.log('New description length:', newDescription.length);
+      console.log('Setting edit description...');
       setEditDescription(newDescription);
+      console.log('Toast success');
       toast.success('Descrição gerada com sucesso!');
     } catch (error) {
       console.error('Erro ao gerar descrição:', error);
