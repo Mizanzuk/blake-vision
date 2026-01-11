@@ -248,8 +248,8 @@ export default function ManageCategoriesModal({
         style={modalSize.width > 0 ? { width: `${modalSize.width}px`, height: `${modalSize.height}px`, maxWidth: '90vw', maxHeight: '90vh', overflow: 'visible' } : { overflow: 'visible' }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-border-light-default dark:border-border-dark-default">
+        {/* Header - sem border */}
+        <div className="flex justify-between items-center p-6">
           <h2 className="text-xl font-semibold">Gerenciar Categorias</h2>
           <button
             onClick={onClose}
@@ -301,8 +301,8 @@ export default function ManageCategoriesModal({
           ) : (
             // Detalhes da categoria
             <div className="w-full flex flex-col">
-              {/* Buttons */}
-              <div className="flex gap-2 p-6 border-b border-border-light-default dark:border-border-dark-default">
+              {/* Buttons - sem border */}
+              <div className="flex gap-2 p-6">
                 <Button
                   size="sm"
                   variant="ghost"
@@ -310,29 +310,10 @@ export default function ManageCategoriesModal({
                 >
                   ← Voltar
                 </Button>
-                {!isEditing && (
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => setIsEditing(true)}
-                  >
-                    Editar
-                  </Button>
-                )}
-                {!isBaseCategory(selectedCategory.slug) && !isEditing && (
-                  <Button
-                    size="sm"
-                    variant="primary"
-                    className="bg-red-600 hover:bg-red-700"
-                    onClick={handleDeleteCategory}
-                  >
-                    Apagar
-                  </Button>
-                )}
               </div>
 
               {/* Content */}
-              <div className="flex-1 overflow-y-auto p-6">
+              <div className="flex-1 overflow-y-auto px-6 pb-6">
                 <div className="space-y-4">
                   {/* Nome (não editável) */}
                   <div>
@@ -343,7 +324,7 @@ export default function ManageCategoriesModal({
                       type="text"
                       value={selectedCategory.label}
                       disabled
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-light-raised dark:bg-dark-raised text-gray-900 dark:text-gray-100"
                     />
                   </div>
 
@@ -356,7 +337,7 @@ export default function ManageCategoriesModal({
                       type="text"
                       value={selectedCategory.slug}
                       disabled
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-light-raised dark:bg-dark-raised text-gray-900 dark:text-gray-100"
                     />
                   </div>
 
@@ -369,7 +350,7 @@ export default function ManageCategoriesModal({
                       type="text"
                       value={selectedCategory.prefix || ''}
                       disabled
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-light-raised dark:bg-dark-raised text-gray-900 dark:text-gray-100"
                     />
                   </div>
 
@@ -382,41 +363,63 @@ export default function ManageCategoriesModal({
                       value={editDescription}
                       onChange={(e) => setEditDescription(e.target.value)}
                       disabled={!isEditing}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg min-h-[200px] disabled:bg-gray-50 disabled:text-gray-600"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg min-h-[200px] bg-light-raised dark:bg-dark-raised text-gray-900 dark:text-gray-100 disabled:opacity-75"
                       placeholder="Descrição da categoria..."
                     />
                   </div>
 
-                  {/* Botões de edição */}
-                  {isEditing && (
-                    <div className="flex gap-2 pt-4">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => {
-                          setIsEditing(false);
-                          setEditDescription(selectedCategory.description || '');
-                        }}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="primary"
-                        onClick={handleSaveDescription}
-                      >
-                        Salvar
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={handleGenerateWithAI}
-                        disabled={isLoading}
-                      >
-                        {isLoading ? 'Gerando...' : 'Gerar com IA'}
-                      </Button>
-                    </div>
-                  )}
+                  {/* Botões de edição/ação - alinhados à direita abaixo da descrição */}
+                  <div className="flex gap-2 pt-4 justify-end">
+                    {!isEditing ? (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => setIsEditing(true)}
+                        >
+                          Editar
+                        </Button>
+                        {!isBaseCategory(selectedCategory.slug) && (
+                          <Button
+                            size="sm"
+                            variant="primary"
+                            className="bg-red-600 hover:bg-red-700"
+                            onClick={handleDeleteCategory}
+                          >
+                            Apagar
+                          </Button>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setIsEditing(false);
+                            setEditDescription(selectedCategory.description || '');
+                          }}
+                        >
+                          Cancelar
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="primary"
+                          onClick={handleSaveDescription}
+                        >
+                          Salvar
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={handleGenerateWithAI}
+                          disabled={isLoading}
+                        >
+                          {isLoading ? 'Gerando...' : 'Gerar com IA'}
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
