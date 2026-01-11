@@ -311,7 +311,7 @@ export default function ManageCategoriesModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           universe_id: universeId,
-          name: newCategoryName.trim(),
+          label: newCategoryName.trim(),
           slug: newCategorySlug.trim().toLowerCase(),
           prefix: newCategoryPrefix.trim().toUpperCase(),
           description: newCategoryDescription.trim(),
