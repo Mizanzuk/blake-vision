@@ -309,7 +309,7 @@ export default function ManageCategoriesModal({
                     <div
                       key={category.slug}
                       onClick={() => handleSelectCategory(category)}
-                      className="p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                      className="p-4 border rounded-lg cursor-pointer bg-light-raised dark:bg-dark-raised hover:shadow-md transition-shadow"
                     >
                       <div className="font-semibold text-gray-900">{category.label}</div>
                       <div className="text-sm text-gray-600 line-clamp-2">
@@ -346,7 +346,7 @@ export default function ManageCategoriesModal({
                       type="text"
                       value={selectedCategory.label}
                       disabled
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-light-raised dark:bg-dark-raised text-gray-900 dark:text-gray-100"
+                      className="w-full px-0 py-2 bg-transparent text-gray-900 dark:text-gray-100 disabled:opacity-100"
                     />
                   </div>
 
@@ -359,7 +359,7 @@ export default function ManageCategoriesModal({
                       type="text"
                       value={selectedCategory.slug}
                       disabled
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-light-raised dark:bg-dark-raised text-gray-900 dark:text-gray-100"
+                      className="w-full px-0 py-2 bg-transparent text-gray-900 dark:text-gray-100 disabled:opacity-100"
                     />
                   </div>
 
@@ -372,7 +372,7 @@ export default function ManageCategoriesModal({
                       type="text"
                       value={selectedCategory.prefix || ''}
                       disabled
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-light-raised dark:bg-dark-raised text-gray-900 dark:text-gray-100"
+                      className="w-full px-0 py-2 bg-transparent text-gray-900 dark:text-gray-100 disabled:opacity-100"
                     />
                   </div>
 
@@ -385,7 +385,11 @@ export default function ManageCategoriesModal({
                       value={editDescription}
                       onChange={(e) => setEditDescription(e.target.value)}
                       disabled={!isEditing}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg min-h-[200px] bg-light-raised dark:bg-dark-raised text-gray-900 dark:text-gray-100 disabled:opacity-75"
+                      className={`w-full px-3 py-2 rounded-lg min-h-[200px] bg-light-raised dark:bg-dark-raised text-gray-900 dark:text-gray-100 transition-all ${
+                        isEditing
+                          ? 'border border-red-400 focus:border-red-500 focus:outline-none'
+                          : 'border border-transparent'
+                      }`}
                       placeholder="Descrição da categoria..."
                     />
                   </div>
