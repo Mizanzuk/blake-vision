@@ -259,14 +259,12 @@ export function NewFichaModal({
               onSelect={(id) => setFormData({ ...formData, world_id: id })}
             />
 
-            {/* Episódio (se o mundo tiver episódios) */}
-            {selectedWorld?.has_episodes && (
-              <EpisodioDropdown
-                value={formData.episode_id}
-                episodes={episodes || []}
-                onSelect={(id) => setFormData({ ...formData, episode_id: id })}
-              />
-            )}
+            {/* Episódio */}
+            <EpisodioDropdown
+              value={formData.episode_id}
+              episodes={episodes || []}
+              onSelect={(id) => setFormData({ ...formData, episode_id: id })}
+            />
 
             <Input
               label="Título"
@@ -348,14 +346,12 @@ export function NewFichaModal({
               onSelect={(id) => setFormData({ ...formData, world_id: id })}
             />
 
-            {/* Episódio (se o mundo tiver episódios) */}
-            {selectedWorld?.has_episodes && (
-              <EpisodioDropdown
-                value={formData.episode_id}
-                episodes={episodes || []}
-                onSelect={(id) => setFormData({ ...formData, episode_id: id })}
-              />
-            )}
+            {/* Episódio */}
+            <EpisodioDropdown
+              value={formData.episode_id}
+              episodes={episodes || []}
+              onSelect={(id) => setFormData({ ...formData, episode_id: id })}
+            />
 
             <Input
               label="Título"
@@ -402,14 +398,12 @@ export function NewFichaModal({
               onSelect={(id) => setFormData({ ...formData, world_id: id })}
             />
 
-            {/* Episódio (se o mundo tiver episódios) */}
-            {selectedWorld?.has_episodes && (
-              <EpisodioDropdown
-                value={formData.episode_id}
-                episodes={episodes || []}
-                onSelect={(id) => setFormData({ ...formData, episode_id: id })}
-              />
-            )}
+            {/* Episódio */}
+            <EpisodioDropdown
+              value={formData.episode_id}
+              episodes={episodes || []}
+              onSelect={(id) => setFormData({ ...formData, episode_id: id })}
+            />
 
             <Input
               label="Título"
@@ -448,14 +442,12 @@ export function NewFichaModal({
               onSelect={(id) => setFormData({ ...formData, world_id: id })}
             />
 
-            {/* Episódio (se o mundo tiver episódios) */}
-            {selectedWorld?.has_episodes && (
-              <EpisodioDropdown
-                value={formData.episode_id}
-                episodes={episodes || []}
-                onSelect={(id) => setFormData({ ...formData, episode_id: id })}
-              />
-            )}
+            {/* Episódio */}
+            <EpisodioDropdown
+              value={formData.episode_id}
+              episodes={episodes || []}
+              onSelect={(id) => setFormData({ ...formData, episode_id: id })}
+            />
 
             <Input
               label="Título"
