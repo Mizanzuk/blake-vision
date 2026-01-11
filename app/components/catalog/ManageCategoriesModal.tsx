@@ -102,6 +102,43 @@ export default function ManageCategoriesModal({
     }
   }
 
+  async function handleGenerateWithAI() {
+    if (!selectedCategory) return;
+
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/generate-description', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          categoryName: selectedCategory.label,
+          categorySlug: selectedCategory.slug,
+          existingDescription: editDescription,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        toast.error(data.error || 'Erro ao gerar descrição');
+        return;
+      }
+
+      const data = await response.json();
+      // Complementar a descrição existente
+      const newDescription = editDescription 
+        ? `${editDescription}\n\n${data.description}`
+        : data.description;
+      
+      setEditDescription(newDescription);
+      toast.success('Descrição gerada com sucesso!');
+    } catch (error) {
+      console.error('Erro ao gerar descrição:', error);
+      toast.error('Erro ao gerar descrição');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   async function handleDeleteCategory() {
     if (!selectedCategory || isBaseCategory(selectedCategory.slug)) return;
 
@@ -304,12 +341,10 @@ export default function ManageCategoriesModal({
                       <Button
                         size="sm"
                         variant="secondary"
-                        onClick={() => {
-                          // TODO: Gerar descrição com IA
-                          toast.info('Funcionalidade em desenvolvimento');
-                        }}
+                        onClick={handleGenerateWithAI}
+                        disabled={isLoading}
                       >
-                        Gerar com IA
+                        {isLoading ? 'Gerando...' : 'Gerar com IA'}
                       </Button>
                     </div>
                   )}
