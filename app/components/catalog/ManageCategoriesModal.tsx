@@ -25,6 +25,11 @@ export default function ManageCategoriesModal({
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editDescription, setEditDescription] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategorySlug, setNewCategorySlug] = useState('');
+  const [newCategoryPrefix, setNewCategoryPrefix] = useState('');
+  const [newCategoryDescription, setNewCategoryDescription] = useState('');
   const [isResizing, setIsResizing] = useState(false);
   const [justFinishedResizing, setJustFinishedResizing] = useState(false);
   const [modalSize, setModalSize] = useState({ width: 0, height: 0 });
@@ -251,6 +256,67 @@ export default function ManageCategoriesModal({
     }
   }
 
+  function handleStartCreating() {
+    setIsCreating(true);
+    setNewCategoryName('');
+    setNewCategorySlug('');
+    setNewCategoryPrefix('');
+    setNewCategoryDescription('');
+  }
+
+  function handleCancelCreating() {
+    setIsCreating(false);
+    setNewCategoryName('');
+    setNewCategorySlug('');
+    setNewCategoryPrefix('');
+    setNewCategoryDescription('');
+  }
+
+  async function handleCreateCategory() {
+    if (!newCategoryName.trim()) {
+      toast.error('Nome da categoria é obrigatório');
+      return;
+    }
+    if (!newCategorySlug.trim()) {
+      toast.error('Slug da categoria é obrigatório');
+      return;
+    }
+    if (!newCategoryPrefix.trim()) {
+      toast.error('Prefixo da categoria é obrigatório');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          universe_id: universeId,
+          name: newCategoryName.trim(),
+          slug: newCategorySlug.trim().toLowerCase(),
+          prefix: newCategoryPrefix.trim().toUpperCase(),
+          description: newCategoryDescription.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        toast.error(data.error || 'Erro ao criar categoria');
+        return;
+      }
+
+      toast.success('Categoria criada com sucesso!');
+      handleCancelCreating();
+      loadCategories();
+    } catch (error) {
+      console.error('Erro ao criar categoria:', error);
+      toast.error('Erro ao criar categoria');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   if (!isOpen) return null;
 
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -284,16 +350,16 @@ export default function ManageCategoriesModal({
 
         {/* Content */}
         <div className="flex-1 overflow-hidden flex">
-          {!selectedCategory ? (
+          {isCreating ? (
+            <div className="w-full flex flex-col"><div className="flex gap-2 p-6"><Button size="sm" variant="ghost" onClick={handleCancelCreating}>Voltar</Button></div><div className="flex-1 overflow-y-auto px-6 pb-6"><div className="space-y-4"><div><label className="block text-sm font-medium text-gray-700 mb-1">Nome</label><input type="text" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-light-raised dark:bg-dark-raised text-gray-900 dark:text-gray-100 focus:outline-none focus:border-red-400" placeholder="Nome da categoria" /></div><div><label className="block text-sm font-medium text-gray-700 mb-1">Slug</label><input type="text" value={newCategorySlug} onChange={(e) => setNewCategorySlug(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-light-raised dark:bg-dark-raised text-gray-900 dark:text-gray-100 focus:outline-none focus:border-red-400" placeholder="slug-da-categoria" /></div><div><label className="block text-sm font-medium text-gray-700 mb-1">Prefixo</label><input type="text" value={newCategoryPrefix} onChange={(e) => setNewCategoryPrefix(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-light-raised dark:bg-dark-raised text-gray-900 dark:text-gray-100 focus:outline-none focus:border-red-400" placeholder="CAT" maxLength={3} /></div><div><label className="block text-sm font-medium text-gray-700 mb-1">Descricao</label><textarea value={newCategoryDescription} onChange={(e) => setNewCategoryDescription(e.target.value)} className="w-full px-3 py-2 border border-red-400 rounded-lg min-h-[200px] bg-light-raised dark:bg-dark-raised text-gray-900 dark:text-gray-100 focus:outline-none focus:border-red-500" placeholder="Descricao da categoria" /></div><div className="flex gap-2 pt-4 justify-end"><Button size="sm" variant="ghost" onClick={handleCancelCreating} disabled={isLoading}>Cancelar</Button><Button size="sm" variant="primary" onClick={handleCreateCategory} disabled={isLoading}>{isLoading ? 'Criando...' : 'Criar'}</Button></div></div></div></div>
+          ) : !selectedCategory ? (
             // Lista de categorias
             <div className="w-full flex flex-col">
               <div className="p-6">
                 <Button
                   size="sm"
                   variant="primary"
-                  onClick={() => {
-                    toast.info('Funcionalidade em desenvolvimento');
-                  }}
+                  onClick={handleStartCreating}
                 >
                   + Nova Categoria
                 </Button>
