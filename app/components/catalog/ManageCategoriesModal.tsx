@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/app/components/ui';
 import { toast } from 'sonner';
 import type { Category } from '@/app/types';
@@ -25,9 +25,10 @@ export default function ManageCategoriesModal({
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editDescription, setEditDescription] = useState('');
-  const [modalWidth, setModalWidth] = useState(896);
-  const [modalHeight, setModalHeight] = useState(90);
   const [isResizing, setIsResizing] = useState(false);
+  const [justFinishedResizing, setJustFinishedResizing] = useState(false);
+  const [modalSize, setModalSize] = useState({ width: 0, height: 0 });
+  const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -37,8 +38,10 @@ export default function ManageCategoriesModal({
 
   // Fechar modal ao pressionar Esc
   useEffect(() => {
+    if (!isOpen) return;
+
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === 'Escape') {
         onClose();
       }
     }
@@ -48,25 +51,41 @@ export default function ManageCategoriesModal({
 
   // Redimensionamento do modal
   useEffect(() => {
-    function handleMouseMove(e: MouseEvent) {
-      if (!isResizing) return;
-      setModalWidth(Math.max(600, e.clientX));
-      setModalHeight(Math.max(400, window.innerHeight - e.clientY));
-    }
+    if (!isOpen || !isResizing) return;
 
-    function handleMouseUp() {
+    const handleMouseMove = (e: MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!modalRef.current) return;
+      const rect = modalRef.current.getBoundingClientRect();
+      const newWidth = Math.max(500, e.clientX - rect.left);
+      const newHeight = Math.max(400, e.clientY - rect.top);
+      setModalSize({ width: newWidth, height: newHeight });
+    };
+
+    const handleMouseUp = (e: MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
       setIsResizing(false);
-    }
+      setJustFinishedResizing(true);
+      setTimeout(() => setJustFinishedResizing(false), 100);
+    };
 
-    if (isResizing) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-      return () => {
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('mouseup', handleMouseUp);
-      };
+    document.addEventListener('mousemove', handleMouseMove, { capture: true });
+    document.addEventListener('mouseup', handleMouseUp, { capture: true });
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove, { capture: true });
+      document.removeEventListener('mouseup', handleMouseUp, { capture: true });
+    };
+  }, [isOpen, isResizing]);
+
+  // Reset modal size when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setModalSize({ width: 0, height: 0 });
     }
-  }, [isResizing]);
+  }, [isOpen]);
 
   async function loadCategories() {
     try {
@@ -126,13 +145,11 @@ export default function ManageCategoriesModal({
       toast.success('Categoria atualizada com sucesso!');
       setIsEditing(false);
       
-      // Atualizar a categoria na lista
       setSelectedCategory({
         ...selectedCategory,
         description: editDescription,
       });
       
-      // Recarregar categorias
       loadCategories();
     } catch (error) {
       console.error('Erro ao atualizar categoria:', error);
@@ -164,7 +181,6 @@ export default function ManageCategoriesModal({
       }
 
       const data = await response.json();
-      // Complementar a descrição existente
       const newDescription = editDescription 
         ? `${editDescription}\n\n${data.description}`
         : data.description;
@@ -182,7 +198,6 @@ export default function ManageCategoriesModal({
   async function handleDeleteCategory() {
     if (!selectedCategory || isBaseCategory(selectedCategory.slug)) return;
 
-    // Confirmar exclusão
     const confirmed = window.confirm(
       `Tem certeza que deseja apagar a categoria "${selectedCategory.label}"? Todas as fichas desta categoria serão deletadas.`
     );
@@ -216,21 +231,25 @@ export default function ManageCategoriesModal({
 
   if (!isOpen) return null;
 
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (!isResizing && !justFinishedResizing && e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
     <div 
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-      onClick={onClose}
+      onClick={handleBackdropClick}
     >
       <div 
-        className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col relative"
-        style={{
-          width: `${modalWidth}px`,
-          height: `${modalHeight}vh`,
-        }}
+        ref={modalRef}
+        className="bg-light-raised dark:bg-dark-raised rounded-lg shadow-lg overflow-hidden flex flex-col relative"
+        style={modalSize.width > 0 ? { width: `${modalSize.width}px`, height: `${modalSize.height}px`, maxWidth: '90vw', maxHeight: '90vh', overflow: 'visible' } : { overflow: 'visible' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-200">
+        <div className="flex justify-between items-center p-6 border-b border-border-light-default dark:border-border-dark-default">
           <h2 className="text-xl font-semibold">Gerenciar Categorias</h2>
           <button
             onClick={onClose}
@@ -251,7 +270,6 @@ export default function ManageCategoriesModal({
                   size="sm"
                   variant="primary"
                   onClick={() => {
-                    // TODO: Abrir modal de criar nova categoria
                     toast.info('Funcionalidade em desenvolvimento');
                   }}
                 >
@@ -284,7 +302,7 @@ export default function ManageCategoriesModal({
             // Detalhes da categoria
             <div className="w-full flex flex-col">
               {/* Buttons */}
-              <div className="flex gap-2 p-6 border-b border-gray-200">
+              <div className="flex gap-2 p-6 border-b border-border-light-default dark:border-border-dark-default">
                 <Button
                   size="sm"
                   variant="ghost"
@@ -405,12 +423,28 @@ export default function ManageCategoriesModal({
           )}
         </div>
 
-        {/* Resize handle */}
+        {/* Resize Handle */}
         <div
-          onMouseDown={() => setIsResizing(true)}
-          className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize bg-gradient-to-tl from-gray-300 to-transparent rounded-tl-lg hover:from-gray-400 transition-colors"
-          title="Arraste para redimensionar"
-        />
+          className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize group z-10"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsResizing(true);
+          }}
+        >
+          <svg
+            className="absolute bottom-1 right-1 w-3 h-3 text-gray-400 group-hover:text-gray-600 transition-colors pointer-events-none"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            <line x1="14" y1="14" x2="14" y2="10" />
+            <line x1="14" y1="14" x2="10" y2="14" />
+            <line x1="14" y1="8" x2="8" y2="14" />
+          </svg>
+        </div>
       </div>
     </div>
   );
