@@ -28,6 +28,7 @@ export default function ManageCategoriesModal({
   const [isResizing, setIsResizing] = useState(false);
   const [justFinishedResizing, setJustFinishedResizing] = useState(false);
   const [modalSize, setModalSize] = useState({ width: 0, height: 0 });
+  const [initialModalSize, setInitialModalSize] = useState({ width: 0, height: 0 });
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -80,10 +81,20 @@ export default function ManageCategoriesModal({
     };
   }, [isOpen, isResizing]);
 
+  // Armazenar tamanho inicial do modal
+  useEffect(() => {
+    if (isOpen && modalRef.current && initialModalSize.width === 0) {
+      const rect = modalRef.current.getBoundingClientRect();
+      setInitialModalSize({ width: rect.width, height: rect.height });
+      setModalSize({ width: rect.width, height: rect.height });
+    }
+  }, [isOpen, initialModalSize.width]);
+
   // Reset modal size when modal closes
   useEffect(() => {
     if (!isOpen) {
       setModalSize({ width: 0, height: 0 });
+      setInitialModalSize({ width: 0, height: 0 });
     }
   }, [isOpen]);
 
@@ -119,6 +130,10 @@ export default function ManageCategoriesModal({
   function handleBackToList() {
     setSelectedCategory(null);
     setIsEditing(false);
+    // Manter o tamanho do modal ao voltar para a lista
+    if (initialModalSize.width > 0) {
+      setModalSize(initialModalSize);
+    }
   }
 
   async function handleSaveDescription() {
@@ -249,7 +264,7 @@ export default function ManageCategoriesModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header - sem border */}
-        <div className="flex justify-between items-center p-6">
+        <div className="flex justify-between items-center px-6 py-3">
           <h2 className="text-xl font-semibold">Gerenciar Categorias</h2>
           <button
             onClick={onClose}
@@ -308,7 +323,7 @@ export default function ManageCategoriesModal({
                   variant="ghost"
                   onClick={handleBackToList}
                 >
-                  ← Voltar
+                  Voltar
                 </Button>
               </div>
 
