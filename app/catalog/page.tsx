@@ -437,6 +437,7 @@ function CatalogContent() {
         onSave={async (categoryData) => {
           try {
             console.log('[DEBUG] Salvando categoria:', categoryData);
+            console.log('[DEBUG] selectedUniverseId:', selectedUniverseId);
             const response = await fetch('/api/categories', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
