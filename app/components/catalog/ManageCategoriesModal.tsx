@@ -32,8 +32,9 @@ export default function ManageCategoriesModal({
   const [newCategoryDescription, setNewCategoryDescription] = useState('');
   const [isResizing, setIsResizing] = useState(false);
   const [justFinishedResizing, setJustFinishedResizing] = useState(false);
-  const [modalSize, setModalSize] = useState({ width: 0, height: 0 });
+  const [modalSize, setModalSize] = useState({ width: 800, height: 600 }); // Default size
   const [initialModalSize, setInitialModalSize] = useState({ width: 0, height: 0 });
+  const [hasMeasured, setHasMeasured] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,6 +43,7 @@ export default function ManageCategoriesModal({
       setSelectedCategory(null);
       setIsEditing(false);
       setEditDescription('');
+      setHasMeasured(false); // Reset measurement flag
       loadCategories();
     }
   }, [isOpen, universeId]);
@@ -92,12 +94,30 @@ export default function ManageCategoriesModal({
 
   // Armazenar tamanho inicial do modal
   useEffect(() => {
-    if (isOpen && modalRef.current && initialModalSize.width === 0) {
-      const rect = modalRef.current.getBoundingClientRect();
-      setInitialModalSize({ width: rect.width, height: rect.height });
-      setModalSize({ width: rect.width, height: rect.height });
+    if (isOpen && modalRef.current && !hasMeasured) {
+      // Use requestAnimationFrame para garantir que o DOM foi renderizado
+      const timer = setTimeout(() => {
+        if (modalRef.current) {
+          const rect = modalRef.current.getBoundingClientRect();
+          // Se o tamanho foi capturado corretamente, use-o; caso contrário, mantenha o padrão
+          if (rect.width > 100 && rect.height > 100) {
+            setInitialModalSize({ width: rect.width, height: rect.height });
+            setModalSize({ width: rect.width, height: rect.height });
+          }
+          setHasMeasured(true);
+        }
+      }, 50);
+      return () => clearTimeout(timer);
     }
-  }, [isOpen, initialModalSize.width]);
+  }, [isOpen, hasMeasured]);
+
+  // Reset hasMeasured quando o modal fecha
+  useEffect(() => {
+    if (!isOpen) {
+      setHasMeasured(false);
+      setInitialModalSize({ width: 0, height: 0 });
+    }
+  }, [isOpen]);
 
   // Reset modal size and selected category when modal closes
   useEffect(() => {
@@ -389,8 +409,16 @@ export default function ManageCategoriesModal({
     >
       <div 
         ref={modalRef}
-        className="bg-light-raised dark:bg-dark-raised rounded-lg shadow-lg overflow-hidden flex flex-col relative"
-        style={modalSize.width > 0 ? { width: `${modalSize.width}px`, height: `${modalSize.height}px`, maxWidth: '90vw', maxHeight: '90vh', overflow: 'visible' } : { overflow: 'visible' }}
+        className="bg-light-raised dark:bg-dark-raised rounded-lg shadow-lg overflow-hidden flex flex-col relative transition-all"
+        style={{ 
+          width: `${modalSize.width}px`, 
+          height: `${modalSize.height}px`, 
+          maxWidth: '90vw', 
+          maxHeight: '90vh', 
+          overflow: 'visible',
+          minWidth: '500px',
+          minHeight: '400px'
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header - sem border */}
