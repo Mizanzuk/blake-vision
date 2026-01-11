@@ -258,7 +258,7 @@ function CatalogContent() {
               variant="ghost"
               className="flex items-center gap-2"
             >
-              ⚙ Categorias
+              ⊙ Categorias
             </Button>
             <Button
               onClick={() => setShowWorldFilter(!showWorldFilter)}
