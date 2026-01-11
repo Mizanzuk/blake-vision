@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/app/components/ui';
 import { toast } from 'sonner';
+import DeleteConfirmModal from '@/app/components/shared/DeleteConfirmModal';
 import type { Category } from '@/app/types';
 
 const BASE_CATEGORIES = ['conceito', 'evento', 'local', 'personagem', 'regra', 'roteiro', 'sinopse'];
@@ -35,6 +36,7 @@ export default function ManageCategoriesModal({
   const [modalSize, setModalSize] = useState({ width: 800, height: 600 }); // Default size
   const [initialModalSize, setInitialModalSize] = useState({ width: 0, height: 0 });
   const [hasMeasured, setHasMeasured] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -242,14 +244,13 @@ export default function ManageCategoriesModal({
     }
   }
 
+  function handleDeleteClick() {
+    if (!selectedCategory || isBaseCategory(selectedCategory.slug)) return;
+    setShowDeleteConfirm(true);
+  }
+
   async function handleDeleteCategory() {
     if (!selectedCategory || isBaseCategory(selectedCategory.slug)) return;
-
-    const confirmed = window.confirm(
-      `Tem certeza que deseja apagar a categoria "${selectedCategory.label}"? Todas as fichas desta categoria serão deletadas.`
-    );
-
-    if (!confirmed) return;
 
     try {
       const response = await fetch(`/api/categories/${selectedCategory.slug}`, {
@@ -480,7 +481,7 @@ export default function ManageCategoriesModal({
                 setEditDescription(selectedCategory.description || '');
               }}
               onSave={handleSaveDescription}
-              onDelete={handleDeleteCategory}
+              onDelete={handleDeleteClick}
               onDescriptionChange={setEditDescription}
               onGenerateWithAI={handleGenerateWithAI}
             />
@@ -510,6 +511,16 @@ export default function ManageCategoriesModal({
           </svg>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={showDeleteConfirm}
+        title="Excluir Categoria"
+        message={`Tem certeza que deseja apagar a categoria? Todas as fichas desta categoria serão deletadas permanentemente.`}
+        itemName={selectedCategory?.label}
+        onConfirm={handleDeleteCategory}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </div>
   );
 }
@@ -642,7 +653,7 @@ function CreateCategoryView({
             <Button
               size="sm"
               variant="primary"
-              onClick={onCreate}
+               onClick={onCreate}
               disabled={isLoading}
             >
               {isLoading ? 'Criando...' : 'Criar'}
@@ -858,4 +869,51 @@ function CategoryDetailView({
       </div>
     </div>
   );
+}
+
+// ============================================================================
+// Subcomponents
+// ============================================================================
+
+interface CreateCategoryViewProps {
+  newCategoryName: string;
+  newCategorySlug: string;
+  newCategoryPrefix: string;
+  newCategoryDescription: string;
+  isLoading: boolean;
+  onNameChange: (value: string) => void;
+  onSlugChange: (value: string) => void;
+  onPrefixChange: (value: string) => void;
+  onDescriptionChange: (value: string) => void;
+  onCancel: () => void;
+  onCreate: () => void;
+  onGenerateWithAI: () => void;
+}
+
+
+interface CategoryListViewProps {
+  categories: Category[];
+  isLoading: boolean;
+  onSelectCategory: (category: Category) => void;
+  onCreateNew: () => void;
+}
+
+
+// Utility functions
+function generateSlugFromName(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]/g, '');
+}
+
+function generatePrefixFromName(name: string): string {
+  return name
+    .toUpperCase()
+    .trim()
+    .split(/\s+/)
+    .map((word) => word[0])
+    .join('')
+    .substring(0, 3);
 }
