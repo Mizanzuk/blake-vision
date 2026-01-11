@@ -79,7 +79,7 @@ export function NewFichaModal({
         const response = await fetch(`/api/episodes?world_id=${formData.world_id}`);
         if (response.ok) {
           const data = await response.json();
-          setEpisodes(data);
+          setEpisodes(data.episodes || []);
         }
       } catch (error) {
         console.error("Error loading episodes:", error);
