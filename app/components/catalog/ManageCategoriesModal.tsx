@@ -33,6 +33,10 @@ export default function ManageCategoriesModal({
 
   useEffect(() => {
     if (isOpen) {
+      // Reset selected category when opening modal
+      setSelectedCategory(null);
+      setIsEditing(false);
+      setEditDescription('');
       loadCategories();
     }
   }, [isOpen, universeId]);
