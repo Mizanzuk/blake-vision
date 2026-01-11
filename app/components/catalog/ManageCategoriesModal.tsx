@@ -67,7 +67,14 @@ export default function ManageCategoriesModal({
   }
 
   async function handleSaveDescription() {
-    if (!selectedCategory) return;
+    console.log('[DEBUG] handleSaveDescription called');
+    console.log('[DEBUG] selectedCategory:', selectedCategory);
+    console.log('[DEBUG] universeId:', universeId);
+    console.log('[DEBUG] editDescription length:', editDescription.length);
+    if (!selectedCategory) {
+      console.log('[DEBUG] No selectedCategory');
+      return;
+    }
 
     try {
       const response = await fetch(`/api/categories/${selectedCategory.slug}`, {
@@ -80,11 +87,15 @@ export default function ManageCategoriesModal({
       });
 
       if (!response.ok) {
+        console.log('[DEBUG] Response not OK:', response.status);
         const data = await response.json();
+        console.log('[DEBUG] Error data:', data);
         toast.error(data.error || 'Erro ao atualizar categoria');
         return;
       }
+      console.log('[DEBUG] Response OK');
 
+      console.log('[DEBUG] Showing success toast');
       toast.success('Categoria atualizada com sucesso!');
       setIsEditing(false);
       
