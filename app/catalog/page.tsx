@@ -28,6 +28,7 @@ import NewConceptRuleModal from "@/app/components/shared/NewConceptRuleModal";
 import ConceptRuleViewModal from "@/app/components/shared/ConceptRuleViewModal";
 
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
+import { useUniverse } from "@/app/lib/contexts/UniverseContext";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
 import type { Universe, World, Ficha, Category } from "@/app/types";
@@ -45,7 +46,7 @@ function CatalogContent() {
   
   // Data
   const [universes, setUniverses] = useState<Universe[]>([]);
-  const [selectedUniverseId, setSelectedUniverseId] = useState<string>("");
+  const { selectedUniverseId, setSelectedUniverseId } = useUniverse();
   const [worlds, setWorlds] = useState<World[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [fichas, setFichas] = useState<Ficha[]>([]);
