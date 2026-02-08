@@ -110,6 +110,22 @@ export function WorldsDropdownSingle({
             </p>
           </div>
 
+          {/* Create New World Option */}
+          {onCreate && (
+            <div
+              className="flex items-center px-3 py-2 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors cursor-pointer border-b border-border-light-default dark:border-border-dark-default text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
+              onClick={() => {
+                onCreate();
+                setIsOpen(false);
+              }}
+            >
+              <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              <p className="text-sm font-medium">+ Criar novo mundo</p>
+            </div>
+          )}
+
           {/* World Options */}
           {worlds
             .filter(world => !world.is_root)
