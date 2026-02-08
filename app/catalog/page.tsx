@@ -107,6 +107,13 @@ function CatalogContent() {
     loadUniverses();
   }, []);
 
+  // Set default universe if not already set
+  useEffect(() => {
+    if (!selectedUniverseId && universes.length > 0) {
+      setSelectedUniverseId(universes[0].id);
+    }
+  }, [universes, selectedUniverseId, setSelectedUniverseId]);
+
   // Universe is now managed by UniverseContext
 
   // Load catalog data when universe changes
@@ -123,11 +130,7 @@ function CatalogContent() {
       
       if (response.ok) {
         setUniverses(data.universes || []);
-        
-        // Set first universe as default
-        if (data.universes && data.universes.length > 0) {
-          setSelectedUniverseId(data.universes[0].id);
-        }
+        // Don't set default here - let the other useEffect handle it
       } else {
         toast.error(data.error || t.errors.generic);
       }
