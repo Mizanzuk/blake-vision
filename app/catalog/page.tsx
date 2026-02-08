@@ -18,7 +18,7 @@ import { WorldsDropdown } from "@/app/components/ui/WorldsDropdown";
 import { TypesDropdown } from "@/app/components/ui/TypesDropdown";
 import { EpisodesDropdown } from "@/app/components/ui/EpisodesDropdown";
 import FichaModal from "@/app/components/catalog/FichaModal";
-import WorldModal from "@/app/components/catalog/WorldModal";
+import WorldModal from "@/app/components/projetos/WorldModal";
 import CategoryModal from "@/app/components/catalog/CategoryModal";
 import ManageCategoriesModal from "@/app/components/catalog/ManageCategoriesModal";
 import { NewFichaModal } from "@/app/components/catalog/modals/NewFichaModal";
@@ -445,19 +445,60 @@ function CatalogContent() {
         }}
       />
 
-      <WorldModal
-        isOpen={showWorldModal}
-        onClose={() => {
-          setShowWorldModal(false);
-          setSelectedWorld(null);
-        }}
-        world={selectedWorld}
-        onSave={async () => {
-          loadCatalogData();
-          setShowWorldModal(false);
-          setSelectedWorld(null);
-        }}
-      />
+      {showWorldModal && (
+        <WorldModal
+          world={selectedWorld}
+          universeId={selectedUniverseId}
+          onSave={async (worldData) => {
+            try {
+              const method = worldData.id ? "PUT" : "POST";
+              const response = await fetch("/api/worlds", {
+                method,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(worldData),
+              });
+
+              const data = await response.json();
+
+              if (response.ok) {
+                toast.success(worldData.id ? "Mundo atualizado" : "Mundo criado");
+                loadCatalogData();
+                setShowWorldModal(false);
+                setSelectedWorld(null);
+              } else {
+                toast.error(data.error || "Erro ao salvar mundo");
+              }
+            } catch (error) {
+              console.error("Error saving world:", error);
+              toast.error("Erro de rede ao salvar mundo");
+            }
+          }}
+          onDelete={async (id) => {
+            try {
+              const response = await fetch(`/api/worlds/${id}`, {
+                method: "DELETE",
+              });
+
+              if (response.ok) {
+                toast.success("Mundo deletado com sucesso");
+                loadCatalogData();
+                setShowWorldModal(false);
+                setSelectedWorld(null);
+              } else {
+                const data = await response.json();
+                toast.error(data.error || "Erro ao deletar mundo");
+              }
+            } catch (error) {
+              console.error("Error deleting world:", error);
+              toast.error("Erro de rede ao deletar mundo");
+            }
+          }}
+          onClose={() => {
+            setShowWorldModal(false);
+            setSelectedWorld(null);
+          }}
+        />
+      )}
 
       <CategoryModal
         isOpen={showCategoryModal}
