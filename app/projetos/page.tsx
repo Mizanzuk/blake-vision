@@ -48,6 +48,14 @@ export default function ProjetosPage() {
   const [showEpisodeModal, setShowEpisodeModal] = useState(false);
   const [selectedEpisode, setSelectedEpisode] = useState<any | null>(null);
   const [showViewModal, setShowViewModal] = useState(false);
+  const [confirmationModal, setConfirmationModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    isDangerous: boolean;
+    onConfirm: () => void;
+  } | null>(null);
+  const [fichaToDelete, setFichaToDelete] = useState<Ficha | null>(null);
   const [viewingFicha, setViewingFicha] = useState<Ficha | null>(null);
   const [showNewUniverseModal, setShowNewUniverseModal] = useState(false);
   const [newUniverseName, setNewUniverseName] = useState("");
@@ -418,24 +426,42 @@ export default function ProjetosPage() {
     }
   }
 
-  async function handleDeleteFicha(id: string) {
-    try {
-      const response = await fetch(`/api/fichas?id=${id}`, {
-        method: "DELETE",
-      });
+  function promptDeleteFicha(ficha: Ficha) {
+    setFichaToDelete(ficha);
+    setConfirmationModal({
+      isOpen: true,
+      title: "Deletar Item",
+      message: `Tem certeza que deseja deletar "${ficha.titulo}"? Esta ação não pode ser desfeita.`,
+      isDangerous: true,
+      onConfirm: async () => {
+        try {
+          const response = await fetch(`/api/fichas?id=${ficha.id}`, {
+            method: "DELETE",
+          });
 
-      if (response.ok) {
-        toast.success("Item deletado");
-        await loadFichas();
-        setShowConceptRuleModal(false);
-        setSelectedFicha(null);
-      } else {
-        const data = await response.json();
-        toast.error(data.error || "Erro ao deletar");
-      }
-    } catch (error) {
-      console.error("Error deleting ficha:", error);
-      toast.error("Erro de rede ao deletar");
+          if (response.ok) {
+            toast.success("Item deletado");
+            await loadFichas();
+            setShowConceptRuleModal(false);
+            setSelectedFicha(null);
+            setConfirmationModal(null);
+            setFichaToDelete(null);
+          } else {
+            const data = await response.json();
+            toast.error(data.error || "Erro ao deletar");
+          }
+        } catch (error) {
+          console.error("Error deleting ficha:", error);
+          toast.error("Erro de rede ao deletar");
+        }
+      },
+    });
+  }
+
+  async function handleDeleteFicha(id: string) {
+    const ficha = fichas.find(f => f.id === id);
+    if (ficha) {
+      promptDeleteFicha(ficha);
     }
   }
 

@@ -550,24 +550,34 @@ onDelete={(id, name) => {
             }
           }}
           onDelete={async (id) => {
-            try {
-              const response = await fetch(`/api/worlds/${id}`, {
-                method: "DELETE",
-              });
+            if (!selectedWorld) return;
+            setConfirmationModal({
+              isOpen: true,
+              title: "Deletar Mundo",
+              message: `Tem certeza que deseja deletar "${selectedWorld.nome}"? Esta ação não pode ser desfeita.`,
+              isDangerous: true,
+              onConfirm: async () => {
+                try {
+                  const response = await fetch(`/api/worlds/${id}`, {
+                    method: "DELETE",
+                  });
 
-              if (response.ok) {
-                toast.success("Mundo deletado com sucesso");
-                loadCatalogData();
-                setShowWorldModal(false);
-                setSelectedWorld(null);
-              } else {
-                const data = await response.json();
-                toast.error(data.error || "Erro ao deletar mundo");
-              }
-            } catch (error) {
-              console.error("Error deleting world:", error);
-              toast.error("Erro de rede ao deletar mundo");
-            }
+                  if (response.ok) {
+                    toast.success("Mundo deletado com sucesso");
+                    loadCatalogData();
+                    setShowWorldModal(false);
+                    setSelectedWorld(null);
+                    setConfirmationModal(null);
+                  } else {
+                    const data = await response.json();
+                    toast.error(data.error || "Erro ao deletar mundo");
+                  }
+                } catch (error) {
+                  console.error("Error deleting world:", error);
+                  toast.error("Erro de rede ao deletar mundo");
+                }
+              },
+            });
           }}
           onClose={() => {
             setShowWorldModal(false);
