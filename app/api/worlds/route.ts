@@ -193,7 +193,6 @@ export async function PUT(req: NextRequest) {
         is_root: is_root || false,
         has_episodes: has_episodes || false,
         ordem: ordem || null,
-        updated_at: new Date().toISOString(),
       })
       .eq("id", id)
       .eq("user_id", user.id)
