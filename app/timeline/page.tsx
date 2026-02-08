@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
+import { useUniverse } from "@/app/lib/contexts/UniverseContext";
 import {
   Button,
   Input,
@@ -37,7 +38,7 @@ export default function TimelinePage() {
   
   const [isLoading, setIsLoading] = useState(true);
   const [universes, setUniverses] = useState<Universe[]>([]);
-  const [selectedUniverseId, setSelectedUniverseId] = useState<string>("");
+  const { selectedUniverseId, setSelectedUniverseId } = useUniverse();
   const [events, setEvents] = useState<Ficha[]>([]);
   const [worlds, setWorlds] = useState<World[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -89,25 +90,9 @@ export default function TimelinePage() {
 
   useEffect(() => {
     loadUniverses();
-    
-    const saved = localStorage.getItem("selectedUniverseId");
-    if (saved) {
-      setSelectedUniverseId(saved);
-    }
   }, []);
 
-  // Listen for universe changes from other pages
-  useEffect(() => {
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === "selectedUniverseId" && event.newValue) {
-        console.log("🔄 Universo sincronizado de outra página:", event.newValue);
-        setSelectedUniverseId(event.newValue);
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
+  // Universe changes are now handled by UniverseContext
   useEffect(() => {
     if (selectedUniverseId) {
       loadTimelineData();
@@ -172,10 +157,9 @@ export default function TimelinePage() {
   function handleUniverseChange(value: string) {
     if (value === "create_new_universe") {
       setShowNewUniverseModal(true);
-      return;
+    } else {
+      setSelectedUniverseId(value);
     }
-    setSelectedUniverseId(value);
-    localStorage.setItem("selectedUniverseId", value);
   }
 
   async function handleCreateUniverse() {
@@ -201,7 +185,7 @@ export default function TimelinePage() {
       if (inserted) {
         setUniverses(prev => [...prev, inserted as Universe]);
         setSelectedUniverseId(inserted.id);
-        localStorage.setItem("selectedUniverseId", inserted.id);
+        setSelectedUniverseId(inserted.id);
         setShowNewUniverseModal(false);
         setNewUniverseName("");
         setNewUniverseDescription("");

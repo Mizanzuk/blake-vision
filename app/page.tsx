@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, FormEvent, KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
+import { useUniverse } from "@/app/lib/contexts/UniverseContext";
 import {
   Button,
   Input,
@@ -83,7 +84,7 @@ export default function HomePage() {
   
   // Universes
   const [universes, setUniverses] = useState<Universe[]>([]);
-  const [selectedUniverseId, setSelectedUniverseId] = useState<string>("");
+  const { selectedUniverseId, setSelectedUniverseId } = useUniverse();
   
   // Universe modals
   const [showCreateUniverseModal, setShowCreateUniverseModal] = useState(false);
@@ -128,11 +129,7 @@ export default function HomePage() {
       loadUniverses();
       loadSessions();
       
-      // Load selected universe from localStorage
-      const saved = localStorage.getItem("selectedUniverseId");
-      if (saved) {
-        setSelectedUniverseId(saved);
-      }
+      // Selected universe is now managed by UniverseContext
     }
   }, [userId]);
 

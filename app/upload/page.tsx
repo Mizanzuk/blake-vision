@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
+import { useUniverse } from "@/app/lib/contexts/UniverseContext";
 import {
   Button,
   Card,
@@ -43,7 +44,7 @@ export default function UploadPage() {
 
   // Data
   const [universes, setUniverses] = useState<Universe[]>([]);
-  const [selectedUniverseId, setSelectedUniverseId] = useState<string>("");
+  const { selectedUniverseId, setSelectedUniverseId } = useUniverse();
   const [worlds, setWorlds] = useState<World[]>([]);
   const [selectedWorldId, setSelectedWorldId] = useState<string>("");
   const [categories, setCategories] = useState<Category[]>([]);
@@ -99,28 +100,10 @@ export default function UploadPage() {
   }, []);
 
   useEffect(() => {
-    if (userId) {
-      loadUniverses();
-      
-      const saved = localStorage.getItem("selectedUniverseId");
-      if (saved) {
-        setSelectedUniverseId(saved);
-      }
-    }
-  }, [userId]);
-
-  // Listen for universe changes from other pages
-  useEffect(() => {
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === "selectedUniverseId" && event.newValue) {
-        console.log("🔄 Universo sincronizado de outra página:", event.newValue);
-        setSelectedUniverseId(event.newValue);
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    loadUniverses();
   }, []);
+
+  // Universe changes are now handled by UniverseContext
   useEffect(() => {
     if (selectedUniverseId) {
       loadCatalogData();
@@ -235,12 +218,11 @@ export default function UploadPage() {
     const value = e.target.value;
     if (value === "create_new_universe") {
       setShowNewUniverseModal(true);
-      return;
+    } else {
+      setSelectedUniverseId(value);
+      setSelectedWorldId("");
+      setUnitNumber("");
     }
-    setSelectedUniverseId(value);
-    localStorage.setItem("selectedUniverseId", value);
-    setSelectedWorldId("");
-    setUnitNumber("");
   }
 
   function handleWorldChange(e: ChangeEvent<HTMLSelectElement>) {
@@ -323,7 +305,7 @@ export default function UploadPage() {
       if (inserted) {
         setUniverses(prev => [...prev, inserted as Universe]);
         setSelectedUniverseId(inserted.id);
-        localStorage.setItem("selectedUniverseId", inserted.id);
+        setSelectedUniverseId(inserted.id);
         setShowNewUniverseModal(false);
         setNewUniverseName("");
         setNewUniverseDescription("");
@@ -568,7 +550,7 @@ export default function UploadPage() {
               selectedId={selectedUniverseId}
               onSelect={(id) => {
                 setSelectedUniverseId(id);
-                localStorage.setItem("selectedUniverseId", id);
+                setSelectedUniverseId(id);
                 setSelectedWorldId("");
                 setUnitNumber("");
               }}

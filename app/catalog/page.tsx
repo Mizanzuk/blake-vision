@@ -106,33 +106,7 @@ function CatalogContent() {
     loadUniverses();
   }, []);
 
-  // Load selected universe from localStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem("selectedUniverseId");
-    if (saved) {
-      setSelectedUniverseId(saved);
-    }
-  }, []);
-
-  // Listen for universe changes from other pages
-  useEffect(() => {
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === "selectedUniverseId" && event.newValue) {
-        console.log("🔄 Universo sincronizado de outra página:", event.newValue);
-        setSelectedUniverseId(event.newValue);
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
-
-  // Save selected universe to localStorage when it changes
-  useEffect(() => {
-    if (selectedUniverseId) {
-      localStorage.setItem("selectedUniverseId", selectedUniverseId);
-    }
-  }, [selectedUniverseId]);
+  // Universe is now managed by UniverseContext
 
   // Load catalog data when universe changes
   useEffect(() => {

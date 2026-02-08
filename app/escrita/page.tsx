@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import clsx from 'clsx';
 import { Header } from '@/app/components/layout/Header';
+import { useUniverse } from '@/app/lib/contexts/UniverseContext';
 import TiptapEditor from '@/components/TiptapEditor';
 import { FontFamily } from '@/components/FontSelector';
 import { createClient } from '@/app/lib/supabase/client';
@@ -52,7 +53,9 @@ function EscritaPageContent() {
   
   // Estados do Editor
   const [conteudo, setConteudo] = useState("");
-  const [universeId, setUniverseId] = useState<string>("");
+  const { selectedUniverseId, setSelectedUniverseId } = useUniverse();
+  const universeId = selectedUniverseId;
+  const setUniverseId = setSelectedUniverseId;
   const [universes, setUniverses] = useState<any[]>([]); // Lista de universos disponíveis
   const [worlds, setWorlds] = useState<any[]>([]); // Lista de mundos disponíveis
   const [worldId, setWorldId] = useState<string>("");
@@ -371,32 +374,7 @@ function EscritaPageContent() {
     loadUniversesAndWorlds();
   }, []);
 
-  // Load selected universe from localStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem("selectedUniverseId");
-    if (saved) {
-      setUniverseId(saved);
-    }
-  }, []);
-
-  // Listen for universe changes from other pages
-  useEffect(() => {
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === "selectedUniverseId" && event.newValue) {
-        console.log("🔄 Universo sincronizado de outra página:", event.newValue);
-        setUniverseId(event.newValue);
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
-  // Save selected universe to localStorage when it changes
-  useEffect(() => {
-    if (universeId) {
-      localStorage.setItem("selectedUniverseId", universeId);
-    }
-  }, [universeId]);
+  // Universe is now managed by UniverseContext
   
   // Event listeners para modal de metadados
   useEffect(() => {

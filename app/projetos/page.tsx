@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
-import { useUniverseSync } from "@/app/lib/hooks/useUniverseSync";
+import { useUniverse } from "@/app/lib/contexts/UniverseContext";
 import { Header } from "@/app/components/layout/Header";
 import { Button, Loading, EmptyState } from "@/app/components/ui";
 import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
@@ -30,7 +30,7 @@ export default function ProjetosPage() {
   const [universes, setUniverses] = useState<Universe[]>([]);
   const [worlds, setWorlds] = useState<World[]>([]);
   const [allWorlds, setAllWorlds] = useState<World[]>([]);
-  const [selectedUniverseId, setSelectedUniverseId] = useState<string>("");
+  const { selectedUniverseId, setSelectedUniverseId } = useUniverse();
   const [selectedWorldId, setSelectedWorldId] = useState<string>("");
   const [selectedTipos, setSelectedTipos] = useState<string[]>([]);
   const [fichas, setFichas] = useState<Ficha[]>([]);
@@ -62,29 +62,13 @@ export default function ProjetosPage() {
     loadUniverses();
     loadAllWorlds();
     
-    const savedUniverse = localStorage.getItem("selectedUniverseId");
-    if (savedUniverse) {
-      setSelectedUniverseId(savedUniverse);
-    }
-    
     const savedWorld = localStorage.getItem("selectedWorldId");
     if (savedWorld) {
       setSelectedWorldId(savedWorld);
     }
   }, []);
 
-  // Listen for universe changes from other pages
-  useEffect(() => {
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === "selectedUniverseId" && event.newValue) {
-        console.log("🔄 Universo sincronizado de outra página:", event.newValue);
-        setSelectedUniverseId(event.newValue);
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
+  // Universe changes are now handled by UniverseContext
   useEffect(() => {
     if (selectedUniverseId) {
       loadWorlds();

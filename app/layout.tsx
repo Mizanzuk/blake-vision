@@ -3,6 +3,7 @@ import { Inter, Merriweather, Source_Sans_3, JetBrains_Mono } from "next/font/go
 import Script from 'next/script';
 import "./styles/globals.css";
 import { Toaster } from "./components/ui";
+import { UniverseProvider } from "./lib/contexts/UniverseContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -66,7 +67,9 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${merriweather.variable} ${sourceSans.variable} ${jetbrainsMono.variable} antialiased`}
       >
-        {children}
+        <UniverseProvider>
+          {children}
+        </UniverseProvider>
         <Toaster />
         <Script src="/focus-mode.js" strategy="afterInteractive" />
       </body>
