@@ -312,9 +312,35 @@ function CatalogContent() {
               worlds={worlds}
               selectedIds={selectedWorldIds}
               onToggle={toggleWorldSelection}
-              onEdit={() => {}}
-              onDelete={() => {}}
-              onCreate={() => {}}
+              onEdit={(world) => {
+                setSelectedWorld(world);
+                setShowWorldModal(true);
+              }}
+              onDelete={(id, name) => {
+                confirm({
+                  title: 'Deletar Mundo',
+                  message: `Tem certeza que deseja deletar "${name}"?`,
+                  onConfirm: async () => {
+                    try {
+                      const response = await fetch(`/api/worlds/${id}`, {
+                        method: 'DELETE',
+                      });
+                      if (response.ok) {
+                        toast.success('Mundo deletado com sucesso');
+                        loadCatalogData();
+                      } else {
+                        toast.error('Erro ao deletar mundo');
+                      }
+                    } catch (error) {
+                      toast.error('Erro ao deletar mundo');
+                    }
+                  },
+                });
+              }}
+              onCreate={() => {
+                setSelectedWorld(null);
+                setShowWorldModal(true);
+              }}
             />
           </div>
 
