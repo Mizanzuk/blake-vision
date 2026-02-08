@@ -370,6 +370,21 @@ function EscritaPageContent() {
     loadTextos();
     loadUniversesAndWorlds();
   }, []);
+
+  // Load selected universe from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("selectedUniverseId");
+    if (saved) {
+      setUniverseId(saved);
+    }
+  }, []);
+
+  // Save selected universe to localStorage when it changes
+  useEffect(() => {
+    if (universeId) {
+      localStorage.setItem("selectedUniverseId", universeId);
+    }
+  }, [universeId]);
   
   // Event listeners para modal de metadados
   useEffect(() => {

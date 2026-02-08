@@ -106,6 +106,21 @@ function CatalogContent() {
     loadUniverses();
   }, []);
 
+  // Load selected universe from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("selectedUniverseId");
+    if (saved) {
+      setSelectedUniverseId(saved);
+    }
+  }, []);
+
+  // Save selected universe to localStorage when it changes
+  useEffect(() => {
+    if (selectedUniverseId) {
+      localStorage.setItem("selectedUniverseId", selectedUniverseId);
+    }
+  }, [selectedUniverseId]);
+
   // Load catalog data when universe changes
   useEffect(() => {
     if (selectedUniverseId) {
