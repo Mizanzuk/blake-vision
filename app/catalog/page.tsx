@@ -317,25 +317,27 @@ function CatalogContent() {
                 setShowWorldModal(true);
               }}
               onDelete={(id, name) => {
-                confirm({
-                  title: 'Deletar Mundo',
-                  message: `Tem certeza que deseja deletar "${name}"?`,
-                  onConfirm: async () => {
-                    try {
-                      const response = await fetch(`/api/worlds/${id}`, {
-                        method: 'DELETE',
-                      });
-                      if (response.ok) {
-                        toast.success('Mundo deletado com sucesso');
-                        loadCatalogData();
-                      } else {
-                        toast.error('Erro ao deletar mundo');
-                      }
-                    } catch (error) {
+                const confirmed = window.confirm(
+                  `Tem certeza que deseja deletar "${name}"?`
+                );
+                
+                if (!confirmed) return;
+                
+                (async () => {
+                  try {
+                    const response = await fetch(`/api/worlds/${id}`, {
+                      method: 'DELETE',
+                    });
+                    if (response.ok) {
+                      toast.success('Mundo deletado com sucesso');
+                      loadCatalogData();
+                    } else {
                       toast.error('Erro ao deletar mundo');
                     }
-                  },
-                });
+                  } catch (error) {
+                    toast.error('Erro ao deletar mundo');
+                  }
+                })();
               }}
               onCreate={() => {
                 setSelectedWorld(null);
