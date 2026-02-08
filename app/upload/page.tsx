@@ -848,16 +848,18 @@ export default function UploadPage() {
       )}
 
       {/* Modal de Criar Mundo */}
-      <WorldModal
-        isOpen={showNewWorldModal}
-        onClose={() => {
-          setShowNewWorldModal(false);
-          setWorldToEdit(null);
-        }}
-        world={worldToEdit}
-        onSave={handleSaveWorld}
-        onDelete={handleDeleteWorld}
-      />
+      {showNewWorldModal && (
+        <WorldModal
+          world={worldToEdit}
+          universeId={selectedUniverseId}
+          onClose={() => {
+            setShowNewWorldModal(false);
+            setWorldToEdit(null);
+          }}
+          onSave={handleSaveWorld}
+          onDelete={handleDeleteWorld}
+        />
+      )}
     </div>
   );
 }

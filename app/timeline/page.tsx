@@ -767,16 +767,18 @@ export default function TimelinePage() {
       )}
       
       {/* Modal de Criar Mundo */}
-      <WorldModal
-        isOpen={showCreateWorldModal}
-        onClose={() => {
-          setShowCreateWorldModal(false);
-          setWorldToEdit(null);
-        }}
-        world={worldToEdit}
-        onSave={handleSaveWorld}
-        onDelete={handleDeleteWorld}
-      />
+      {showCreateWorldModal && (
+        <WorldModal
+          world={worldToEdit}
+          universeId={selectedUniverseId}
+          onClose={() => {
+            setShowCreateWorldModal(false);
+            setWorldToEdit(null);
+          }}
+          onSave={handleSaveWorld}
+          onDelete={handleDeleteWorld}
+        />
+      )}
     </div>
   );
 }
