@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
+import { useUniverseSync } from "@/app/lib/hooks/useUniverseSync";
 import { Header } from "@/app/components/layout/Header";
 import { Button, Loading, EmptyState } from "@/app/components/ui";
 import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
@@ -72,6 +73,18 @@ export default function ProjetosPage() {
     }
   }, []);
 
+  // Listen for universe changes from other pages
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === "selectedUniverseId" && event.newValue) {
+        console.log("🔄 Universo sincronizado de outra página:", event.newValue);
+        setSelectedUniverseId(event.newValue);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
   useEffect(() => {
     if (selectedUniverseId) {
       loadWorlds();

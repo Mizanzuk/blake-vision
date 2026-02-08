@@ -96,6 +96,18 @@ export default function TimelinePage() {
     }
   }, []);
 
+  // Listen for universe changes from other pages
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === "selectedUniverseId" && event.newValue) {
+        console.log("🔄 Universo sincronizado de outra página:", event.newValue);
+        setSelectedUniverseId(event.newValue);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
   useEffect(() => {
     if (selectedUniverseId) {
       loadTimelineData();
