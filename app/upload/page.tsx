@@ -855,7 +855,6 @@ export default function UploadPage() {
           setWorldToEdit(null);
         }}
         world={worldToEdit}
-        universeId={selectedUniverseId}
         onSave={handleSaveWorld}
         onDelete={handleDeleteWorld}
       />

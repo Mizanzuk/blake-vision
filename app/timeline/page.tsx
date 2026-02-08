@@ -774,7 +774,6 @@ export default function TimelinePage() {
           setWorldToEdit(null);
         }}
         world={worldToEdit}
-        universeId={selectedUniverseId}
         onSave={handleSaveWorld}
         onDelete={handleDeleteWorld}
       />

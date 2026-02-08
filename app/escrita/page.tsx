@@ -3142,7 +3142,6 @@ function EscritaPageContent() {
           setWorldToEdit(null);
         }}
         world={worldToEdit}
-        universeId={universeId}
         onSave={handleSaveWorld}
         onDelete={handleDeleteWorld}
       />
@@ -3210,8 +3209,7 @@ function EscritaPageContent() {
         titulo={titulo}
         setTitulo={setTitulo}
         universes={universes}
-        universeId={universeId}
-        setUniverseId={setUniverseId}
+
         worlds={worlds}
         worldId={worldId}
         setWorldId={setWorldId}
