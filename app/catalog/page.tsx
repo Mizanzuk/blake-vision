@@ -325,7 +325,7 @@ function CatalogContent() {
                 
                 (async () => {
                   try {
-                    const response = await fetch(`/api/worlds/${id}`, {
+                    const response = await fetch(`/api/worlds?id=${id}`, {
                       method: 'DELETE',
                     });
                     if (response.ok) {
