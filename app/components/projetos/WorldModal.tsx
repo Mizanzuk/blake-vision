@@ -67,7 +67,7 @@ export default function WorldModal({
       nome: nome.trim(),
       descricao: descricao.trim() || null,
       has_episodes: hasEpisodes,
-      universe_id: universeId,
+      ...(world === null && { universe_id: universeId }), // Apenas enviar universe_id ao criar
     };
 
     onSave(worldData);
