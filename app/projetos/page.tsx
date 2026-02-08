@@ -239,6 +239,46 @@ export default function ProjetosPage() {
     }
   }
 
+  async function handleUpdateUniverse() {
+    if (!newUniverseName.trim()) {
+      toast.error("Dê um nome ao universo.");
+      return;
+    }
+    
+    if (!selectedUniverse) return;
+    
+    setIsCreatingUniverse(true);
+    
+    try {
+      const { data: updated, error: updateError } = await supabase
+        .from("universes")
+        .update({
+          nome: newUniverseName.trim(),
+          descricao: newUniverseDescription.trim() || null
+        })
+        .eq("id", selectedUniverse.id)
+        .select("*")
+        .single();
+      
+      if (updateError) throw updateError;
+      
+      if (updated) {
+        setUniverses(prev => prev.map(u => u.id === selectedUniverse.id ? (updated as Universe) : u));
+        toast.success("Universo atualizado com sucesso.");
+      }
+      
+      setShowEditUniverseModal(false);
+      setSelectedUniverse(null);
+      setNewUniverseName("");
+      setNewUniverseDescription("");
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao atualizar universo.");
+    } finally {
+      setIsCreatingUniverse(false);
+    }
+  }
+
   async function handleCreateUniverse() {
     if (!newUniverseName.trim()) {
       toast.error("Dê um nome ao universo.");
@@ -278,46 +318,6 @@ export default function ProjetosPage() {
   }
 
   function handleWorldChange(worldId: string) {
-
-  async function handleUpdateUniverse() {
-    if (!newUniverseName.trim()) {
-      toast.error("De um nome ao universo.");
-      return;
-    }
-    
-    if (!selectedUniverse) return;
-    
-    setIsCreatingUniverse(true);
-    
-    try {
-      const { data: updated, error: updateError } = await supabase
-        .from("universes")
-        .update({
-          nome: newUniverseName.trim(),
-          descricao: newUniverseDescription.trim() || null
-        })
-        .eq("id", selectedUniverse.id)
-        .select("*")
-        .single();
-      
-      if (updateError) throw updateError;
-      
-      if (updated) {
-        setUniverses(prev => prev.map(u => u.id === selectedUniverse.id ? (updated as Universe) : u));
-        toast.success("Universo atualizado com sucesso.");
-      }
-      
-      setShowEditUniverseModal(false);
-      setSelectedUniverse(null);
-      setNewUniverseName("");
-      setNewUniverseDescription("");
-    } catch (err) {
-      console.error(err);
-      toast.error("Erro ao atualizar universo.");
-    } finally {
-      setIsCreatingUniverse(false);
-    }
-  }
     setSelectedWorldId(worldId);
     if (worldId) {
       localStorage.setItem("selectedWorldId", worldId);
