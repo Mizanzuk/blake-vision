@@ -14,10 +14,11 @@ import {
 } from "@/app/components/ui";
 import { Header } from "@/app/components/layout/Header";
 import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
-import { WorldsDropdown } from "@/app/components/ui/WorldsDropdown";
+import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import { ViewModeDropdown } from "@/app/components/ui/ViewModeDropdown";
 import FichaModal from "@/app/components/catalog/FichaModal";
 import FichaViewModal from "@/app/components/shared/FichaViewModal";
+import WorldModal from "@/app/components/projetos/WorldModal";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
 import type { Universe, World, Category, Ficha } from "@/app/types";
@@ -63,6 +64,8 @@ export default function TimelinePage() {
   const [newUniverseName, setNewUniverseName] = useState("");
   const [newUniverseDescription, setNewUniverseDescription] = useState("");
   const [isCreatingUniverse, setIsCreatingUniverse] = useState(false);
+  const [showCreateWorldModal, setShowCreateWorldModal] = useState(false);
+  const [worldToEdit, setWorldToEdit] = useState<any>(null);
   
   // Fechar modal com ESC
   useEffect(() => {
@@ -365,6 +368,73 @@ export default function TimelinePage() {
   
   const groupKeys = Object.keys(groupedEvents);
 
+  const handleSaveWorld = async (worldData: any) => {
+    try {
+      const method = worldData.id ? 'PUT' : 'POST';
+      const response = await fetch('/api/worlds', {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(worldData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success(worldData.id ? 'Mundo atualizado' : 'Mundo criado');
+        // Recarregar mundos
+        const worldsRes = await fetch('/api/worlds');
+        const worldsData = await worldsRes.json();
+        if (worldsRes.ok && worldsData.worlds) {
+          setWorlds(worldsData.worlds);
+        }
+        if (!worldData.id) {
+          setSelectedWorldId(data.world.id);
+        }
+        setShowCreateWorldModal(false);
+        setWorldToEdit(null);
+      } else {
+        toast.error(data.error || 'Erro ao salvar mundo');
+      }
+    } catch (error) {
+      console.error('Error saving world:', error);
+      toast.error('Erro de rede ao salvar mundo');
+    }
+  };
+
+  const handleEditWorld = (world: any) => {
+    setWorldToEdit(world);
+    setShowCreateWorldModal(true);
+  };
+
+  async function handleDeleteWorld(id: string) {
+    try {
+      const response = await fetch(`/api/worlds?id=${id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        toast.success('Mundo deletado');
+        if (selectedWorldId === id) {
+          setSelectedWorldId('');
+        }
+        // Recarregar mundos
+        const worldsRes = await fetch('/api/worlds');
+        const worldsData = await worldsRes.json();
+        if (worldsRes.ok && worldsData.worlds) {
+          setWorlds(worldsData.worlds);
+        }
+        setShowCreateWorldModal(false);
+        setWorldToEdit(null);
+      } else {
+        const data = await response.json();
+        toast.error(data.error || 'Erro ao deletar mundo');
+      }
+    } catch (error) {
+      console.error('Error deleting world:', error);
+      toast.error('Erro de rede ao deletar mundo');
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center bg-light-base dark:bg-dark-base">
@@ -394,14 +464,17 @@ export default function TimelinePage() {
               onCreate={() => setShowNewUniverseModal(true)}
             />
             
-            <WorldsDropdown
+            <WorldsDropdownSingle
               label="MUNDOS"
               worlds={worlds}
-              selectedIds={selectedWorldId ? [selectedWorldId] : []}
-              onToggle={(id) => setSelectedWorldId(id)}
-              onEdit={() => {}}
-              onDelete={() => {}}
-              onCreate={() => {}}
+              selectedId={selectedWorldId}
+              onSelect={setSelectedWorldId}
+              onEdit={handleEditWorld}
+              onDelete={handleDeleteWorld}
+              onCreate={() => {
+                setWorldToEdit(null);
+                setShowCreateWorldModal(true);
+              }}
               disabled={!selectedUniverseId}
             />
             
@@ -692,6 +765,19 @@ export default function TimelinePage() {
           </div>
         </div>
       )}
+      
+      {/* Modal de Criar Mundo */}
+      <WorldModal
+        isOpen={showCreateWorldModal}
+        onClose={() => {
+          setShowCreateWorldModal(false);
+          setWorldToEdit(null);
+        }}
+        world={worldToEdit}
+        universeId={selectedUniverseId}
+        onSave={handleSaveWorld}
+        onDelete={handleDeleteWorld}
+      />
     </div>
   );
 }

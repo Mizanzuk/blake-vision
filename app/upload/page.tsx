@@ -13,6 +13,7 @@ import { Header } from "@/app/components/layout/Header";
 import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
 import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import { EpisodesDropdown } from "@/app/components/ui/EpisodesDropdown";
+import WorldModal from "@/app/components/projetos/WorldModal";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
 import type { Universe, World } from "@/app/types";
@@ -70,10 +71,7 @@ export default function UploadPage() {
   const [isCreatingUniverse, setIsCreatingUniverse] = useState(false);
 
   const [showNewWorldModal, setShowNewWorldModal] = useState(false);
-  const [newWorldName, setNewWorldName] = useState("");
-  const [newWorldDescription, setNewWorldDescription] = useState("");
-  const [newWorldHasEpisodes, setNewWorldHasEpisodes] = useState(true);
-  const [isCreatingWorld, setIsCreatingWorld] = useState(false);
+  const [worldToEdit, setWorldToEdit] = useState<any>(null);
   
   // Fechar modais com ESC
   useEffect(() => {
@@ -83,11 +81,9 @@ export default function UploadPage() {
           setShowNewUniverseModal(false);
           setNewUniverseName('');
           setNewUniverseDescription('');
-        } else if (showNewWorldModal && !isCreatingWorld) {
+        } else if (showNewWorldModal) {
           setShowNewWorldModal(false);
-          setNewWorldName('');
-          setNewWorldDescription('');
-          setNewWorldHasEpisodes(true);
+          setWorldToEdit(null);
         }
       }
     };
@@ -96,7 +92,7 @@ export default function UploadPage() {
       document.addEventListener('keydown', handleEscape);
       return () => document.removeEventListener('keydown', handleEscape);
     }
-  }, [showNewUniverseModal, showNewWorldModal, isCreatingUniverse, isCreatingWorld]);
+  }, [showNewUniverseModal, showNewWorldModal, isCreatingUniverse]);
 
   useEffect(() => {
     checkAuth();
@@ -323,70 +319,79 @@ export default function UploadPage() {
       }
     } catch (err) {
       console.error(err);
-      toast.error("Erro ao criar Universo.");
+      toast.error("Erro inesperado ao criar Universo.");
     } finally {
       setIsCreatingUniverse(false);
     }
   }
 
-  async function handleCreateWorld() {
-    if (!newWorldName.trim()) {
-      toast.error("Dê um nome ao novo Mundo.");
-      return;
-    }
-    if (!selectedUniverseId) {
-      toast.error("Selecione um Universo primeiro.");
-      return;
-    }
-    
-    setIsCreatingWorld(true);
-    
+  const handleSaveWorld = async (worldData: any) => {
     try {
-      const baseId = newWorldName.trim()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "_")
-        .replace(/^_+|_+$/g, "");
-      const newId = `${baseId}_${Date.now().toString().slice(-4)}`;
-      
-      const payload: any = {
-        id: newId,
-        nome: newWorldName.trim(),
-        descricao: newWorldDescription.trim() || null,
-        has_episodes: newWorldHasEpisodes,
-        tipo: "mundo_ficcional",
-        universe_id: selectedUniverseId
-      };
-      
-      const { data, error } = await supabase
-        .from("worlds")
-        .insert([payload])
-        .select("*");
-      
-      if (error) {
-        console.error(error);
-        toast.error("Erro ao criar novo Mundo.");
-        return;
-      }
-      
-      const inserted = (data?.[0] || null) as World | null;
-      if (inserted) {
-        loadCatalogData();
-        setSelectedWorldId(inserted.id);
+      const method = worldData.id ? 'PUT' : 'POST';
+      const response = await fetch('/api/worlds', {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(worldData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success(worldData.id ? 'Mundo atualizado' : 'Mundo criado');
+        // Recarregar mundos
+        const worldsRes = await fetch('/api/worlds');
+        const worldsData = await worldsRes.json();
+        if (worldsRes.ok && worldsData.worlds) {
+          setWorlds(worldsData.worlds);
+        }
+        if (!worldData.id) {
+          setSelectedWorldId(data.world.id);
+        }
         setShowNewWorldModal(false);
-        setNewWorldName("");
-        setNewWorldDescription("");
-        setNewWorldHasEpisodes(true);
-        toast.success("Novo Mundo criado com sucesso.");
+        setWorldToEdit(null);
+      } else {
+        toast.error(data.error || 'Erro ao salvar mundo');
       }
-    } catch (err) {
-      console.error(err);
-      toast.error("Erro inesperado ao criar Mundo.");
-    } finally {
-      setIsCreatingWorld(false);
+    } catch (error) {
+      console.error('Error saving world:', error);
+      toast.error('Erro de rede ao salvar mundo');
+    }
+  };
+
+  const handleEditWorld = (world: any) => {
+    setWorldToEdit(world);
+    setShowNewWorldModal(true);
+  };
+
+  async function handleDeleteWorld(id: string) {
+    try {
+      const response = await fetch(`/api/worlds?id=${id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        toast.success('Mundo deletado');
+        if (selectedWorldId === id) {
+          setSelectedWorldId('');
+        }
+        // Recarregar mundos
+        const worldsRes = await fetch('/api/worlds');
+        const worldsData = await worldsRes.json();
+        if (worldsRes.ok && worldsData.worlds) {
+          setWorlds(worldsData.worlds);
+        }
+        setShowNewWorldModal(false);
+        setWorldToEdit(null);
+      } else {
+        const data = await response.json();
+        toast.error(data.error || 'Erro ao deletar mundo');
+      }
+    } catch (error) {
+      console.error('Error deleting world:', error);
+      toast.error('Erro de rede ao deletar mundo');
     }
   }
+
 
   async function handleExtractFichas() {
     if (!userId) {
@@ -567,7 +572,10 @@ export default function UploadPage() {
                 onSelect={(id) => {
                   setSelectedWorldId(id);
                 }}
+                onEdit={handleEditWorld}
+                onDelete={handleDeleteWorld}
                 onCreate={() => {
+                  setWorldToEdit(null);
                   setShowNewWorldModal(true);
                 }}
               />
@@ -839,79 +847,18 @@ export default function UploadPage() {
         </div>
       )}
 
-      {/* Modal Novo Mundo */}
-      {showNewWorldModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-          onClick={() => setShowNewWorldModal(false)}
-        >
-          <form
-            onSubmit={e => {
-              e.preventDefault();
-              handleCreateWorld();
-            }}
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md max-h-[90vh] overflow-auto border border-border-light-default dark:border-border-dark-default rounded-lg p-6 bg-light-base dark:bg-dark-base space-y-4 mx-4"
-          >
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold">Novo Mundo</h3>
-              <button
-                type="button"
-                onClick={() => setShowNewWorldModal(false)}
-                className="text-2xl leading-none"
-              >
-                &times;
-              </button>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold mb-2">Nome</label>
-              <input
-                className="w-full rounded-md bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default px-3 py-2 text-sm"
-                value={newWorldName}
-                onChange={(e) => setNewWorldName(e.target.value)}
-                placeholder="Ex: Arquivos Vermelhos"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold mb-2">Descrição</label>
-              <textarea
-                className="w-full rounded-md bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default px-3 py-2 text-sm min-h-[140px]"
-                value={newWorldDescription}
-                onChange={(e) => setNewWorldDescription(e.target.value)}
-                placeholder="Resumo do Mundo…"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="has-episodes"
-                checked={newWorldHasEpisodes}
-                onChange={(e) => setNewWorldHasEpisodes(e.target.checked)}
-                className="w-4 h-4 rounded"
-              />
-              <label htmlFor="has-episodes" className="text-sm">
-                Este mundo possui episódios
-              </label>
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setShowNewWorldModal(false)}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={isCreatingWorld}
-              >
-                {isCreatingWorld ? "Criando..." : "Salvar"}
-              </Button>
-            </div>
-          </form>
-        </div>
-      )}
+      {/* Modal de Criar Mundo */}
+      <WorldModal
+        isOpen={showNewWorldModal}
+        onClose={() => {
+          setShowNewWorldModal(false);
+          setWorldToEdit(null);
+        }}
+        world={worldToEdit}
+        universeId={selectedUniverseId}
+        onSave={handleSaveWorld}
+        onDelete={handleDeleteWorld}
+      />
     </div>
   );
 }

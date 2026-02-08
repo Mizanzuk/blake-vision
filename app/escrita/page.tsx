@@ -1211,41 +1211,71 @@ function EscritaPageContent() {
   }
   
   const handleSaveWorld = async (worldData: any) => {
-    if (!universeId) {
-      toast.error('Selecione um universo primeiro');
-      return;
-    }
-    
     try {
-      // Remover id se existir (criação não deve ter id)
-      const { id, ...dataToSend } = worldData;
+      const method = worldData.id ? 'PUT' : 'POST';
       const response = await fetch('/api/worlds', {
-        method: 'POST',
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...dataToSend, universe_id: universeId }),
+        body: JSON.stringify(worldData),
       });
-      
+
       const data = await response.json();
-      console.log('[handleSaveWorld] Response:', response.status, data);
+
       if (response.ok) {
-        toast.success('Mundo criado!');
+        toast.success(worldData.id ? 'Mundo atualizado' : 'Mundo criado');
         // Recarregar mundos
         const worldsRes = await fetch('/api/worlds');
         const worldsData = await worldsRes.json();
         if (worldsRes.ok && worldsData.worlds) {
           setWorlds(worldsData.worlds);
         }
-        setWorldId(data.world.id);
+        if (!worldData.id) {
+          setWorldId(data.world.id);
+        }
         setShowCreateWorldModal(false);
         setWorldToEdit(null);
       } else {
-        console.error('[handleSaveWorld] Erro:', data);
-        toast.error(data.error || 'Erro ao criar mundo');
+        toast.error(data.error || 'Erro ao salvar mundo');
       }
     } catch (error) {
-      toast.error('Erro ao criar mundo');
+      console.error('Error saving world:', error);
+      toast.error('Erro de rede ao salvar mundo');
     }
   };
+
+  const handleEditWorld = (world: any) => {
+    setWorldToEdit(world);
+    setShowCreateWorldModal(true);
+  };
+
+  async function handleDeleteWorld(id: string) {
+    try {
+      const response = await fetch(`/api/worlds?id=${id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        toast.success('Mundo deletado');
+        if (worldId === id) {
+          setWorldId('');
+        }
+        // Recarregar mundos
+        const worldsRes = await fetch('/api/worlds');
+        const worldsData = await worldsRes.json();
+        if (worldsRes.ok && worldsData.worlds) {
+          setWorlds(worldsData.worlds);
+        }
+        setShowCreateWorldModal(false);
+        setWorldToEdit(null);
+      } else {
+        const data = await response.json();
+        toast.error(data.error || 'Erro ao deletar mundo');
+      }
+    } catch (error) {
+      console.error('Error deleting world:', error);
+      toast.error('Erro de rede ao deletar mundo');
+    }
+  }
   
   // Função removida - Episódios agora são criados na página Projetos
   
@@ -1728,8 +1758,10 @@ function EscritaPageContent() {
                   label="MUNDO"
                   worlds={worlds.filter(w => w.universe_id === universeId)}
                   selectedId={worldId}
-                  onSelect={(id) => setWorldId(id)}
-                  disabled={!universeId || isMetadataLocked}
+                  onSelect={setWorldId}
+                  onEdit={handleEditWorld}
+                  onDelete={handleDeleteWorld}
+                  disabled={isMetadataLocked}
                   onCreate={() => {
                     setWorldToEdit(null);
                     setShowCreateWorldModal(true);
@@ -3110,7 +3142,9 @@ function EscritaPageContent() {
           setWorldToEdit(null);
         }}
         world={worldToEdit}
+        universeId={universeId}
         onSave={handleSaveWorld}
+        onDelete={handleDeleteWorld}
       />
       
       {/* Modal de Criar Episódio - Redirecionamento */}
