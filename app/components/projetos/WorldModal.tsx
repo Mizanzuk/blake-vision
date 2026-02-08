@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Modal, Input, Button } from "@/app/components/ui";
+import { Button } from "@/app/components/ui";
 import type { World } from "@/app/types";
 import { toast } from "sonner";
-import { useConfirm } from "@/hooks/useConfirm";
 
 interface WorldModalProps {
   world: World | null;
@@ -21,11 +20,11 @@ export default function WorldModal({
   onDelete,
   onClose,
 }: WorldModalProps) {
-  const { confirm, ConfirmDialog } = useConfirm();
   const [hasChanges, setHasChanges] = useState(false);
   const [nome, setNome] = useState("");
   const [descricao, setDescricao] = useState("");
   const [hasEpisodes, setHasEpisodes] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (world) {
@@ -46,13 +45,9 @@ export default function WorldModal({
 
   async function handleClose() {
     if (hasChanges) {
-      const confirmed = await confirm({
-        title: "Alterações Não Salvas",
-        message: "Você tem alterações não salvas. Deseja realmente fechar sem salvar?",
-        confirmText: "Fechar sem Salvar",
-        cancelText: "Continuar Editando",
-        variant: "danger"
-      });
+      const confirmed = window.confirm(
+        "Você tem alterações não salvas. Deseja realmente fechar sem salvar?"
+      );
       if (!confirmed) return;
     }
     onClose();
@@ -65,6 +60,8 @@ export default function WorldModal({
       return;
     }
 
+    setIsSaving(true);
+
     const worldData = {
       id: world?.id,
       nome: nome.trim(),
@@ -75,18 +72,16 @@ export default function WorldModal({
 
     onSave(worldData);
     setHasChanges(false);
+    
+    setTimeout(() => setIsSaving(false), 500);
   }
 
   async function handleDelete() {
     if (!world?.id || !onDelete) return;
 
-    const confirmed = await confirm({
-      title: "Confirmar Exclusão de Mundo",
-      message: "Tem certeza que deseja deletar este mundo? Esta ação não pode ser desfeita.",
-      confirmText: "Deletar",
-      cancelText: "Cancelar",
-      variant: "danger"
-    });
+    const confirmed = window.confirm(
+      "Tem certeza que deseja deletar este mundo? Esta ação não pode ser desfeita."
+    );
 
     if (confirmed) {
       onDelete(world.id);
@@ -94,33 +89,48 @@ export default function WorldModal({
   }
 
   return (
-    <>
-    <Modal
-      isOpen={true}
-      onClose={handleClose}
-      title={world ? "Editar Mundo" : "Novo Mundo"}
-      size="md"
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+      onClick={handleClose}
     >
-      <div className="space-y-4">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSave();
+        }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md border border-border-light-default dark:border-border-dark-default rounded-lg p-6 bg-light-base dark:bg-dark-base space-y-4 mx-4"
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-bold">{world ? "Editar Mundo" : "Novo Mundo"}</h3>
+          <button
+            type="button"
+            onClick={handleClose}
+            className="text-2xl leading-none"
+          >
+            &times;
+          </button>
+        </div>
+
         {/* Nome */}
-        <Input
-          label="Nome do Mundo"
-          type="text"
-          value={nome}
-          onChange={(e) => {
-            setNome(e.target.value);
-            handleChange();
-          }}
-          placeholder="Ex: Terra Média"
-          required
-          fullWidth
-        />
+        <div>
+          <label className="block text-xs font-semibold mb-2">Nome do Mundo {!world && <span className="text-error-light dark:text-error-dark">*</span>}</label>
+          <input
+            type="text"
+            value={nome}
+            onChange={(e) => {
+              setNome(e.target.value);
+              handleChange();
+            }}
+            placeholder="Ex: Terra Média"
+            className="w-full rounded-md bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            required
+          />
+        </div>
 
         {/* Descrição */}
         <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Descrição
-          </label>
+          <label className="block text-xs font-semibold mb-2">Descrição</label>
           <textarea
             value={descricao}
             onChange={(e) => {
@@ -128,8 +138,7 @@ export default function WorldModal({
               handleChange();
             }}
             placeholder="Descreva este mundo"
-            rows={3}
-            className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full rounded-md bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default px-3 py-2 text-sm min-h-[100px] focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
 
@@ -143,28 +152,29 @@ export default function WorldModal({
               setHasEpisodes(e.target.checked);
               handleChange();
             }}
-            className="mt-1 h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500"
+            className="mt-1 h-4 w-4 rounded border-border-light-default dark:border-border-dark-default text-primary-600 focus:ring-primary-500 bg-light-raised dark:bg-dark-raised"
           />
           <div>
             <label
               htmlFor="tem_episodios"
-              className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer"
+              className="text-xs font-semibold text-text-light-primary dark:text-dark-primary cursor-pointer"
             >
               Tem Episódios
             </label>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            <p className="text-xs text-text-light-tertiary dark:text-dark-tertiary mt-0.5">
               Permite organizar fichas por episódios/capítulos
             </p>
           </div>
         </div>
 
         {/* Buttons */}
-        <div className="flex items-center justify-between pt-4">
+        <div className="flex items-center justify-between pt-2">
           <div>
             {world && onDelete && (
               <Button
                 variant="danger"
                 size="sm"
+                type="button"
                 onClick={handleDelete}
               >
                 Deletar
@@ -176,6 +186,7 @@ export default function WorldModal({
             <Button
               variant="ghost"
               size="sm"
+              type="button"
               onClick={handleClose}
             >
               Cancelar
@@ -184,15 +195,14 @@ export default function WorldModal({
             <Button
               variant="primary"
               size="sm"
-              onClick={handleSave}
+              type="submit"
+              disabled={isSaving}
             >
-              Salvar
+              {world ? (isSaving ? "Salvando..." : "Salvar") : (isSaving ? "Criando..." : "Criar Mundo")}
             </Button>
           </div>
         </div>
-      </div>
-    </Modal>
-    <ConfirmDialog />
-    </>
+      </form>
+    </div>
   );
 }
