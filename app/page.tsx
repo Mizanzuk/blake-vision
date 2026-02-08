@@ -18,6 +18,7 @@ import {
   LocaleToggle,
 } from "@/app/components/ui";
 import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
+import { UniverseDeleteModal } from "@/app/components/ui/UniverseDeleteModal";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
 import { clsx } from "clsx";
@@ -1488,64 +1489,19 @@ export default function HomePage() {
       </Modal>
 
       {/* Delete Universe Modal with Captcha */}
-      <Modal
+      <UniverseDeleteModal
         isOpen={showDeleteUniverseModal}
-        onClose={() => {
+        universeName={universeToDelete?.nome || ""}
+        captchaQuestion={captchaQuestion}
+        captchaAnswer={captchaAnswer}
+        onCaptchaChange={setCaptchaAnswer}
+        onConfirm={confirmDeleteUniverse}
+        onCancel={() => {
           setShowDeleteUniverseModal(false);
           setUniverseToDelete(null);
           setCaptchaAnswer("");
         }}
-        title="Confirmar Exclusão"
-        size="sm"
-      >
-        <div className="space-y-4">
-          <p className="text-sm text-text-light-secondary dark:text-dark-secondary">
-            Tem certeza que deseja deletar o universo <strong>"{universeToDelete?.nome}"</strong>?
-          </p>
-          <p className="text-sm text-text-light-tertiary dark:text-dark-tertiary">
-            Esta ação não pode ser desfeita.
-          </p>
-          
-          {/* Captcha */}
-          <div className="p-4 bg-light-overlay dark:bg-dark-overlay rounded-lg border border-border-light-default dark:border-border-dark-default">
-            <p className="text-sm font-medium text-text-light-primary dark:text-dark-primary mb-2">
-              Para confirmar, resolva esta operação:
-            </p>
-            <p className="text-lg font-bold text-primary-600 dark:text-primary-400 mb-3">
-              {captchaQuestion.num1} + {captchaQuestion.num2} = ?
-            </p>
-            <Input
-              type="number"
-              value={captchaAnswer}
-              onChange={(e) => setCaptchaAnswer(e.target.value)}
-              placeholder="Digite a resposta"
-              fullWidth
-              autoFocus
-            />
-          </div>
-
-          <div className="flex gap-2 justify-end">
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => {
-                setShowDeleteUniverseModal(false);
-                setUniverseToDelete(null);
-                setCaptchaAnswer("");
-              }}
-            >
-              Cancelar
-            </Button>
-            <Button
-              size="sm"
-              variant="danger"
-              onClick={confirmDeleteUniverse}
-            >
-              Deletar Universo
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      />
 
       {/* Ficha View Modal */}
       <FichaViewModal

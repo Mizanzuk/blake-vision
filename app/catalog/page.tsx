@@ -14,6 +14,8 @@ import {
 } from "@/app/components/ui";
 import { Header } from "@/app/components/layout/Header";
 import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
+import { ConfirmationModal } from "@/app/components/ui/ConfirmationModal";
+import { UniverseDeleteModal } from "@/app/components/ui/UniverseDeleteModal";
 import { WorldsDropdown } from "@/app/components/ui/WorldsDropdown";
 import { TypesDropdown } from "@/app/components/ui/TypesDropdown";
 import { EpisodesDropdown } from "@/app/components/ui/EpisodesDropdown";
@@ -75,6 +77,19 @@ function CatalogContent() {
   const [newUniverseDescription, setNewUniverseDescription] = useState("");
   const [isCreatingUniverse, setIsCreatingUniverse] = useState(false);
   
+  // Confirmation modals
+  const [confirmationModal, setConfirmationModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void | Promise<void>;
+    isDangerous?: boolean;
+  } | null>(null);
+  const [showDeleteUniverseModal, setShowDeleteUniverseModal] = useState(false);
+  const [universeToDelete, setUniverseToDelete] = useState<{id: string, nome: string} | null>(null);
+  const [captchaQuestion, setCaptchaQuestion] = useState({ num1: 0, num2: 0, answer: 0 });
+  const [captchaAnswer, setCaptchaAnswer] = useState("");
+  
   // Selected items for editing
   const [selectedFicha, setSelectedFicha] = useState<Ficha | null>(null);
   const [selectedWorld, setSelectedWorld] = useState<World | null>(null);
@@ -82,6 +97,56 @@ function CatalogContent() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewingFicha, setViewingFicha] = useState<Ficha | null>(null);
   
+  // Helper functions
+  function generateCaptcha() {
+    const num1 = Math.floor(Math.random() * 10) + 1;
+    const num2 = Math.floor(Math.random() * 10) + 1;
+    return { num1, num2, answer: num1 + num2 };
+  }
+
+  function promptDeleteUniverse(universeId: string, universeName: string) {
+    const captcha = generateCaptcha();
+    setCaptchaQuestion(captcha);
+    setCaptchaAnswer("");
+    setUniverseToDelete({ id: universeId, nome: universeName });
+    setShowDeleteUniverseModal(true);
+  }
+
+  async function confirmDeleteUniverse() {
+    if (!universeToDelete) return;
+    
+    if (parseInt(captchaAnswer) !== captchaQuestion.answer) {
+      toast.error("Resposta incorreta. Tente novamente.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/universes?id=${universeToDelete.id}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Universo deletado com sucesso");
+        setUniverses(universes.filter(u => u.id !== universeToDelete.id));
+        if (selectedUniverseId === universeToDelete.id) {
+          setSelectedUniverseId("");
+          localStorage.removeItem("selectedUniverseId");
+        }
+        setShowDeleteUniverseModal(false);
+        setUniverseToDelete(null);
+        setCaptchaAnswer("");
+        loadCatalogData();
+      } else {
+        toast.error(data.error || "Erro ao deletar universo");
+      }
+    } catch (error) {
+      console.error("Error deleting universe:", error);
+      toast.error("Erro ao deletar universo");
+    }
+  }
+
   // Fechar modais com ESC
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -307,6 +372,7 @@ function CatalogContent() {
               universes={universes}
               selectedId={selectedUniverseId}
               onSelect={setSelectedUniverseId}
+              onDelete={promptDeleteUniverse}
             />
           </div>
 
@@ -322,28 +388,30 @@ function CatalogContent() {
                 setSelectedWorld(world);
                 setShowWorldModal(true);
               }}
-              onDelete={(id, name) => {
-                const confirmed = window.confirm(
-                  `Tem certeza que deseja deletar "${name}"?`
-                );
-                
-                if (!confirmed) return;
-                
-                (async () => {
-                  try {
-                    const response = await fetch(`/api/worlds?id=${id}`, {
-                      method: 'DELETE',
-                    });
-                    if (response.ok) {
-                      toast.success('Mundo deletado com sucesso');
-                      loadCatalogData();
-                    } else {
+onDelete={(id, name) => {
+                setConfirmationModal({
+                  isOpen: true,
+                  title: "Deletar Mundo",
+                  message: `Tem certeza que deseja deletar "${name}"? Esta ação não pode ser desfeita.`,
+                  isDangerous: true,
+                  onConfirm: async () => {
+                    try {
+                      const response = await fetch(`/api/worlds?id=${id}`, {
+                        method: 'DELETE',
+                      });
+                      if (response.ok) {
+                        toast.success('Mundo deletado com sucesso');
+                        loadCatalogData();
+                      } else {
+                        toast.error('Erro ao deletar mundo');
+                      }
+                    } catch (error) {
                       toast.error('Erro ao deletar mundo');
+                    } finally {
+                      setConfirmationModal(null);
                     }
-                  } catch (error) {
-                    toast.error('Erro ao deletar mundo');
-                  }
-                })();
+                  },
+                });
               }}
               onCreate={() => {
                 setSelectedWorld(null);
@@ -564,6 +632,35 @@ function CatalogContent() {
       />
 
       <ConfirmDialog />
+
+      {/* Confirmation Modal */}
+      {confirmationModal && (
+        <ConfirmationModal
+          isOpen={confirmationModal.isOpen}
+          title={confirmationModal.title}
+          message={confirmationModal.message}
+          isDangerous={confirmationModal.isDangerous}
+          confirmText="Deletar"
+          cancelText="Cancelar"
+          onConfirm={confirmationModal.onConfirm}
+          onCancel={() => setConfirmationModal(null)}
+        />
+      )}
+
+      {/* Delete Universe Modal with Captcha */}
+      <UniverseDeleteModal
+        isOpen={showDeleteUniverseModal}
+        universeName={universeToDelete?.nome || ""}
+        captchaQuestion={captchaQuestion}
+        captchaAnswer={captchaAnswer}
+        onCaptchaChange={setCaptchaAnswer}
+        onConfirm={confirmDeleteUniverse}
+        onCancel={() => {
+          setShowDeleteUniverseModal(false);
+          setUniverseToDelete(null);
+          setCaptchaAnswer("");
+        }}
+      />
     </div>
   );
 }
