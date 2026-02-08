@@ -70,6 +70,7 @@ export default function WorldModal({
       ...(world === null && { universe_id: universeId }), // Apenas enviar universe_id ao criar
     };
 
+    console.log('[WorldModal] Enviando dados:', worldData);
     onSave(worldData);
     setHasChanges(false);
     

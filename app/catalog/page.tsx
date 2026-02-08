@@ -452,6 +452,7 @@ function CatalogContent() {
           onSave={async (worldData) => {
             try {
               const method = worldData.id ? "PUT" : "POST";
+              console.log('[CATALOG] Salvando mundo:', { method, worldData });
               const response = await fetch("/api/worlds", {
                 method,
                 headers: { "Content-Type": "application/json" },
@@ -459,6 +460,7 @@ function CatalogContent() {
               });
 
               const data = await response.json();
+              console.log('[CATALOG] Resposta da API:', { status: response.status, data });
 
               if (response.ok) {
                 toast.success(worldData.id ? "Mundo atualizado" : "Mundo criado");
