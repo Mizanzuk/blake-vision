@@ -1226,10 +1226,14 @@ function EscritaPageContent() {
   const handleSaveWorld = async (worldData: any) => {
     try {
       const method = worldData.id ? 'PUT' : 'POST';
+      const dataToSend = {
+        ...worldData,
+        universe_id: selectedUniverseId,
+      };
       const response = await fetch('/api/worlds', {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(worldData),
+        body: JSON.stringify(dataToSend),
       });
 
       const data = await response.json();
