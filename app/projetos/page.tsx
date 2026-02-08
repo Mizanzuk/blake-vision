@@ -936,6 +936,18 @@ export default function ProjetosPage() {
         </div>
       )}
 
+      {/* Modal de Confirmação */}
+      {confirmationModal && (
+        <ConfirmationModal
+          isOpen={confirmationModal.isOpen}
+          title={confirmationModal.title}
+          message={confirmationModal.message}
+          isDangerous={confirmationModal.isDangerous}
+          onConfirm={confirmationModal.onConfirm}
+          onCancel={() => setConfirmationModal(null)}
+        />
+      )}
+
     </div>
   );
 }
