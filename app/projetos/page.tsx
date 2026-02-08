@@ -50,6 +50,8 @@ export default function ProjetosPage() {
   const [newUniverseName, setNewUniverseName] = useState("");
   const [newUniverseDescription, setNewUniverseDescription] = useState("");
   const [isCreatingUniverse, setIsCreatingUniverse] = useState(false);
+  const [selectedUniverse, setSelectedUniverse] = useState<Universe | null>(null);
+  const [showEditUniverseModal, setShowEditUniverseModal] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -197,9 +199,44 @@ export default function ProjetosPage() {
   }
 
   function openCreateUniverseModal() {
+    setSelectedUniverse(null);
     setNewUniverseName("");
     setNewUniverseDescription("");
     setShowNewUniverseModal(true);
+  }
+
+  function handleEditUniverse(universe: Universe) {
+    setSelectedUniverse(universe);
+    setNewUniverseName(universe.nome);
+    setNewUniverseDescription(universe.descricao || "");
+    setShowEditUniverseModal(true);
+  }
+
+  async function handleDeleteUniverse(id: string, name: string) {
+    const confirmed = window.confirm(
+      `Tem certeza que deseja deletar o universo "${name}"? Esta ação não pode ser desfeita.`
+    );
+    
+    if (!confirmed) return;
+
+    try {
+      const { error } = await supabase
+        .from("universes")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      setUniverses(prev => prev.filter(u => u.id !== id));
+      if (selectedUniverseId === id) {
+        setSelectedUniverseId("");
+        localStorage.removeItem("selectedUniverseId");
+      }
+      toast.success("Universo deletado com sucesso.");
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao deletar universo.");
+    }
   }
 
   async function handleCreateUniverse() {
@@ -241,6 +278,46 @@ export default function ProjetosPage() {
   }
 
   function handleWorldChange(worldId: string) {
+
+  async function handleUpdateUniverse() {
+    if (!newUniverseName.trim()) {
+      toast.error("De um nome ao universo.");
+      return;
+    }
+    
+    if (!selectedUniverse) return;
+    
+    setIsCreatingUniverse(true);
+    
+    try {
+      const { data: updated, error: updateError } = await supabase
+        .from("universes")
+        .update({
+          nome: newUniverseName.trim(),
+          descricao: newUniverseDescription.trim() || null
+        })
+        .eq("id", selectedUniverse.id)
+        .select("*")
+        .single();
+      
+      if (updateError) throw updateError;
+      
+      if (updated) {
+        setUniverses(prev => prev.map(u => u.id === selectedUniverse.id ? (updated as Universe) : u));
+        toast.success("Universo atualizado com sucesso.");
+      }
+      
+      setShowEditUniverseModal(false);
+      setSelectedUniverse(null);
+      setNewUniverseName("");
+      setNewUniverseDescription("");
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao atualizar universo.");
+    } finally {
+      setIsCreatingUniverse(false);
+    }
+  }
     setSelectedWorldId(worldId);
     if (worldId) {
       localStorage.setItem("selectedWorldId", worldId);
@@ -533,6 +610,8 @@ export default function ProjetosPage() {
             universes={universes}
             selectedId={selectedUniverseId}
             onSelect={handleUniverseChange}
+            onEdit={handleEditUniverse}
+            onDelete={handleDeleteUniverse}
             onCreate={openCreateUniverseModal}
           />
 
@@ -743,24 +822,30 @@ export default function ProjetosPage() {
       )}
 
       {/* Modal de Novo Universo */}
-      {showNewUniverseModal && (
+      {(showNewUniverseModal || showEditUniverseModal) && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-          onClick={() => setShowNewUniverseModal(false)}
+          onClick={() => {
+            setShowNewUniverseModal(false);
+            setShowEditUniverseModal(false);
+          }}
         >
           <form
             onSubmit={e => {
               e.preventDefault();
-              handleCreateUniverse();
+              selectedUniverse ? handleUpdateUniverse() : handleCreateUniverse();
             }}
             onClick={(e) => e.stopPropagation()}
             className="w-full max-w-md border border-border-light-default dark:border-border-dark-default rounded-lg p-6 bg-light-base dark:bg-dark-base space-y-4 mx-4"
           >
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold">Novo Universo</h3>
+              <h3 className="text-lg font-bold">{selectedUniverse ? "Editar Universo" : "Novo Universo"}</h3>
               <button
                 type="button"
-                onClick={() => setShowNewUniverseModal(false)}
+                onClick={() => {
+                  setShowNewUniverseModal(false);
+                  setShowEditUniverseModal(false);
+                }}
                 className="text-2xl leading-none"
               >
                 &times;
@@ -790,7 +875,10 @@ export default function ProjetosPage() {
                 size="sm"
                 type="button"
                 variant="ghost"
-                onClick={() => setShowNewUniverseModal(false)}
+                onClick={() => {
+                  setShowNewUniverseModal(false);
+                  setShowEditUniverseModal(false);
+                }}
               >
                 Cancelar
               </Button>
@@ -800,7 +888,7 @@ export default function ProjetosPage() {
                 variant="primary"
                 disabled={isCreatingUniverse}
               >
-                {isCreatingUniverse ? "Criando..." : "Criar Universo"}
+                {isCreatingUniverse ? (selectedUniverse ? "Salvando..." : "Criando...") : (selectedUniverse ? "Salvar Universo" : "Criar Universo")}
               </Button>
             </div>
           </form>
