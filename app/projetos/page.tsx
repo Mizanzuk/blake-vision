@@ -553,28 +553,44 @@ export default function ProjetosPage() {
     }
   }
 
-  async function handleDeleteWorld(id: string) {
-    try {
-      const response = await fetch(`/api/worlds?id=${id}`, {
-        method: "DELETE",
-      });
+  function promptDeleteWorld(world: World) {
+    setConfirmationModal({
+      isOpen: true,
+      title: "Deletar Mundo",
+      message: `Tem certeza que deseja deletar "${world.nome}"? Esta ação não pode ser desfeita.`,
+      isDangerous: true,
+      onConfirm: async () => {
+        try {
+          const response = await fetch(`/api/worlds?id=${world.id}`, {
+            method: "DELETE",
+          });
 
-      if (response.ok) {
-        toast.success("Mundo deletado");
-        if (selectedWorldId === id) {
-          setSelectedWorldId("");
+          if (response.ok) {
+            toast.success("Mundo deletado");
+            if (selectedWorldId === world.id) {
+              setSelectedWorldId("");
+            }
+            await loadWorlds();
+            await loadAllWorlds();
+            setShowWorldModal(false);
+            setSelectedWorld(null);
+            setConfirmationModal(null);
+          } else {
+            const data = await response.json();
+            toast.error(data.error || "Erro ao deletar mundo");
+          }
+        } catch (error) {
+          console.error("Error deleting world:", error);
+          toast.error("Erro de rede ao deletar mundo");
         }
-        await loadWorlds();
-        await loadAllWorlds();
-        setShowWorldModal(false);
-        setSelectedWorld(null);
-      } else {
-        const data = await response.json();
-        toast.error(data.error || "Erro ao deletar mundo");
-      }
-    } catch (error) {
-      console.error("Error deleting world:", error);
-      toast.error("Erro de rede ao deletar mundo");
+      },
+    });
+  }
+
+  async function handleDeleteWorld(id: string) {
+    const world = allWorlds.find(w => w.id === id);
+    if (world) {
+      promptDeleteWorld(world);
     }
   }
 
