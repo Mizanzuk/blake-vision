@@ -53,7 +53,7 @@ export default function WorldModal({
     onClose();
   }
 
-  function handleSave() {
+  async function handleSave() {
     // Validation
     if (!nome.trim()) {
       toast.error("Nome do mundo é obrigatório");
@@ -71,10 +71,12 @@ export default function WorldModal({
     };
 
     console.log('[WorldModal] Enviando dados:', worldData);
-    onSave(worldData);
-    setHasChanges(false);
-    
-    setTimeout(() => setIsSaving(false), 500);
+    try {
+      await onSave(worldData);
+      setHasChanges(false);
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   async function handleDelete() {
