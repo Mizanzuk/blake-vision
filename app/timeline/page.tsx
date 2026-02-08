@@ -58,6 +58,13 @@ export default function TimelinePage() {
   const [showFichaModal, setShowFichaModal] = useState(false);
   const [selectedFicha, setSelectedFicha] = useState<Ficha | null>(null);
   const [showViewModal, setShowViewModal] = useState(false);
+  const [confirmationModal, setConfirmationModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    isDangerous?: boolean;
+    onConfirm: () => Promise<void>;
+  } | null>(null);
   const [viewingFicha, setViewingFicha] = useState<Ficha | null>(null);
   
   // Cards expansion
@@ -405,32 +412,46 @@ export default function TimelinePage() {
   };
 
   async function handleDeleteWorld(id: string) {
-    try {
-      const response = await fetch(`/api/worlds?id=${id}`, {
-        method: 'DELETE',
-      });
+    const world = worlds.find(w => w.id === id);
+    if (!world) return;
 
-      if (response.ok) {
-        toast.success('Mundo deletado');
-        if (selectedWorldId === id) {
-          setSelectedWorldId('');
+    setConfirmationModal({
+      isOpen: true,
+      title: 'Deletar Mundo',
+      message: `Tem certeza que deseja deletar "${world.nome}"? Esta ação não pode ser desfeita.`,
+      isDangerous: true,
+      onConfirm: async () => {
+        try {
+          const response = await fetch(`/api/worlds?id=${id}`, {
+            method: 'DELETE',
+          });
+
+          if (response.ok) {
+            toast.success('Mundo deletado');
+            if (selectedWorldId === id) {
+              setSelectedWorldId('');
+            }
+            // Recarregar mundos
+            const worldsRes = await fetch('/api/worlds');
+            const worldsData = await worldsRes.json();
+            if (worldsRes.ok && worldsData.worlds) {
+              setWorlds(worldsData.worlds);
+            }
+            setShowCreateWorldModal(false);
+            setWorldToEdit(null);
+            setConfirmationModal(null);
+          } else {
+            const data = await response.json();
+            toast.error(data.error || 'Erro ao deletar mundo');
+            setConfirmationModal(null);
+          }
+        } catch (error) {
+          console.error('Error deleting world:', error);
+          toast.error('Erro de rede ao deletar mundo');
+          setConfirmationModal(null);
         }
-        // Recarregar mundos
-        const worldsRes = await fetch('/api/worlds');
-        const worldsData = await worldsRes.json();
-        if (worldsRes.ok && worldsData.worlds) {
-          setWorlds(worldsData.worlds);
-        }
-        setShowCreateWorldModal(false);
-        setWorldToEdit(null);
-      } else {
-        const data = await response.json();
-        toast.error(data.error || 'Erro ao deletar mundo');
-      }
-    } catch (error) {
-      console.error('Error deleting world:', error);
-      toast.error('Erro de rede ao deletar mundo');
-    }
+      },
+    });
   }
 
   if (isLoading) {
@@ -775,6 +796,18 @@ export default function TimelinePage() {
           }}
           onSave={handleSaveWorld}
           onDelete={handleDeleteWorld}
+        />
+      )}
+      
+      {/* Modal de Confirmação */}
+      {confirmationModal && (
+        <ConfirmationModal
+          isOpen={confirmationModal.isOpen}
+          title={confirmationModal.title}
+          message={confirmationModal.message}
+          isDangerous={confirmationModal.isDangerous}
+          onConfirm={confirmationModal.onConfirm}
+          onCancel={() => setConfirmationModal(null)}
         />
       )}
     </div>

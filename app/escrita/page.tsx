@@ -16,6 +16,7 @@ import { Input, Textarea } from '@/app/components/ui';
 import WorldModal from '@/app/components/catalog/WorldModal';
 import CategoryModal from '@/app/components/catalog/CategoryModal';
 import { UniverseDropdown } from '@/app/components/ui';
+import { ConfirmationModal } from '@/app/components/ui/ConfirmationModal';
 import { WorldsDropdownSingle } from '@/app/components/ui/WorldsDropdownSingle';
 import { EpisodesDropdownSingle } from '@/app/components/ui/EpisodesDropdownSingle';
 import { CategoryDropdownSingle } from '@/app/components/ui/CategoryDropdownSingle';
@@ -77,6 +78,13 @@ function EscritaPageContent() {
   const [temaFoco, setTemaFoco] = useState<'normal' | 'light' | 'dark'>('normal');
   const [focusType, setFocusType] = useState<'off' | 'sentence' | 'paragraph'>('off');
   const [menuFocoExpanded, setMenuFocoExpanded] = useState(false);
+  const [confirmationModal, setConfirmationModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    isDangerous?: boolean;
+    onConfirm: () => Promise<void>;
+  } | null>(null);
   const [menuFocoPosition, setMenuFocoPosition] = useState(() => {
     // Tentar carregar posição salva do localStorage
     if (typeof window !== 'undefined') {
@@ -1254,32 +1262,46 @@ function EscritaPageContent() {
   };
 
   async function handleDeleteWorld(id: string) {
-    try {
-      const response = await fetch(`/api/worlds?id=${id}`, {
-        method: 'DELETE',
-      });
+    const world = worlds.find(w => w.id === id);
+    if (!world) return;
 
-      if (response.ok) {
-        toast.success('Mundo deletado');
-        if (worldId === id) {
-          setWorldId('');
+    setConfirmationModal({
+      isOpen: true,
+      title: 'Deletar Mundo',
+      message: `Tem certeza que deseja deletar "${world.nome}"? Esta ação não pode ser desfeita.`,
+      isDangerous: true,
+      onConfirm: async () => {
+        try {
+          const response = await fetch(`/api/worlds?id=${id}`, {
+            method: 'DELETE',
+          });
+
+          if (response.ok) {
+            toast.success('Mundo deletado');
+            if (worldId === id) {
+              setWorldId('');
+            }
+            // Recarregar mundos
+            const worldsRes = await fetch('/api/worlds');
+            const worldsData = await worldsRes.json();
+            if (worldsRes.ok && worldsData.worlds) {
+              setWorlds(worldsData.worlds);
+            }
+            setShowCreateWorldModal(false);
+            setWorldToEdit(null);
+            setConfirmationModal(null);
+          } else {
+            const data = await response.json();
+            toast.error(data.error || 'Erro ao deletar mundo');
+            setConfirmationModal(null);
+          }
+        } catch (error) {
+          console.error('Error deleting world:', error);
+          toast.error('Erro de rede ao deletar mundo');
+          setConfirmationModal(null);
         }
-        // Recarregar mundos
-        const worldsRes = await fetch('/api/worlds');
-        const worldsData = await worldsRes.json();
-        if (worldsRes.ok && worldsData.worlds) {
-          setWorlds(worldsData.worlds);
-        }
-        setShowCreateWorldModal(false);
-        setWorldToEdit(null);
-      } else {
-        const data = await response.json();
-        toast.error(data.error || 'Erro ao deletar mundo');
-      }
-    } catch (error) {
-      console.error('Error deleting world:', error);
-      toast.error('Erro de rede ao deletar mundo');
-    }
+      },
+    });
   }
   
   // Função removida - Episódios agora são criados na página Projetos
@@ -3256,6 +3278,18 @@ function EscritaPageContent() {
         handleDuplicate={handleDuplicate}
         handleDeleteCurrentTexto={handleDeleteCurrentTexto}
       />
+      
+      {/* Modal de Confirmação */}
+      {confirmationModal && (
+        <ConfirmationModal
+          isOpen={confirmationModal.isOpen}
+          title={confirmationModal.title}
+          message={confirmationModal.message}
+          isDangerous={confirmationModal.isDangerous}
+          onConfirm={confirmationModal.onConfirm}
+          onCancel={() => setConfirmationModal(null)}
+        />
+      )}
     </div>
     </>
   );
