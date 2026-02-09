@@ -259,8 +259,8 @@ export default function FichaModal({
       title={ficha ? t.ficha.edit : t.ficha.create}
       size="xl"
       footer={
-        <>
-          <div className="flex-1">
+        <div className="flex items-center justify-between">
+          <div>
             {ficha?.id && onDelete && (
               <Button
                 size="sm"
@@ -272,18 +272,20 @@ export default function FichaModal({
               </Button>
             )}
           </div>
-          <Button size="sm" variant="ghost" onClick={onClose}>
-            {t.common.cancel}
-          </Button>
-          <Button
-            size="sm"
-            variant="primary"
-            onClick={handleSubmit}
-            loading={isSubmitting || isUploadingImage}
-          >
-            {isUploadingImage ? "Enviando imagem..." : isSubmitting ? "Salvando..." : t.common.save}
-          </Button>
-        </>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="ghost" onClick={onClose}>
+              {t.common.cancel}
+            </Button>
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={handleSubmit}
+              loading={isSubmitting || isUploadingImage}
+            >
+              {isUploadingImage ? "Enviando imagem..." : isSubmitting ? "Salvando..." : t.common.save}
+            </Button>
+          </div>
+        </div>
       }
     >
       {/* Tabs */}
