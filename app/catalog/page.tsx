@@ -442,6 +442,7 @@ onDelete={(id, name) => {
               types={categories}
               selectedSlugs={selectedTypes}
               onToggle={toggleTypeSelection}
+              onCreate={() => setShowManageCategoriesModal(true)}
             />
           </div>
 
