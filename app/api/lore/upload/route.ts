@@ -50,13 +50,17 @@ export async function POST(request: NextRequest) {
       // Create or find roteiro (episode) if unitNumber is provided
       let roteiroId: string | null = null;
       
-      if (unitNumber && worldId) {
+      // Validar se unitNumber é um número válido
+      const episodioNumber = unitNumber ? parseInt(String(unitNumber), 10) : null;
+      const isValidEpisodio = episodioNumber && !isNaN(episodioNumber) && episodioNumber > 0;
+      
+      if (isValidEpisodio && worldId) {
         // Check if roteiro already exists
         const { data: existingRoteiro } = await supabase
           .from("roteiros")
           .select("*")
           .eq("world_id", worldId)
-          .eq("episodio", unitNumber)
+          .eq("episodio", episodioNumber)
           .eq("user_id", user.id)
           .single();
         
@@ -69,8 +73,8 @@ export async function POST(request: NextRequest) {
             .from("roteiros")
             .insert({
               world_id: worldId,
-              episodio: unitNumber,
-              titulo: documentName || `Episódio ${unitNumber}`,
+              episodio: episodioNumber,
+              titulo: documentName || `Episódio ${episodioNumber}`,
               conteudo: text || "",
               user_id: user.id,
             })

@@ -770,8 +770,18 @@ export default function UploadPage() {
                 </Button>
                 {isExtracting && (
                   <div className="w-full space-y-2">
+                    <style>{`
+                      @keyframes slideProgress {
+                        0% { transform: translateX(-100%); }
+                        50% { transform: translateX(100%); }
+                        100% { transform: translateX(-100%); }
+                      }
+                      .progress-bar-animation {
+                        animation: slideProgress 1.5s ease-in-out infinite;
+                      }
+                    `}</style>
                     <div className="w-full bg-border-light-default dark:bg-border-dark-default rounded-full h-2 overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-primary-light to-primary-dark animate-pulse" style={{ width: '100%' }}></div>
+                      <div className="h-full bg-gradient-to-r from-primary-light to-primary-dark progress-bar-animation" style={{ width: '30%' }}></div>
                     </div>
                     <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark text-center">
                       Processando extração de fichas...
