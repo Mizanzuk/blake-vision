@@ -83,26 +83,45 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      const fichasToInsert = fichas.map((ficha: any) => ({
-        user_id: user.id,
-        world_id: worldId,
-        tipo: ficha.type || ficha.tipo || "conceito",
-        titulo: ficha.name || ficha.title || ficha.titulo,
-        slug: slugify(ficha.name || ficha.title || ficha.titulo),
-        resumo: ficha.summary || ficha.resumo || null,
-        conteudo: ficha.description || ficha.content || ficha.conteudo || null,
-        tags: Array.isArray(ficha.tags) ? ficha.tags.join(", ") : (ficha.tags || null),
-        episodio: unitNumber || null,
-        episode_id: roteiroId || null, // Vinculação ao roteiro
-        aparece_em: null,
-        codigo: null,
-        ano_diegese: null,
-        descricao_data: null,
-        data_inicio: null,
-        data_fim: null,
-        granularidade_data: "vago",
-        camada_temporal: "linha_principal",
-      }));
+      const fichasToInsert = fichas.map((ficha: any) => {
+        // Mapear campos em português ou inglês
+        const tipo = ficha.tipo || ficha.type || "conceito";
+        const titulo = ficha.titulo || ficha.title || ficha.name || "";
+        const resumo = ficha.resumo || ficha.summary || null;
+        const conteudo = ficha.conteudo || ficha.description || ficha.content || null;
+        const ano_diegese = ficha.ano_diegese || ficha.year || null;
+        
+        // Processar tags
+        let tags = null;
+        if (ficha.tags) {
+          if (Array.isArray(ficha.tags)) {
+            tags = ficha.tags.join(", ");
+          } else if (typeof ficha.tags === "string") {
+            tags = ficha.tags;
+          }
+        }
+        
+        return {
+          user_id: user.id,
+          world_id: worldId,
+          tipo,
+          titulo,
+          slug: slugify(titulo),
+          resumo,
+          conteudo,
+          tags,
+          episodio: unitNumber || null,
+          episode_id: roteiroId || null,
+          aparece_em: null,
+          codigo: null,
+          ano_diegese,
+          descricao_data: null,
+          data_inicio: null,
+          data_fim: null,
+          granularidade_data: "vago",
+          camada_temporal: "linha_principal",
+        };
+      });
 
       const { data: insertedData, error: insertError } = await supabase
         .from("fichas")
@@ -112,7 +131,7 @@ export async function POST(request: NextRequest) {
       if (insertError) {
         console.error("Insert error:", insertError);
         return NextResponse.json(
-          { error: "Erro ao salvar fichas no banco de dados" },
+          { error: `Erro ao salvar fichas no banco de dados: ${insertError.message}` },
           { status: 500 }
         );
       }
@@ -186,10 +205,10 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in upload:", error);
     return NextResponse.json(
-      { error: "Erro interno do servidor" },
+      { error: `Erro interno do servidor: ${error.message}` },
       { status: 500 }
     );
   }

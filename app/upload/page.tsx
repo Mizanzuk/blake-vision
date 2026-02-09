@@ -759,7 +759,7 @@ export default function UploadPage() {
 
             {/* Botão Extrair */}
             {selectedWorldId && (
-              <div className="flex justify-center pt-4">
+              <div className="flex flex-col gap-3 justify-center pt-4">
                 <Button
                   variant="primary"
                   onClick={handleExtractFichas}
@@ -768,6 +768,16 @@ export default function UploadPage() {
                 >
                   {isExtracting ? "Extraindo fichas..." : "Extrair fichas"}
                 </Button>
+                {isExtracting && (
+                  <div className="w-full space-y-2">
+                    <div className="w-full bg-border-light-default dark:bg-border-dark-default rounded-full h-2 overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-primary-light to-primary-dark animate-pulse" style={{ width: '100%' }}></div>
+                    </div>
+                    <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark text-center">
+                      Processando extração de fichas...
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>
