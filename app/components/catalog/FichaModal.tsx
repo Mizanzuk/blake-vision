@@ -251,89 +251,74 @@ export default function FichaModal({
     }
   }
 
+  if (!isOpen) return null;
+
   return (
     <>
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={ficha ? t.ficha.edit : t.ficha.create}
-      size="xl"
-      footer={
-        <div className="flex items-center justify-between">
-          <div>
-            {ficha?.id && onDelete && (
-              <Button
-                size="sm"
-                variant="danger"
-                onClick={handleDelete}
-                loading={isDeleting}
-              >
-                Excluir
-              </Button>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant="ghost" onClick={onClose}>
-              {t.common.cancel}
-            </Button>
-            <Button
-              size="sm"
-              variant="primary"
-              onClick={handleSubmit}
-              loading={isSubmitting || isUploadingImage}
-            >
-              {isUploadingImage ? "Enviando imagem..." : isSubmitting ? "Salvando..." : t.common.save}
-            </Button>
-          </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div className="bg-light-base dark:bg-dark-base rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto border border-border-light-default dark:border-border-dark-default">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised">
+          <h2 className="text-xl font-bold text-text-light-primary dark:text-dark-primary">
+            {ficha ? t.ficha.edit : t.ficha.create}
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-text-light-secondary dark:text-dark-secondary hover:text-text-light-primary dark:hover:text-dark-primary transition-colors"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
-      }
-    >
-      {/* Tabs */}
-      <div className="flex gap-2 mb-6 border-b border-border-light-default dark:border-border-dark-default">
-        <button
-          onClick={() => setActiveTab("basic")}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === "basic"
-              ? "text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400"
-              : "text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary"
-          }`}
-        >
-          Básico
-        </button>
-        <button
-          onClick={() => setActiveTab("dates")}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === "dates"
-              ? "text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400"
-              : "text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary"
-          }`}
-        >
-          Datas
-        </button>
-        <button
-          onClick={() => setActiveTab("relations")}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === "relations"
-              ? "text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400"
-              : "text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary"
-          }`}
-        >
-          Relações
-        </button>
-        <button
-          onClick={() => setActiveTab("images")}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === "images"
-              ? "text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400"
-              : "text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary"
-          }`}
-        >
-          Imagens
-        </button>
-      </div>
 
-      <div className="max-h-[calc(100vh-300px)] overflow-y-auto pr-4">
-      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Body */}
+        <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6 border-b border-border-light-default dark:border-border-dark-default">
+          <button
+            onClick={() => setActiveTab("basic")}
+            className={`px-4 py-2 font-medium transition-colors ${
+              activeTab === "basic"
+                ? "text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400"
+                : "text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary"
+            }`}
+          >
+            Básico
+          </button>
+          <button
+            onClick={() => setActiveTab("dates")}
+            className={`px-4 py-2 font-medium transition-colors ${
+              activeTab === "dates"
+                ? "text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400"
+                : "text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary"
+            }`}
+          >
+            Datas
+          </button>
+          <button
+            onClick={() => setActiveTab("relations")}
+            className={`px-4 py-2 font-medium transition-colors ${
+              activeTab === "relations"
+                ? "text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400"
+                : "text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary"
+            }`}
+          >
+            Relações
+          </button>
+          <button
+            onClick={() => setActiveTab("images")}
+            className={`px-4 py-2 font-medium transition-colors ${
+              activeTab === "images"
+                ? "text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400"
+                : "text-text-light-tertiary dark:text-dark-tertiary hover:text-text-light-primary dark:hover:text-dark-primary"
+            }`}
+          >
+            Imagens
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
         {/* Tab: Basic */}
         {activeTab === "basic" && (
           <>
@@ -674,9 +659,39 @@ export default function FichaModal({
             )}
           </>
         )}
-      </form>
+        </form>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between p-6 border-t border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised">
+          <div>
+            {ficha?.id && onDelete && (
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="px-4 py-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isDeleting ? "Deletando..." : "Excluir"}
+              </button>
+            )}
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="px-5 py-2.5 text-sm font-medium text-text-light-primary dark:text-dark-primary bg-light-base dark:bg-dark-base hover:bg-light-hover dark:hover:bg-dark-hover border border-border-light-default dark:border-border-dark-default rounded-lg transition-colors"
+            >
+              {t.common.cancel}
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting || isUploadingImage}
+              className="px-5 py-2.5 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-600 dark:hover:bg-primary-700 rounded-lg transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isUploadingImage ? "Enviando imagem..." : isSubmitting ? "Salvando..." : t.common.save}
+            </button>
+          </div>
+        </div>
       </div>
-    </Modal>
+    </div>
     <ConfirmDialog />
     </>
   );

@@ -542,6 +542,26 @@ onDelete={(id, name) => {
           setShowFichaModal(false);
           setSelectedFicha(null);
         }}
+        onDelete={async (fichaId) => {
+          try {
+            const response = await fetch(`/api/fichas/${fichaId}`, {
+              method: "DELETE",
+            });
+
+            if (response.ok) {
+              toast.success("Ficha excluida com sucesso");
+              loadCatalogData();
+              setShowFichaModal(false);
+              setSelectedFicha(null);
+            } else {
+              const data = await response.json();
+              toast.error(data.error || "Erro ao excluir ficha");
+            }
+          } catch (error) {
+            console.error("Error deleting ficha:", error);
+            toast.error("Erro de rede ao excluir ficha");
+          }
+        }}
       />
 
       {showWorldModal && (
