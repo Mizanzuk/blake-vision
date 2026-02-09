@@ -924,11 +924,12 @@ function EscritaPageContent() {
           setHasUnsavedMetadataChanges(false);
         }
         
-        // Se é novo texto, atualizar ID e URL
+        // Se é novo texto, atualizar URL e ID
         if (!currentTextId && data.texto) {
-          setCurrentTextId(data.texto.id);
-          // Atualizar URL para sincronizar com o estado
+          // Fazer router.push ANTES de setCurrentTextId para evitar race condition
+          // onde o useEffect vê currentTextId mudado mas searchParams ainda não atualizado
           router.push(`/escrita?id=${data.texto.id}`);
+          setCurrentTextId(data.texto.id);
         }
         
         // Recarregar lista de textos
