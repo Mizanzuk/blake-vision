@@ -3162,16 +3162,18 @@ function EscritaPageContent() {
       </Modal>
       
       {/* Modal de Criar Mundo */}
-      <WorldModal
-        world={worldToEdit}
-        universeId={selectedUniverseId}
-        onSave={handleSaveWorld}
-        onDelete={handleDeleteWorld}
-        onClose={() => {
-          setShowCreateWorldModal(false);
-          setWorldToEdit(null);
-        }}
-      />
+      {showCreateWorldModal && (
+        <WorldModal
+          world={worldToEdit}
+          universeId={selectedUniverseId}
+          onSave={handleSaveWorld}
+          onDelete={handleDeleteWorld}
+          onClose={() => {
+            setShowCreateWorldModal(false);
+            setWorldToEdit(null);
+          }}
+        />
+      )}
       
       {/* Modal de Criar Episódio - Redirecionamento */}
       <Modal
