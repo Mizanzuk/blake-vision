@@ -171,6 +171,41 @@ export default function TimelinePage() {
     }
   }
 
+  function handleEditUniverse(universe: Universe) {
+    // Implementar lógica de edição de Universo
+    // Por enquanto, apenas abre o modal de criação com os dados do universo
+    // Isso pode ser expandido para editar o universo existente
+    console.log("Editar universo:", universe);
+  }
+
+  async function handleDeleteUniverse(id: string, name: string) {
+    const confirmed = window.confirm(
+      `Tem certeza que deseja deletar o universo "${name}"? Esta ação não pode ser desfeita.`
+    );
+    
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(`/api/universes?id=${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setUniverses(prev => prev.filter(u => u.id !== id));
+        if (selectedUniverseId === id) {
+          setSelectedUniverseId("");
+          localStorage.removeItem("selectedUniverseId");
+        }
+        toast.success("Universo deletado com sucesso.");
+      } else {
+        toast.error("Erro ao deletar universo.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao deletar universo.");
+    }
+  }
+
   async function handleCreateUniverse() {
     if (!newUniverseName.trim()) {
       toast.error("Dê um nome ao novo Universo.");
@@ -480,6 +515,8 @@ export default function TimelinePage() {
               universes={universes}
               selectedId={selectedUniverseId}
               onSelect={(id) => handleUniverseChange(id)}
+              onEdit={handleEditUniverse}
+              onDelete={handleDeleteUniverse}
               onCreate={() => setShowNewUniverseModal(true)}
             />
             

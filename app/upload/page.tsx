@@ -223,6 +223,39 @@ export default function UploadPage() {
     }
   }
 
+  function handleEditUniverse(universe: Universe) {
+    // Implementar lógica de edição de Universo
+    console.log("Editar universo:", universe);
+  }
+
+  async function handleDeleteUniverse(id: string, name: string) {
+    const confirmed = window.confirm(
+      `Tem certeza que deseja deletar o universo "${name}"? Esta ação não pode ser desfeita.`
+    );
+    
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(`/api/universes?id=${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setUniverses(prev => prev.filter(u => u.id !== id));
+        if (selectedUniverseId === id) {
+          setSelectedUniverseId("");
+          localStorage.removeItem("selectedUniverseId");
+        }
+        toast.success("Universo deletado com sucesso.");
+      } else {
+        toast.error("Erro ao deletar universo.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao deletar universo.");
+    }
+  }
+
   function handleUniverseChange(e: ChangeEvent<HTMLSelectElement>) {
     const value = e.target.value;
     if (value === "create_new_universe") {
@@ -577,6 +610,8 @@ export default function UploadPage() {
                 setSelectedWorldId("");
                 setUnitNumber("");
               }}
+              onEdit={handleEditUniverse}
+              onDelete={handleDeleteUniverse}
               onCreate={() => setShowNewUniverseModal(true)}
             />
 

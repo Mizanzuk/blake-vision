@@ -104,6 +104,13 @@ function CatalogContent() {
     return { num1, num2, answer: num1 + num2 };
   }
 
+  function handleEditUniverse(universe: Universe) {
+    setEditingUniverse(universe);
+    setNewUniverseName(universe.nome);
+    setNewUniverseDescription(universe.descricao || "");
+    setShowNewUniverseModal(true);
+  }
+
   function promptDeleteUniverse(universeId: string, universeName: string) {
     const captcha = generateCaptcha();
     setCaptchaQuestion(captcha);
@@ -372,7 +379,14 @@ function CatalogContent() {
               universes={universes}
               selectedId={selectedUniverseId}
               onSelect={setSelectedUniverseId}
+              onEdit={handleEditUniverse}
               onDelete={promptDeleteUniverse}
+              onCreate={() => {
+                setEditingUniverse(null);
+                setNewUniverseName("");
+                setNewUniverseDescription("");
+                setShowNewUniverseModal(true);
+              }}
             />
           </div>
 
