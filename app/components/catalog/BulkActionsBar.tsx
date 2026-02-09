@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/app/components/ui";
 import { toast } from "sonner";
 
@@ -18,6 +18,32 @@ export default function BulkActionsBar({
   isDeleting = false,
 }: BulkActionsBarProps) {
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Fechar dropdown ao apertar Esc ou clicar fora
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowExportMenu(false);
+      }
+    };
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowExportMenu(false);
+      }
+    };
+
+    if (showExportMenu) {
+      document.addEventListener("keydown", handleKeyDown);
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showExportMenu]);
 
   return (
     <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40">
@@ -31,7 +57,7 @@ export default function BulkActionsBar({
         <div className="w-px h-6 bg-border-light-default dark:bg-border-dark-default" />
 
         {/* Export Button with Dropdown */}
-        <div className="relative">
+        <div className="relative" ref={dropdownRef}>
           <Button
             size="sm"
             variant="ghost"
@@ -64,7 +90,7 @@ export default function BulkActionsBar({
                 }}
                 className="w-full px-4 py-2 text-sm text-text-light-primary dark:text-dark-primary hover:bg-light-base dark:hover:bg-dark-base transition-colors text-left"
               >
-                Exportar como TXT
+                TXT
               </button>
               <button
                 onClick={() => {
@@ -73,7 +99,7 @@ export default function BulkActionsBar({
                 }}
                 className="w-full px-4 py-2 text-sm text-text-light-primary dark:text-dark-primary hover:bg-light-base dark:hover:bg-dark-base transition-colors text-left border-t border-border-light-default dark:border-border-dark-default"
               >
-                Exportar como DOC
+                DOC
               </button>
               <button
                 onClick={() => {
@@ -82,7 +108,7 @@ export default function BulkActionsBar({
                 }}
                 className="w-full px-4 py-2 text-sm text-text-light-primary dark:text-dark-primary hover:bg-light-base dark:hover:bg-dark-base transition-colors text-left border-t border-border-light-default dark:border-border-dark-default"
               >
-                Exportar como PDF
+                PDF
               </button>
             </div>
           )}

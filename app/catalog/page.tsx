@@ -173,15 +173,18 @@ function CatalogContent() {
           setNewUniverseDescription('');
         } else if (showManageCategoriesModal) {
           setShowManageCategoriesModal(false);
+        } else if (isSelectionMode) {
+          setIsSelectionMode(false);
+          setSelectedFichaIds([]);
         }
       }
     };
     
-    if (showNewUniverseModal || showManageCategoriesModal) {
+    if (showNewUniverseModal || showManageCategoriesModal || isSelectionMode) {
       document.addEventListener('keydown', handleEscape);
       return () => document.removeEventListener('keydown', handleEscape);
     }
-  }, [showNewUniverseModal, showManageCategoriesModal, isCreatingUniverse]);
+  }, [showNewUniverseModal, showManageCategoriesModal, isCreatingUniverse, isSelectionMode]);
 
   // Load universes on mount
   useEffect(() => {
