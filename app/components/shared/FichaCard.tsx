@@ -8,9 +8,12 @@ interface FichaCardProps {
   onClick: () => void;
   withIndent?: boolean; // Para recuo em episódios na página Projetos
   worldName?: string; // Nome do mundo (se a ficha pertence a um mundo específico)
+  isSelectionMode?: boolean; // Se está em modo de seleção múltipla
+  isSelected?: boolean; // Se a ficha está selecionada
+  onSelect?: (fichaId: string) => void; // Callback quando a ficha é selecionada
 }
 
-export default function FichaCard({ ficha, onClick, withIndent = false, worldName }: FichaCardProps) {
+export default function FichaCard({ ficha, onClick, withIndent = false, worldName, isSelectionMode = false, isSelected = false, onSelect }: FichaCardProps) {
   
   const getTypeColor = () => {
     const colors: Record<string, string> = {
@@ -131,11 +134,35 @@ export default function FichaCard({ ficha, onClick, withIndent = false, worldNam
     </>
   );
 
+  const handleClick = () => {
+    if (isSelectionMode && onSelect) {
+      onSelect(ficha.id);
+    } else {
+      onClick();
+    }
+  };
+
   return (
     <div
-      onClick={onClick}
-      className="group relative bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg p-4 hover:shadow-md transition-all cursor-pointer h-48 flex flex-col"
+      onClick={handleClick}
+      className={clsx(
+        "group relative border rounded-lg p-4 hover:shadow-md transition-all cursor-pointer h-48 flex flex-col",
+        "bg-light-raised dark:bg-dark-raised border-border-light-default dark:border-border-dark-default",
+        isSelectionMode && isSelected && "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20"
+      )}
     >
+      {/* Checkbox em modo de seleção */}
+      {isSelectionMode && (
+        <div className="absolute top-2 right-2">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => onSelect?.(ficha.id)}
+            onClick={(e) => e.stopPropagation()}
+            className="w-5 h-5 rounded border-border-light-default dark:border-border-dark-default cursor-pointer"
+          />
+        </div>
+      )}
       {(ficha.tipo === "episodio" || ficha.tipo === "sinopse") ? renderEpisodeCard() : renderDefaultCard()}
     </div>
   );

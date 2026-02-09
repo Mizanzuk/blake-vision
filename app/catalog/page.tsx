@@ -503,6 +503,15 @@ onDelete={(id, name) => {
               <FichaCard
                 key={ficha.id}
                 ficha={ficha}
+                isSelectionMode={isSelectionMode}
+                isSelected={selectedFichaIds.includes(ficha.id)}
+                onSelect={(fichaId) => {
+                  setSelectedFichaIds((prev) =>
+                    prev.includes(fichaId)
+                      ? prev.filter((id) => id !== fichaId)
+                      : [...prev, fichaId]
+                  );
+                }}
                 onClick={() => {
                   setViewingFicha(ficha);
                   setShowViewModal(true);
