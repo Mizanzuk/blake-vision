@@ -56,7 +56,7 @@ export default function BulkActionsBar({
 
           {/* Export Dropdown Menu */}
           {showExportMenu && (
-            <div className="absolute top-full mt-2 right-0 bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg overflow-hidden">
+            <div className="absolute bottom-full mb-2 right-0 bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg overflow-hidden">
               <button
                 onClick={() => {
                   onExport("txt");
