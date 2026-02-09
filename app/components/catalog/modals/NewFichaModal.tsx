@@ -20,6 +20,7 @@ interface NewFichaModalProps {
   worlds: World[];
   categories: Category[];
   onSave: (ficha: Partial<Ficha>) => Promise<void>;
+  onOpenCreateCategory?: () => void;
 }
 
 export function NewFichaModal({
@@ -30,6 +31,7 @@ export function NewFichaModal({
   worlds,
   categories,
   onSave,
+  onOpenCreateCategory,
 }: NewFichaModalProps) {
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string>("");
   const [formData, setFormData] = useState<any>({
@@ -491,6 +493,7 @@ export function NewFichaModal({
             categories={categories}
             selectedSlug={selectedCategorySlug}
             onSelect={setSelectedCategorySlug}
+            onCreateNew={onOpenCreateCategory}
           />
         )}
 

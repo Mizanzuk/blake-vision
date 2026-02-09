@@ -520,6 +520,7 @@ onDelete={(id, name) => {
         universeName={universes.find(u => u.id === selectedUniverseId)?.nome || ''}
         worlds={worlds}
         categories={categories}
+        onOpenCreateCategory={openCreateCategoryDirectly}
       />
 
       <FichaModal
