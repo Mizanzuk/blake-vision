@@ -39,10 +39,13 @@ function formatFichaToText(ficha: Ficha): string {
     lines.push("");
   }
 
-  if (ficha.tags && ficha.tags.length > 0) {
-    lines.push("TAGS:");
-    lines.push(ficha.tags.join(", "));
-    lines.push("");
+  if (ficha.tags) {
+    const tagsStr = Array.isArray(ficha.tags) ? ficha.tags.join(", ") : ficha.tags;
+    if (tagsStr) {
+      lines.push("TAGS:");
+      lines.push(tagsStr);
+      lines.push("");
+    }
   }
 
   lines.push(`${"=".repeat(60)}`);
@@ -125,15 +128,12 @@ export function exportAsDoc(fichas: Ficha[]): void {
         <div class="ficha-meta">Tipo: ${escapeHtml(ficha.tipo)}</div>
         ${ficha.codigo ? `<div class="ficha-meta">Código: ${escapeHtml(ficha.codigo)}</div>` : ""}
         ${ficha.episodio ? `<div class="ficha-meta">Episódio: ${escapeHtml(ficha.episodio)}</div>` : ""}
-      </div>
-      
-      ${ficha.descricao ? `
+         ${ficha.tags ? `
         <div class="ficha-section">
-          <div class="ficha-section-title">Descrição</div>
-          <div class="ficha-content">${escapeHtml(ficha.descricao)}</div>
+          <div class="ficha-section-title">Tags</div>
+          <div class="ficha-content">${escapeHtml(Array.isArray(ficha.tags) ? ficha.tags.join(", ") : ficha.tags)}</div>
         </div>
-      ` : ""}
-      
+      ` : ""}   
       ${ficha.conteudo ? `
         <div class="ficha-section">
           <div class="ficha-section-title">Conteúdo</div>
@@ -148,10 +148,10 @@ export function exportAsDoc(fichas: Ficha[]): void {
         </div>
       ` : ""}
       
-      ${ficha.tags && ficha.tags.length > 0 ? `
+      ${ficha.tags ? `
         <div class="ficha-section">
           <div class="ficha-section-title">Tags</div>
-          <div class="ficha-content">${escapeHtml(ficha.tags.join(", "))}</div>
+          <div class="ficha-content">${escapeHtml(Array.isArray(ficha.tags) ? ficha.tags.join(", ") : ficha.tags)}</div>
         </div>
       ` : ""}
     </div>
@@ -210,13 +210,13 @@ export async function exportAsPdf(fichas: Ficha[]): Promise<void> {
 
       // Header da ficha
       doc.setFontSize(12);
-      doc.setFont(undefined, "bold");
+      doc.setFont("", "bold");
       doc.text(ficha.titulo, margin, yPosition, { maxWidth });
       yPosition += 7;
 
       // Meta informações
       doc.setFontSize(9);
-      doc.setFont(undefined, "normal");
+      doc.setFont("", "normal");
       doc.setTextColor(100);
       doc.text(`Tipo: ${ficha.tipo}`, margin, yPosition);
       yPosition += 5;
@@ -241,42 +241,45 @@ export async function exportAsPdf(fichas: Ficha[]): Promise<void> {
       doc.setFontSize(10);
 
       if (ficha.descricao) {
-        doc.setFont(undefined, "bold");
+        doc.setFont("", "bold");
         doc.text("Descrição:", margin, yPosition);
         yPosition += 5;
-        doc.setFont(undefined, "normal");
+        doc.setFont("", "normal");
         const descLines = doc.splitTextToSize(ficha.descricao, maxWidth);
         doc.text(descLines, margin, yPosition);
         yPosition += descLines.length * 4 + 3;
       }
 
       if (ficha.conteudo) {
-        doc.setFont(undefined, "bold");
+        doc.setFont("", "bold");
         doc.text("Conteúdo:", margin, yPosition);
         yPosition += 5;
-        doc.setFont(undefined, "normal");
+        doc.setFont("", "normal");
         const contentLines = doc.splitTextToSize(ficha.conteudo, maxWidth);
         doc.text(contentLines, margin, yPosition);
         yPosition += contentLines.length * 4 + 3;
       }
 
       if (ficha.resumo) {
-        doc.setFont(undefined, "bold");
+        doc.setFont("", "bold");
         doc.text("Resumo:", margin, yPosition);
         yPosition += 5;
-        doc.setFont(undefined, "normal");
+        doc.setFont("", "normal");
         const resumoLines = doc.splitTextToSize(ficha.resumo, maxWidth);
         doc.text(resumoLines, margin, yPosition);
         yPosition += resumoLines.length * 4 + 3;
       }
 
-      if (ficha.tags && ficha.tags.length > 0) {
-        doc.setFont(undefined, "bold");
-        doc.text("Tags:", margin, yPosition);
-        yPosition += 5;
-        doc.setFont(undefined, "normal");
-        doc.text(ficha.tags.join(", "), margin, yPosition, { maxWidth });
-        yPosition += 5;
+      if (ficha.tags) {
+        const tagsStr = Array.isArray(ficha.tags) ? ficha.tags.join(", ") : ficha.tags;
+        if (tagsStr) {
+          doc.setFont("", "bold");
+          doc.text("Tags:", margin, yPosition);
+          yPosition += 5;
+          doc.setFont("", "normal");
+          doc.text(tagsStr, margin, yPosition, { maxWidth });
+          yPosition += 5;
+        }
       }
 
       yPosition += 10;
