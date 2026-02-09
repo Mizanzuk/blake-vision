@@ -330,6 +330,7 @@ export default function FichaModal({
         </button>
       </div>
 
+      <div className="max-h-[calc(100vh-300px)] overflow-y-auto pr-4">
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Tab: Basic */}
         {activeTab === "basic" && (
@@ -672,6 +673,7 @@ export default function FichaModal({
           </>
         )}
       </form>
+      </div>
     </Modal>
     <ConfirmDialog />
     </>
