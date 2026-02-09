@@ -135,6 +135,9 @@ function EscritaPageContent() {
   const [selectedText, setSelectedText] = useState('');
   const [selectionMenuPosition, setSelectionMenuPosition] = useState<{x: number, y: number} | null>(null);
   
+  // Flag para evitar race condition ao salvar novo texto
+  const [isTransitioningToNewText, setIsTransitioningToNewText] = useState(false);
+  
   // Estados dos Agentes Flutuantes
   const [showUrthona, setShowUrthona] = useState(false);
   const [showUrizen, setShowUrizen] = useState(false);
@@ -403,11 +406,12 @@ function EscritaPageContent() {
     const textoId = searchParams.get("id");
     if (textoId && textoId !== currentTextId) {
       loadTexto(textoId);
-    } else if (!textoId && currentTextId) {
+    } else if (!textoId && currentTextId && !isTransitioningToNewText) {
       // Limpar estado quando navega para /escrita sem id
+      // Mas NAO fazer isso durante a transicao de salvar novo texto
       handleNewTexto();
     }
-  }, [searchParams, currentTextId]);
+  }, [searchParams, currentTextId, isTransitioningToNewText]);
   
   // Função para carregar texto do banco
   const loadTexto = async (id: string) => {
@@ -926,10 +930,13 @@ function EscritaPageContent() {
         
         // Se é novo texto, atualizar URL e ID
         if (!currentTextId && data.texto) {
-          // Fazer router.push ANTES de setCurrentTextId para evitar race condition
-          // onde o useEffect vê currentTextId mudado mas searchParams ainda não atualizado
+          // Ativar flag para evitar que useEffect execute handleNewTexto()
+          setIsTransitioningToNewText(true);
+          // Fazer router.push ANTES de setCurrentTextId
           router.push(`/escrita?id=${data.texto.id}`);
           setCurrentTextId(data.texto.id);
+          // Desativar flag após um pequeno delay para permitir que a navegação complete
+          setTimeout(() => setIsTransitioningToNewText(false), 500);
         }
         
         // Recarregar lista de textos
