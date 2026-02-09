@@ -47,43 +47,25 @@ export async function POST(request: NextRequest) {
           .replace(/^-+|-+$/g, "");
       }
 
-      // Create or find roteiro (episode) if unitNumber is provided
-      let roteiroId: string | null = null;
+      // Find episode by number from episodes table
+      let episodeId: string | null = null;
       
       // Validar se unitNumber é um número válido
       const episodioNumber = unitNumber ? parseInt(String(unitNumber), 10) : null;
       const isValidEpisodio = episodioNumber && !isNaN(episodioNumber) && episodioNumber > 0;
       
       if (isValidEpisodio && worldId) {
-        // Check if roteiro already exists
-        const { data: existingRoteiro } = await supabase
-          .from("roteiros")
-          .select("*")
+        // Find episode in episodes table
+        const { data: existingEpisode } = await supabase
+          .from("episodes")
+          .select("id")
           .eq("world_id", worldId)
-          .eq("episodio", episodioNumber)
+          .eq("numero", episodioNumber)
           .eq("user_id", user.id)
           .single();
         
-        if (existingRoteiro) {
-          // Roteiro exists, use its ID
-          roteiroId = existingRoteiro.id;
-        } else {
-          // Create new roteiro
-          const { data: newRoteiro, error: roteiroError } = await supabase
-            .from("roteiros")
-            .insert({
-              world_id: worldId,
-              episodio: episodioNumber,
-              titulo: documentName || `Episódio ${episodioNumber}`,
-              conteudo: text || "",
-              user_id: user.id,
-            })
-            .select()
-            .single();
-          
-          if (!roteiroError && newRoteiro) {
-            roteiroId = newRoteiro.id;
-          }
+        if (existingEpisode) {
+          episodeId = existingEpisode.id;
         }
       }
 
@@ -115,7 +97,7 @@ export async function POST(request: NextRequest) {
           conteudo,
           tags,
           episodio: unitNumber || null,
-          episode_id: roteiroId || null,
+          episode_id: episodeId || null,
           aparece_em: null,
           codigo: null,
           ano_diegese,

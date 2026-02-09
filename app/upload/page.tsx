@@ -16,6 +16,7 @@ import { ConfirmationModal } from "@/app/components/ui/ConfirmationModal";
 import { UniverseDeleteModal } from "@/app/components/ui/UniverseDeleteModal";
 import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import { EpisodesDropdown } from "@/app/components/ui/EpisodesDropdown";
+import { EpisodeCreationModal } from "@/app/components/ui/EpisodeCreationModal";
 import WorldModal from "@/app/components/projetos/WorldModal";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
@@ -58,6 +59,8 @@ export default function UploadPage() {
   const [text, setText] = useState<string>("");
   const [existingEpisodes, setExistingEpisodes] = useState<string[]>([]);
   const [showNewEpisodeInput, setShowNewEpisodeInput] = useState(false);
+  const [showNewEpisodeModal, setShowNewEpisodeModal] = useState(false);
+  const [episodes, setEpisodes] = useState<any[]>([]);
 
   // Upload state
   const [isParsingFile, setIsParsingFile] = useState(false);
@@ -208,15 +211,15 @@ export default function UploadPage() {
   async function fetchExistingEpisodes(worldId: string) {
     try {
       const { data } = await supabase
-        .from("fichas")
-        .select("episodio")
+        .from("episodes")
+        .select("id, numero, titulo")
         .eq("world_id", worldId)
-        .not("episodio", "is", null)
-        .order("episodio", { ascending: true });
+        .order("numero", { ascending: true });
       
       if (data) {
-        const episodes = Array.from(new Set(data.map(f => f.episodio).filter(Boolean)));
-        setExistingEpisodes(episodes);
+        setEpisodes(data);
+        const episodeStrings = data.map(e => String(e.numero));
+        setExistingEpisodes(episodeStrings);
       }
     } catch (err) {
       console.error("Erro ao carregar episódios:", err);
@@ -641,30 +644,13 @@ export default function UploadPage() {
                 selectedEpisodes={unitNumber ? [unitNumber] : []}
                 onToggle={(episode) => {
                   setUnitNumber(episode);
-                  setShowNewEpisodeInput(false);
                 }}
                 onCreate={() => {
-                  setShowNewEpisodeInput(true);
-                  setUnitNumber("");
+                  setShowNewEpisodeModal(true);
                 }}
               />
             )}
-            
-            {/* Input para novo episódio */}
-            {showNewEpisodeInput && (
-              <div>
-                <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-1.5">
-                  Novo episódio / capítulo #
-                </label>
-                <input
-                  type="text"
-                  className="w-full rounded-md bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default px-3 py-2 text-sm"
-                  value={unitNumber}
-                  onChange={(e) => setUnitNumber(e.target.value)}
-                  placeholder="Ex: 01, 02, 03..."
-                />
-              </div>
-            )}
+
 
             {/* Nome do Documento */}
             {selectedWorldId && (
@@ -944,6 +930,38 @@ export default function UploadPage() {
           onCancel={() => setConfirmationModal(null)}
         />
       )}
+
+      {/* Modal de Criar Episódio */}
+      <EpisodeCreationModal
+        isOpen={showNewEpisodeModal}
+        onClose={() => setShowNewEpisodeModal(false)}
+        onSave={async (numero, titulo) => {
+          try {
+            const response = await fetch("/api/episodes", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                world_id: selectedWorldId,
+                numero,
+                titulo,
+              }),
+            });
+
+            if (!response.ok) {
+              const error = await response.json();
+              throw new Error(error.error || "Erro ao criar episódio");
+            }
+
+            toast.success("Episódio criado com sucesso!");
+            setUnitNumber(String(numero));
+            await fetchExistingEpisodes(selectedWorldId);
+          } catch (error: any) {
+            toast.error(error.message || "Erro ao criar episódio");
+            throw error;
+          }
+        }}
+        worldId={selectedWorldId}
+      />
     </div>
   );
 }
