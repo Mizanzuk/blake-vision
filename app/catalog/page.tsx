@@ -71,6 +71,7 @@ function CatalogContent() {
   const [showWorldModal, setShowWorldModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showManageCategoriesModal, setShowManageCategoriesModal] = useState(false);
+  const [startCreateCategoryDirectly, setStartCreateCategoryDirectly] = useState(false);
   const [showNewUniverseModal, setShowNewUniverseModal] = useState(false);
   const [editingUniverse, setEditingUniverse] = useState<Universe | null>(null);
   const [newUniverseName, setNewUniverseName] = useState("");
@@ -442,7 +443,10 @@ onDelete={(id, name) => {
               types={categories}
               selectedSlugs={selectedTypes}
               onToggle={toggleTypeSelection}
-              onCreate={() => setShowManageCategoriesModal(true)}
+              onCreate={() => {
+                setStartCreateCategoryDirectly(true);
+                setShowManageCategoriesModal(true);
+              }}
             />
           </div>
 
@@ -637,9 +641,13 @@ onDelete={(id, name) => {
 
       <ManageCategoriesModal
         isOpen={showManageCategoriesModal}
-        onClose={() => setShowManageCategoriesModal(false)}
+        onClose={() => {
+          setShowManageCategoriesModal(false);
+          setStartCreateCategoryDirectly(false);
+        }}
         universeId={selectedUniverseId}
         onCategoryDeleted={loadCatalogData}
+        startWithCreating={startCreateCategoryDirectly}
       />
 
       <FichaViewModal

@@ -13,6 +13,7 @@ interface ManageCategoriesModalProps {
   onClose: () => void;
   universeId: string;
   onCategoryDeleted?: () => void;
+  startWithCreating?: boolean;
 }
 
 export default function ManageCategoriesModal({
@@ -20,6 +21,7 @@ export default function ManageCategoriesModal({
   onClose,
   universeId,
   onCategoryDeleted,
+  startWithCreating = false,
 }: ManageCategoriesModalProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
@@ -46,9 +48,19 @@ export default function ManageCategoriesModal({
       setIsEditing(false);
       setEditDescription('');
       setHasMeasured(false); // Reset measurement flag
+      // Se startWithCreating é true, inicia direto na tela de criação
+      if (startWithCreating) {
+        setIsCreating(true);
+        setNewCategoryName('');
+        setNewCategorySlug('');
+        setNewCategoryPrefix('');
+        setNewCategoryDescription('');
+      } else {
+        setIsCreating(false);
+      }
       loadCategories();
     }
-  }, [isOpen, universeId]);
+  }, [isOpen, universeId, startWithCreating]);
 
   // Fechar modal ao pressionar Esc
   useEffect(() => {
@@ -425,7 +437,7 @@ export default function ManageCategoriesModal({
       >
         {/* Header - sem border */}
         <div className="flex justify-between items-center px-6 py-3">
-          <h2 className="text-xl font-semibold">Gerenciar Categorias</h2>
+          <h2 className="text-xl font-semibold">{isCreating ? 'Nova Categoria' : 'Gerenciar Categorias'}</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -460,6 +472,7 @@ export default function ManageCategoriesModal({
               onCancel={handleCancelCreating}
               onCreate={handleCreateCategory}
               onGenerateWithAI={handleGenerateDescriptionForNewCategory}
+              showBackButton={!startWithCreating}
             />
           ) : !selectedCategory ? (
             <CategoryListView
@@ -543,6 +556,7 @@ interface CreateCategoryViewProps {
   onCancel: () => void;
   onCreate: () => void;
   onGenerateWithAI: () => void;
+  showBackButton?: boolean;
 }
 
 function CreateCategoryView({
@@ -558,15 +572,18 @@ function CreateCategoryView({
   onCancel,
   onCreate,
   onGenerateWithAI,
+  showBackButton = true,
 }: CreateCategoryViewProps) {
   return (
     <div className="w-full flex flex-col">
       {/* Back Button */}
-      <div className="flex gap-2 px-6 py-3">
-        <Button size="sm" variant="ghost" onClick={onCancel}>
-          ← Voltar
-        </Button>
-      </div>
+      {showBackButton && (
+        <div className="flex gap-2 px-6 py-3">
+          <Button size="sm" variant="ghost" onClick={onCancel}>
+            ← Voltar
+          </Button>
+        </div>
+      )}
 
       {/* Form Content */}
       <div className="flex-1 overflow-y-auto px-6 pb-6">
@@ -889,8 +906,8 @@ interface CreateCategoryViewProps {
   onCancel: () => void;
   onCreate: () => void;
   onGenerateWithAI: () => void;
+  showBackButton?: boolean;
 }
-
 
 interface CategoryListViewProps {
   categories: Category[];
