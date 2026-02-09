@@ -62,6 +62,13 @@ export default function ManageCategoriesModal({
     }
   }, [isOpen, universeId, startWithCreating]);
 
+  // Resetar isCreating quando o modal fecha
+  useEffect(() => {
+    if (!isOpen) {
+      setIsCreating(false);
+    }
+  }, [isOpen]);
+
   // Fechar modal ao pressionar Esc
   useEffect(() => {
     if (!isOpen) return;
