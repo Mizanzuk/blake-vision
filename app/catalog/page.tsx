@@ -361,8 +361,13 @@ function CatalogContent() {
             
             <Button
               size="sm"
-              variant={showWorldFilter ? "secondary" : "ghost"}
-              onClick={() => setShowWorldFilter(!showWorldFilter)}
+              variant={isSelectionMode ? "secondary" : "ghost"}
+              onClick={() => {
+                setIsSelectionMode(!isSelectionMode);
+                if (isSelectionMode) {
+                  setSelectedFichaIds([]);
+                }
+              }}
               disabled={!selectedUniverseId}
               icon={
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
