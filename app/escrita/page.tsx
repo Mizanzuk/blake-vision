@@ -924,10 +924,11 @@ function EscritaPageContent() {
           setHasUnsavedMetadataChanges(false);
         }
         
-        // Se é novo texto, atualizar ID
-        // NãO fazer router.push para evitar recarregamento desnecessário
+        // Se é novo texto, atualizar ID e URL
         if (!currentTextId && data.texto) {
           setCurrentTextId(data.texto.id);
+          // Atualizar URL para sincronizar com o estado
+          router.push(`/escrita?id=${data.texto.id}`);
         }
         
         // Recarregar lista de textos
