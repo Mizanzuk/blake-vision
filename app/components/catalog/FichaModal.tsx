@@ -6,7 +6,7 @@ import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
 import type { World, Category, Ficha } from "@/app/types";
-import RelationsTab from "./RelationsTab";
+
 
 interface FichaModalProps {
   isOpen: boolean;
