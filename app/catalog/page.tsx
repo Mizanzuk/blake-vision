@@ -112,6 +112,11 @@ function CatalogContent() {
     setShowNewUniverseModal(true);
   }
 
+  function openCreateCategoryDirectly() {
+    setStartCreateCategoryDirectly(true);
+    setShowManageCategoriesModal(true);
+  }
+
   function promptDeleteUniverse(universeId: string, universeName: string) {
     const captcha = generateCaptcha();
     setCaptchaQuestion(captcha);
