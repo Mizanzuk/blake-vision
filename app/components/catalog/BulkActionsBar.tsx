@@ -18,6 +18,7 @@ export default function BulkActionsBar({
   isDeleting = false,
 }: BulkActionsBarProps) {
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [hoveredOption, setHoveredOption] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Fechar dropdown ao apertar Esc ou clicar fora
@@ -88,7 +89,13 @@ export default function BulkActionsBar({
                   onExport("txt");
                   setShowExportMenu(false);
                 }}
-                className="w-full px-4 py-2 text-sm text-text-light-primary dark:text-dark-primary hover:bg-light-base dark:hover:bg-dark-base transition-colors text-left"
+                onMouseEnter={() => setHoveredOption("txt")}
+                onMouseLeave={() => setHoveredOption(null)}
+                className={`w-full px-4 py-2 text-sm text-text-light-primary dark:text-dark-primary transition-colors text-left ${
+                  hoveredOption === "txt"
+                    ? "bg-light-base dark:bg-dark-base"
+                    : ""
+                }`}
               >
                 TXT
               </button>
@@ -97,7 +104,13 @@ export default function BulkActionsBar({
                   onExport("doc");
                   setShowExportMenu(false);
                 }}
-                className="w-full px-4 py-2 text-sm text-text-light-primary dark:text-dark-primary hover:bg-light-base dark:hover:bg-dark-base transition-colors text-left border-t border-border-light-default dark:border-border-dark-default"
+                onMouseEnter={() => setHoveredOption("doc")}
+                onMouseLeave={() => setHoveredOption(null)}
+                className={`w-full px-4 py-2 text-sm text-text-light-primary dark:text-dark-primary transition-colors text-left border-t border-border-light-default dark:border-border-dark-default ${
+                  hoveredOption === "doc"
+                    ? "bg-light-base dark:bg-dark-base"
+                    : ""
+                }`}
               >
                 DOC
               </button>
@@ -106,7 +119,13 @@ export default function BulkActionsBar({
                   onExport("pdf");
                   setShowExportMenu(false);
                 }}
-                className="w-full px-4 py-2 text-sm text-text-light-primary dark:text-dark-primary hover:bg-light-base dark:hover:bg-dark-base transition-colors text-left border-t border-border-light-default dark:border-border-dark-default"
+                onMouseEnter={() => setHoveredOption("pdf")}
+                onMouseLeave={() => setHoveredOption(null)}
+                className={`w-full px-4 py-2 text-sm text-text-light-primary dark:text-dark-primary transition-colors text-left border-t border-border-light-default dark:border-border-dark-default ${
+                  hoveredOption === "pdf"
+                    ? "bg-light-base dark:bg-dark-base"
+                    : ""
+                }`}
               >
                 PDF
               </button>
