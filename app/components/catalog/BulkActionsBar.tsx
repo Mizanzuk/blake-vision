@@ -93,7 +93,7 @@ export default function BulkActionsBar({
                 onMouseLeave={() => setHoveredOption(null)}
                 className={`w-full px-4 py-2 text-sm text-text-light-primary dark:text-dark-primary transition-colors text-left ${
                   hoveredOption === "txt"
-                    ? "bg-light-base dark:bg-dark-base"
+                    ? "bg-gray-100 dark:bg-gray-800"
                     : ""
                 }`}
               >
@@ -108,7 +108,7 @@ export default function BulkActionsBar({
                 onMouseLeave={() => setHoveredOption(null)}
                 className={`w-full px-4 py-2 text-sm text-text-light-primary dark:text-dark-primary transition-colors text-left border-t border-border-light-default dark:border-border-dark-default ${
                   hoveredOption === "doc"
-                    ? "bg-light-base dark:bg-dark-base"
+                    ? "bg-gray-100 dark:bg-gray-800"
                     : ""
                 }`}
               >
@@ -123,7 +123,7 @@ export default function BulkActionsBar({
                 onMouseLeave={() => setHoveredOption(null)}
                 className={`w-full px-4 py-2 text-sm text-text-light-primary dark:text-dark-primary transition-colors text-left border-t border-border-light-default dark:border-border-dark-default ${
                   hoveredOption === "pdf"
-                    ? "bg-light-base dark:bg-dark-base"
+                    ? "bg-gray-100 dark:bg-gray-800"
                     : ""
                 }`}
               >
