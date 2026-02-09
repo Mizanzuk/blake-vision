@@ -13,7 +13,7 @@ import { Modal } from '@/app/components/ui/Modal';
 import { Button } from '@/app/components/ui/Button';
 import { Badge } from '@/app/components/ui/Badge';
 import { Input, Textarea } from '@/app/components/ui';
-import WorldModal from '@/app/components/catalog/WorldModal';
+import WorldModal from '@/app/components/projetos/WorldModal';
 import CategoryModal from '@/app/components/catalog/CategoryModal';
 import { UniverseDropdown } from '@/app/components/ui';
 import { ConfirmationModal } from '@/app/components/ui/ConfirmationModal';
@@ -1226,14 +1226,10 @@ function EscritaPageContent() {
   const handleSaveWorld = async (worldData: any) => {
     try {
       const method = worldData.id ? 'PUT' : 'POST';
-      const dataToSend = {
-        ...worldData,
-        universe_id: selectedUniverseId,
-      };
       const response = await fetch('/api/worlds', {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dataToSend),
+        body: JSON.stringify(worldData),
       });
 
       const data = await response.json();
@@ -3167,14 +3163,14 @@ function EscritaPageContent() {
       
       {/* Modal de Criar Mundo */}
       <WorldModal
-        isOpen={showCreateWorldModal}
+        world={worldToEdit}
+        universeId={selectedUniverseId}
+        onSave={handleSaveWorld}
+        onDelete={handleDeleteWorld}
         onClose={() => {
           setShowCreateWorldModal(false);
           setWorldToEdit(null);
         }}
-        world={worldToEdit}
-        onSave={handleSaveWorld}
-        onDelete={handleDeleteWorld}
       />
       
       {/* Modal de Criar Episódio - Redirecionamento */}
