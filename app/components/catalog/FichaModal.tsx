@@ -660,6 +660,7 @@ export default function FichaModal({
           </>
         )}
         </form>
+        </div>
 
         {/* Footer */}
         <div className="flex items-center justify-between p-6 border-t border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised">
