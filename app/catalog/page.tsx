@@ -28,6 +28,8 @@ import FichaCard from "@/app/components/shared/FichaCard";
 import FichaViewModal from "@/app/components/shared/FichaViewModal";
 import NewConceptRuleModal from "@/app/components/shared/NewConceptRuleModal";
 import ConceptRuleViewModal from "@/app/components/shared/ConceptRuleViewModal";
+import BulkActionsBar from "@/app/components/catalog/BulkActionsBar";
+import { exportAsText, exportAsDoc, exportAsPdf } from "@/app/lib/export/fichas";
 
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { useUniverse } from "@/app/lib/contexts/UniverseContext";
@@ -64,6 +66,7 @@ function CatalogContent() {
   // Multiple selection
   const [selectedFichaIds, setSelectedFichaIds] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   // Modals
   const [showNewFichaModal, setShowNewFichaModal] = useState(false);
@@ -301,6 +304,83 @@ function CatalogContent() {
     );
   };
 
+  // Bulk export fichas
+  const handleBulkExport = async (format: "txt" | "doc" | "pdf") => {
+    try {
+      const selectedFichas = fichas.filter(f => selectedFichaIds.includes(f.id));
+      
+      if (selectedFichas.length === 0) {
+        toast.error("Nenhuma ficha selecionada");
+        return;
+      }
+
+      if (format === "txt") {
+        exportAsText(selectedFichas);
+        toast.success(`${selectedFichas.length} ficha(s) exportada(s) como TXT`);
+      } else if (format === "doc") {
+        exportAsDoc(selectedFichas);
+        toast.success(`${selectedFichas.length} ficha(s) exportada(s) como DOC`);
+      } else if (format === "pdf") {
+        await exportAsPdf(selectedFichas);
+        toast.success(`${selectedFichas.length} ficha(s) exportada(s) como PDF`);
+      }
+    } catch (error) {
+      console.error("Error exporting fichas:", error);
+      toast.error("Erro ao exportar fichas");
+    }
+  };
+
+  // Bulk delete fichas
+  const handleBulkDelete = async () => {
+    const confirmed = await confirm({
+      title: "Confirmar Exclusao em Massa",
+      message: `Tem certeza que deseja excluir ${selectedFichaIds.length} ficha(s)? Esta acao nao pode ser desfeita.`,
+      confirmText: "Deletar",
+      cancelText: "Cancelar",
+      variant: "danger"
+    });
+
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+    try {
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const fichaId of selectedFichaIds) {
+        try {
+          const response = await fetch(`/api/fichas/${fichaId}`, {
+            method: "DELETE",
+          });
+
+          if (response.ok) {
+            successCount++;
+          } else {
+            errorCount++;
+          }
+        } catch (error) {
+          errorCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`${successCount} ficha(s) excluida(s) com sucesso`);
+        loadCatalogData();
+        setSelectedFichaIds([]);
+        setIsSelectionMode(false);
+      }
+
+      if (errorCount > 0) {
+        toast.error(`Erro ao excluir ${errorCount} ficha(s)`);
+      }
+    } catch (error) {
+      console.error("Error deleting fichas:", error);
+      toast.error("Erro ao excluir fichas");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   // Get unique episode numbers from fichas filtered by selected world
   // If no world is selected, show all episodes; if a world is selected, show only episodes from that world
   const episodeNumbersFromFichas = (fichas || [])
@@ -526,6 +606,16 @@ onDelete={(id, name) => {
           />
         )}
       </div>
+
+      {/* Bulk Actions Bar */}
+      {isSelectionMode && selectedFichaIds.length > 0 && (
+        <BulkActionsBar
+          selectedCount={selectedFichaIds.length}
+          onExport={handleBulkExport}
+          onDelete={handleBulkDelete}
+          isDeleting={isDeleting}
+        />
+      )}
 
       {/* Modals */}
       <NewFichaModal
