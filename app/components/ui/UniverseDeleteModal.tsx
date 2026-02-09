@@ -57,7 +57,7 @@ export function UniverseDeleteModal({
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="px-6 py-4 border-b border-border-light-default dark:border-border-dark-default">
+          <div className="px-6 py-4">
             <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary">
               Confirmar Exclusão
             </h2>
@@ -99,7 +99,7 @@ export function UniverseDeleteModal({
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 border-t border-border-light-default dark:border-border-dark-default flex gap-2 justify-end">
+          <div className="px-6 py-4 flex gap-2 justify-end">
             <Button
               size="sm"
               variant="secondary"
