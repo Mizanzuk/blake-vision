@@ -30,7 +30,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     },
     ref
   ) => {
-    const baseStyles = "rounded-lg border bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder:text-text-light-tertiary dark:placeholder:text-dark-tertiary transition-colors focus:outline-none focus:ring-0 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-light-overlay dark:hover:bg-dark-overlay";
+    const baseStyles = "rounded-lg border bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder:text-text-light-tertiary dark:placeholder:text-dark-tertiary placeholder:text-sm transition-colors focus:outline-none focus:ring-0 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-light-overlay dark:hover:bg-dark-overlay";
 
     const variants = {
       default: "border-border-light-default dark:border-border-dark-default",
@@ -39,9 +39,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     };
 
     const sizes = {
-      sm: "h-10 px-3 py-2 text-sm",
-      md: "h-11 px-4 py-2.5 text-base",
-      lg: "h-12 px-5 py-3 text-lg",
+      sm: "h-10 px-3 py-2 text-sm placeholder:text-xs",
+      md: "h-11 px-4 py-2.5 text-base placeholder:text-sm",
+      lg: "h-12 px-5 py-3 text-lg placeholder:text-base",
     };
 
     const actualVariant = error ? "error" : variant;
