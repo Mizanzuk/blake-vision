@@ -70,7 +70,8 @@ export default function UploadPage() {
   // Extraction results
   const [extractedEntities, setExtractedEntities] = useState<ExtractedEntity[]>([]);
   const [editingFichaIndex, setEditingFichaIndex] = useState<number | null>(null);
-  const [editingFichaCategory, setEditingFichaCategory] = useState<string>("");
+  const [editingFichaData, setEditingFichaData] = useState<ExtractedEntity | null>(null);
+  const [showEditFichaModal, setShowEditFichaModal] = useState(false);
 
   // Modals
   const [showNewUniverseModal, setShowNewUniverseModal] = useState(false);
@@ -99,15 +100,19 @@ export default function UploadPage() {
         } else if (showNewWorldModal) {
           setShowNewWorldModal(false);
           setWorldToEdit(null);
+        } else if (showEditFichaModal) {
+          setShowEditFichaModal(false);
+          setEditingFichaIndex(null);
+          setEditingFichaData(null);
         }
       }
     };
     
-    if (showNewUniverseModal || showNewWorldModal) {
+    if (showNewUniverseModal || showNewWorldModal || showEditFichaModal) {
       document.addEventListener('keydown', handleEscape);
       return () => document.removeEventListener('keydown', handleEscape);
     }
-  }, [showNewUniverseModal, showNewWorldModal, isCreatingUniverse]);
+  }, [showNewUniverseModal, showNewWorldModal, showEditFichaModal, isCreatingUniverse]);
 
   useEffect(() => {
     checkAuth();
@@ -577,18 +582,29 @@ export default function UploadPage() {
 
   const handleEditFicha = (index: number) => {
     setEditingFichaIndex(index);
-    setEditingFichaCategory(extractedEntities[index].tipo || "conceito");
+    setEditingFichaData({ ...extractedEntities[index] });
+    setShowEditFichaModal(true);
   };
 
   const handleSaveEditFicha = () => {
-    if (editingFichaIndex !== null) {
+    if (editingFichaIndex !== null && editingFichaData) {
       const updatedEntities = [...extractedEntities];
-      updatedEntities[editingFichaIndex].tipo = editingFichaCategory;
+      updatedEntities[editingFichaIndex] = editingFichaData;
       setExtractedEntities(updatedEntities);
+      setShowEditFichaModal(false);
       setEditingFichaIndex(null);
-      setEditingFichaCategory("");
+      setEditingFichaData(null);
     }
   };
+
+  const handleEditFichaChange = (field: string, value: any) => {
+    if (editingFichaData) {
+      setEditingFichaData({
+        ...editingFichaData,
+        [field]: value
+      });
+    }
+  }
 
   const handleRemoveFicha = (index: number) => {
     setExtractedEntities(prev => prev.filter((_, i) => i !== index));
@@ -836,7 +852,7 @@ export default function UploadPage() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleEditFicha(index)}
-                          className="text-xs px-3 py-1.5 rounded-md border border-border-light-default text-text-light-secondary hover:bg-light-base"
+                          className="text-xs px-3 py-1.5 rounded-md border border-border-light-default text-text-light-secondary hover:bg-light-raised dark:border-border-dark-default dark:text-dark-secondary dark:hover:bg-dark-raised"
                         >
                           Editar
                         </button>
@@ -867,22 +883,117 @@ export default function UploadPage() {
         )}
       </div>
 
-      {/* Modal Editar Categoria */}
-      {editingFichaIndex !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setEditingFichaIndex(null)}>
-          <div className="bg-light-base dark:bg-dark-base rounded-lg p-6 max-w-sm w-full mx-4 shadow-lg" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold mb-4">Editar Categoria</h3>
-            <div className="mb-6">
-              <label className="block text-sm font-medium mb-2">Categoria</label>
-              <select value={editingFichaCategory} onChange={(e) => setEditingFichaCategory(e.target.value)} className="w-full px-3 py-2 rounded-md border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary">
-                {categories.map((cat) => (
-                  <option key={cat.slug} value={cat.slug}>{cat.label}</option>
-                ))}
-              </select>
+      {/* Modal Editar Ficha */}
+      {showEditFichaModal && editingFichaData && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+          onClick={() => {
+            setShowEditFichaModal(false);
+            setEditingFichaIndex(null);
+            setEditingFichaData(null);
+          }}
+        >
+          <div
+            className="bg-light-base dark:bg-dark-base rounded-lg shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto border border-border-light-default dark:border-border-dark-default"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised sticky top-0">
+              <h2 className="text-xl font-bold">Editar Ficha</h2>
+              <button
+                onClick={() => {
+                  setShowEditFichaModal(false);
+                  setEditingFichaIndex(null);
+                  setEditingFichaData(null);
+                }}
+                className="text-2xl leading-none hover:opacity-70"
+              >
+                &times;
+              </button>
             </div>
-            <div className="flex gap-3 justify-end">
-              <Button variant="ghost" size="sm" onClick={() => setEditingFichaIndex(null)}>Cancelar</Button>
-              <Button variant="primary" size="sm" onClick={handleSaveEditFicha}>Salvar</Button>
+
+            {/* Body */}
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold mb-2">Categoria</label>
+                  <select
+                    value={editingFichaData.tipo || "conceito"}
+                    onChange={(e) => handleEditFichaChange("tipo", e.target.value)}
+                    className="w-full px-3 py-2 rounded-md border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary"
+                  >
+                    {categories.map((cat) => (
+                      <option key={cat.slug} value={cat.slug}>
+                        {cat.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold mb-2">Titulo</label>
+                <input
+                  type="text"
+                  value={editingFichaData.titulo || ""}
+                  onChange={(e) => handleEditFichaChange("titulo", e.target.value)}
+                  className="w-full px-3 py-2 rounded-md border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary"
+                  placeholder="Titulo da ficha"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold mb-2">Resumo</label>
+                <textarea
+                  value={editingFichaData.resumo || ""}
+                  onChange={(e) => handleEditFichaChange("resumo", e.target.value)}
+                  className="w-full px-3 py-2 rounded-md border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary min-h-[80px]"
+                  placeholder="Breve resumo em 1-2 linhas..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold mb-2">Conteudo</label>
+                <textarea
+                  value={editingFichaData.conteudo || ""}
+                  onChange={(e) => handleEditFichaChange("conteudo", e.target.value)}
+                  className="w-full px-3 py-2 rounded-md border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary min-h-[150px]"
+                  placeholder="Conteudo completo da ficha..."
+                />
+              </div>
+
+              {editingFichaData.tags && (
+                <div>
+                  <label className="block text-xs font-semibold mb-2">Tags</label>
+                  <input
+                    type="text"
+                    value={editingFichaData.tags || ""}
+                    onChange={(e) => handleEditFichaChange("tags", e.target.value)}
+                    className="w-full px-3 py-2 rounded-md border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary"
+                    placeholder="Tags separadas por virgula"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="flex gap-3 justify-end p-6 border-t border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised sticky bottom-0">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setShowEditFichaModal(false);
+                  setEditingFichaIndex(null);
+                  setEditingFichaData(null);
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleSaveEditFicha}
+              >
+                Salvar
+              </Button>
             </div>
           </div>
         </div>
