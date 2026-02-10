@@ -60,3 +60,46 @@ export async function GET(
     );
   }
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { slug: string } }
+) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    }
+
+    const { slug } = params;
+
+    if (!slug) {
+      return NextResponse.json({ error: "ID é obrigatório" }, { status: 400 });
+    }
+
+    // Deletar ficha por ID
+    const { error } = await supabase
+      .from("fichas")
+      .delete()
+      .eq("id", slug)
+      .eq("user_id", user.id);
+
+    if (error) {
+      console.error("Erro ao deletar ficha:", error);
+      return NextResponse.json(
+        { error: error.message || "Erro ao deletar ficha" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error("Erro na API de delete de ficha:", error);
+    return NextResponse.json(
+      { error: error.message || "Erro interno" },
+      { status: 500 }
+    );
+  }
+}
