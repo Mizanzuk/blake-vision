@@ -555,7 +555,7 @@ export default function UploadPage() {
       // Limpar formulário
       setExtractedEntities([]);
       setText("");
-      setDocumentName("");
+      setEpisodeTitle("");
       setUnitNumber("");
     } catch (err: any) {
       console.error("Erro ao salvar:", err);
