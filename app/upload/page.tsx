@@ -72,6 +72,7 @@ export default function UploadPage() {
   const [editingFichaIndex, setEditingFichaIndex] = useState<number | null>(null);
   const [editingFichaData, setEditingFichaData] = useState<ExtractedEntity | null>(null);
   const [showEditFichaModal, setShowEditFichaModal] = useState(false);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
 
   // Modals
   const [showNewUniverseModal, setShowNewUniverseModal] = useState(false);
@@ -917,17 +918,37 @@ export default function UploadPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold mb-2">Categoria</label>
-                  <select
-                    value={editingFichaData.tipo || "conceito"}
-                    onChange={(e) => handleEditFichaChange("tipo", e.target.value)}
-                    className="w-full px-3 py-2 rounded-md border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary"
-                  >
-                    {categories.map((cat) => (
-                      <option key={cat.slug} value={cat.slug}>
-                        {cat.label}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                      className="w-full px-3 py-2 rounded-md border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary text-left flex justify-between items-center"
+                    >
+                      <span>
+                        {categories.find(c => c.slug === editingFichaData.tipo)?.label || "Selecione uma categoria"}
+                      </span>
+                      <span className="text-xs">▼</span>
+                    </button>
+                    {showCategoryDropdown && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-md shadow-lg z-50">
+                        {categories.map((cat) => (
+                          <button
+                            key={cat.slug}
+                            onClick={() => {
+                              handleEditFichaChange("tipo", cat.slug);
+                              setShowCategoryDropdown(false);
+                            }}
+                            className={`w-full px-3 py-2 text-left hover:bg-light-hover dark:hover:bg-dark-hover ${
+                              editingFichaData.tipo === cat.slug
+                                ? "bg-brand-primary text-white"
+                                : "text-text-light-primary dark:text-dark-primary"
+                            }`}
+                          >
+                            {cat.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
