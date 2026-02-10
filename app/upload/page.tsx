@@ -573,7 +573,9 @@ export default function UploadPage() {
     } else {
       setSelectedCategories(categories.map(c => c.slug));
     }
-    const handleEditFicha = (index: number) => {
+  }
+
+  const handleEditFicha = (index: number) => {
     setEditingFichaIndex(index);
     setEditingFichaCategory(extractedEntities[index].tipo || "conceito");
   };
