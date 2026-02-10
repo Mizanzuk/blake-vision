@@ -200,23 +200,30 @@ Retorne APENAS o JSON, sem texto adicional.`;
       );
     }
 
-    // Gerar Sinopse e Roteiro automaticamente
-    let sinopseContent = "";
-    let roteiroContent = "";
+    // Gerar Sinopse automaticamente (logline + parágrafo)
+    let sinopseResumo = "";
+    let sinopseConteudo = "";
 
     try {
-      const sinopsePrompt = `Baseado no seguinte texto narrativo, gere uma sinopse concisa que resuma a essência da história em 2-3 parágrafos:
+      const sinopsePrompt = `Baseado no seguinte texto narrativo, gere:
+1. Uma LOGLINE (uma única linha que resume a essência da história)
+2. Uma SINOPSE (um parágrafo que descreve a história em detalhes)
 
+Texto:
 ${extractedText.slice(0, 5000)}
 
-Sinopse:`;
+Retorne APENAS um JSON válido no seguinte formato:
+{
+  "logline": "Uma única linha resumindo a história",
+  "sinopse": "Um parágrafo descrevendo a história"
+}`;
 
       const sinopseCompletion = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
           {
             role: "system",
-            content: "Você é um assistente especializado em criar sinopses de histórias.",
+            content: "Você é um assistente especializado em criar sinopses de histórias. Retorne APENAS JSON válido.",
           },
           {
             role: "user",
@@ -227,53 +234,36 @@ Sinopse:`;
         max_tokens: 500,
       });
 
-      sinopseContent = sinopseCompletion.choices[0]?.message?.content || "";
-
-      const roteiroPrompt = `Baseado no seguinte texto narrativo, gere um roteiro estruturado com as principais cenas e atos da história:
-
-${extractedText.slice(0, 5000)}
-
-Roteiro (em formato de lista de cenas/atos):`;
-
-      const roteiroCompletion = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          {
-            role: "system",
-            content: "Você é um assistente especializado em criar roteiros de histórias.",
-          },
-          {
-            role: "user",
-            content: roteiroPrompt,
-          },
-        ],
-        temperature: 0.5,
-        max_tokens: 800,
-      });
-
-      roteiroContent = roteiroCompletion.choices[0]?.message?.content || "";
+      const sinopseResponse = sinopseCompletion.choices[0]?.message?.content || "";
+      try {
+        const sinopseParsed = JSON.parse(sinopseResponse);
+        sinopseResumo = sinopseParsed.logline || "";
+        sinopseConteudo = sinopseParsed.sinopse || "";
+      } catch (e) {
+        console.error("Error parsing sinopse JSON:", e);
+      }
     } catch (error) {
-      console.error("Error generating sinopse/roteiro:", error);
-      // Continue mesmo se falhar
+      console.error("Error generating sinopse:", error);
     }
 
-    // Adicionar Sinopse e Roteiro à lista de entidades
-    if (sinopseContent) {
+    // Adicionar Sinopse à lista de entidades (com logline como resumo e parágrafo como conteúdo)
+    if (sinopseResumo || sinopseConteudo) {
       entities.push({
         tipo: "sinopse",
         titulo: documentName || "Sinopse",
-        resumo: "Sinopse gerada automaticamente",
-        conteudo: sinopseContent,
+        resumo: sinopseResumo || "Sinopse do episódio",
+        conteudo: sinopseConteudo || "",
         tags: "sinopse, resumo"
       });
     }
 
-    if (roteiroContent) {
+    // Adicionar Roteiro à lista de entidades (com o texto ORIGINAL, não gerado)
+    if (extractedText) {
       entities.push({
         tipo: "roteiro",
         titulo: documentName ? `Roteiro - ${documentName}` : "Roteiro",
         resumo: "Roteiro gerado automaticamente",
-        conteudo: roteiroContent,
+        conteudo: extractedText,
         tags: "roteiro, estrutura, cenas"
       });
     }
