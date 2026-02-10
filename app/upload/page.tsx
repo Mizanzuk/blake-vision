@@ -55,7 +55,7 @@ export default function UploadPage() {
   
   // Upload fields
   const [unitNumber, setUnitNumber] = useState<string>("");
-  const [documentName, setDocumentName] = useState<string>("");
+  const [episodeTitle, setEpisodeTitle] = useState<string>("");
   const [text, setText] = useState<string>("");
   const [existingEpisodes, setExistingEpisodes] = useState<string[]>([]);
   const [showNewEpisodeInput, setShowNewEpisodeInput] = useState(false);
@@ -286,6 +286,7 @@ export default function UploadPage() {
     }
     setSelectedWorldId(value);
     setUnitNumber("");
+    setEpisodeTitle("");
     setShowNewEpisodeInput(false);
   }
 
@@ -305,7 +306,6 @@ export default function UploadPage() {
     if (!file) return;
     
     setIsParsingFile(true);
-    if (!documentName) setDocumentName(file.name.replace(/\.[^/.]+$/, ""));
     
     try {
       const formData = new FormData();
@@ -494,7 +494,7 @@ export default function UploadPage() {
           text,
           worldId: selectedWorldId,
           worldName: world?.nome || "Mundo Desconhecido",
-          documentName: documentName.trim() || null,
+          documentName: episodeTitle.trim() || null,
           unitNumber,
           universeId: selectedUniverseId,
           categories: selectedCategories
@@ -539,7 +539,7 @@ export default function UploadPage() {
           worldId: selectedWorldId,
           universeId: selectedUniverseId,
           unitNumber: unitNumber.trim() || null,
-          documentName: documentName.trim() || null,
+          documentName: episodeTitle.trim() || null,
           text: text.trim() || null,
         }),
       });
@@ -686,18 +686,18 @@ export default function UploadPage() {
             )}
 
 
-            {/* Nome do Documento */}
+            {/* Título do Episódio */}
             {selectedWorldId && (
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wide text-text-light-tertiary dark:text-dark-tertiary mb-2">
-                  Nome do Documento (Opcional)
+                  Título do Episódio
                 </label>
                 <input
                   type="text"
                   className="w-full rounded-md bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default px-3 py-2 text-sm"
-                  value={documentName}
-                  onChange={(e) => setDocumentName(e.target.value)}
-                  placeholder="Ex.: Episódio 6 — A Geladeira"
+                  value={episodeTitle}
+                  readOnly
+                  placeholder="Selecione um episódio para preencher automaticamente"
                 />
               </div>
             )}
@@ -1132,6 +1132,7 @@ export default function UploadPage() {
 
             toast.success("Episódio criado com sucesso!");
             setUnitNumber(String(numero));
+            setEpisodeTitle(titulo);
             await fetchExistingEpisodes(selectedWorldId);
           } catch (error: any) {
             toast.error(error.message || "Erro ao criar episódio");
