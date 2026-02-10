@@ -200,6 +200,84 @@ Retorne APENAS o JSON, sem texto adicional.`;
       );
     }
 
+    // Gerar Sinopse e Roteiro automaticamente
+    let sinopseContent = "";
+    let roteiroContent = "";
+
+    try {
+      const sinopsePrompt = `Baseado no seguinte texto narrativo, gere uma sinopse concisa que resuma a essência da história em 2-3 parágrafos:
+
+${extractedText.slice(0, 5000)}
+
+Sinopse:`;
+
+      const sinopseCompletion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: "Você é um assistente especializado em criar sinopses de histórias.",
+          },
+          {
+            role: "user",
+            content: sinopsePrompt,
+          },
+        ],
+        temperature: 0.5,
+        max_tokens: 500,
+      });
+
+      sinopseContent = sinopseCompletion.choices[0]?.message?.content || "";
+
+      const roteiroPrompt = `Baseado no seguinte texto narrativo, gere um roteiro estruturado com as principais cenas e atos da história:
+
+${extractedText.slice(0, 5000)}
+
+Roteiro (em formato de lista de cenas/atos):`;
+
+      const roteiroCompletion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: "Você é um assistente especializado em criar roteiros de histórias.",
+          },
+          {
+            role: "user",
+            content: roteiroPrompt,
+          },
+        ],
+        temperature: 0.5,
+        max_tokens: 800,
+      });
+
+      roteiroContent = roteiroCompletion.choices[0]?.message?.content || "";
+    } catch (error) {
+      console.error("Error generating sinopse/roteiro:", error);
+      // Continue mesmo se falhar
+    }
+
+    // Adicionar Sinopse e Roteiro à lista de entidades
+    if (sinopseContent) {
+      entities.push({
+        tipo: "sinopse",
+        titulo: documentName || "Sinopse",
+        resumo: "Sinopse gerada automaticamente",
+        conteudo: sinopseContent,
+        tags: "sinopse, resumo"
+      });
+    }
+
+    if (roteiroContent) {
+      entities.push({
+        tipo: "roteiro",
+        titulo: documentName ? `Roteiro - ${documentName}` : "Roteiro",
+        resumo: "Roteiro gerado automaticamente",
+        conteudo: roteiroContent,
+        tags: "roteiro, estrutura, cenas"
+      });
+    }
+
     return NextResponse.json({
       success: true,
       extracted_text: extractedText.slice(0, 1000) + "...",
