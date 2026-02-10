@@ -69,6 +69,8 @@ export default function UploadPage() {
 
   // Extraction results
   const [extractedEntities, setExtractedEntities] = useState<ExtractedEntity[]>([]);
+  const [editingFichaIndex, setEditingFichaIndex] = useState<number | null>(null);
+  const [editingFichaCategory, setEditingFichaCategory] = useState<string>("");
 
   // Modals
   const [showNewUniverseModal, setShowNewUniverseModal] = useState(false);
@@ -571,9 +573,22 @@ export default function UploadPage() {
     } else {
       setSelectedCategories(categories.map(c => c.slug));
     }
-  }
+    const handleEditFicha = (index: number) => {
+    setEditingFichaIndex(index);
+    setEditingFichaCategory(extractedEntities[index].tipo || "conceito");
+  };
 
-  function handleRemoveFicha(index: number) {
+  const handleSaveEditFicha = () => {
+    if (editingFichaIndex !== null) {
+      const updatedEntities = [...extractedEntities];
+      updatedEntities[editingFichaIndex].tipo = editingFichaCategory;
+      setExtractedEntities(updatedEntities);
+      setEditingFichaIndex(null);
+      setEditingFichaCategory("");
+    }
+  };
+
+  const handleRemoveFicha = (index: number) => {
     setExtractedEntities(prev => prev.filter((_, i) => i !== index));
   }
 
@@ -816,12 +831,20 @@ export default function UploadPage() {
                           </p>
                         )}
                       </div>
-                      <button
-                        onClick={() => handleRemoveFicha(index)}
-                        className="text-xs px-3 py-1.5 rounded-md border border-error-light text-error-light hover:bg-error-light/10"
-                      >
-                        Remover
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleEditFicha(index)}
+                          className="text-xs px-3 py-1.5 rounded-md border border-border-light-default text-text-light-secondary hover:bg-light-base"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleRemoveFicha(index)}
+                          className="text-xs px-3 py-1.5 rounded-md border border-error-light text-error-light hover:bg-error-light/10"
+                        >
+                          Remover
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -841,6 +864,27 @@ export default function UploadPage() {
           </Card>
         )}
       </div>
+
+      {/* Modal Editar Categoria */}
+      {editingFichaIndex !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setEditingFichaIndex(null)}>
+          <div className="bg-light-base dark:bg-dark-base rounded-lg p-6 max-w-sm w-full mx-4 shadow-lg" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold mb-4">Editar Categoria</h3>
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">Categoria</label>
+              <select value={editingFichaCategory} onChange={(e) => setEditingFichaCategory(e.target.value)} className="w-full px-3 py-2 rounded-md border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary">
+                {categories.map((cat) => (
+                  <option key={cat.slug} value={cat.slug}>{cat.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex gap-3 justify-end">
+              <Button variant="ghost" size="sm" onClick={() => setEditingFichaIndex(null)}>Cancelar</Button>
+              <Button variant="primary" size="sm" onClick={handleSaveEditFicha}>Salvar</Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal Novo Universo */}
       {showNewUniverseModal && (
