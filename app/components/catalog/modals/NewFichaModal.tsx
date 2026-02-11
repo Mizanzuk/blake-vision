@@ -187,16 +187,16 @@ export function NewFichaModal({
 
             <Input
               label="Logline"
-              value={formData.titulo}
-              onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
+              value={formData.resumo}
+              onChange={(e) => setFormData({ ...formData, resumo: e.target.value })}
               placeholder="Ex: Um jovem descobre que tem poderes mágicos"
               required
               fullWidth
             />
             <Textarea
               label="Sinopse"
-              value={formData.descricao}
-              onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+              value={formData.conteudo}
+              onChange={(e) => setFormData({ ...formData, conteudo: e.target.value })}
               placeholder="Descreva a sinopse completa do episódio"
               required
               fullWidth

@@ -44,14 +44,14 @@ export default function FichaCard({ ficha, onClick }: FichaCardProps) {
 
   const getLogline = () => {
     if (ficha.tipo === "episodio") {
-      return ficha.conteudo || "";
+      return ficha.resumo || "";
     }
     return "";
   };
 
   const getSinopse = () => {
     if (ficha.tipo === "episodio") {
-      return ficha.resumo || "";
+      return ficha.conteudo || "";
     }
     return "";
   };

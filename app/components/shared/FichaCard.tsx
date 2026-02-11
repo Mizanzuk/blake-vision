@@ -75,22 +75,22 @@ export default function FichaCard({ ficha, onClick, withIndent = false, worldNam
       </h3>
 
       {/* Logline */}
-      {ficha.conteudo && (
+      {ficha.resumo && (
         <p className={clsx(
           "text-sm italic text-text-light-secondary dark:text-dark-secondary line-clamp-1 mb-1",
           withIndent && "pl-6"
         )}>
-          {ficha.conteudo}
+          {ficha.resumo}
         </p>
       )}
 
       {/* Sinopse */}
-      {ficha.resumo && (
+      {ficha.conteudo && (
         <p className={clsx(
           "text-sm text-text-light-secondary dark:text-dark-secondary line-clamp-2",
           withIndent && "pl-6"
         )}>
-          {ficha.resumo}
+          {ficha.conteudo}
         </p>
       )}
     </>

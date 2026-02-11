@@ -186,25 +186,25 @@ export default function FichaViewModal({
             )}
 
             {/* Logline (para sinopses e episódios) */}
-            {(ficha.tipo === "sinopse" || ficha.tipo === "episodio") && ficha.conteudo && (
+            {(ficha.tipo === "sinopse" || ficha.tipo === "episodio") && ficha.resumo && (
               <div>
                 <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-3">
                   Logline
                 </h3>
                 <p className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap max-h-96 overflow-y-auto">
-                  {ficha.conteudo}
+                  {ficha.resumo}
                 </p>
               </div>
             )}
 
             {/* Sinopse */}
-            {(ficha.tipo === "sinopse" || ficha.tipo === "episodio") && ficha.resumo && (
+            {(ficha.tipo === "sinopse" || ficha.tipo === "episodio") && ficha.conteudo && (
               <div>
                 <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-3">
                   Sinopse
                 </h3>
                 <p className="text-base text-text-light-primary dark:text-dark-primary leading-relaxed whitespace-pre-wrap max-h-96 overflow-y-auto">
-                  {ficha.resumo}
+                  {ficha.conteudo}
                 </p>
               </div>
             )}
