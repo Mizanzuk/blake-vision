@@ -19,7 +19,7 @@ import { UniverseDeleteModal } from "@/app/components/ui/UniverseDeleteModal";
 import { WorldsDropdown } from "@/app/components/ui/WorldsDropdown";
 import { TypesDropdown } from "@/app/components/ui/TypesDropdown";
 import { EpisodesDropdown } from "@/app/components/ui/EpisodesDropdown";
-import FichaModal from "@/app/components/catalog/FichaModal";
+// import FichaModal from "@/app/components/catalog/FichaModal"; // Substituído por NewFichaModal
 import WorldModal from "@/app/components/projetos/WorldModal";
 import CategoryModal from "@/app/components/catalog/CategoryModal";
 import ManageCategoriesModal from "@/app/components/catalog/ManageCategoriesModal";
@@ -635,40 +635,40 @@ onDelete={(id, name) => {
         onOpenCreateCategory={openCreateCategoryDirectly}
       />
 
-      <FichaModal
+      <NewFichaModal
         isOpen={showFichaModal}
         onClose={() => {
           setShowFichaModal(false);
           setSelectedFicha(null);
         }}
+        mode="edit"
         ficha={selectedFicha}
+        universeId={selectedUniverseId}
+        universeName={selectedUniverseName}
         worlds={worlds}
         categories={categories}
-        onSave={async () => {
-          loadCatalogData();
-          setShowFichaModal(false);
-          setSelectedFicha(null);
-        }}
-        onDelete={async (fichaId) => {
+        onSave={async (fichaData) => {
           try {
-            const response = await fetch(`/api/fichas/${fichaId}`, {
-              method: "DELETE",
+            const response = await fetch(`/api/fichas/${selectedFicha?.id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(fichaData),
             });
-
             if (response.ok) {
-              toast.success("Ficha excluida com sucesso");
+              toast.success("Ficha atualizada com sucesso");
               loadCatalogData();
               setShowFichaModal(false);
               setSelectedFicha(null);
             } else {
               const data = await response.json();
-              toast.error(data.error || "Erro ao excluir ficha");
+              toast.error(data.error || "Erro ao atualizar ficha");
             }
           } catch (error) {
-            console.error("Error deleting ficha:", error);
-            toast.error("Erro de rede ao excluir ficha");
+            console.error("Error saving ficha:", error);
+            toast.error("Erro de rede ao atualizar ficha");
           }
         }}
+        onOpenCreateCategory={() => setShowCreateCategoryModal(true)}
       />
 
       {showWorldModal && (

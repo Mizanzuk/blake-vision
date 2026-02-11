@@ -21,6 +21,8 @@ interface NewFichaModalProps {
   categories: Category[];
   onSave: (ficha: Partial<Ficha>) => Promise<void>;
   onOpenCreateCategory?: () => void;
+  mode?: "create" | "edit";
+  ficha?: Partial<Ficha> | null;
 }
 
 export function NewFichaModal({
@@ -32,6 +34,8 @@ export function NewFichaModal({
   categories,
   onSave,
   onOpenCreateCategory,
+  mode = "create",
+  ficha,
 }: NewFichaModalProps) {
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string>("");
   const [formData, setFormData] = useState<any>({
@@ -66,8 +70,23 @@ export function NewFichaModal({
         granularidade: "",
         camada: "",
       });
+    } else if (isOpen && mode === "edit" && ficha) {
+      // Preencher formulário com dados da ficha em modo edição
+      setSelectedCategorySlug(ficha.tipo || "");
+      setFormData({
+        universe_id: universeId,
+        world_id: ficha.world_id || "",
+        episode_id: ficha.episode_id || null,
+        titulo: ficha.titulo || "",
+        resumo: ficha.resumo || "",
+        descricao: ficha.conteudo || "",
+        data_inicio: ficha.data_inicio || "",
+        data_fim: ficha.data_fim || "",
+        granularidade: ficha.granularidade_data || "",
+        camada: ficha.camada_temporal || "",
+      });
     }
-  }, [isOpen, universeId]);
+  }, [isOpen, universeId, mode, ficha]);
 
   // Load episodes when world changes
   useEffect(() => {
@@ -112,25 +131,27 @@ export function NewFichaModal({
   }
 
   function getModalTitle() {
-    if (!selectedCategorySlug) return "Nova Ficha";
+    if (!selectedCategorySlug) return mode === "edit" ? "Editar Ficha" : "Nova Ficha";
+    
+    const prefix = mode === "edit" ? "Editar" : "Nova";
     
     switch (selectedCategorySlug) {
       case "sinopse":
-        return "Nova Sinopse";
+        return `${prefix} Sinopse`;
       case "conceito":
-        return "Novo Conceito";
+        return `${prefix} Conceito`;
       case "regra":
-        return "Nova Regra";
+        return `${prefix} Regra`;
       case "evento":
-        return "Novo Evento";
+        return `${prefix} Evento`;
       case "local":
-        return "Novo Local";
+        return `${prefix} Local`;
       case "personagem":
-        return "Novo Personagem";
+        return `${prefix} Personagem`;
       case "roteiro":
-        return "Novo Roteiro";
+        return `${prefix} Roteiro`;
       default:
-        return `Nova Ficha de ${selectedCategory?.label || ""}`;
+        return `${prefix} Ficha de ${selectedCategory?.label || ""}`;
     }
   }
 
@@ -486,8 +507,8 @@ export function NewFichaModal({
       noBorder={true}
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Dropdown de Categoria (só aparece se nenhuma categoria foi selecionada) */}
-        {!selectedCategorySlug && (
+        {/* Dropdown de Categoria (sempre aparece em modo edição) */}
+        {!selectedCategorySlug || mode === "edit" ? (
           <CategoryDropdown
             label="Categoria"
             categories={categories}
@@ -495,7 +516,7 @@ export function NewFichaModal({
             onSelect={setSelectedCategorySlug}
             onCreateNew={onOpenCreateCategory}
           />
-        )}
+        ) : null}
 
         {/* Campos específicos da categoria */}
         {renderCategoryFields()}
