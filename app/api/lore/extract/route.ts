@@ -219,7 +219,7 @@ Retorne APENAS um JSON válido no seguinte formato:
 }`;
 
       const sinopseCompletion = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "gpt-4.1-mini",
         messages: [
           {
             role: "system",
@@ -247,15 +247,14 @@ Retorne APENAS um JSON válido no seguinte formato:
     }
 
     // Adicionar Sinopse à lista de entidades (com logline como resumo e parágrafo como conteúdo)
-    if (sinopseResumo || sinopseConteudo) {
-      entities.push({
-        tipo: "sinopse",
-        titulo: documentName || "Sinopse",
-        resumo: sinopseResumo || "Sinopse do episódio",
-        conteudo: sinopseConteudo || "",
-        tags: "sinopse, resumo"
-      });
-    }
+    // SEMPRE adicionar a Sinopse, mesmo que vazia, para não haver conflito com a criação automática em Projetos
+    entities.push({
+      tipo: "sinopse",
+      titulo: documentName || "Sinopse",
+      resumo: sinopseResumo || "Sinopse do episódio",
+      conteudo: sinopseConteudo || "",
+      tags: "sinopse, resumo"
+    });
 
     // Adicionar Roteiro à lista de entidades (com o texto ORIGINAL, não gerado)
     if (extractedText) {
