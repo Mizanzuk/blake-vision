@@ -22,6 +22,7 @@ import WorldModal from "@/app/components/projetos/WorldModal";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
 import type { Universe, World } from "@/app/types";
+import { EditFichaUploadModal } from "@/app/components/upload/EditFichaUploadModal";
 
 type ExtractedEntity = {
   tipo: string;
@@ -890,8 +891,8 @@ export default function UploadPage() {
         )}
       </div>
 
-      {/* Modal Editar Ficha */}
-      {showEditFichaModal && editingFichaData && (
+      {/* Modal Editar Ficha - usando novo componente */}
+      {false && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
           onClick={() => {
@@ -1025,8 +1026,27 @@ export default function UploadPage() {
           </div>
         </div>
       )}
+      
+      {/* Novo Modal de Edição */}
+      <EditFichaUploadModal
+        isOpen={showEditFichaModal}
+        onClose={() => {
+          setShowEditFichaModal(false);
+          setEditingFichaIndex(null);
+          setEditingFichaData(null);
+        }}
+        ficha={editingFichaData}
+        universeId={selectedUniverseId}
+        universeName={selectedUniverseName}
+        worldId={selectedWorldId}
+        episodeId={unitNumber}
+        worlds={worlds}
+        categories={categories}
+        onSave={handleSaveEditFicha}
+        onOpenCreateCategory={() => setShowCreateCategoryModal(true)}
+      />
 
-      {/* Modal Novo Universo */}
+      {/* Modal Novo Universo */}}
       {showNewUniverseModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"

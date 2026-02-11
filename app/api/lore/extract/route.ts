@@ -206,16 +206,16 @@ Retorne APENAS o JSON, sem texto adicional.`;
 
     try {
       const sinopsePrompt = `Baseado no seguinte texto narrativo, gere:
-1. Uma LOGLINE (uma única linha que resume a essência da história)
-2. Uma SINOPSE (um parágrafo que descreve a história em detalhes)
+1. Uma LOGLINE (uma única linha, muito breve, que resume a essência da história em uma frase curta)
+2. Uma SINÓPSE (um ou dois parágrafos que descrevem a história em detalhes)
 
 Texto:
 ${extractedText.slice(0, 5000)}
 
 Retorne APENAS um JSON válido no seguinte formato:
 {
-  "logline": "Uma única linha resumindo a história",
-  "sinopse": "Um parágrafo descrevendo a história"
+  "logline": "Uma única frase breve",
+  "sinopse": "Um ou dois parágrafos com detalhes"
 }`;
 
       const sinopseCompletion = await openai.chat.completions.create({
@@ -239,6 +239,11 @@ Retorne APENAS um JSON válido no seguinte formato:
         const sinopseParsed = JSON.parse(sinopseResponse);
         sinopseResumo = sinopseParsed.logline || "";
         sinopseConteudo = sinopseParsed.sinopse || "";
+        // Verificar se foram invertidos e corrigir
+        if (sinopseConteudo && sinopseConteudo.length < 100 && sinopseResumo && sinopseResumo.length > 200) {
+          // Se conteúdo é muito curto e resumo é muito longo, invertê-los
+          [sinopseResumo, sinopseConteudo] = [sinopseConteudo, sinopseResumo];
+        }
       } catch (e) {
         console.error("Error parsing sinopse JSON:", e);
       }
