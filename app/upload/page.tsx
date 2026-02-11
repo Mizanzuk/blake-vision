@@ -14,6 +14,7 @@ import { Header } from "@/app/components/layout/Header";
 import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
 import { ConfirmationModal } from "@/app/components/ui/ConfirmationModal";
 import { UniverseDeleteModal } from "@/app/components/ui/UniverseDeleteModal";
+import { useConfirm } from "@/hooks/useConfirm";
 import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import { EpisodesDropdown } from "@/app/components/ui/EpisodesDropdown";
 import { EpisodeCreationModal } from "@/app/components/ui/EpisodeCreationModal";
@@ -37,6 +38,7 @@ type Category = {
 };
 
 export default function UploadPage() {
+  const { confirm, ConfirmDialog } = useConfirm();
   const router = useRouter();
   const { t } = useTranslation();
   const supabase = getSupabaseClient();
@@ -240,9 +242,13 @@ export default function UploadPage() {
   }
 
   async function handleDeleteUniverse(id: string, name: string) {
-    const confirmed = window.confirm(
-      `Tem certeza que deseja deletar o universo "${name}"? Esta ação não pode ser desfeita.`
-    );
+    const confirmed = await confirm({
+      title: "Deletar Universo",
+      message: `Tem certeza que deseja deletar o universo "${name}"? Esta ação não pode ser desfeita.`,
+      confirmText: "Deletar",
+      cancelText: "Cancelar",
+      variant: "danger"
+    });
     
     if (!confirmed) return;
 
@@ -1141,6 +1147,9 @@ export default function UploadPage() {
         }}
         worldId={selectedWorldId}
       />
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog />
     </div>
   );
 }

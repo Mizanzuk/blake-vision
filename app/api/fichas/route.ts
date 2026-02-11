@@ -164,22 +164,8 @@ export async function POST(req: NextRequest) {
         );
       }
       
-      // Verificar se já existe sinopse para este episódio
-      const { data: existingSinopse } = await supabase
-        .from("fichas")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("world_id", world_id)
-        .eq("tipo", "sinopse")
-        .eq("episodio", episodio)
-        .single();
-      
-      if (existingSinopse) {
-        return NextResponse.json(
-          { error: "Já existe uma sinopse para este episódio" },
-          { status: 400 }
-        );
-      }
+      // Nota: Sinopses podem ser criadas múltiplas vezes para o mesmo episódio
+      // (a última versão será exibida no catálogo)
     }
     
     if (!tipo || !titulo) {

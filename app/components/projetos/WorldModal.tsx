@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/app/components/ui";
 import type { World } from "@/app/types";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 
 interface WorldModalProps {
   world: World | null;
@@ -20,6 +21,7 @@ export default function WorldModal({
   onDelete,
   onClose,
 }: WorldModalProps) {
+  const { confirm, ConfirmDialog } = useConfirm();
   const [hasChanges, setHasChanges] = useState(false);
   const [nome, setNome] = useState("");
   const [descricao, setDescricao] = useState("");
@@ -45,9 +47,13 @@ export default function WorldModal({
 
   async function handleClose() {
     if (hasChanges) {
-      const confirmed = window.confirm(
-        "Você tem alterações não salvas. Deseja realmente fechar sem salvar?"
-      );
+      const confirmed = await confirm({
+        title: "Alterações Não Salvas",
+        message: "Você tem alterações não salvas. Deseja realmente fechar sem salvar?",
+        confirmText: "Fechar",
+        cancelText: "Cancelar",
+        variant: "warning"
+      });
       if (!confirmed) return;
     }
     onClose();
@@ -82,9 +88,13 @@ export default function WorldModal({
   async function handleDelete() {
     if (!world?.id || !onDelete) return;
 
-    const confirmed = window.confirm(
-      "Tem certeza que deseja deletar este mundo? Esta ação não pode ser desfeita."
-    );
+    const confirmed = await confirm({
+      title: "Deletar Mundo",
+      message: "Tem certeza que deseja deletar este mundo? Esta ação não pode ser desfeita.",
+      confirmText: "Deletar",
+      cancelText: "Cancelar",
+      variant: "danger"
+    });
 
     if (confirmed) {
       onDelete(world.id);
@@ -206,6 +216,9 @@ export default function WorldModal({
           </div>
         </div>
       </form>
+      
+      {/* Confirm Dialog */}
+      <ConfirmDialog />
     </div>
   );
 }

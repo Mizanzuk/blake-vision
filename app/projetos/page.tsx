@@ -9,6 +9,7 @@ import { Button, Loading, EmptyState } from "@/app/components/ui";
 import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
 import { ConfirmationModal } from "@/app/components/ui/ConfirmationModal";
 import { UniverseDeleteModal } from "@/app/components/ui/UniverseDeleteModal";
+import { useConfirm } from "@/hooks/useConfirm";
 import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 
 import NewConceptRuleModal from "@/app/components/shared/NewConceptRuleModal";
@@ -25,6 +26,7 @@ import { toast } from "sonner";
 
 
 export default function ProjetosPage() {
+  const { confirm, ConfirmDialog } = useConfirm();
   const router = useRouter();
   const supabase = getSupabaseClient();
 
@@ -220,9 +222,13 @@ export default function ProjetosPage() {
   }
 
   async function handleDeleteUniverse(id: string, name: string) {
-    const confirmed = window.confirm(
-      `Tem certeza que deseja deletar o universo "${name}"? Esta ação não pode ser desfeita.`
-    );
+    const confirmed = await confirm({
+      title: "Deletar Universo",
+      message: `Tem certeza que deseja deletar o universo "${name}"? Esta ação não pode ser desfeita.`,
+      confirmText: "Deletar",
+      cancelText: "Cancelar",
+      variant: "danger"
+    });
     
     if (!confirmed) return;
 
@@ -948,6 +954,8 @@ export default function ProjetosPage() {
         />
       )}
 
+      {/* Confirm Dialog */}
+      <ConfirmDialog />
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button, Input, Select, Badge, EmptyState, Loading } from "@/app/components/ui";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 
 interface Relation {
   id: string;
@@ -44,6 +45,7 @@ const RELATION_TYPES = [
 ];
 
 export default function RelationsTab({ fichaId }: RelationsTabProps) {
+  const { confirm, ConfirmDialog } = useConfirm();
   const [relations, setRelations] = useState<Relation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
@@ -153,7 +155,13 @@ export default function RelationsTab({ fichaId }: RelationsTabProps) {
   }
 
   async function handleDeleteRelation(relationId: string) {
-    const confirmed = window.confirm("Tem certeza que deseja remover esta relação?");
+    const confirmed = await confirm({
+      title: "Remover Relação",
+      message: "Tem certeza que deseja remover esta relação?",
+      confirmText: "Remover",
+      cancelText: "Cancelar",
+      variant: "danger"
+    });
     if (!confirmed) return;
 
     try {
@@ -372,6 +380,9 @@ export default function RelationsTab({ fichaId }: RelationsTabProps) {
           })}
         </div>
       )}
+      
+      {/* Confirm Dialog */}
+      <ConfirmDialog />
     </div>
   );
 }
