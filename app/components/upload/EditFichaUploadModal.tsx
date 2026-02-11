@@ -61,19 +61,19 @@ export function EditFichaUploadModal({
   // Initialize form when modal opens or ficha changes
   useEffect(() => {
     if (isOpen && ficha) {
-      setSelectedCategorySlug(ficha.category_slug || "");
+      setSelectedCategorySlug((ficha as any).category_slug || ficha.tipo || "");
       setFormData({
         universe_id: universeId,
         world_id: worldId || ficha.world_id || "",
         episode_id: episodeId || ficha.episode_id || null,
-        titulo: ficha.titulo || "",
-        resumo: ficha.resumo || "",
-        descricao: ficha.descricao || "",
-        tags: ficha.tags?.join(", ") || "",
+        titulo: ficha.titulo || (ficha as any).titulo || "",
+        resumo: ficha.resumo || ficha.titulo || "",
+        descricao: ficha.conteudo || "",
+        tags: Array.isArray((ficha as any).tags) ? (ficha as any).tags.join(", ") : "",
         data_inicio: ficha.data_inicio || "",
         data_fim: ficha.data_fim || "",
-        granularidade: ficha.granularidade || "",
-        camada: ficha.camada || "",
+        granularidade: (ficha as any).granularidade_data || "",
+        camada: (ficha as any).camada_temporal || "",
       });
     }
   }, [isOpen, ficha, universeId, worldId, episodeId]);

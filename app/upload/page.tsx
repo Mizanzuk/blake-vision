@@ -22,7 +22,7 @@ import WorldModal from "@/app/components/projetos/WorldModal";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { toast } from "sonner";
 import type { Universe, World } from "@/app/types";
-import { EditFichaUploadModal } from "@/app/components/upload/EditFichaUploadModal";
+// import { EditFichaUploadModal } from "@/app/components/upload/EditFichaUploadModal"; // Removido - usar NewFichaModal em modo edição
 
 type ExtractedEntity = {
   tipo: string;
@@ -931,7 +931,7 @@ export default function UploadPage() {
                       className="w-full px-3 py-2 rounded-md border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary text-left flex justify-between items-center"
                     >
                       <span>
-                        {categories.find(c => c.slug === editingFichaData.tipo)?.label || "Selecione uma categoria"}
+                        {(editingFichaData && categories.find(c => c.slug === (editingFichaData as any).tipo)?.label) || "Selecione uma categoria"}
                       </span>
                       <span className="text-xs">▼</span>
                     </button>
@@ -945,7 +945,7 @@ export default function UploadPage() {
                               setShowCategoryDropdown(false);
                             }}
                             className={`w-full px-3 py-2 text-left hover:bg-light-hover dark:hover:bg-dark-hover ${
-                              editingFichaData.tipo === cat.slug
+                              editingFichaData && (editingFichaData as any).tipo === cat.slug
                                 ? "bg-brand-primary text-white"
                                 : "text-text-light-primary dark:text-dark-primary"
                             }`}
@@ -963,7 +963,7 @@ export default function UploadPage() {
                 <label className="block text-xs font-semibold mb-2">Titulo</label>
                 <input
                   type="text"
-                  value={editingFichaData.titulo || ""}
+                  value={editingFichaData?.titulo || ""}
                   onChange={(e) => handleEditFichaChange("titulo", e.target.value)}
                   className="w-full px-3 py-2 rounded-md border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary"
                   placeholder="Titulo da ficha"
@@ -973,7 +973,7 @@ export default function UploadPage() {
               <div>
                 <label className="block text-xs font-semibold mb-2">Resumo</label>
                 <textarea
-                  value={editingFichaData.resumo || ""}
+                  value={editingFichaData?.resumo || ""}
                   onChange={(e) => handleEditFichaChange("resumo", e.target.value)}
                   className="w-full px-3 py-2 rounded-md border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary min-h-[80px]"
                   placeholder="Breve resumo em 1-2 linhas..."
@@ -983,19 +983,19 @@ export default function UploadPage() {
               <div>
                 <label className="block text-xs font-semibold mb-2">Conteudo</label>
                 <textarea
-                  value={editingFichaData.conteudo || ""}
+                  value={editingFichaData?.conteudo || ""}
                   onChange={(e) => handleEditFichaChange("conteudo", e.target.value)}
                   className="w-full px-3 py-2 rounded-md border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary min-h-[150px]"
                   placeholder="Conteudo completo da ficha..."
                 />
               </div>
 
-              {editingFichaData.tags && (
+              {editingFichaData?.tags && (
                 <div>
                   <label className="block text-xs font-semibold mb-2">Tags</label>
                   <input
                     type="text"
-                    value={editingFichaData.tags || ""}
+                    value={editingFichaData?.tags || ""}
                     onChange={(e) => handleEditFichaChange("tags", e.target.value)}
                     className="w-full px-3 py-2 rounded-md border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary"
                     placeholder="Tags separadas por virgula"
@@ -1027,26 +1027,8 @@ export default function UploadPage() {
         </div>
       )}
       
-      {/* Novo Modal de Edição */}
-      <EditFichaUploadModal
-        isOpen={showEditFichaModal}
-        onClose={() => {
-          setShowEditFichaModal(false);
-          setEditingFichaIndex(null);
-          setEditingFichaData(null);
-        }}
-        ficha={editingFichaData}
-        universeId={selectedUniverseId}
-        universeName={selectedUniverseName}
-        worldId={selectedWorldId}
-        episodeId={unitNumber}
-        worlds={worlds}
-        categories={categories}
-        onSave={handleSaveEditFicha}
-        onOpenCreateCategory={() => setShowCreateCategoryModal(true)}
-      />
 
-      {/* Modal Novo Universo */}}
+      {/* Modal Novo Universo */}
       {showNewUniverseModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"

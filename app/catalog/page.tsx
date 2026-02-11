@@ -644,7 +644,7 @@ onDelete={(id, name) => {
         mode="edit"
         ficha={selectedFicha}
         universeId={selectedUniverseId}
-        universeName={selectedUniverseName}
+        universeName={universes.find(u => u.id === selectedUniverseId)?.nome || ''}
         worlds={worlds}
         categories={categories}
         onSave={async (fichaData) => {
@@ -668,7 +668,7 @@ onDelete={(id, name) => {
             toast.error("Erro de rede ao atualizar ficha");
           }
         }}
-        onOpenCreateCategory={() => setShowCreateCategoryModal(true)}
+        onOpenCreateCategory={() => setShowCategoryModal(true)}
       />
 
       {showWorldModal && (
