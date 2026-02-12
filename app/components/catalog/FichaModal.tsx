@@ -49,7 +49,6 @@ export default function FichaModal({
     ano_diegese: "",
     tags: "",
     episodio: "",
-    episodio: null,
     imagem_url: "",
     descricao_data: "",
     data_inicio: "",
@@ -203,7 +202,6 @@ export default function FichaModal({
         ...formData,
         ano_diegese: formData.ano_diegese ? parseInt(formData.ano_diegese) : null,
         tags: formData.tags || null,
-        episodio: formData.episodio || null,
         episodio: formData.episodio || null,
         imagem_url: imagemUrl || null,
         descricao_data: formData.descricao_data || null,
@@ -361,7 +359,6 @@ export default function FichaModal({
                       if (selectedEpisode) {
                         setFormData((prev: any) => ({
                           ...prev,
-                          episodio: selectedEpisode.id,
                           episodio: String(selectedEpisode.numero)
                         }));
                       }
@@ -369,8 +366,7 @@ export default function FichaModal({
                       // Limpar seleção
                       setFormData((prev: any) => ({
                         ...prev,
-                        episodio: null,
-                        episodio: ""
+                        episodio: null
                       }));
                     }
                   }}

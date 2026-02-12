@@ -19,6 +19,7 @@ import FichaCard from "@/app/components/shared/FichaCard";
 import FichaViewModal from "@/app/components/shared/FichaViewModal";
 import { CategoryDropdown } from "@/app/components/ui/CategoryDropdown";
 import OrdenacaoDropdown from "@/app/components/projetos/OrdenacaoDropdown";
+import TipoDropdown from "@/app/components/projetos/TipoDropdown";
 import type { Universe, World, Ficha, Category } from "@/app/types";
 import { toast } from "sonner";
 
@@ -844,26 +845,8 @@ export default function ProjetosPage() {
         />
       )}
 
-      {/* View Modal - Conceitos e Regras */}
-      {showViewModal && viewingFicha && (viewingFicha.tipo === "conceito" || viewingFicha.tipo === "regra") && (
-        <ConceptRuleViewModal
-          ficha={viewingFicha}
-          universes={universes}
-          worlds={worlds}
-          onClose={handleCloseViewModal}
-          onEdit={handleEditFromView}
-          onNext={handleNextFicha}
-          onPrevious={handlePreviousFicha}
-          hasNext={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) < fichas.length - 1 : false}
-          hasPrevious={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) > 0 : false}
-          currentIndex={viewingFicha ? fichas.findIndex(f => f.id === viewingFicha.id) : undefined}
-          totalCount={fichas.length}
-          worldName={viewingFicha?.world_id ? worlds.find(w => w.id === viewingFicha.world_id)?.nome : undefined}
-        />
-      )}
-
-      {/* View Modal - Outras fichas */}
-      {showViewModal && viewingFicha && viewingFicha.tipo !== "conceito" && viewingFicha.tipo !== "regra" && (
+      {/* View Modal - Unified */}
+      {showViewModal && viewingFicha && (
         <FichaViewModal
           isOpen={showViewModal}
           ficha={viewingFicha}

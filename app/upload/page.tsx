@@ -19,8 +19,10 @@ import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 import { EpisodesDropdown } from "@/app/components/ui/EpisodesDropdown";
 import { EpisodeCreationModal } from "@/app/components/ui/EpisodeCreationModal";
 import WorldModal from "@/app/components/projetos/WorldModal";
+import TipoDropdown from "@/app/components/projetos/TipoDropdown";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
 import { NewFichaModal } from "@/app/components/catalog/modals/NewFichaModal";
+import FichaViewModal from "@/app/components/shared/FichaViewModal";
 import { toast } from "sonner";
 import type { Universe, World, Category } from "@/app/types";
 
@@ -592,6 +594,14 @@ export default function UploadPage() {
         ? prev.filter(s => s !== slug)
         : [...prev, slug]
     );
+  }
+
+  function toggleAllCategories() {
+    if (selectedCategories.length === categories.length) {
+      setSelectedCategories([]);
+    } else {
+      setSelectedCategories(categories.map(c => c.slug));
+    }
   }
 
   const handleSaveEditFicha = async (fichaData: any) => {
