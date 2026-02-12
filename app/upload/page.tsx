@@ -20,9 +20,9 @@ import { EpisodesDropdown } from "@/app/components/ui/EpisodesDropdown";
 import { EpisodeCreationModal } from "@/app/components/ui/EpisodeCreationModal";
 import WorldModal from "@/app/components/projetos/WorldModal";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
+import { NewFichaModal } from "@/app/components/catalog/modals/NewFichaModal";
 import { toast } from "sonner";
-import type { Universe, World } from "@/app/types";
-// import { EditFichaUploadModal } from "@/app/components/upload/EditFichaUploadModal"; // Removido - usar NewFichaModal em modo edição
+import type { Universe, World, Category } from "@/app/types";
 
 type ExtractedEntity = {
   tipo: string;
@@ -33,10 +33,7 @@ type ExtractedEntity = {
   tags?: string;
 };
 
-type Category = {
-  slug: string;
-  label: string;
-};
+
 
 export default function UploadPage() {
   const { confirm, ConfirmDialog } = useConfirm();
@@ -76,6 +73,23 @@ export default function UploadPage() {
   const [editingFichaData, setEditingFichaData] = useState<ExtractedEntity | null>(null);
   const [showEditFichaModal, setShowEditFichaModal] = useState(false);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [allCategories, setAllCategories] = useState<Category[]>([]);
+
+  // Load categories on mount
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        const response = await fetch('/api/categories');
+        if (response.ok) {
+          const data = await response.json();
+          setAllCategories(data.categories || []);
+        }
+      } catch (error) {
+        console.error('Error loading categories:', error);
+      }
+    }
+    loadCategories();
+  }, []);
 
   // Modals
   const [showNewUniverseModal, setShowNewUniverseModal] = useState(false);
@@ -580,16 +594,24 @@ export default function UploadPage() {
     );
   }
 
-  function toggleAllCategories() {
-    if (selectedCategories.length === categories.length) {
-      setSelectedCategories([]);
-    } else {
-      setSelectedCategories(categories.map(c => c.slug));
+  const handleSaveEditFicha = async (fichaData: any) => {
+    if (editingFichaIndex !== null) {
+      const updatedEntities = [...extractedEntities];
+      updatedEntities[editingFichaIndex] = {
+        tipo: fichaData.tipo || fichaData.category_slug,
+        titulo: fichaData.titulo,
+        resumo: fichaData.resumo,
+        conteudo: fichaData.conteudo,
+        ano_diegese: fichaData.ano_diegese,
+        tags: fichaData.tags,
+      };
+      setExtractedEntities(updatedEntities);
+      setShowEditFichaModal(false);
+      setEditingFichaIndex(null);
+      setEditingFichaData(null);
+      toast.success('Ficha atualizada');
     }
-  }
-
-  const handleEditFicha = (index: number) => {
-    setEditingFichaIndex(index);
+  };
     setEditingFichaData({ ...extractedEntities[index] });
     setShowEditFichaModal(true);
   };
@@ -892,140 +914,28 @@ export default function UploadPage() {
       </div>
 
       {/* Modal Editar Ficha - usando novo componente */}
-      {false && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-          onClick={() => {
-            setShowEditFichaModal(false);
-            setEditingFichaIndex(null);
-            setEditingFichaData(null);
-          }}
-        >
-          <div
-            className="bg-light-base dark:bg-dark-base rounded-lg shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto border border-border-light-default dark:border-border-dark-default"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised sticky top-0">
-              <h2 className="text-xl font-bold">Editar Ficha</h2>
-              <button
-                onClick={() => {
-                  setShowEditFichaModal(false);
-                  setEditingFichaIndex(null);
-                  setEditingFichaData(null);
-                }}
-                className="text-2xl leading-none hover:opacity-70"
-              >
-                &times;
-              </button>
-            </div>
-
-            {/* Body */}
-            <div className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold mb-2">Categoria</label>
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-                      className="w-full px-3 py-2 rounded-md border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary text-left flex justify-between items-center"
-                    >
-                      <span>
-                        {(editingFichaData && categories.find(c => c.slug === (editingFichaData as any).tipo)?.label) || "Selecione uma categoria"}
-                      </span>
-                      <span className="text-xs">▼</span>
-                    </button>
-                    {showCategoryDropdown && (
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-md shadow-lg z-50">
-                        {categories.map((cat) => (
-                          <button
-                            key={cat.slug}
-                            onClick={() => {
-                              handleEditFichaChange("tipo", cat.slug);
-                              setShowCategoryDropdown(false);
-                            }}
-                            className={`w-full px-3 py-2 text-left hover:bg-light-hover dark:hover:bg-dark-hover ${
-                              editingFichaData && (editingFichaData as any).tipo === cat.slug
-                                ? "bg-brand-primary text-white"
-                                : "text-text-light-primary dark:text-dark-primary"
-                            }`}
-                          >
-                            {cat.label}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold mb-2">Titulo</label>
-                <input
-                  type="text"
-                  value={editingFichaData?.titulo || ""}
-                  onChange={(e) => handleEditFichaChange("titulo", e.target.value)}
-                  className="w-full px-3 py-2 rounded-md border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary"
-                  placeholder="Titulo da ficha"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold mb-2">Resumo</label>
-                <textarea
-                  value={editingFichaData?.resumo || ""}
-                  onChange={(e) => handleEditFichaChange("resumo", e.target.value)}
-                  className="w-full px-3 py-2 rounded-md border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary min-h-[80px]"
-                  placeholder="Breve resumo em 1-2 linhas..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold mb-2">Conteudo</label>
-                <textarea
-                  value={editingFichaData?.conteudo || ""}
-                  onChange={(e) => handleEditFichaChange("conteudo", e.target.value)}
-                  className="w-full px-3 py-2 rounded-md border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary min-h-[150px]"
-                  placeholder="Conteudo completo da ficha..."
-                />
-              </div>
-
-              {editingFichaData?.tags && (
-                <div>
-                  <label className="block text-xs font-semibold mb-2">Tags</label>
-                  <input
-                    type="text"
-                    value={editingFichaData?.tags || ""}
-                    onChange={(e) => handleEditFichaChange("tags", e.target.value)}
-                    className="w-full px-3 py-2 rounded-md border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary"
-                    placeholder="Tags separadas por virgula"
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Footer */}
-            <div className="flex gap-3 justify-end p-6 border-t border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised sticky bottom-0">
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setShowEditFichaModal(false);
-                  setEditingFichaIndex(null);
-                  setEditingFichaData(null);
-                }}
-              >
-                Cancelar
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleSaveEditFicha}
-              >
-                Salvar
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Ficha Modal */}
+      <NewFichaModal
+        isOpen={showEditFichaModal}
+        onClose={() => {
+          setShowEditFichaModal(false);
+          setEditingFichaIndex(null);
+          setEditingFichaData(null);
+        }}
+        universeId={selectedUniverseId}
+        universeName={universes.find(u => u.id === selectedUniverseId)?.nome || ""}
+        worlds={worlds}
+        categories={allCategories}
+        onSave={handleSaveEditFicha}
+        mode="edit"
+        ficha={editingFichaData ? {
+          tipo: editingFichaData.tipo,
+          titulo: editingFichaData.titulo,
+          resumo: editingFichaData.resumo,
+          conteudo: editingFichaData.conteudo,
+          tags: editingFichaData.tags,
+        } : null}
+      />
       
 
       {/* Modal Novo Universo */}
