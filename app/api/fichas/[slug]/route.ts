@@ -130,7 +130,6 @@ export async function PUT(
       ano_diegese,
       tags,
       episodio,
-      episodio,
       album_imagens,
       descricao_data,
       data_inicio,

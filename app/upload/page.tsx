@@ -612,20 +612,14 @@ export default function UploadPage() {
       toast.success('Ficha atualizada');
     }
   };
+
+  const handleEditFicha = (index: number) => {
+    setEditingFichaIndex(index);
     setEditingFichaData({ ...extractedEntities[index] });
     setShowEditFichaModal(true);
   };
 
-  const handleSaveEditFicha = () => {
-    if (editingFichaIndex !== null && editingFichaData) {
-      const updatedEntities = [...extractedEntities];
-      updatedEntities[editingFichaIndex] = editingFichaData;
-      setExtractedEntities(updatedEntities);
-      setShowEditFichaModal(false);
-      setEditingFichaIndex(null);
-      setEditingFichaData(null);
-    }
-  };
+
 
   const handleEditFichaChange = (field: string, value: any) => {
     if (editingFichaData) {
