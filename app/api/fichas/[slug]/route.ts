@@ -124,6 +124,8 @@ export async function PUT(
 
     const body = await req.json();
     const {
+      tipo,
+      world_id,
       titulo,
       resumo,
       conteudo,
@@ -141,12 +143,13 @@ export async function PUT(
     // Preparar dados para atualização
     const updateData: any = {};
     
+    if (tipo !== undefined) updateData.tipo = tipo;
+    if (world_id !== undefined) updateData.world_id = world_id || null;
     if (titulo !== undefined) updateData.titulo = titulo;
     if (resumo !== undefined) updateData.resumo = resumo || null;
     if (conteudo !== undefined) updateData.conteudo = conteudo || null;
     if (ano_diegese !== undefined) updateData.ano_diegese = ano_diegese || null;
     if (tags !== undefined) updateData.tags = tags || null;
-    if (episodio !== undefined) updateData.episodio = episodio || null;
     if (episodio !== undefined) updateData.episodio = episodio || null;
     if (album_imagens !== undefined) updateData.album_imagens = album_imagens || null;
     if (descricao_data !== undefined) updateData.descricao_data = descricao_data || null;
