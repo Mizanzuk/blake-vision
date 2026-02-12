@@ -19,20 +19,34 @@ export function EpisodioDropdown({
 }: EpisodioDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const isOpeningRef = useRef(false);
 
   const selectedEpisode = Array.isArray(episodes) ? episodes.find(ep => ep.id === value) : undefined;
 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
+      // Ignore the click that opened the dropdown
+      if (isOpeningRef.current) {
+        isOpeningRef.current = false;
+        return;
+      }
+      
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     }
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      // Use setTimeout to ensure the listener is added after the click event
+      const timer = setTimeout(() => {
+        document.addEventListener('mousedown', handleClickOutside);
+      }, 0);
+      
+      return () => {
+        clearTimeout(timer);
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
     }
   }, [isOpen]);
 
@@ -47,6 +61,7 @@ export function EpisodioDropdown({
       <button
         onClick={(e) => {
           e.stopPropagation();
+          isOpeningRef.current = true;
           setIsOpen(!isOpen);
         }}
         className="w-full px-4 py-2 text-sm text-left border rounded-lg bg-light-raised dark:bg-dark-raised border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay focus:ring-2 focus:ring-primary-500 transition-colors flex items-center justify-between"
