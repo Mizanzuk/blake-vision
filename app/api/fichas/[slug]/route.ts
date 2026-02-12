@@ -126,7 +126,6 @@ export async function PUT(
     const {
       titulo,
       resumo,
-      descricao,
       conteudo,
       ano_diegese,
       tags,
@@ -145,7 +144,6 @@ export async function PUT(
     
     if (titulo !== undefined) updateData.titulo = titulo;
     if (resumo !== undefined) updateData.resumo = resumo || null;
-    if (descricao !== undefined) updateData.descricao = descricao || null;
     if (conteudo !== undefined) updateData.conteudo = conteudo || null;
     if (ano_diegese !== undefined) updateData.ano_diegese = ano_diegese || null;
     if (tags !== undefined) updateData.tags = tags || null;
