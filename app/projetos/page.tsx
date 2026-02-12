@@ -12,15 +12,14 @@ import { UniverseDeleteModal } from "@/app/components/ui/UniverseDeleteModal";
 import { useConfirm } from "@/hooks/useConfirm";
 import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 
-import NewConceptRuleModal from "@/app/components/shared/NewConceptRuleModal";
-import ConceptRuleViewModal from "@/app/components/shared/ConceptRuleViewModal";
+import { NewFichaModal } from "@/app/components/catalog/modals/NewFichaModal";
 import WorldModal from "@/app/components/projetos/WorldModal";
 import EpisodeModal from "@/app/components/projetos/EpisodeModal";
 import FichaCard from "@/app/components/shared/FichaCard";
 import FichaViewModal from "@/app/components/shared/FichaViewModal";
-import TipoDropdown from "@/app/components/projetos/TipoDropdown";
+import { CategoryDropdown } from "@/app/components/ui/CategoryDropdown";
 import OrdenacaoDropdown from "@/app/components/projetos/OrdenacaoDropdown";
-import type { Universe, World, Ficha } from "@/app/types";
+import type { Universe, World, Ficha, Category } from "@/app/types";
 import { toast } from "sonner";
 
 
@@ -42,9 +41,9 @@ export default function ProjetosPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   
   // Modals
-  const [showConceptRuleModal, setShowConceptRuleModal] = useState(false);
-  const [conceptRuleType, setConceptRuleType] = useState<"conceito" | "regra">("conceito");
+  const [showFichaModal, setShowFichaModal] = useState(false);
   const [selectedFicha, setSelectedFicha] = useState<Ficha | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [showWorldModal, setShowWorldModal] = useState(false);
   const [selectedWorld, setSelectedWorld] = useState<World | null>(null);
   const [showEpisodeModal, setShowEpisodeModal] = useState(false);
@@ -65,10 +64,24 @@ export default function ProjetosPage() {
   const [isCreatingUniverse, setIsCreatingUniverse] = useState(false);
   const [selectedUniverse, setSelectedUniverse] = useState<Universe | null>(null);
   const [showEditUniverseModal, setShowEditUniverseModal] = useState(false);
+  const [preSelectedCategory, setPreSelectedCategory] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuth();
+    loadCategories();
   }, []);
+
+  async function loadCategories() {
+    try {
+      const response = await fetch('/api/categories');
+      if (response.ok) {
+        const data = await response.json();
+        setCategories(data.categories || []);
+      }
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    }
+  }
 
   useEffect(() => {
     loadUniverses();
@@ -351,20 +364,15 @@ export default function ProjetosPage() {
 
 
 
-  function handleNewSinopse() {
-    setSelectedEpisode(null);
-    setShowEpisodeModal(true);
-  }
-
-  function handleNewConceptRule(tipo: "conceito" | "regra") {
+  function handleNewFicha(tipo: "sinopse" | "conceito" | "regra") {
     if (!selectedUniverseId) {
       toast.error("Selecione um universo antes de criar");
       return;
     }
     
-    setConceptRuleType(tipo);
+    setPreSelectedCategory(tipo);
     setSelectedFicha(null);
-    setShowConceptRuleModal(true);
+    setShowFichaModal(true);
   }
 
   function handleViewFicha(ficha: Ficha) {
@@ -378,9 +386,9 @@ export default function ProjetosPage() {
     setShowViewModal(false);
     
     if (viewingFicha.tipo === "sinopse" || viewingFicha.tipo === "conceito" || viewingFicha.tipo === "regra") {
-      setConceptRuleType(viewingFicha.tipo as "conceito" | "regra");
+      setPreSelectedCategory(viewingFicha.tipo);
       setSelectedFicha(viewingFicha);
-      setShowConceptRuleModal(true);
+      setShowFichaModal(true);
     }
   }
 
@@ -421,8 +429,9 @@ export default function ProjetosPage() {
         const tipoLabel = fichaData.tipo === "sinopse" ? "Sinopse" : fichaData.tipo === "conceito" ? "Conceito" : "Regra";
         toast.success(`${tipoLabel} ${action}`);
         await loadFichas();
-        setShowConceptRuleModal(false);
+        setShowFichaModal(false);
         setSelectedFicha(null);
+        setPreSelectedCategory(null);
       } else {
         toast.error(data.error || "Erro ao salvar");
       }
@@ -448,8 +457,9 @@ export default function ProjetosPage() {
           if (response.ok) {
             toast.success("Item deletado");
             await loadFichas();
-            setShowConceptRuleModal(false);
+            setShowFichaModal(false);
             setSelectedFicha(null);
+            setPreSelectedCategory(null);
             setConfirmationModal(null);
             setFichaToDelete(null);
           } else {
@@ -621,7 +631,7 @@ export default function ProjetosPage() {
           <Button
             variant="primary"
             size="sm"
-            onClick={handleNewSinopse}
+            onClick={() => handleNewFicha("sinopse")}
             fullWidth
           >
             + Nova Sinopse
@@ -630,7 +640,7 @@ export default function ProjetosPage() {
           <Button
             variant="primary"
             size="sm"
-            onClick={() => handleNewConceptRule("conceito")}
+            onClick={() => handleNewFicha("conceito")}
             disabled={!selectedUniverseId}
             title={!selectedUniverseId ? "Selecione um universo primeiro" : ""}
             fullWidth
@@ -641,7 +651,7 @@ export default function ProjetosPage() {
           <Button
             variant="primary"
             size="sm"
-            onClick={() => handleNewConceptRule("regra")}
+            onClick={() => handleNewFicha("regra")}
             disabled={!selectedUniverseId}
             title={!selectedUniverseId ? "Selecione um universo primeiro" : ""}
             fullWidth
@@ -786,23 +796,24 @@ export default function ProjetosPage() {
 
 
       {/* Concept/Rule Modal */}
-      <NewConceptRuleModal
-        isOpen={showConceptRuleModal}
-        item={selectedFicha}
-        tipo={conceptRuleType}
-        universes={universes}
-        worlds={allWorlds}
-        preSelectedUniverseId={selectedUniverseId}
-        onSave={handleSaveFicha}
-        onDelete={handleDeleteFicha}
+      {/* Ficha Modal */}
+      <NewFichaModal
+        isOpen={showFichaModal}
         onClose={() => {
-          setShowConceptRuleModal(false);
+          setShowFichaModal(false);
           setSelectedFicha(null);
-          // Se havia uma ficha sendo visualizada, reabrir o modal de visualização
+          setPreSelectedCategory(null);
           if (viewingFicha) {
             setShowViewModal(true);
           }
         }}
+        universeId={selectedUniverseId}
+        universeName={universes.find(u => u.id === selectedUniverseId)?.nome || ""}
+        worlds={allWorlds}
+        categories={categories.filter(c => ["sinopse", "conceito", "regra"].includes(c.slug))}
+        onSave={handleSaveFicha}
+        mode={selectedFicha ? "edit" : "create"}
+        ficha={selectedFicha}
       />
 
       {/* World Modal */}
