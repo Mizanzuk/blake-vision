@@ -815,6 +815,7 @@ export default function ProjetosPage() {
         onSave={handleSaveFicha}
         mode={selectedFicha ? "edit" : "create"}
         ficha={selectedFicha}
+        preSelectedCategory={preSelectedCategory}
       />
 
       {/* World Modal */}

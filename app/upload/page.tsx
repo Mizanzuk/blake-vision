@@ -33,6 +33,8 @@ type ExtractedEntity = {
   conteudo: string;
   ano_diegese?: number;
   tags?: string;
+  world_id?: string;
+  episodio?: string | null;
 };
 
 
@@ -614,6 +616,8 @@ export default function UploadPage() {
         conteudo: fichaData.conteudo,
         ano_diegese: fichaData.ano_diegese,
         tags: fichaData.tags,
+        world_id: fichaData.world_id,
+        episodio: fichaData.episodio,
       };
       setExtractedEntities(updatedEntities);
       setShowEditFichaModal(false);
@@ -938,6 +942,8 @@ export default function UploadPage() {
           resumo: editingFichaData.resumo,
           conteudo: editingFichaData.conteudo,
           tags: editingFichaData.tags,
+          world_id: selectedWorldId,
+          episodio: unitNumber,
         } : null}
       />
       

@@ -45,7 +45,10 @@ export function EpisodioDropdown({
       )}
 
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
         className="w-full px-4 py-2 text-sm text-left border rounded-lg bg-light-raised dark:bg-dark-raised border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay focus:ring-2 focus:ring-primary-500 transition-colors flex items-center justify-between"
       >
         <span>
@@ -62,7 +65,8 @@ export function EpisodioDropdown({
         <div className="absolute z-[9999] w-full bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg max-h-64 overflow-y-auto top-full mt-1">
           {/* Nenhum episódio option */}
           <button
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               onSelect(null);
               setIsOpen(false);
             }}
@@ -79,7 +83,8 @@ export function EpisodioDropdown({
           {Array.isArray(episodes) && episodes.map((episode) => (
             <button
               key={episode.id}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 onSelect(episode.id);
                 setIsOpen(false);
               }}

@@ -23,6 +23,7 @@ interface NewFichaModalProps {
   onOpenCreateCategory?: () => void;
   mode?: "create" | "edit";
   ficha?: Partial<Ficha> | null;
+  preSelectedCategory?: string | null;
 }
 
 export function NewFichaModal({
@@ -36,6 +37,7 @@ export function NewFichaModal({
   onOpenCreateCategory,
   mode = "create",
   ficha,
+  preSelectedCategory,
 }: NewFichaModalProps) {
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string>("");
   const [formData, setFormData] = useState<any>({
@@ -72,6 +74,9 @@ export function NewFichaModal({
         granularidade: "",
         camada: "",
       });
+    } else if (isOpen && mode === "create" && preSelectedCategory) {
+      // Pré-selecionar categoria em modo criação
+      setSelectedCategorySlug(preSelectedCategory);
     } else if (isOpen && mode === "edit" && ficha) {
       // Preencher formulário com dados da ficha em modo edição
       setSelectedCategorySlug(ficha.tipo || "");
@@ -89,7 +94,7 @@ export function NewFichaModal({
         camada: ficha.camada_temporal || "",
       });
     }
-  }, [isOpen, universeId, mode, ficha]);
+  }, [isOpen, universeId, mode, ficha, preSelectedCategory]);
 
   // Load episodes when world changes
   useEffect(() => {
@@ -123,7 +128,7 @@ export function NewFichaModal({
     try {
       await onSave({
         ...formData,
-        category_slug: selectedCategorySlug,
+        tipo: selectedCategorySlug,
       });
       onClose();
     } catch (error) {
@@ -136,26 +141,13 @@ export function NewFichaModal({
   function getModalTitle() {
     if (!selectedCategorySlug) return mode === "edit" ? "Editar Ficha" : "Nova Ficha";
     
-    const prefix = mode === "edit" ? "Editar" : "Nova";
+    // Obter nome da categoria
+    const categoryName = categories.find(c => c.slug === selectedCategorySlug)?.label || selectedCategorySlug;
     
-    switch (selectedCategorySlug) {
-      case "sinopse":
-        return `${prefix} Sinopse`;
-      case "conceito":
-        return `${prefix} Conceito`;
-      case "regra":
-        return `${prefix} Regra`;
-      case "evento":
-        return `${prefix} Evento`;
-      case "local":
-        return `${prefix} Local`;
-      case "personagem":
-        return `${prefix} Personagem`;
-      case "roteiro":
-        return `${prefix} Roteiro`;
-      default:
-        return `${prefix} Ficha de ${selectedCategory?.label || ""}`;
-    }
+    // Capitalizar primeira letra
+    const capitalizedName = categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
+    
+    return capitalizedName;
   }
 
   function renderCategoryFields() {
