@@ -253,8 +253,8 @@ export function NewFichaModal({
             />
             <Textarea
               label="Descrição"
-              value={formData.descricao}
-              onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+              value={formData.conteudo}
+              onChange={(e) => setFormData({ ...formData, conteudo: e.target.value })}
               placeholder={
                 selectedCategorySlug === "conceito"
                   ? "Descreva o conceito fundamental que guia este universo ou mundo"
@@ -308,8 +308,8 @@ export function NewFichaModal({
             />
             <Textarea
               label="Descrição"
-              value={formData.descricao}
-              onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+              value={formData.conteudo}
+              onChange={(e) => setFormData({ ...formData, conteudo: e.target.value })}
               required
               fullWidth
               rows={6}
@@ -395,8 +395,8 @@ export function NewFichaModal({
             />
             <Textarea
               label="Descrição"
-              value={formData.descricao}
-              onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+              value={formData.conteudo}
+              onChange={(e) => setFormData({ ...formData, conteudo: e.target.value })}
               required
               fullWidth
               rows={6}
@@ -440,8 +440,8 @@ export function NewFichaModal({
             />
             <Textarea
               label="Conteúdo do Roteiro"
-              value={formData.descricao}
-              onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+              value={formData.conteudo}
+              onChange={(e) => setFormData({ ...formData, conteudo: e.target.value })}
               required
               fullWidth
               rows={12}
@@ -490,8 +490,8 @@ export function NewFichaModal({
             />
             <Textarea
               label="Descrição"
-              value={formData.descricao}
-              onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+              value={formData.conteudo}
+              onChange={(e) => setFormData({ ...formData, conteudo: e.target.value })}
               required
               fullWidth
               rows={6}
