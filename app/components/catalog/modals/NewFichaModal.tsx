@@ -111,7 +111,7 @@ export function NewFichaModal({
     }
 
     loadEpisodes();
-  }, [formData.world_id]);
+  }, [formData.world_id, isOpen]);
 
   const selectedCategory = categories.find(c => c.slug === selectedCategorySlug);
   const selectedWorld = worlds.find(w => w.id === formData.world_id);
