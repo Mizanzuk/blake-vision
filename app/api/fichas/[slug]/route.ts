@@ -129,7 +129,7 @@ export async function PUT(
       conteudo,
       ano_diegese,
       tags,
-      episode_id,
+      episodio,
       episodio,
       album_imagens,
       descricao_data,
@@ -147,7 +147,7 @@ export async function PUT(
     if (conteudo !== undefined) updateData.conteudo = conteudo || null;
     if (ano_diegese !== undefined) updateData.ano_diegese = ano_diegese || null;
     if (tags !== undefined) updateData.tags = tags || null;
-    if (episode_id !== undefined) updateData.episode_id = episode_id || null;
+    if (episodio !== undefined) updateData.episodio = episodio || null;
     if (episodio !== undefined) updateData.episodio = episodio || null;
     if (album_imagens !== undefined) updateData.album_imagens = album_imagens || null;
     if (descricao_data !== undefined) updateData.descricao_data = descricao_data || null;

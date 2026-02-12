@@ -41,7 +41,7 @@ export function NewFichaModal({
   const [formData, setFormData] = useState<any>({
     universe_id: universeId,
     world_id: "",
-    episode_id: null,
+    episodio: null,
     titulo: "",
     resumo: "",
     descricao: "",
@@ -62,7 +62,7 @@ export function NewFichaModal({
       setFormData({
         universe_id: universeId,
         world_id: "",
-        episode_id: null,
+        episodio: null,
         titulo: "",
         resumo: "",
         descricao: "",
@@ -78,7 +78,7 @@ export function NewFichaModal({
       setFormData({
         universe_id: universeId,
         world_id: ficha.world_id || "",
-        episode_id: ficha.episode_id || null,
+        episodio: ficha.episodio || null,
         titulo: ficha.titulo || "",
         resumo: ficha.resumo || "",
         descricao: ficha.descricao || "",
@@ -184,8 +184,8 @@ export function NewFichaModal({
             {/* Episódio */}
             <EpisodioDropdown
               episodes={episodes}
-              value={formData.episode_id}
-              onSelect={(episodeId) => setFormData({ ...formData, episode_id: episodeId })}
+              value={formData.episodio}
+              onSelect={(episodeId) => setFormData({ ...formData, episodio: episodeId })}
             />
 
             <Input
@@ -287,9 +287,9 @@ export function NewFichaModal({
 
             {/* Episódio */}
             <EpisodioDropdown
-              value={formData.episode_id}
+              value={formData.episodio}
               episodes={episodes || []}
-              onSelect={(id) => setFormData({ ...formData, episode_id: id })}
+              onSelect={(id) => setFormData({ ...formData, episodio: id })}
             />
 
             <Input
@@ -374,9 +374,9 @@ export function NewFichaModal({
 
             {/* Episódio */}
             <EpisodioDropdown
-              value={formData.episode_id}
+              value={formData.episodio}
               episodes={episodes || []}
-              onSelect={(id) => setFormData({ ...formData, episode_id: id })}
+              onSelect={(id) => setFormData({ ...formData, episodio: id })}
             />
 
             <Input
@@ -426,9 +426,9 @@ export function NewFichaModal({
 
             {/* Episódio */}
             <EpisodioDropdown
-              value={formData.episode_id}
+              value={formData.episodio}
               episodes={episodes || []}
-              onSelect={(id) => setFormData({ ...formData, episode_id: id })}
+              onSelect={(id) => setFormData({ ...formData, episodio: id })}
             />
 
             <Input
@@ -470,9 +470,9 @@ export function NewFichaModal({
 
             {/* Episódio */}
             <EpisodioDropdown
-              value={formData.episode_id}
+              value={formData.episodio}
               episodes={episodes || []}
-              onSelect={(id) => setFormData({ ...formData, episode_id: id })}
+              onSelect={(id) => setFormData({ ...formData, episodio: id })}
             />
 
             <Input
