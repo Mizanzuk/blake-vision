@@ -126,8 +126,20 @@ export function NewFichaModal({
     setLoading(true);
 
     try {
+      // Converter episode_id para formato "numero titulo" se for UUID
+      let episodioValue = formData.episodio;
+      
+      if (formData.episodio && typeof formData.episodio === 'string' && formData.episodio.length === 36) {
+        // É um UUID, converter para "numero titulo"
+        const selectedEpisode = episodes.find(ep => ep.id === formData.episodio);
+        if (selectedEpisode) {
+          episodioValue = `${selectedEpisode.numero} ${selectedEpisode.titulo}`;
+        }
+      }
+
       await onSave({
         ...formData,
+        episodio: episodioValue,
         tipo: selectedCategorySlug,
       });
       onClose();
@@ -330,22 +342,13 @@ export function NewFichaModal({
                 />
                 <GranularidadeDropdown
                   value={formData.granularidade}
-                  onSelect={(value) => setFormData({ ...formData, granularidade: value })}
-                  required
-                />
-                <Input
-                  label="Camada (opcional)"
-                  value={formData.camada}
-                  onChange={(e) => setFormData({ ...formData, camada: e.target.value })}
-                  placeholder="Ex: Presente, Passado, Futuro"
-                  fullWidth
+                  onChange={(value) => setFormData({ ...formData, granularidade: value })}
                 />
               </div>
             </div>
           </>
         );
 
-      case "local":
       case "personagem":
         return (
           <>
@@ -393,56 +396,10 @@ export function NewFichaModal({
               fullWidth
               rows={6}
             />
-
-            {/* TODO: Álbum de imagens */}
-          </>
-        );
-
-      case "roteiro":
-        return (
-          <>
-            {/* Universo */}
-            <Input
-              label="Universo"
-              value={universeName}
-              disabled
-              fullWidth
-            />
-
-            {/* Mundo */}
-            <WorldsDropdownSingle
-              worlds={worlds}
-              selectedId={formData.world_id}
-              onSelect={(id) => setFormData({ ...formData, world_id: id })}
-            />
-
-            {/* Episódio */}
-            <EpisodioDropdown
-              value={formData.episodio}
-              episodes={episodes || []}
-              onSelect={(id) => setFormData({ ...formData, episodio: id })}
-            />
-
-            <Input
-              label="Título"
-              value={formData.titulo}
-              onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
-              required
-              fullWidth
-            />
-            <Textarea
-              label="Conteúdo do Roteiro"
-              value={formData.conteudo}
-              onChange={(e) => setFormData({ ...formData, conteudo: e.target.value })}
-              required
-              fullWidth
-              rows={12}
-            />
           </>
         );
 
       default:
-        // Categoria customizada
         return (
           <>
             {/* Universo */}
@@ -478,6 +435,7 @@ export function NewFichaModal({
               label="Resumo"
               value={formData.resumo}
               onChange={(e) => setFormData({ ...formData, resumo: e.target.value })}
+              required
               fullWidth
             />
             <Textarea
@@ -498,37 +456,46 @@ export function NewFichaModal({
       isOpen={isOpen}
       onClose={onClose}
       title={getModalTitle()}
-      size="sm"
-      noBorder={true}
+      size="lg"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Dropdown de Categoria (sempre aparece em modo edição) */}
-        {!selectedCategorySlug || mode === "edit" ? (
-          <CategoryDropdown
-            label="Categoria"
-            categories={categories}
-            selectedSlug={selectedCategorySlug}
-            onSelect={setSelectedCategorySlug}
-            onCreateNew={onOpenCreateCategory}
-          />
-        ) : null}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Category Selection */}
+        {!selectedCategorySlug && (
+          <div>
+            <label className="block text-sm font-medium text-text-light-primary dark:text-dark-primary mb-3">
+              Selecione o tipo de ficha
+            </label>
+            <CategoryDropdown
+              categories={categories}
+              selectedSlug={selectedCategorySlug}
+              onSelect={setSelectedCategorySlug}
+              onOpenCreateCategory={onOpenCreateCategory}
+            />
+          </div>
+        )}
 
-        {/* Campos específicos da categoria */}
-        {renderCategoryFields()}
+        {/* Category-specific fields */}
+        {selectedCategorySlug && (
+          <>
+            {renderCategoryFields()}
 
-        {/* Botões */}
-        <div className="flex justify-end gap-3 pt-4">
-          <Button type="button" variant="secondary" onClick={onClose} size="sm">
-            Cancelar
-          </Button>
-          <Button 
-            type="submit" 
-            disabled={!selectedCategorySlug || loading}
-            size="sm"
-          >
-            {loading ? "Salvando..." : "Salvar"}
-          </Button>
-        </div>
+            {/* Buttons */}
+            <div className="flex gap-3 justify-end pt-6 border-t border-border-light-default dark:border-border-dark-default">
+              <Button
+                variant="secondary"
+                onClick={onClose}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                loading={loading}
+              >
+                {mode === "edit" ? "Atualizar" : "Criar"}
+              </Button>
+            </div>
+          </>
+        )}
       </form>
     </Modal>
   );
