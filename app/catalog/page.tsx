@@ -386,17 +386,15 @@ function CatalogContent() {
 
   // Get unique episode numbers from fichas filtered by selected world
   // If no world is selected, show all episodes; if a world is selected, show only episodes from that world
-  const episodeNumbersFromFichas = (fichas || [])
+  const episodeIdsFromFichas = (fichas || [])
     .filter(f => {
-      // Se nenhum mundo está selecionado, mostrar todos os episódios
       if (selectedWorldIds.length === 0) {
         return !!f.episode_id;
       }
-      // Se um mundo está selecionado, mostrar apenas episódios desse mundo
       return f.episode_id && selectedWorldIds.includes(f.world_id);
     })
-    .map(f => f.episodio);
-  const uniqueEpisodeNumbers = Array.from(new Set(episodeNumbersFromFichas)).filter((ep): ep is string => !!ep);
+    .map(f => f.episode_id);
+  const uniqueEpisodeIds = Array.from(new Set(episodeIdsFromFichas)).filter((ep): ep is string => !!ep);
 
   if (isLoading) {
     return <Loading fullScreen text={t.common.loading} />;
@@ -548,7 +546,7 @@ onDelete={(id, name) => {
               Episódios
             </label>
             <EpisodesDropdown
-              episodes={uniqueEpisodeNumbers}
+              episodes={uniqueEpisodeIds}
               selectedEpisodes={selectedEpisodes}
               onToggle={toggleEpisodeSelection}
             />

@@ -82,9 +82,8 @@ export async function GET(req: NextRequest) {
     // Se tem tipo, busca por tipo; senão, busca por search
     let query = supabase
       .from("fichas")
-      .select("id, titulo, tipo, slug, world_id, episode_id, episodios(numero, titulo)")
-      .eq("user_id", user.id)
-
+      .select("id, titulo, tipo, slug, world_id, episode_id")
+      .eq("user_id", user.id);
     if (tipo) {
       query = query.eq("tipo", tipo);
     } else if (search) {
