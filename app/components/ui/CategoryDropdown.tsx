@@ -26,6 +26,7 @@ export function CategoryDropdown({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const isClickingButtonRef = useRef(false);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -41,13 +42,9 @@ export function CategoryDropdown({
     }
 
     if (isOpen) {
-      // Usar setTimeout para evitar que o click que abriu o dropdown o feche imediatamente
-      const timer = setTimeout(() => {
-        document.addEventListener("mousedown", handleClickOutside);
-      }, 100);
+      document.addEventListener("mousedown", handleClickOutside);
       
       return () => {
-        clearTimeout(timer);
         document.removeEventListener("mousedown", handleClickOutside);
       };
     }
@@ -62,6 +59,17 @@ export function CategoryDropdown({
       setButtonRect(null);
     }
   }, [isOpen]);
+
+  const handleButtonClick = () => {
+    if (!disabled) {
+      isClickingButtonRef.current = true;
+      setIsOpen(!isOpen);
+      // Reset the flag after a short delay
+      setTimeout(() => {
+        isClickingButtonRef.current = false;
+      }, 50);
+    }
+  };
 
   const getButtonText = () => {
     if (!selectedSlug) {
@@ -88,7 +96,7 @@ export function CategoryDropdown({
       <button
         ref={buttonRef}
         type="button"
-        onClick={() => !disabled && setIsOpen(!isOpen)}
+        onClick={handleButtonClick}
         disabled={disabled}
         className={clsx(
           "w-full px-4 py-2 text-left rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary transition-colors flex items-center justify-between",
@@ -147,28 +155,34 @@ export function CategoryDropdown({
           </div>
 
           {/* Category Options */}
-          {categories.map((category) => (
-            <div
-              key={category.slug}
-              className={clsx(
-                "flex items-center px-3 py-2 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors cursor-pointer border-b border-border-light-default dark:border-border-dark-default last:border-b-0",
-                selectedSlug === category.slug && "bg-primary-50 dark:bg-primary-900/20"
-              )}
-              onClick={() => {
-                onSelect(category.slug);
-                setIsOpen(false);
-              }}
-            >
-              <p className={clsx(
-                "text-sm font-medium truncate",
-                selectedSlug === category.slug
-                  ? "text-primary-700 dark:text-primary-300"
-                  : "text-text-light-primary dark:text-dark-primary"
-              )}>
-                {category.label}
-              </p>
+          {categories && categories.length > 0 ? (
+            categories.map((category) => (
+              <div
+                key={category.slug}
+                className={clsx(
+                  "flex items-center px-3 py-2 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors cursor-pointer border-b border-border-light-default dark:border-border-dark-default last:border-b-0",
+                  selectedSlug === category.slug && "bg-primary-50 dark:bg-primary-900/20"
+                )}
+                onClick={() => {
+                  onSelect(category.slug);
+                  setIsOpen(false);
+                }}
+              >
+                <p className={clsx(
+                  "text-sm font-medium truncate",
+                  selectedSlug === category.slug
+                    ? "text-primary-700 dark:text-primary-300"
+                    : "text-text-light-primary dark:text-dark-primary"
+                )}>
+                  {category.label}
+                </p>
+              </div>
+            ))
+          ) : (
+            <div className="px-3 py-2 text-sm text-text-light-tertiary dark:text-dark-tertiary">
+              Carregando categorias...
             </div>
-          ))}
+          )}
 
           {/* Create New Category Option */}
           {onCreateNew && (
