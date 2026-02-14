@@ -200,6 +200,33 @@ Retorne APENAS o JSON, sem texto adicional.`;
       );
     }
 
+    // Buscar episode_id se unitNumber foi fornecido
+    let episodeId: string | null = null;
+    if (unitNumber) {
+      try {
+        const episodeNum = parseInt(unitNumber, 10);
+        const { data: episodeData } = await supabase
+          .from("episodes")
+          .select("id")
+          .eq("world_id", worldId)
+          .eq("numero", episodeNum)
+          .single();
+        
+        if (episodeData) {
+          episodeId = episodeData.id;
+        }
+      } catch (e) {
+        console.error("Error fetching episode:", e);
+      }
+    }
+
+    // Adicionar world_id e episode_id a todas as entidades
+    const entitiesWithMetadata = entities.map((entity: any) => ({
+      ...entity,
+      world_id: worldId,
+      episode_id: episodeId,
+    }));
+
     // Gerar Sinopse automaticamente (logline + parágrafo)
     let sinopseResumo = "";
     let sinopseConteudo = "";
@@ -253,31 +280,35 @@ Retorne APENAS um JSON válido no seguinte formato:
 
     // Adicionar Sinopse à lista de entidades (com logline como resumo e parágrafo como conteúdo)
     // SEMPRE adicionar a Sinopse, mesmo que vazia, para não haver conflito com a criação automática em Projetos
-    entities.push({
+    entitiesWithMetadata.push({
       tipo: "sinopse",
       titulo: documentName || "Sinopse",
       resumo: sinopseResumo || "Sinopse do episódio",
       conteudo: sinopseConteudo || "",
-      tags: "sinopse, resumo"
+      tags: "sinopse, resumo",
+      world_id: worldId,
+      episode_id: episodeId,
     });
 
     // Adicionar Roteiro à lista de entidades (com o texto ORIGINAL, não gerado)
     if (extractedText) {
-      entities.push({
+      entitiesWithMetadata.push({
         tipo: "roteiro",
         titulo: documentName ? `Roteiro - ${documentName}` : "Roteiro",
         resumo: "Roteiro gerado automaticamente",
         conteudo: extractedText,
-        tags: "roteiro, estrutura, cenas"
+        tags: "roteiro, estrutura, cenas",
+        world_id: worldId,
+        episode_id: episodeId,
       });
     }
 
     return NextResponse.json({
       success: true,
       extracted_text: extractedText.slice(0, 1000) + "...",
-      entities,
+      entities: entitiesWithMetadata,
       relations,
-      count: entities.length,
+      count: entitiesWithMetadata.length,
     });
 
   } catch (error) {

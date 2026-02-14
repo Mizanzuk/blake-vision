@@ -23,15 +23,7 @@ export function CategoryDropdown({
 }: CategoryDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
-  // Debug
-  console.log('[CategoryDropdown] Props:', { selectedSlug, categories: categories.length, label });
 
-  // Debug: log quando selectedSlug muda
-  useEffect(() => {
-    console.log('[CategoryDropdown] selectedSlug changed to:', selectedSlug);
-  }, [selectedSlug]);
-  
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -48,11 +40,9 @@ export function CategoryDropdown({
 
   const getButtonText = () => {
     if (!selectedSlug) {
-      console.log('[CategoryDropdown] selectedSlug is empty');
       return "Selecione uma categoria";
     }
     const category = categories.find(c => c.slug === selectedSlug);
-    console.log('[CategoryDropdown] Looking for category with slug:', selectedSlug, 'Found:', category);
     return category?.label || "Selecione uma categoria";
   };
 
