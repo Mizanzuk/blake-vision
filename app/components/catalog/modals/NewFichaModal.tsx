@@ -9,6 +9,7 @@ import { Textarea } from "@/app/components/ui/Textarea";
 import { Button } from "@/app/components/ui/Button";
 import { CategoryDropdown } from "@/app/components/ui/CategoryDropdown";
 import { GranularidadeDropdown } from "@/app/components/ui/GranularidadeDropdown";
+import { EpisodioDropdown } from "@/app/components/ui/EpisodioDropdown";
 import type { World, Ficha, Category } from "@/app/types";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
 
@@ -224,39 +225,22 @@ export function NewFichaModal({
 
         {/* Episódio (novo sistema com UUID) */}
         {availableEpisodes.length > 0 && (
-          <div>
-            <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
-              EPISÓDIO
-            </label>
-            <div className="relative">
-              <select
-                value={selectedEpisodeId || ""}
-                onChange={(e) => {
-                  setSelectedEpisodeId(e.target.value || null);
-                  setFormData({
-                    ...formData,
-                    episode_id: e.target.value || null,
-                  });
-                }}
-                className="w-full px-4 py-2 text-left rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary transition-colors appearance-none cursor-pointer hover:bg-light-overlay dark:hover:bg-dark-overlay focus:outline-none focus:ring-2 focus:ring-primary-500"
-              >
-                <option value="" className="text-text-light-primary dark:text-dark-primary">Nenhum episódio</option>
-                {availableEpisodes.map((episode) => (
-                  <option key={episode.id} value={episode.id} className="text-text-light-primary dark:text-dark-primary">
-                    {episode.numero} {episode.titulo}
-                  </option>
-                ))}
-              </select>
-              <svg
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-light-tertiary dark:text-dark-tertiary pointer-events-none"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-          </div>
+          <EpisodioDropdown
+            label="EPISÓDIO"
+            episodes={availableEpisodes.map(ep => ({
+              id: ep.id,
+              numero: ep.numero,
+              titulo: ep.titulo,
+            }))}
+            selectedId={selectedEpisodeId || ""}
+            onSelect={(episodeId) => {
+              setSelectedEpisodeId(episodeId || null);
+              setFormData({
+                ...formData,
+                episode_id: episodeId || null,
+              });
+            }}
+          />
         )}
 
         {/* Título */}
