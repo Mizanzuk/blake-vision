@@ -112,6 +112,21 @@ export function NewFichaModal({
     }
   }, [isOpen, universeId, mode, ficha, preSelectedCategory, categories]);
   
+  // Quando as categorias são carregadas após o modal ser aberto, atualizar o selectedCategorySlug
+  useEffect(() => {
+    if (isOpen && mode === "edit" && ficha && categories.length > 0) {
+      const matchingCategory = categories.find(
+        c => c.slug === ficha.tipo || c.label?.toLowerCase() === ficha.tipo?.toLowerCase()
+      );
+      if (matchingCategory) {
+        setSelectedCategorySlug(matchingCategory.slug);
+      } else if (ficha.tipo) {
+        // Se nao encontrou, use o tipo como fallback
+        setSelectedCategorySlug(ficha.tipo);
+      }
+    }
+  }, [categories, isOpen, mode, ficha]);
+  
 
 
   // Load episodes when world changes
