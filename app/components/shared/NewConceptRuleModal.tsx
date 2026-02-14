@@ -136,6 +136,12 @@ export default function NewConceptRuleModal({
       return;
     }
 
+    // Validação de episódio é obrigatória apenas para sinopse
+    if (tipo === "sinopse" && selectedWorldId && !selectedEpisodeId) {
+      toast.error("Selecione um episódio para a sinopse");
+      return;
+    }
+
     const itemData = {
       id: item?.id,
       world_id: selectedWorldId || null,

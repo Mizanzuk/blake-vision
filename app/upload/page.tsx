@@ -16,7 +16,7 @@ import { ConfirmationModal } from "@/app/components/ui/ConfirmationModal";
 import { UniverseDeleteModal } from "@/app/components/ui/UniverseDeleteModal";
 import { useConfirm } from "@/hooks/useConfirm";
 import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
-import { EpisodesDropdown } from "@/app/components/ui/EpisodesDropdown";
+import { EpisodesDropdownSingle } from "@/app/components/ui/EpisodesDropdownSingle";
 import { EpisodeCreationModal } from "@/app/components/ui/EpisodeCreationModal";
 import WorldModal from "@/app/components/projetos/WorldModal";
 import TipoDropdown from "@/app/components/projetos/TipoDropdown";
@@ -255,7 +255,7 @@ export default function UploadPage() {
       
       if (data) {
         setEpisodes(data);
-        const episodeStrings = data.map(e => String(e.numero));
+        const episodeStrings = data.map(e => `Episódio ${e.numero} - ${e.titulo}`);
         setExistingEpisodes(episodeStrings);
       }
     } catch (err) {
@@ -721,11 +721,11 @@ export default function UploadPage() {
 
             {/* Episódio */}
             {selectedWorldId && worldHasEpisodes && (
-              <EpisodesDropdown
-                label="EPISÓDIOS"
+              <EpisodesDropdownSingle
+                label="EPISÓDIO"
                 episodes={existingEpisodes.filter(e => e) as string[]}
-                selectedEpisodes={unitNumber ? [unitNumber] : []}
-                onToggle={(episode) => {
+                selectedEpisode={unitNumber || ""}
+                onSelect={(episode) => {
                   setUnitNumber(episode);
                   // Puxar o título do episódio selecionado
                   const selectedEpisode = episodes.find(e => String(e.numero) === episode);

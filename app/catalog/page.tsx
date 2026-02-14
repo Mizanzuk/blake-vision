@@ -28,6 +28,7 @@ import FichaCard from "@/app/components/shared/FichaCard";
 import FichaViewModal from "@/app/components/shared/FichaViewModal";
 import NewConceptRuleModal from "@/app/components/shared/NewConceptRuleModal";
 import ConceptRuleViewModal from "@/app/components/shared/ConceptRuleViewModal";
+import EpisodeModal from "@/app/components/projetos/EpisodeModal";
 import BulkActionsBar from "@/app/components/catalog/BulkActionsBar";
 import { exportAsText, exportAsDoc, exportAsPdf } from "@/app/lib/export/fichas";
 
@@ -100,6 +101,7 @@ function CatalogContent() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewingFicha, setViewingFicha] = useState<Ficha | null>(null);
+  const [showEpisodeModal, setShowEpisodeModal] = useState(false);
   
   // Helper functions
   function generateCaptcha() {
@@ -576,6 +578,7 @@ onDelete={(id, name) => {
               episodes={episodeNames}
               selectedEpisodes={selectedEpisodes}
               onToggle={toggleEpisodeSelection}
+              onCreate={() => setShowEpisodeModal(true)}
             />
           </div>
         </div>
@@ -846,13 +849,61 @@ onDelete={(id, name) => {
         />
       )}
 
+      {/* Episode Modal */}
+      {showEpisodeModal && selectedWorldId && (
+        <EpisodeModal
+          episode={null}
+          worldId={selectedWorldId}
+          onSave={async (episodeData) => {
+            try {
+              const response = await fetch("/api/episodes", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(episodeData),
+              });
+              if (response.ok) {
+                toast.success("Episódio criado");
+                setShowEpisodeModal(false);
+                // Recarregar fichas para atualizar episódios
+                await loadCatalogData();
+              } else {
+                const data = await response.json();
+                toast.error(data.error || "Erro ao salvar episódio");
+              }
+            } catch (error) {
+              console.error("Error saving episode:", error);
+              toast.error("Erro de rede ao salvar episódio");
+            }
+          }}
+          onDelete={async (id) => {
+            try {
+              const response = await fetch(`/api/episodes?id=${id}`, {
+                method: "DELETE",
+              });
+              if (response.ok) {
+                toast.success("Episódio deletado");
+                setShowEpisodeModal(false);
+                await loadCatalogData();
+              } else {
+                const data = await response.json();
+                toast.error(data.error || "Erro ao deletar episódio");
+              }
+            } catch (error) {
+              console.error("Error deleting episode:", error);
+              toast.error("Erro de rede ao deletar episódio");
+            }
+          }}
+          onClose={() => setShowEpisodeModal(false)}
+        />
+      )}
+
       {/* Delete Universe Modal with Captcha */}
       <UniverseDeleteModal
         isOpen={showDeleteUniverseModal}
         universeName={universeToDelete?.nome || ""}
         captchaQuestion={captchaQuestion}
         captchaAnswer={captchaAnswer}
-        onCaptchaChange={setCaptchaAnswer}
+        onCaptchaChange={setCaptchaChange}
         onConfirm={confirmDeleteUniverse}
         onCancel={() => {
           setShowDeleteUniverseModal(false);

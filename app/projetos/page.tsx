@@ -818,6 +818,7 @@ export default function ProjetosPage() {
         mode={selectedFicha ? "edit" : "create"}
         ficha={selectedFicha}
         preSelectedCategory={preSelectedCategory}
+        onOpenCreateEpisode={() => setShowEpisodeModal(true)}
       />
 
       {/* World Modal */}
