@@ -170,7 +170,7 @@ export function NewFichaModal({
             categories={categories}
             selectedSlug={selectedCategorySlug}
             onSelect={setSelectedCategorySlug}
-            onOpenCreateCategory={onOpenCreateCategory}
+            onCreateNew={onOpenCreateCategory}
           />
         </div>
 
@@ -321,7 +321,7 @@ export function NewFichaModal({
                   GRANULARIDADE
                 </label>
                 <GranularidadeDropdown
-                  selected={formData.granularidade}
+                  value={formData.granularidade}
                   onSelect={(granularidade) =>
                     setFormData({ ...formData, granularidade })
                   }
@@ -348,7 +348,7 @@ export function NewFichaModal({
         <div className="flex gap-2 justify-end pt-4">
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             onClick={onClose}
             disabled={loading}
           >

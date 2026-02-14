@@ -201,7 +201,7 @@ export async function POST(req: NextRequest) {
       if (category?.prefix && world_id) {
         console.log("[DEBUG] Prefix da categoria:", category.prefix);
         console.log("[DEBUG] World ID:", world_id);
-        console.log("[DEBUG] Episódio:", episodio);
+        console.log("[DEBUG] Episode ID:", episode_id);
         
         // Extract episode number from episode_id if available
         let episodeNumber: number | null = null;
