@@ -114,7 +114,7 @@ export function CategoryDropdown({
       </button>
 
       {/* Dropdown Menu - Using fixed positioning to escape modal overflow */}
-      {isOpen && buttonRect && categories.length > 0 && (
+      {isOpen && buttonRect && (
         <div 
           ref={menuRef}
           className="fixed z-[9999] bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg max-h-64 overflow-y-auto"
