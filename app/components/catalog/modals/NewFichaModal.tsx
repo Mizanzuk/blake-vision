@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from "react";
 import { Modal } from "@/app/components/ui/Modal";
@@ -9,8 +9,8 @@ import { Textarea } from "@/app/components/ui/Textarea";
 import { Button } from "@/app/components/ui/Button";
 import { CategoryDropdown } from "@/app/components/ui/CategoryDropdown";
 import { GranularidadeDropdown } from "@/app/components/ui/GranularidadeDropdown";
-import { EpisodioDropdown } from "@/app/components/ui/EpisodioDropdown";
-import type { World, Episode, Ficha, Category } from "@/app/types";
+import type { World, Ficha, Category } from "@/app/types";
+import { getSupabaseClient } from "@/app/lib/supabase/client";
 
 interface NewFichaModalProps {
   isOpen: boolean;
@@ -54,7 +54,7 @@ export function NewFichaModal({
     granularidade: "",
     camada: "",
   });
-  const [episodes, setEpisodes] = useState<Episode[]>([]);
+  const [availableEpisodes, setAvailableEpisodes] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Reset form when modal opens/closes
@@ -99,17 +99,36 @@ export function NewFichaModal({
   // Load episodes when world changes
   useEffect(() => {
     if (!formData.world_id) {
-      setEpisodes([]);
+      setAvailableEpisodes([]);
       return;
     }
 
     async function loadEpisodes() {
       try {
-        const response = await fetch(`/api/episodes?world_id=${formData.world_id}`);
-        if (response.ok) {
-          const data = await response.json();
-          setEpisodes(data.episodes || []);
+        const supabase = getSupabaseClient();
+        
+        // Buscar todas as fichas do mundo
+        const { data: worldFichas, error } = await supabase
+          .from('fichas')
+          .select('episodio')
+          .eq('world_id', formData.world_id)
+          .not('episodio', 'is', null);
+
+        if (error) {
+          console.error("Error loading episodes:", error);
+          return;
         }
+
+        // Extrair episódios únicos
+        const episodes = Array.from(
+          new Set(
+            (worldFichas || [])
+              .map(f => f.episodio)
+              .filter((ep): ep is string => !!ep)
+          )
+        ).sort();
+
+        setAvailableEpisodes(episodes);
       } catch (error) {
         console.error("Error loading episodes:", error);
       }
@@ -126,20 +145,8 @@ export function NewFichaModal({
     setLoading(true);
 
     try {
-      // Converter episode_id para formato "numero titulo" se for UUID
-      let episodioValue = formData.episodio;
-      
-      if (formData.episodio && typeof formData.episodio === 'string' && formData.episodio.length === 36) {
-        // É um UUID, converter para "numero titulo"
-        const selectedEpisode = episodes.find(ep => ep.id === formData.episodio);
-        if (selectedEpisode) {
-          episodioValue = `${selectedEpisode.numero} ${selectedEpisode.titulo}`;
-        }
-      }
-
       await onSave({
         ...formData,
-        episodio: episodioValue,
         tipo: selectedCategorySlug,
       });
       onClose();
@@ -185,12 +192,24 @@ export function NewFichaModal({
               onSelect={(id) => setFormData({ ...formData, world_id: id })}
             />
 
-            {/* Episódio */}
-            <EpisodioDropdown
-              episodes={episodes}
-              value={formData.episodio}
-              onSelect={(episodeId) => setFormData({ ...formData, episodio: episodeId })}
-            />
+            {/* Episódio - Dropdown simples com string */}
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5 text-text-light-secondary dark:text-text-dark-secondary">
+                Episódio
+              </label>
+              <select
+                value={formData.episodio || ""}
+                onChange={(e) => setFormData({ ...formData, episodio: e.target.value || null })}
+                className="w-full px-4 py-2 text-sm border rounded-lg bg-light-raised dark:bg-dark-raised border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay focus:ring-2 focus:ring-primary-500 transition-colors"
+              >
+                <option value="">Nenhum episódio</option>
+                {availableEpisodes.map((ep) => (
+                  <option key={ep} value={ep}>
+                    {ep}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             <Input
               label="Logline"
@@ -200,73 +219,22 @@ export function NewFichaModal({
               required
               fullWidth
             />
-            <Textarea
-              label="Sinopse"
-              value={formData.conteudo}
-              onChange={(e) => setFormData({ ...formData, conteudo: e.target.value })}
-              placeholder="Descreva a sinopse completa do episódio"
-              required
-              fullWidth
-              rows={6}
-            />
-          </>
-        );
 
-      case "conceito":
-      case "regra":
-        return (
-          <>
-            {/* Universo (somente leitura) */}
-            <Input
-              label="Universo"
-              value={universeName}
-              disabled
-              fullWidth
-            />
-
-            {/* Mundo (opcional) */}
-            <WorldsDropdownSingle
-              label="Mundo"
-              worlds={worlds}
-              selectedId={formData.world_id}
-              onSelect={(id) => setFormData({ ...formData, world_id: id })}
-              onCreate={() => {
-                // Abre modal para criar novo mundo
-                // Pode ser implementado depois
-              }}
-            />
-
-            {/* Mensagem informativa */}
-            {!formData.world_id && (
-              <p className="text-xs font-bold text-primary-600 dark:text-primary-400">
-                Este {selectedCategorySlug} será aplicado em todo o universo {universeName}
-              </p>
-            )}
-
-            <Input
-              label="Título"
-              value={formData.titulo}
-              onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
-              placeholder={
-                selectedCategorySlug === "conceito"
-                  ? "Ex: Toda experiência gera uma lição"
-                  : "Ex: Ninguém pode viajar no tempo"
-              }
-              required
-              fullWidth
-            />
             <Textarea
               label="Descrição"
-              value={formData.conteudo}
-              onChange={(e) => setFormData({ ...formData, conteudo: e.target.value })}
-              placeholder={
-                selectedCategorySlug === "conceito"
-                  ? "Descreva o conceito fundamental que guia este universo ou mundo"
-                  : "Descreva a regra que define os limites e possibilidades deste universo ou mundo"
-              }
+              value={formData.descricao}
+              onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+              placeholder="Descrição detalhada da sinopse"
               required
               fullWidth
-              rows={6}
+            />
+
+            <Textarea
+              label="Conteúdo"
+              value={formData.conteudo}
+              onChange={(e) => setFormData({ ...formData, conteudo: e.target.value })}
+              placeholder="Conteúdo completo da sinopse"
+              fullWidth
             />
           </>
         );
@@ -274,7 +242,6 @@ export function NewFichaModal({
       case "evento":
         return (
           <>
-            {/* Universo */}
             <Input
               label="Universo"
               value={universeName}
@@ -282,127 +249,84 @@ export function NewFichaModal({
               fullWidth
             />
 
-            {/* Mundo */}
             <WorldsDropdownSingle
               worlds={worlds}
               selectedId={formData.world_id}
               onSelect={(id) => setFormData({ ...formData, world_id: id })}
             />
 
-            {/* Episódio */}
-            <EpisodioDropdown
-              value={formData.episodio}
-              episodes={episodes || []}
-              onSelect={(id) => setFormData({ ...formData, episodio: id })}
-            />
-
-            <Input
-              label="Título"
-              value={formData.titulo}
-              onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
-              required
-              fullWidth
-            />
-            <Input
-              label="Resumo"
-              value={formData.resumo}
-              onChange={(e) => setFormData({ ...formData, resumo: e.target.value })}
-              required
-              fullWidth
-            />
-            <Textarea
-              label="Descrição"
-              value={formData.conteudo}
-              onChange={(e) => setFormData({ ...formData, conteudo: e.target.value })}
-              required
-              fullWidth
-              rows={6}
-            />
-
-            {/* Seção de Diegese */}
-            <div className="border-t border-border-light-default dark:border-border-dark-default pt-4 mt-4">
-              <h3 className="text-sm font-semibold text-text-light-primary dark:text-dark-primary mb-4">
-                Detalhes de data do evento
-              </h3>
-              
-              <div className="space-y-4">
-                <Input
-                  label="Data de Início"
-                  type="date"
-                  value={formData.data_inicio}
-                  onChange={(e) => setFormData({ ...formData, data_inicio: e.target.value })}
-                  fullWidth
-                />
-                <Input
-                  label="Data de Fim"
-                  type="date"
-                  value={formData.data_fim}
-                  onChange={(e) => setFormData({ ...formData, data_fim: e.target.value })}
-                  fullWidth
-                />
-                <GranularidadeDropdown
-                  value={formData.granularidade}
-                  onChange={(value) => setFormData({ ...formData, granularidade: value })}
-                />
-              </div>
+            {/* Episódio - Dropdown simples com string */}
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5 text-text-light-secondary dark:text-text-dark-secondary">
+                Episódio
+              </label>
+              <select
+                value={formData.episodio || ""}
+                onChange={(e) => setFormData({ ...formData, episodio: e.target.value || null })}
+                className="w-full px-4 py-2 text-sm border rounded-lg bg-light-raised dark:bg-dark-raised border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay focus:ring-2 focus:ring-primary-500 transition-colors"
+              >
+                <option value="">Nenhum episódio</option>
+                {availableEpisodes.map((ep) => (
+                  <option key={ep} value={ep}>
+                    {ep}
+                  </option>
+                ))}
+              </select>
             </div>
-          </>
-        );
-
-      case "personagem":
-        return (
-          <>
-            {/* Universo */}
-            <Input
-              label="Universo"
-              value={universeName}
-              disabled
-              fullWidth
-            />
-
-            {/* Mundo */}
-            <WorldsDropdownSingle
-              worlds={worlds}
-              selectedId={formData.world_id}
-              onSelect={(id) => setFormData({ ...formData, world_id: id })}
-            />
-
-            {/* Episódio */}
-            <EpisodioDropdown
-              value={formData.episodio}
-              episodes={episodes || []}
-              onSelect={(id) => setFormData({ ...formData, episodio: id })}
-            />
 
             <Input
               label="Título"
               value={formData.titulo}
               onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
+              placeholder="Ex: A Descoberta"
               required
               fullWidth
             />
+
             <Input
               label="Resumo"
               value={formData.resumo}
               onChange={(e) => setFormData({ ...formData, resumo: e.target.value })}
+              placeholder="Breve resumo do evento"
               required
               fullWidth
             />
+
             <Textarea
               label="Descrição"
-              value={formData.conteudo}
-              onChange={(e) => setFormData({ ...formData, conteudo: e.target.value })}
-              required
+              value={formData.descricao}
+              onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+              placeholder="Descrição detalhada do evento"
               fullWidth
-              rows={6}
+            />
+
+            <Input
+              label="Data Início"
+              type="date"
+              value={formData.data_inicio}
+              onChange={(e) => setFormData({ ...formData, data_inicio: e.target.value })}
+              fullWidth
+            />
+
+            <Input
+              label="Data Fim"
+              type="date"
+              value={formData.data_fim}
+              onChange={(e) => setFormData({ ...formData, data_fim: e.target.value })}
+              fullWidth
+            />
+
+            <GranularidadeDropdown
+              value={formData.granularidade}
+              onChange={(value) => setFormData({ ...formData, granularidade: value })}
             />
           </>
         );
 
       default:
+        // Campos genéricos para outras categorias
         return (
           <>
-            {/* Universo */}
             <Input
               label="Universo"
               value={universeName}
@@ -410,41 +334,62 @@ export function NewFichaModal({
               fullWidth
             />
 
-            {/* Mundo */}
             <WorldsDropdownSingle
               worlds={worlds}
               selectedId={formData.world_id}
               onSelect={(id) => setFormData({ ...formData, world_id: id })}
             />
 
-            {/* Episódio */}
-            <EpisodioDropdown
-              value={formData.episodio}
-              episodes={episodes || []}
-              onSelect={(id) => setFormData({ ...formData, episodio: id })}
-            />
+            {/* Episódio - Dropdown simples com string */}
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5 text-text-light-secondary dark:text-text-dark-secondary">
+                Episódio
+              </label>
+              <select
+                value={formData.episodio || ""}
+                onChange={(e) => setFormData({ ...formData, episodio: e.target.value || null })}
+                className="w-full px-4 py-2 text-sm border rounded-lg bg-light-raised dark:bg-dark-raised border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay focus:ring-2 focus:ring-primary-500 transition-colors"
+              >
+                <option value="">Nenhum episódio</option>
+                {availableEpisodes.map((ep) => (
+                  <option key={ep} value={ep}>
+                    {ep}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             <Input
               label="Título"
               value={formData.titulo}
               onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
+              placeholder="Título da ficha"
               required
               fullWidth
             />
+
             <Input
               label="Resumo"
               value={formData.resumo}
               onChange={(e) => setFormData({ ...formData, resumo: e.target.value })}
-              required
+              placeholder="Breve resumo"
               fullWidth
             />
+
             <Textarea
               label="Descrição"
+              value={formData.descricao}
+              onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+              placeholder="Descrição detalhada"
+              fullWidth
+            />
+
+            <Textarea
+              label="Conteúdo"
               value={formData.conteudo}
               onChange={(e) => setFormData({ ...formData, conteudo: e.target.value })}
-              required
+              placeholder="Conteúdo completo"
               fullWidth
-              rows={6}
             />
           </>
         );
@@ -452,50 +397,37 @@ export function NewFichaModal({
   }
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={getModalTitle()}
-      size="lg"
-    >
-      <form onSubmit={handleSubmit} className="space-y-6">
+    <Modal isOpen={isOpen} onClose={onClose} title={getModalTitle()}>
+      <form onSubmit={handleSubmit} className="space-y-4">
         {/* Category Selection */}
         {!selectedCategorySlug && (
-          <div>
-            <label className="block text-sm font-medium text-text-light-primary dark:text-dark-primary mb-3">
-              Selecione o tipo de ficha
-            </label>
-            <CategoryDropdown
-              categories={categories}
-              selectedSlug={selectedCategorySlug}
-              onSelect={setSelectedCategorySlug}
-              onOpenCreateCategory={onOpenCreateCategory}
-            />
-          </div>
+          <CategoryDropdown
+            categories={categories}
+            selectedSlug={selectedCategorySlug}
+            onSelect={setSelectedCategorySlug}
+            onOpenCreateCategory={onOpenCreateCategory}
+          />
         )}
 
         {/* Category-specific fields */}
-        {selectedCategorySlug && (
-          <>
-            {renderCategoryFields()}
+        {renderCategoryFields()}
 
-            {/* Buttons */}
-            <div className="flex gap-3 justify-end pt-6 border-t border-border-light-default dark:border-border-dark-default">
-              <Button
-                variant="secondary"
-                onClick={onClose}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                loading={loading}
-              >
-                {mode === "edit" ? "Atualizar" : "Criar"}
-              </Button>
-            </div>
-          </>
-        )}
+        {/* Action Buttons */}
+        <div className="flex gap-2 justify-end pt-4">
+          <Button
+            variant="secondary"
+            onClick={onClose}
+            disabled={loading}
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            disabled={loading || !selectedCategorySlug || !formData.titulo}
+          >
+            {loading ? "Salvando..." : "Salvar"}
+          </Button>
+        </div>
       </form>
     </Modal>
   );
