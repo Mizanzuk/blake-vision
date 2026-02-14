@@ -136,11 +136,8 @@ export default function NewConceptRuleModal({
       return;
     }
 
-    // Validação de episódio é obrigatória apenas para sinopse
-    if (tipo === "sinopse" && selectedWorldId && !selectedEpisodeId) {
-      toast.error("Selecione um episódio para a sinopse");
-      return;
-    }
+    // Validação de episódio é obrigatória apenas para sinopse (se aplicável)
+    // Nota: tipo é "conceito" ou "regra" neste modal, sinopses são criadas em NewFichaModal
 
     const itemData = {
       id: item?.id,

@@ -850,10 +850,10 @@ onDelete={(id, name) => {
       )}
 
       {/* Episode Modal */}
-      {showEpisodeModal && selectedWorldId && (
+      {showEpisodeModal && selectedWorldIds && selectedWorldIds.length > 0 && (
         <EpisodeModal
           episode={null}
-          worldId={selectedWorldId}
+          worldId={selectedWorldIds[0]}
           onSave={async (episodeData) => {
             try {
               const response = await fetch("/api/episodes", {
@@ -903,7 +903,7 @@ onDelete={(id, name) => {
         universeName={universeToDelete?.nome || ""}
         captchaQuestion={captchaQuestion}
         captchaAnswer={captchaAnswer}
-        onCaptchaChange={setCaptchaChange}
+        onCaptchaChange={setCaptchaAnswer}
         onConfirm={confirmDeleteUniverse}
         onCancel={() => {
           setShowDeleteUniverseModal(false);
