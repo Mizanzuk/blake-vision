@@ -34,7 +34,11 @@ type ExtractedEntity = {
   ano_diegese?: number;
   tags?: string;
   world_id?: string;
-  episodio?: string | null;
+  episode_id?: string | null;
+  data_inicio?: string;
+  data_fim?: string;
+  granularidade_data?: string;
+  camada_temporal?: string;
 };
 
 
@@ -617,7 +621,11 @@ export default function UploadPage() {
         ano_diegese: fichaData.ano_diegese,
         tags: fichaData.tags,
         world_id: fichaData.world_id,
-        episodio: fichaData.episodio,
+        episode_id: fichaData.episode_id,
+        data_inicio: fichaData.data_inicio,
+        data_fim: fichaData.data_fim,
+        granularidade_data: fichaData.granularidade_data,
+        camada_temporal: fichaData.camada_temporal,
       };
       setExtractedEntities(updatedEntities);
       setShowEditFichaModal(false);
@@ -949,8 +957,12 @@ export default function UploadPage() {
           resumo: editingFichaData.resumo,
           conteudo: editingFichaData.conteudo,
           tags: editingFichaData.tags,
-          world_id: selectedWorldId,
-          episodio: unitNumber,
+          world_id: editingFichaData.world_id || selectedWorldId,
+          episode_id: editingFichaData.episode_id || null,
+          data_inicio: editingFichaData.data_inicio || "",
+          data_fim: editingFichaData.data_fim || "",
+          granularidade_data: editingFichaData.granularidade_data || "",
+          camada_temporal: editingFichaData.camada_temporal || "",
         } : null}
       />
       

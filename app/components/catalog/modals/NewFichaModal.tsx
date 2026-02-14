@@ -162,19 +162,24 @@ export function NewFichaModal({
     <Modal isOpen={isOpen} onClose={onClose} title={mode === "create" ? "Nova Ficha" : "Editar Ficha"}>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Categoria */}
-        <CategoryDropdown
-          categories={categories}
-          selectedSlug={selectedCategorySlug}
-          onSelect={setSelectedCategorySlug}
-          onCreateNew={onOpenCreateCategory}
-        />
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            CATEGORIA
+          </label>
+          <CategoryDropdown
+            categories={categories}
+            selectedSlug={selectedCategorySlug}
+            onSelect={setSelectedCategorySlug}
+            onCreateNew={onOpenCreateCategory}
+          />
+        </div>
 
         {/* Universo (read-only) */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             UNIVERSO
           </label>
-          <div className="px-3 py-2 bg-gray-100 rounded border border-gray-300 text-gray-700">
+          <div className="px-3 py-2 bg-light-raised dark:bg-dark-raised rounded border border-border-light-default dark:border-border-dark-default text-text-light-primary dark:text-dark-primary">
             {universeName}
           </div>
         </div>
@@ -210,9 +215,9 @@ export function NewFichaModal({
                 }
                 className="w-full px-4 py-2 text-left rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary transition-colors appearance-none cursor-pointer hover:bg-light-overlay dark:hover:bg-dark-overlay focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
-                <option value="">Nenhum episódio</option>
+                <option value="" className="text-text-light-primary dark:text-dark-primary">Nenhum episódio</option>
                 {availableEpisodes.map((episode) => (
-                  <option key={episode.id} value={episode.id}>
+                  <option key={episode.id} value={episode.id} className="text-text-light-primary dark:text-dark-primary">
                     {episode.numero} {episode.titulo}
                   </option>
                 ))}
@@ -230,7 +235,7 @@ export function NewFichaModal({
         )}
 
         {/* Título */}
-        <div>
+        <div className="w-full">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             TÍTULO
           </label>
@@ -241,6 +246,7 @@ export function NewFichaModal({
             onChange={(e) =>
               setFormData({ ...formData, titulo: e.target.value })
             }
+            className="w-full"
           />
         </div>
 
