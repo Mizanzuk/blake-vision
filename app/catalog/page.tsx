@@ -238,17 +238,20 @@ function CatalogContent() {
         setFichas(data.fichas || []);
         
         // Carregar episódios para criar mapa de episode_id para nome
-        const worldIds = (data.worlds || []).map((w: any) => w.id).join(',');
-        if (worldIds) {
-          const episodesResponse = await fetch(`/api/episodes?worldIds=${worldIds}`);
+        try {
+          const episodesResponse = await fetch(`/api/episodes`);
           if (episodesResponse.ok) {
             const episodesData = await episodesResponse.json();
             const map: {[key: string]: string} = {};
             (episodesData.episodes || []).forEach((ep: any) => {
-              map[ep.id] = `Episódio ${ep.numero} - ${ep.titulo}`;
+              if (ep.numero && ep.titulo) {
+                map[ep.id] = `Episódio ${ep.numero} - ${ep.titulo}`;
+              }
             });
             setEpisodeMap(map);
           }
+        } catch (error) {
+          console.error("Error loading episodes:", error);
         }
       } else {
         toast.error(data.error || t.errors.generic);
