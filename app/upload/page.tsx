@@ -69,10 +69,6 @@ export default function UploadPage() {
   const [showNewEpisodeInput, setShowNewEpisodeInput] = useState(false);
   const [showNewEpisodeModal, setShowNewEpisodeModal] = useState(false);
   const [episodes, setEpisodes] = useState<any[]>([]);
-  const [showNewUniverseModal, setShowNewUniverseModal] = useState(false);
-  const [newUniverseName, setNewUniverseName] = useState("");
-  const [newUniverseDescription, setNewUniverseDescription] = useState("");
-  const [isCreatingUniverse, setIsCreatingUniverse] = useState(false);
 
   // Upload state
   const [isParsingFile, setIsParsingFile] = useState(false);
