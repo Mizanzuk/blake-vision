@@ -280,7 +280,7 @@ function CatalogContent() {
     }
 
     // Episode filter
-    if (selectedEpisodes.length > 0 && (!ficha.episode_id || !selectedEpisodes.includes(ficha.episode_id))) {
+    if (selectedEpisodeIds.length > 0 && (!ficha.episode_id || !selectedEpisodeIds.includes(ficha.episode_id))) {
       return false;
     }
 
@@ -410,8 +410,18 @@ function CatalogContent() {
     .map(f => f.episode_id);
   const uniqueEpisodeIds = Array.from(new Set(episodeIdsFromFichas)).filter((ep): ep is string => !!ep);
   
-  // Mapear episode IDs para nomes formatados
+  // Mapear episode IDs para nomes formatados (para exibição)
   const episodeNames = uniqueEpisodeIds.map(id => episodeMap[id] || `Episódio ${id}`);
+  
+  // Criar mapa de nome para ID para o filtro funcionar corretamente
+  const episodeNameToIdMap: {[key: string]: string} = {};
+  uniqueEpisodeIds.forEach(id => {
+    const name = episodeMap[id] || `Episódio ${id}`;
+    episodeNameToIdMap[name] = id;
+  });
+  
+  // Converter selectedEpisodes de nomes para IDs para filtro correto
+  const selectedEpisodeIds = selectedEpisodes.map(name => episodeNameToIdMap[name] || name).filter(Boolean);
 
   if (isLoading) {
     return <Loading fullScreen text={t.common.loading} />;
