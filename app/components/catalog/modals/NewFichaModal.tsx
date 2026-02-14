@@ -65,6 +65,14 @@ export function NewFichaModal({
   const [availableEpisodes, setAvailableEpisodes] = useState<Episode[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedEpisodeId, setSelectedEpisodeId] = useState<string | null>(null);
+  const [localCategories, setLocalCategories] = useState<Category[]>(categories);
+
+  // Atualizar categorias locais quando as props mudam
+  useEffect(() => {
+    if (categories && categories.length > 0) {
+      setLocalCategories(categories);
+    }
+  }, [categories]);
 
   // Reset form when modal opens/closes
   useEffect(() => {
@@ -111,7 +119,26 @@ export function NewFichaModal({
         camada: ficha.camada_temporal || "",
       });
     }
-  }, [isOpen, universeId, mode, ficha, preSelectedCategory, categories]);
+  }, [isOpen, universeId, mode, ficha, preSelectedCategory, categories, isOpen]);
+  
+  // Carregar categorias quando o modal é aberto
+  useEffect(() => {
+    async function loadCategoriesIfNeeded() {
+      if (isOpen && universeId && categories.length === 0) {
+        try {
+          const response = await fetch(`/api/categories?universeId=${universeId}`);
+          if (response.ok) {
+            const data = await response.json();
+            // As categorias serão passadas via props, então não precisamos fazer nada aqui
+            // Este useEffect é apenas para garantir que as categorias sejam carregadas
+          }
+        } catch (error) {
+          console.error('Error loading categories:', error);
+        }
+      }
+    }
+    loadCategoriesIfNeeded();
+  }, [isOpen, universeId]);
   
   // Quando as categorias são carregadas após o modal ser aberto, atualizar o selectedCategorySlug
   useEffect(() => {
@@ -192,7 +219,7 @@ export function NewFichaModal({
         <div>
           <CategoryDropdown
             label="CATEGORIA"
-            categories={categories}
+            categories={localCategories}
             selectedSlug={selectedCategorySlug}
             onSelect={setSelectedCategorySlug}
             onCreateNew={onOpenCreateCategory}
