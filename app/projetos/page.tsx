@@ -73,8 +73,9 @@ export default function ProjetosPage() {
   }, []);
 
   async function loadCategories() {
+    if (!selectedUniverseId) return;
     try {
-      const response = await fetch('/api/categories');
+      const response = await fetch(`/api/categories?universeId=${selectedUniverseId}`);
       if (response.ok) {
         const data = await response.json();
         setCategories(data.categories || []);
@@ -98,10 +99,12 @@ export default function ProjetosPage() {
   useEffect(() => {
     if (selectedUniverseId) {
       loadWorlds();
+      loadCategories();
     } else {
       setWorlds([]);
       setSelectedWorldId("");
       setFichas([]);
+      setCategories([]);
     }
   }, [selectedUniverseId]);
 
