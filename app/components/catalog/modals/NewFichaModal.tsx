@@ -200,17 +200,17 @@ export function NewFichaModal({
 
         {/* Universo (read-only) */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
             UNIVERSO
           </label>
-          <div className="px-3 py-2 bg-light-raised dark:bg-dark-raised rounded border border-border-light-default dark:border-border-dark-default text-text-light-primary dark:text-dark-primary">
+          <div className="px-4 py-2 bg-light-raised dark:bg-dark-raised rounded-lg border border-border-light-default dark:border-border-dark-default text-sm text-text-light-primary dark:text-dark-primary">
             {universeName}
           </div>
         </div>
 
         {/* Mundo */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
             MUNDO
           </label>
           <WorldsDropdownSingle
@@ -225,7 +225,7 @@ export function NewFichaModal({
         {/* Episódio (novo sistema com UUID) */}
         {availableEpisodes.length > 0 && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
               EPISÓDIO
             </label>
             <div className="relative">
@@ -261,7 +261,7 @@ export function NewFichaModal({
 
         {/* Título */}
         <div className="w-full">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
             TÍTULO
           </label>
           <Input
@@ -277,7 +277,7 @@ export function NewFichaModal({
 
         {/* Resumo */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
             RESUMO
           </label>
           <Textarea
@@ -292,7 +292,7 @@ export function NewFichaModal({
 
         {/* Conteúdo */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
             CONTEÚDO
           </label>
           <Textarea
@@ -310,7 +310,7 @@ export function NewFichaModal({
           <>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
                   DATA INÍCIO
                 </label>
                 <Input
@@ -322,7 +322,7 @@ export function NewFichaModal({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
                   DATA FIM
                 </label>
                 <Input
@@ -337,7 +337,7 @@ export function NewFichaModal({
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
                   GRANULARIDADE
                 </label>
                 <GranularidadeDropdown
@@ -348,7 +348,7 @@ export function NewFichaModal({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
                   CAMADA TEMPORAL
                 </label>
                 <Input

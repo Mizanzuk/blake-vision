@@ -22,7 +22,9 @@ export function CategoryDropdown({
   disabled = false,
 }: CategoryDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [buttonRect, setButtonRect] = useState<DOMRect | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -35,6 +37,13 @@ export function CategoryDropdown({
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
       return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isOpen]);
+
+  // Update button rect when dropdown opens
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      setButtonRect(buttonRef.current.getBoundingClientRect());
     }
   }, [isOpen]);
 
@@ -61,6 +70,7 @@ export function CategoryDropdown({
 
       {/* Dropdown Button */}
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
@@ -87,9 +97,17 @@ export function CategoryDropdown({
         </svg>
       </button>
 
-      {/* Dropdown Menu */}
-      {isOpen && (
-        <div className="absolute z-[9999] mt-1 w-full max-w-[calc(20rem-2rem)] bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg max-h-64 overflow-y-auto">
+      {/* Dropdown Menu - Using fixed positioning to escape modal overflow */}
+      {isOpen && buttonRect && (
+        <div 
+          className="fixed z-[9999] bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg max-h-64 overflow-y-auto"
+          style={{
+            top: `${buttonRect.bottom + 8}px`,
+            left: `${buttonRect.left}px`,
+            width: `${buttonRect.width}px`,
+            maxWidth: 'calc(20rem - 2rem)'
+          }}
+        >
           {/* Placeholder Option */}
           <div
             className={clsx(
