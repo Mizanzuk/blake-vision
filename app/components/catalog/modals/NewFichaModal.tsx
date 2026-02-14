@@ -88,13 +88,13 @@ export function NewFichaModal({
     } else if (isOpen && mode === "edit" && ficha) {
       // Preencher formulário com dados da ficha em modo edição
       // Encontrar o slug da categoria que corresponde ao tipo
-      console.log('DEBUG: ficha.tipo =', ficha.tipo);
-      console.log('DEBUG: categories =', categories);
       const matchingCategory = categories.find(
         c => c.slug === ficha.tipo || c.label?.toLowerCase() === ficha.tipo?.toLowerCase()
       );
-      console.log('DEBUG: matchingCategory =', matchingCategory);
-      setSelectedCategorySlug(matchingCategory?.slug || ficha.tipo || "");
+      // Se encontrou a categoria, use o slug; senão, use o tipo como fallback
+      // O tipo vem em minúsculas da IA (ex: "personagem", "conceito", "local", etc)
+      const categorySlug = matchingCategory?.slug || ficha.tipo || "";
+      setSelectedCategorySlug(categorySlug);
       setSelectedEpisodeId(ficha.episode_id || null);
       setFormData({
         universe_id: universeId,

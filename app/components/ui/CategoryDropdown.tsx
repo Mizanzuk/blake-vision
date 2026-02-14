@@ -23,6 +23,11 @@ export function CategoryDropdown({
 }: CategoryDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  
+  // Debug
+  useEffect(() => {
+    console.log('CategoryDropdown - selectedSlug:', selectedSlug, 'categories:', categories);
+  }, [selectedSlug, categories]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
