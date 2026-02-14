@@ -63,6 +63,7 @@ export function NewFichaModal({
   });
   const [availableEpisodes, setAvailableEpisodes] = useState<Episode[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedEpisodeId, setSelectedEpisodeId] = useState<string | null>(null);
 
   // Reset form when modal opens/closes
   useEffect(() => {
@@ -87,6 +88,7 @@ export function NewFichaModal({
     } else if (isOpen && mode === "edit" && ficha) {
       // Preencher formulário com dados da ficha em modo edição
       setSelectedCategorySlug(ficha.tipo || "");
+      setSelectedEpisodeId(ficha.episode_id || null);
       setFormData({
         universe_id: universeId,
         world_id: ficha.world_id || "",
@@ -163,10 +165,8 @@ export function NewFichaModal({
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Categoria */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            CATEGORIA
-          </label>
           <CategoryDropdown
+            label="CATEGORIA"
             categories={categories}
             selectedSlug={selectedCategorySlug}
             onSelect={setSelectedCategorySlug}
@@ -206,13 +206,14 @@ export function NewFichaModal({
             </label>
             <div className="relative">
               <select
-                value={formData.episode_id || ""}
-                onChange={(e) =>
+                value={selectedEpisodeId || ""}
+                onChange={(e) => {
+                  setSelectedEpisodeId(e.target.value || null);
                   setFormData({
                     ...formData,
                     episode_id: e.target.value || null,
-                  })
-                }
+                  });
+                }}
                 className="w-full px-4 py-2 text-left rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary transition-colors appearance-none cursor-pointer hover:bg-light-overlay dark:hover:bg-dark-overlay focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="" className="text-text-light-primary dark:text-dark-primary">Nenhum episódio</option>
