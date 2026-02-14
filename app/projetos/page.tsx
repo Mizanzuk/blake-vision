@@ -69,7 +69,6 @@ export default function ProjetosPage() {
 
   useEffect(() => {
     checkAuth();
-    loadCategories();
   }, []);
 
   async function loadCategories() {
