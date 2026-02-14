@@ -137,7 +137,7 @@ export async function POST(req: NextRequest) {
       conteudo,
       ano_diegese,
       tags,
-      episodio,
+      episode_id, // Changed from episodio (string) to episode_id (UUID)
       album_imagens,
       descricao_data,
       data_inicio,
@@ -157,7 +157,7 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
       }
-      if (!episodio) {
+      if (!episode_id) {
         return NextResponse.json(
           { error: "Sinopse deve ter um episódio obrigatório" },
           { status: 400 }
@@ -203,11 +203,22 @@ export async function POST(req: NextRequest) {
         console.log("[DEBUG] World ID:", world_id);
         console.log("[DEBUG] Episódio:", episodio);
         
+        // Extract episode number from episode_id if available
+        let episodeNumber: number | null = null;
+        if (episode_id) {
+          const { data: episode } = await supabase
+            .from('episodes')
+            .select('numero')
+            .eq('id', episode_id)
+            .single();
+          episodeNumber = episode?.numero || null;
+        }
+        
         finalCodigo = await getNextCode(
           supabase,
           user.id,
           world_id,
-          episodio || null,
+          episodeNumber,
           tipo,
           category.prefix
         );
@@ -245,7 +256,7 @@ export async function POST(req: NextRequest) {
         conteudo: conteudo || null,
         ano_diegese: ano_diegese || null,
         tags: tags || null,
-        episodio: episodio || null,
+        episode_id: episode_id || null, // Changed from episodio
         album_imagens: album_imagens || null,
         descricao_data: descricao_data || null,
         data_inicio: data_inicio || null,
@@ -300,7 +311,7 @@ export async function PUT(req: NextRequest) {
           { status: 400 }
         );
       }
-      if (updateData.episodio === null || updateData.episodio === '') {
+      if (updateData.episode_id === null || updateData.episode_id === '') {
         return NextResponse.json(
           { error: "Sinopse deve ter um episódio obrigatório" },
           { status: 400 }
@@ -308,14 +319,14 @@ export async function PUT(req: NextRequest) {
       }
       
       // Se está mudando o episódio, verificar se já existe sinopse para o novo episódio
-      if (updateData.episodio && updateData.world_id) {
+      if (updateData.episode_id && updateData.world_id) {
         const { data: existingSinopse } = await supabase
           .from("fichas")
           .select("id")
           .eq("user_id", user.id)
           .eq("world_id", updateData.world_id)
           .eq("tipo", "sinopse")
-          .eq("episodio", updateData.episodio)
+          .eq("episode_id", updateData.episode_id)
           .neq("id", id)
           .maybeSingle();
         
@@ -340,24 +351,36 @@ export async function PUT(req: NextRequest) {
     }
 
     // Regenerar código se episódio ou world_id mudaram OU se código está no formato antigo
-    if (updateData.episodio !== undefined || updateData.world_id !== undefined || updateData.codigo) {
+    if (updateData.episode_id !== undefined || updateData.world_id !== undefined || updateData.codigo) {
       // Buscar ficha atual para comparar
       const { data: currentFicha } = await supabase
         .from("fichas")
-        .select("episodio, world_id, tipo, codigo")
+        .select("episode_id, world_id, tipo, codigo")
         .eq("id", id)
         .eq("user_id", user.id)
         .single();
       
       if (currentFicha) {
-        const episodioChanged = updateData.episodio !== undefined && updateData.episodio !== currentFicha.episodio;
+        const episodioChanged = updateData.episode_id !== undefined && updateData.episode_id !== currentFicha.episode_id;
         const worldChanged = updateData.world_id !== undefined && updateData.world_id !== currentFicha.world_id;
         
         // Verificar se código está no formato antigo (sem número de episódio)
         // Formato antigo: AV-PS1 (sem número entre mundo e categoria)
         // Formato novo: AV8-PS001 (com número de episódio)
         const currentCodigo = updateData.codigo || currentFicha.codigo;
-        const finalEpisodio = updateData.episodio !== undefined ? updateData.episodio : currentFicha.episodio;
+        
+        // Extract episode number from episode_id if available
+        let finalEpisodeNumber: number | null = null;
+        const finalEpisodeId = updateData.episode_id !== undefined ? updateData.episode_id : currentFicha.episode_id;
+        if (finalEpisodeId) {
+          const { data: episode } = await supabase
+            .from('episodes')
+            .select('numero')
+            .eq('id', finalEpisodeId)
+            .single();
+          finalEpisodeNumber = episode?.numero || null;
+        }
+        const finalEpisodio = finalEpisodeNumber;
         const needsRegeneration = episodioChanged || worldChanged || 
           (currentCodigo && finalEpisodio && !currentCodigo.match(/^[A-Z]+\d+-[A-Z]+\d+$/));
         
