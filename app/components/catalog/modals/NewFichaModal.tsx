@@ -162,17 +162,12 @@ export function NewFichaModal({
     <Modal isOpen={isOpen} onClose={onClose} title={mode === "create" ? "Nova Ficha" : "Editar Ficha"}>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Categoria */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            CATEGORIA
-          </label>
-          <CategoryDropdown
-            categories={categories}
-            selectedSlug={selectedCategorySlug}
-            onSelect={setSelectedCategorySlug}
-            onCreateNew={onOpenCreateCategory}
-          />
-        </div>
+        <CategoryDropdown
+          categories={categories}
+          selectedSlug={selectedCategorySlug}
+          onSelect={setSelectedCategorySlug}
+          onCreateNew={onOpenCreateCategory}
+        />
 
         {/* Universo (read-only) */}
         <div>
@@ -204,24 +199,33 @@ export function NewFichaModal({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               EPISÓDIO
             </label>
-            <select
-              value={formData.episode_id || ""}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  episode_id: e.target.value || null,
-                })
-              }
-              onClick={(e) => e.stopPropagation()}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500"
-            >
-              <option value="">Nenhum episódio</option>
-              {availableEpisodes.map((episode) => (
-                <option key={episode.id} value={episode.id}>
-                  {episode.numero} {episode.titulo}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={formData.episode_id || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    episode_id: e.target.value || null,
+                  })
+                }
+                className="w-full px-4 py-2 text-left rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary transition-colors appearance-none cursor-pointer hover:bg-light-overlay dark:hover:bg-dark-overlay focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value="">Nenhum episódio</option>
+                {availableEpisodes.map((episode) => (
+                  <option key={episode.id} value={episode.id}>
+                    {episode.numero} {episode.titulo}
+                  </option>
+                ))}
+              </select>
+              <svg
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-light-tertiary dark:text-dark-tertiary pointer-events-none"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
           </div>
         )}
 
@@ -252,21 +256,6 @@ export function NewFichaModal({
               setFormData({ ...formData, resumo: e.target.value })
             }
             rows={2}
-          />
-        </div>
-
-        {/* Descrição */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            DESCRIÇÃO
-          </label>
-          <Textarea
-            placeholder="Digite a descrição..."
-            value={formData.descricao}
-            onChange={(e) =>
-              setFormData({ ...formData, descricao: e.target.value })
-            }
-            rows={3}
           />
         </div>
 
