@@ -107,7 +107,7 @@ export function NewFichaModal({
         camada: ficha.camada_temporal || "",
       });
     }
-  }, [isOpen, universeId, mode, ficha, preSelectedCategory]);
+  }, [isOpen, universeId, mode, ficha, preSelectedCategory, categories]);
 
   // Load episodes when world changes
   useEffect(() => {
