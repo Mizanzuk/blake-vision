@@ -106,7 +106,7 @@ export function EpisodioDropdown({
               setIsOpen(false);
             }}
             className={`w-full px-3 py-2 text-left text-sm transition-colors border-b border-border-light-default dark:border-border-dark-default ${
-              !value
+              !actualValue
                 ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 font-medium'
                 : 'hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-primary dark:text-dark-primary'
             }`}
@@ -124,7 +124,7 @@ export function EpisodioDropdown({
                 setIsOpen(false);
               }}
               className={`w-full px-3 py-2 text-left text-sm transition-colors border-b border-border-light-default dark:border-border-dark-default last:border-b-0 ${
-                value === episode.id
+                actualValue === episode.id
                   ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 font-medium'
                   : 'hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-primary dark:text-dark-primary'
               }`}
