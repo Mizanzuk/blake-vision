@@ -66,6 +66,7 @@ function EscritaPageContent() {
   const [categoria, setCategoria] = useState<string>("");
   const [allFichas, setAllFichas] = useState<any[]>([]); // Todas as fichas do catálogo
   const [availableEpisodes, setAvailableEpisodes] = useState<string[]>([]); // Episódios filtrados por mundo
+  const [episodeMap, setEpisodeMap] = useState<{[key: string]: string}>({}); // Mapa de episode_id para nome
   const [fontFamily, setFontFamily] = useState<FontFamily>('serif');
   const editorRef = useRef<any>(null);
   
@@ -523,6 +524,20 @@ function EscritaPageContent() {
           }
         })
         .catch(error => console.error("Erro ao carregar categorias:", error));
+      
+      // Carregar episódios para criar mapa
+      fetch(`/api/episodes`)
+        .then(res => res.json())
+        .then(data => {
+          const map: {[key: string]: string} = {};
+          (data.episodes || []).forEach((ep: any) => {
+            if (ep.numero && ep.titulo) {
+              map[ep.id] = `Episódio ${ep.numero} - ${ep.titulo}`;
+            }
+          });
+          setEpisodeMap(map);
+        })
+        .catch(error => console.error("Erro ao carregar episódios:", error));
     }
   }, [universeId]);
 
@@ -530,18 +545,19 @@ function EscritaPageContent() {
   useEffect(() => {
     if (worldId && allFichas.length > 0) {
       const worldFichas = allFichas.filter(f => f.world_id === worldId);
-      const episodes = Array.from(
+      const episodeIds = Array.from(
         new Set(
           worldFichas
-            .map(f => f.episodio)
+            .map(f => f.episode_id)
             .filter((ep): ep is string => ep !== null && ep !== undefined)
         )
-      ).sort();
-      setAvailableEpisodes(episodes);
+      );
+      const episodeNames = episodeIds.map(id => episodeMap[id] || id).sort();
+      setAvailableEpisodes(episodeNames);
     } else {
       setAvailableEpisodes([]);
     }
-  }, [worldId, allFichas]);
+  }, [worldId, allFichas, episodeMap]);
 
   // Função para selecionar texto da lista
   const handleSelectTexto = (texto: any) => {
