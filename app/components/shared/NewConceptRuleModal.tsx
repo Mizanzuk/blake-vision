@@ -7,6 +7,15 @@ import { toast } from "sonner";
 import DeleteConfirmModal from "./DeleteConfirmModal";
 import { UniverseDropdown } from "@/app/components/ui/UniverseDropdown";
 import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
+import { EpisodioDropdown } from "@/app/components/ui/EpisodioDropdown";
+import { getSupabaseClient } from "@/app/lib/supabase/client";
+
+interface Episode {
+  id: string;
+  numero: number;
+  titulo: string;
+  world_id: string;
+}
 
 interface NewConceptRuleModalProps {
   isOpen: boolean;
@@ -18,6 +27,7 @@ interface NewConceptRuleModalProps {
   onSave: (data: any) => void;
   onDelete?: (id: string) => void;
   onClose: () => void;
+  onOpenCreateEpisode?: () => void;
 }
 
 export default function NewConceptRuleModal({
@@ -30,36 +40,58 @@ export default function NewConceptRuleModal({
   onSave,
   onDelete,
   onClose,
+  onOpenCreateEpisode,
 }: NewConceptRuleModalProps) {
   const [selectedUniverseId, setSelectedUniverseId] = useState(preSelectedUniverseId);
   const [selectedWorldId, setSelectedWorldId] = useState("");
+  const [selectedEpisodeId, setSelectedEpisodeId] = useState<string | null>(null);
   const [titulo, setTitulo] = useState("");
   const [resumo, setResumo] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [availableEpisodes, setAvailableEpisodes] = useState<Episode[]>([]);
+
+  // Carregar episódios quando mundo muda
+  useEffect(() => {
+    if (selectedWorldId) {
+      const loadEpisodes = async () => {
+        const supabase = getSupabaseClient();
+        const { data, error } = await supabase
+          .from('episodes')
+          .select('id, numero, titulo, world_id')
+          .eq('world_id', selectedWorldId);
+        
+        if (!error && data) {
+          setAvailableEpisodes(data as Episode[]);
+        }
+      };
+      loadEpisodes();
+    } else {
+      setAvailableEpisodes([]);
+      setSelectedEpisodeId(null);
+    }
+  }, [selectedWorldId]);
 
   // Carregar dados do item ao editar
   useEffect(() => {
     if (item) {
-      // Se a ficha tem world_id, buscar o universe_id do mundo
       if (item.world_id) {
         const world = worlds.find(w => w.id === item.world_id);
         const universeId = world?.universe_id || preSelectedUniverseId;
         setSelectedUniverseId(universeId);
         setSelectedWorldId(item.world_id);
       } else {
-        // Se não tem world_id, é um conceito/regra de universo
-        // Usar o preSelectedUniverseId que vem da página
         setSelectedUniverseId(preSelectedUniverseId || "");
         setSelectedWorldId("");
       }
       setTitulo(item.titulo || "");
       setResumo(item.resumo || "");
+      setSelectedEpisodeId(item.episode_id || null);
     } else {
-      // Modo criação
       setSelectedUniverseId(preSelectedUniverseId || "");
       setSelectedWorldId("");
       setTitulo("");
       setResumo("");
+      setSelectedEpisodeId(null);
     }
   }, [item, preSelectedUniverseId, worlds]);
 
@@ -110,7 +142,7 @@ export default function NewConceptRuleModal({
       tipo,
       titulo: titulo.trim(),
       resumo: resumo.trim(),
-      episodio: null,
+      episode_id: selectedEpisodeId || null,
     };
 
     console.log("[NewConceptRuleModal] Dados a salvar:", itemData);
@@ -216,6 +248,21 @@ export default function NewConceptRuleModal({
               className="w-full px-3 py-2.5 border border-border-light-default dark:border-border-dark-default rounded-lg bg-light-raised dark:bg-dark-raised text-text-light-primary dark:text-dark-primary placeholder:text-text-light-secondary/50 dark:placeholder:text-dark-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors resize-none"
             />
           </div>
+
+          {/* Episódio */}
+          {selectedWorldId && availableEpisodes.length > 0 && (
+            <div>
+              <label className="block text-xs font-medium text-text-light-secondary dark:text-dark-secondary mb-2">
+                Episódio
+              </label>
+              <EpisodioDropdown
+                episodes={availableEpisodes}
+                selectedId={selectedEpisodeId}
+                onSelect={(episodeId) => setSelectedEpisodeId(episodeId || null)}
+                onCreate={onOpenCreateEpisode}
+              />
+            </div>
+          )}
         </div>
 
         {/* Footer */}

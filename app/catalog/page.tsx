@@ -658,6 +658,10 @@ onDelete={(id, name) => {
         worlds={worlds}
         categories={categories}
         onOpenCreateCategory={openCreateCategoryDirectly}
+        onOpenCreateEpisode={() => {
+          // TODO: Implementar criação de episódio em Catálogo
+          console.log('Criar novo episódio');
+        }}
       />
 
       <NewFichaModal
@@ -668,6 +672,10 @@ onDelete={(id, name) => {
         }}
         mode="edit"
         ficha={selectedFicha}
+        onOpenCreateEpisode={() => {
+          // TODO: Implementar criação de episódio em Catálogo
+          console.log('Criar novo episódio');
+        }}
         universeId={selectedUniverseId}
         universeName={universes.find(u => u.id === selectedUniverseId)?.nome || ''}
         worlds={worlds}

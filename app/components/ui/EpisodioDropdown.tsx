@@ -10,6 +10,7 @@ interface EpisodioDropdownProps {
   episodes: Episode[] | Array<{ id: string; numero: number; titulo: string }>;
   onSelect: (id: string | null) => void;
   label?: string;
+  onCreate?: () => void;
 }
 
 export function EpisodioDropdown({
@@ -18,6 +19,7 @@ export function EpisodioDropdown({
   episodes,
   onSelect,
   label = 'Episódio',
+  onCreate,
 }: EpisodioDropdownProps) {
   const actualValue = selectedId !== undefined ? selectedId : value;
   const [isOpen, setIsOpen] = useState(false);
@@ -132,6 +134,26 @@ export function EpisodioDropdown({
               Episódio {episode.numero}: {episode.titulo}
             </button>
           ))}
+
+          {/* Create New Episode Option */}
+          {onCreate && (
+            <>
+              <div className="border-b border-border-light-default dark:border-border-dark-default" />
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCreate();
+                  setIsOpen(false);
+                }}
+                className="w-full px-3 py-2 text-left text-sm text-primary-600 dark:text-primary-400 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Novo Episódio
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>

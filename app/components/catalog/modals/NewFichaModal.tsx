@@ -29,6 +29,7 @@ interface NewFichaModalProps {
   categories: Category[];
   onSave: (ficha: Partial<Ficha>) => Promise<void>;
   onOpenCreateCategory?: () => void;
+  onOpenCreateEpisode?: () => void;
   mode?: "create" | "edit";
   ficha?: Partial<Ficha> | null;
   preSelectedCategory?: string | null;
@@ -43,6 +44,7 @@ export function NewFichaModal({
   categories,
   onSave,
   onOpenCreateCategory,
+  onOpenCreateEpisode,
   mode = "create",
   ficha,
   preSelectedCategory,
@@ -267,6 +269,7 @@ export function NewFichaModal({
                 episode_id: episodeId || null,
               });
             }}
+            onCreate={onOpenCreateEpisode}
           />
         )}
 
