@@ -88,9 +88,11 @@ export function NewFichaModal({
     } else if (isOpen && mode === "edit" && ficha) {
       // Preencher formulário com dados da ficha em modo edição
       // Encontrar o slug da categoria que corresponde ao tipo
+      console.log('[NewFichaModal] Modo edit:', { ficha, categories, ficha_tipo: ficha.tipo });
       const matchingCategory = categories.find(
         c => c.slug === ficha.tipo || c.label?.toLowerCase() === ficha.tipo?.toLowerCase()
       );
+      console.log('[NewFichaModal] matchingCategory:', matchingCategory);
       setSelectedCategorySlug(matchingCategory?.slug || ficha.tipo || "");
       setSelectedEpisodeId(ficha.episode_id || null);
       setFormData({
@@ -108,6 +110,11 @@ export function NewFichaModal({
       });
     }
   }, [isOpen, universeId, mode, ficha, preSelectedCategory, categories]);
+  
+  // Debug: log quando selectedCategorySlug muda
+  useEffect(() => {
+    console.log('[NewFichaModal] selectedCategorySlug mudou para:', selectedCategorySlug);
+  }, [selectedCategorySlug]);
 
   // Load episodes when world changes
   useEffect(() => {
