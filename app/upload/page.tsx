@@ -69,6 +69,10 @@ export default function UploadPage() {
   const [showNewEpisodeInput, setShowNewEpisodeInput] = useState(false);
   const [showNewEpisodeModal, setShowNewEpisodeModal] = useState(false);
   const [episodes, setEpisodes] = useState<any[]>([]);
+  const [showNewUniverseModal, setShowNewUniverseModal] = useState(false);
+  const [newUniverseName, setNewUniverseName] = useState("");
+  const [newUniverseDescription, setNewUniverseDescription] = useState("");
+  const [isCreatingUniverse, setIsCreatingUniverse] = useState(false);
 
   // Upload state
   const [isParsingFile, setIsParsingFile] = useState(false);
@@ -83,11 +87,15 @@ export default function UploadPage() {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [allCategories, setAllCategories] = useState<Category[]>([]);
 
-  // Load categories on mount
+  // Load categories when universe changes
   useEffect(() => {
     async function loadCategories() {
+      if (!selectedUniverseId) {
+        setAllCategories([]);
+        return;
+      }
       try {
-        const response = await fetch('/api/categories');
+        const response = await fetch(`/api/categories?universeId=${selectedUniverseId}`);
         if (response.ok) {
           const data = await response.json();
           setAllCategories(data.categories || []);
@@ -97,7 +105,7 @@ export default function UploadPage() {
       }
     }
     loadCategories();
-  }, []);
+  }, [selectedUniverseId]);
 
   // Modals
   const [showNewUniverseModal, setShowNewUniverseModal] = useState(false);
