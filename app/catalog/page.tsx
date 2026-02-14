@@ -285,16 +285,6 @@ function CatalogContent() {
   
   // Converter selectedEpisodes de nomes para IDs para filtro correto
   const selectedEpisodeIds = selectedEpisodes.map(name => episodeNameToIdMap[name] || name).filter(Boolean);
-  
-  // Debug
-  if (selectedEpisodes.length > 0) {
-    console.log('DEBUG - selectedEpisodes:', selectedEpisodes);
-    console.log('DEBUG - episodeMap:', episodeMap);
-    console.log('DEBUG - episodeNameToIdMap:', episodeNameToIdMap);
-    console.log('DEBUG - selectedEpisodeIds:', selectedEpisodeIds);
-    console.log('DEBUG - fichas count:', fichas.length);
-    console.log('DEBUG - fichas with episode_id:', fichas.filter(f => f.episode_id).length);
-  }
 
   // Filter fichas based on selected filters
   const filteredFichas = (fichas || []).filter(ficha => {
