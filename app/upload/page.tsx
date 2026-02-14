@@ -715,6 +715,13 @@ export default function UploadPage() {
                 selectedEpisodes={unitNumber ? [unitNumber] : []}
                 onToggle={(episode) => {
                   setUnitNumber(episode);
+                  // Puxar o título do episódio selecionado
+                  const selectedEpisode = episodes.find(e => String(e.numero) === episode);
+                  if (selectedEpisode) {
+                    setEpisodeTitle(selectedEpisode.titulo);
+                  } else {
+                    setEpisodeTitle("");
+                  }
                 }}
                 onCreate={() => {
                   setShowNewEpisodeModal(true);

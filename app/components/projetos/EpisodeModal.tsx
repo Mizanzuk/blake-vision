@@ -29,8 +29,6 @@ export default function EpisodeModal({
   const [hasChanges, setHasChanges] = useState(false);
   const [numeroEpisodio, setNumeroEpisodio] = useState<string>("");
   const [titulo, setTitulo] = useState("");
-  const [logline, setLogline] = useState("");
-  const [sinopse, setSinopse] = useState("");
   
   // Universo e Mundo
   const [universes, setUniverses] = useState<Universe[]>([]);
@@ -46,8 +44,6 @@ export default function EpisodeModal({
     if (episode) {
       setNumeroEpisodio(episode.episodio?.toString() || "");
       setTitulo(episode.titulo || "");
-      setLogline(episode.conteudo || "");
-      setSinopse(episode.resumo || "");
       
       // Set universe and world from episode
       if (episode.world_id) {
@@ -58,8 +54,6 @@ export default function EpisodeModal({
     } else {
       setNumeroEpisodio("");
       setTitulo("");
-      setLogline("");
-      setSinopse("");
       
       // Use pre-selected values if provided
       if (universeId) {
@@ -164,7 +158,7 @@ export default function EpisodeModal({
       return;
     }
 
-    // Validation - All fields are required
+    // Validation - Número is required
     if (!numeroEpisodio.trim()) {
       toast.error("Número do episódio é obrigatório");
       return;
@@ -177,24 +171,15 @@ export default function EpisodeModal({
       return;
     }
 
+    // Validation - Título is required
     if (!titulo.trim()) {
       toast.error("Título é obrigatório");
       return;
     }
 
-    if (!logline.trim()) {
-      toast.error("Logline é obrigatória");
-      return;
-    }
-
-    if (!sinopse.trim()) {
-      toast.error("Sinopse é obrigatória");
-      return;
-    }
-
     // Verificar se já existe episódio com esse número no mesmo mundo
     try {
-      const response = await fetch(`/api/episodes?worldId=${selectedWorldId}`);
+      const response = await fetch(`/api/episodes?world_id=${selectedWorldId}`);
       const data = await response.json();
       
       if (response.ok && data.episodes) {
@@ -218,8 +203,6 @@ export default function EpisodeModal({
       world_id: selectedWorldId,
       numero: episodeNumber,
       titulo: titulo.trim(),
-      logline: logline.trim(),
-      sinopse: sinopse.trim(),
     };
 
     onSave(episodeData);
@@ -247,7 +230,7 @@ export default function EpisodeModal({
     <Modal
       isOpen={true}
       onClose={handleClose}
-      title={episode ? "Editar Sinopse" : "Nova Sinopse"}
+      title={episode ? "Editar Episódio" : "Novo Episódio"}
       size="lg"
     >
       <div className="space-y-4">
@@ -264,7 +247,7 @@ export default function EpisodeModal({
           />
 
           <WorldsDropdownSingle
-            label="Mundos"
+            label="MUNDOS"
             worlds={worlds}
             selectedId={selectedWorldId}
             onSelect={(id) => {
@@ -280,7 +263,7 @@ export default function EpisodeModal({
 
         {/* Número do Episódio */}
         <Input
-          label="Número do episódio"
+          label="NÚMERO DO EPISÓDIO *"
           type="number"
           value={numeroEpisodio}
           onChange={(e) => {
@@ -299,7 +282,7 @@ export default function EpisodeModal({
 
         {/* Título */}
         <Input
-          label="Título do episódio"
+          label="TÍTULO *"
           type="text"
           value={titulo}
           onChange={(e) => {
@@ -310,42 +293,6 @@ export default function EpisodeModal({
           required
           fullWidth
         />
-
-        {/* Logline */}
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Logline <span className="text-red-500">*</span>
-          </label>
-          <textarea
-            value={logline}
-            onChange={(e) => {
-              setLogline(e.target.value);
-              handleChange();
-            }}
-            placeholder="Frase curta que descreve o conflito central"
-            rows={2}
-            required
-            className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-light-raised dark:bg-dark-raised text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
-        </div>
-
-        {/* Sinopse */}
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Sinopse <span className="text-red-500">*</span>
-          </label>
-          <textarea
-            value={sinopse}
-            onChange={(e) => {
-              setSinopse(e.target.value);
-              handleChange();
-            }}
-            placeholder="Um resumo curto da história, apresentando o protagonista, o conflito, o contexto e o gancho da trama."
-            rows={6}
-            required
-            className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-light-raised dark:bg-dark-raised text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
-        </div>
 
         {/* Buttons */}
         <div className="flex items-center justify-between pt-4">
