@@ -23,6 +23,7 @@ export function CategoryDropdown({
 }: CategoryDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [buttonRect, setButtonRect] = useState<DOMRect | null>(null);
+  const [showMenu, setShowMenu] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -38,6 +39,7 @@ export function CategoryDropdown({
       }
       
       setIsOpen(false);
+      setShowMenu(false);
     }
 
     if (isOpen) {
@@ -58,8 +60,14 @@ export function CategoryDropdown({
     if (isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       setButtonRect(rect);
+      // Usar setTimeout para garantir que o menu seja renderizado após o rect ser calculado
+      const timer = setTimeout(() => {
+        setShowMenu(true);
+      }, 0);
+      return () => clearTimeout(timer);
     } else {
       setButtonRect(null);
+      setShowMenu(false);
     }
   }, [isOpen]);
 
@@ -114,7 +122,7 @@ export function CategoryDropdown({
       </button>
 
       {/* Dropdown Menu - Using fixed positioning to escape modal overflow */}
-      {isOpen && buttonRect && (
+      {showMenu && buttonRect && (
         <div 
           ref={menuRef}
           className="fixed z-[9999] bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg max-h-64 overflow-y-auto"
@@ -134,6 +142,7 @@ export function CategoryDropdown({
             onClick={() => {
               onSelect("");
               setIsOpen(false);
+              setShowMenu(false);
             }}
           >
             <p className={clsx(
@@ -157,6 +166,7 @@ export function CategoryDropdown({
               onClick={() => {
                 onSelect(category.slug);
                 setIsOpen(false);
+                setShowMenu(false);
               }}
             >
               <p className={clsx(
@@ -176,6 +186,7 @@ export function CategoryDropdown({
               onClick={() => {
                 onCreateNew();
                 setIsOpen(false);
+                setShowMenu(false);
               }}
               className="w-full px-3 py-2 text-left text-sm text-primary-600 dark:text-primary-400 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors flex items-center gap-2 border-t border-border-light-default dark:border-border-dark-default"
             >
