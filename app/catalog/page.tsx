@@ -262,6 +262,30 @@ function CatalogContent() {
     }
   }
 
+  // Get unique episode IDs from fichas filtered by selected world
+  const episodeIdsFromFichas = (fichas || [])
+    .filter(f => {
+      if (selectedWorldIds.length === 0) {
+        return !!f.episode_id;
+      }
+      return f.episode_id && selectedWorldIds.includes(f.world_id);
+    })
+    .map(f => f.episode_id);
+  const uniqueEpisodeIds = Array.from(new Set(episodeIdsFromFichas)).filter((ep): ep is string => !!ep);
+  
+  // Mapear episode IDs para nomes formatados (para exibição)
+  const episodeNames = uniqueEpisodeIds.map(id => episodeMap[id] || `Episódio ${id}`);
+  
+  // Criar mapa de nome para ID para o filtro funcionar corretamente
+  const episodeNameToIdMap: {[key: string]: string} = {};
+  uniqueEpisodeIds.forEach(id => {
+    const name = episodeMap[id] || `Episódio ${id}`;
+    episodeNameToIdMap[name] = id;
+  });
+  
+  // Converter selectedEpisodes de nomes para IDs para filtro correto
+  const selectedEpisodeIds = selectedEpisodes.map(name => episodeNameToIdMap[name] || name).filter(Boolean);
+
   // Filter fichas based on selected filters
   const filteredFichas = (fichas || []).filter(ficha => {
     // Search filter
@@ -398,30 +422,6 @@ function CatalogContent() {
       setIsDeleting(false);
     }
   };
-
-  // Get unique episode IDs from fichas filtered by selected world
-  const episodeIdsFromFichas = (fichas || [])
-    .filter(f => {
-      if (selectedWorldIds.length === 0) {
-        return !!f.episode_id;
-      }
-      return f.episode_id && selectedWorldIds.includes(f.world_id);
-    })
-    .map(f => f.episode_id);
-  const uniqueEpisodeIds = Array.from(new Set(episodeIdsFromFichas)).filter((ep): ep is string => !!ep);
-  
-  // Mapear episode IDs para nomes formatados (para exibição)
-  const episodeNames = uniqueEpisodeIds.map(id => episodeMap[id] || `Episódio ${id}`);
-  
-  // Criar mapa de nome para ID para o filtro funcionar corretamente
-  const episodeNameToIdMap: {[key: string]: string} = {};
-  uniqueEpisodeIds.forEach(id => {
-    const name = episodeMap[id] || `Episódio ${id}`;
-    episodeNameToIdMap[name] = id;
-  });
-  
-  // Converter selectedEpisodes de nomes para IDs para filtro correto
-  const selectedEpisodeIds = selectedEpisodes.map(name => episodeNameToIdMap[name] || name).filter(Boolean);
 
   if (isLoading) {
     return <Loading fullScreen text={t.common.loading} />;
