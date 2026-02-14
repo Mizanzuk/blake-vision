@@ -96,7 +96,6 @@ export async function POST(request: NextRequest) {
           resumo,
           conteudo,
           tags,
-          episodio: unitNumber || null,
           episode_id: episodeId || null,
           aparece_em: null,
           codigo: null,
