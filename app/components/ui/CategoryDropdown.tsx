@@ -56,7 +56,10 @@ export function CategoryDropdown({
   // Update button rect when dropdown opens
   useEffect(() => {
     if (isOpen && buttonRef.current) {
-      setButtonRect(buttonRef.current.getBoundingClientRect());
+      const rect = buttonRef.current.getBoundingClientRect();
+      setButtonRect(rect);
+    } else {
+      setButtonRect(null);
     }
   }, [isOpen]);
 
@@ -111,7 +114,7 @@ export function CategoryDropdown({
       </button>
 
       {/* Dropdown Menu - Using fixed positioning to escape modal overflow */}
-      {isOpen && buttonRect && (
+      {isOpen && buttonRect && categories.length > 0 && (
         <div 
           ref={menuRef}
           className="fixed z-[9999] bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg max-h-64 overflow-y-auto"
