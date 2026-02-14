@@ -200,6 +200,7 @@ export function NewFichaModal({
               <select
                 value={formData.episodio || ""}
                 onChange={(e) => setFormData({ ...formData, episodio: e.target.value || null })}
+                onClick={(e) => e.stopPropagation()}
                 className="w-full px-4 py-2 text-sm border rounded-lg bg-light-raised dark:bg-dark-raised border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay focus:ring-2 focus:ring-primary-500 transition-colors"
               >
                 <option value="">Nenhum episódio</option>
@@ -263,6 +264,7 @@ export function NewFichaModal({
               <select
                 value={formData.episodio || ""}
                 onChange={(e) => setFormData({ ...formData, episodio: e.target.value || null })}
+                onClick={(e) => e.stopPropagation()}
                 className="w-full px-4 py-2 text-sm border rounded-lg bg-light-raised dark:bg-dark-raised border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay focus:ring-2 focus:ring-primary-500 transition-colors"
               >
                 <option value="">Nenhum episódio</option>
@@ -348,6 +350,7 @@ export function NewFichaModal({
               <select
                 value={formData.episodio || ""}
                 onChange={(e) => setFormData({ ...formData, episodio: e.target.value || null })}
+                onClick={(e) => e.stopPropagation()}
                 className="w-full px-4 py-2 text-sm border rounded-lg bg-light-raised dark:bg-dark-raised border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay focus:ring-2 focus:ring-primary-500 transition-colors"
               >
                 <option value="">Nenhum episódio</option>
