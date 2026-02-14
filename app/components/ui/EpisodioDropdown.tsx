@@ -5,25 +5,28 @@ import { ChevronDownIcon } from '@heroicons/react/24/solid';
 import type { Episode } from '@/app/types';
 
 interface EpisodioDropdownProps {
-  value: string | null;
-  episodes: Episode[];
+  value?: string | null;
+  selectedId?: string | null;
+  episodes: Episode[] | Array<{ id: string; numero: number; titulo: string }>;
   onSelect: (id: string | null) => void;
   label?: string;
 }
 
 export function EpisodioDropdown({
   value,
+  selectedId,
   episodes,
   onSelect,
   label = 'Episódio',
 }: EpisodioDropdownProps) {
+  const actualValue = selectedId !== undefined ? selectedId : value;
   const [isOpen, setIsOpen] = useState(false);
   const [buttonRect, setButtonRect] = useState<DOMRect | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const selectedEpisode = Array.isArray(episodes) ? episodes.find(ep => ep.id === value) : undefined;
+  const selectedEpisode = Array.isArray(episodes) ? episodes.find(ep => ep.id === actualValue) : undefined;
 
   // Close dropdown when clicking outside
   useEffect(() => {
