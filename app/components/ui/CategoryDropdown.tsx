@@ -23,11 +23,6 @@ export function CategoryDropdown({
 }: CategoryDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
-  // Debug
-  useEffect(() => {
-    console.log('CategoryDropdown - selectedSlug:', selectedSlug, 'categories:', categories);
-  }, [selectedSlug, categories]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -48,7 +43,12 @@ export function CategoryDropdown({
       return "Selecione uma categoria";
     }
     const category = categories.find(c => c.slug === selectedSlug);
-    return category?.label || "Selecione uma categoria";
+    if (category?.label) {
+      return category.label;
+    }
+    // Se nao encontrou a categoria, use o slug como fallback (em maiusculas)
+    // Isso eh util quando o tipo vem da IA em minusculas (ex: "personagem")
+    return selectedSlug.charAt(0).toUpperCase() + selectedSlug.slice(1);
   };
 
   return (
