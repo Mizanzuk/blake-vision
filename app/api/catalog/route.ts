@@ -95,7 +95,7 @@ export async function GET(req: NextRequest) {
       // Buscar fichas com lógica de filtro correta
       let query = supabase
         .from("fichas")
-        .select("id, world_id, tipo, titulo, slug, codigo, resumo, conteudo, ano_diegese, tags, episodio, imagem_url, aparece_em")
+        .select("id, world_id, tipo, titulo, slug, codigo, resumo, conteudo, ano_diegese, tags, episode_id, imagem_url, aparece_em")
         .eq("user_id", user.id);
       
       if (worldId) {

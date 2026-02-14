@@ -390,12 +390,12 @@ function CatalogContent() {
     .filter(f => {
       // Se nenhum mundo está selecionado, mostrar todos os episódios
       if (selectedWorldIds.length === 0) {
-        return !!f.episodio;
+        return !!f.episode_id;
       }
       // Se um mundo está selecionado, mostrar apenas episódios desse mundo
-      return f.episodio && selectedWorldIds.includes(f.world_id);
+      return f.episode_id && selectedWorldIds.includes(f.world_id);
     })
-    .map(f => f.episodio);
+    .map(f => f.episode_id);
   const uniqueEpisodeNumbers = Array.from(new Set(episodeNumbersFromFichas)).filter((ep): ep is string => !!ep);
 
   if (isLoading) {
