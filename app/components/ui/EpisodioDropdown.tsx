@@ -18,40 +18,47 @@ export function EpisodioDropdown({
   label = 'Episódio',
 }: EpisodioDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [buttonRect, setButtonRect] = useState<DOMRect | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const isOpeningRef = useRef(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const selectedEpisode = Array.isArray(episodes) ? episodes.find(ep => ep.id === value) : undefined;
 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      // Ignore the click that opened the dropdown
-      if (isOpeningRef.current) {
-        isOpeningRef.current = false;
+      const target = event.target as Node;
+      
+      // Não fechar se clicar no botão ou no menu
+      if (buttonRef.current?.contains(target) || menuRef.current?.contains(target)) {
         return;
       }
       
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
+      setIsOpen(false);
     }
 
     if (isOpen) {
-      // Use setTimeout to ensure the listener is added after the click event
-      const timer = setTimeout(() => {
-        document.addEventListener('mousedown', handleClickOutside);
-      }, 0);
+      document.addEventListener('mousedown', handleClickOutside);
       
       return () => {
-        clearTimeout(timer);
         document.removeEventListener('mousedown', handleClickOutside);
       };
     }
   }, [isOpen]);
 
+  // Update button rect when dropdown opens
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setButtonRect(rect);
+    } else {
+      setButtonRect(null);
+    }
+  }, [isOpen]);
+
   return (
-    <div ref={dropdownRef} className="relative">
+    <div ref={dropdownRef} className="flex flex-col gap-1.5 w-full">
       {label && (
         <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5 text-text-light-secondary dark:text-text-dark-secondary">
           {label}
@@ -59,9 +66,10 @@ export function EpisodioDropdown({
       )}
 
       <button
+        ref={buttonRef}
+        type="button"
         onClick={(e) => {
           e.stopPropagation();
-          isOpeningRef.current = true;
           setIsOpen(!isOpen);
         }}
         className="w-full px-4 py-2 text-sm text-left border rounded-lg bg-light-raised dark:bg-dark-raised border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay focus:ring-2 focus:ring-primary-500 transition-colors flex items-center justify-between"
@@ -76,8 +84,17 @@ export function EpisodioDropdown({
         />
       </button>
 
-      {isOpen && (
-        <div className="absolute z-[9999] w-full bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg max-h-64 overflow-y-auto top-full mt-1">
+      {isOpen && buttonRect && (
+        <div
+          ref={menuRef}
+          className="fixed z-[9999] bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg max-h-64 overflow-y-auto"
+          style={{
+            top: `${buttonRect.bottom + 8}px`,
+            left: `${buttonRect.left}px`,
+            width: `${buttonRect.width}px`,
+            maxWidth: 'calc(20rem - 2rem)'
+          }}
+        >
           {/* Nenhum episódio option */}
           <button
             onClick={(e) => {
@@ -85,10 +102,10 @@ export function EpisodioDropdown({
               onSelect(null);
               setIsOpen(false);
             }}
-            className={`w-full px-3 py-2 text-left text-sm transition-colors ${
+            className={`w-full px-3 py-2 text-left text-sm transition-colors border-b border-border-light-default dark:border-border-dark-default ${
               !value
-                ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 font-medium'
-                : 'hover:bg-light-overlay dark:hover:bg-dark-overlay'
+                ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 font-medium'
+                : 'hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-primary dark:text-dark-primary'
             }`}
           >
             Nenhum episódio
@@ -103,10 +120,10 @@ export function EpisodioDropdown({
                 onSelect(episode.id);
                 setIsOpen(false);
               }}
-              className={`w-full px-3 py-2 text-left text-sm transition-colors ${
+              className={`w-full px-3 py-2 text-left text-sm transition-colors border-b border-border-light-default dark:border-border-dark-default last:border-b-0 ${
                 value === episode.id
-                  ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 font-medium'
-                  : 'hover:bg-light-overlay dark:hover:bg-dark-overlay'
+                  ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 font-medium'
+                  : 'hover:bg-light-overlay dark:hover:bg-dark-overlay text-text-light-primary dark:text-dark-primary'
               }`}
             >
               Episódio {episode.numero}: {episode.titulo}

@@ -528,24 +528,12 @@ export function EditFichaUploadModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Dropdown de Categoria - sempre visível para edição */}
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-semibold text-text-light-primary dark:text-dark-primary">
-            Categoria
-          </label>
-          <select
-            value={selectedCategorySlug}
-            onChange={(e) => setSelectedCategorySlug(e.target.value)}
-            className="flex-1 px-3 py-2 border border-border-light-default dark:border-border-dark-default rounded-md bg-white dark:bg-dark-secondary text-text-light-primary dark:text-dark-primary"
-          >
-            <option value="">Selecione uma categoria</option>
-            {categories.map((cat) => (
-              <option key={cat.slug} value={cat.slug}>
-                {cat.label}
-              </option>
-            ))}
-            <option value="__new__">+ Nova Categoria</option>
-          </select>
-        </div>
+        <CategoryDropdown
+          label="Categoria"
+          categories={categories}
+          selectedSlug={selectedCategorySlug}
+          onSelect={(slug) => setSelectedCategorySlug(slug)}
+        />
 
         {/* Campos específicos da categoria */}
         {renderCategoryFields()}
