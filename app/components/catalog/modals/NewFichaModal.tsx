@@ -87,7 +87,11 @@ export function NewFichaModal({
       setSelectedCategorySlug(preSelectedCategory);
     } else if (isOpen && mode === "edit" && ficha) {
       // Preencher formulário com dados da ficha em modo edição
-      setSelectedCategorySlug(ficha.tipo || "");
+      // Encontrar o slug da categoria que corresponde ao tipo
+      const matchingCategory = categories.find(
+        c => c.slug === ficha.tipo || c.label?.toLowerCase() === ficha.tipo?.toLowerCase()
+      );
+      setSelectedCategorySlug(matchingCategory?.slug || ficha.tipo || "");
       setSelectedEpisodeId(ficha.episode_id || null);
       setFormData({
         universe_id: universeId,
