@@ -107,26 +107,23 @@ export function NewFichaModal({
       try {
         const supabase = getSupabaseClient();
         
-        // Buscar todas as fichas do mundo
-        const { data: worldFichas, error } = await supabase
+        // Buscar fichas do tipo "sinopse" que representam episódios
+        const { data: sinopseFichas, error } = await supabase
           .from('fichas')
-          .select('episodio')
+          .select('titulo')
           .eq('world_id', formData.world_id)
-          .not('episodio', 'is', null);
+          .eq('tipo', 'sinopse')
+          .order('titulo', { ascending: true });
 
         if (error) {
           console.error("Error loading episodes:", error);
           return;
         }
 
-        // Extrair episódios únicos
-        const episodes = Array.from(
-          new Set(
-            (worldFichas || [])
-              .map(f => f.episodio)
-              .filter((ep): ep is string => !!ep)
-          )
-        ).sort();
+        // Extrair títulos das sinopses como episódios disponíveis
+        const episodes = (sinopseFichas || [])
+          .map(f => f.titulo)
+          .filter((titulo): titulo is string => !!titulo);
 
         setAvailableEpisodes(episodes);
       } catch (error) {
