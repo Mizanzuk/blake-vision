@@ -54,7 +54,7 @@ function CatalogContent() {
   const [worlds, setWorlds] = useState<World[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [fichas, setFichas] = useState<Ficha[]>([]);
-  // Estado episodes removido - sinopses agora são fichas
+  const [episodeMap, setEpisodeMap] = useState<{[key: string]: string}>({}); // Mapa de episode_id para nome
   
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
@@ -237,7 +237,19 @@ function CatalogContent() {
         
         setFichas(data.fichas || []);
         
-        // Sinopses agora são fichas tipo 'sinopse', não precisamos carregar episodes separadamente
+        // Carregar episódios para criar mapa de episode_id para nome
+        const worldIds = (data.worlds || []).map((w: any) => w.id).join(',');
+        if (worldIds) {
+          const episodesResponse = await fetch(`/api/episodes?worldIds=${worldIds}`);
+          if (episodesResponse.ok) {
+            const episodesData = await episodesResponse.json();
+            const map: {[key: string]: string} = {};
+            (episodesData.episodes || []).forEach((ep: any) => {
+              map[ep.id] = `Episódio ${ep.numero} - ${ep.titulo}`;
+            });
+            setEpisodeMap(map);
+          }
+        }
       } else {
         toast.error(data.error || t.errors.generic);
       }
@@ -384,8 +396,7 @@ function CatalogContent() {
     }
   };
 
-  // Get unique episode numbers from fichas filtered by selected world
-  // If no world is selected, show all episodes; if a world is selected, show only episodes from that world
+  // Get unique episode IDs from fichas filtered by selected world
   const episodeIdsFromFichas = (fichas || [])
     .filter(f => {
       if (selectedWorldIds.length === 0) {
@@ -395,6 +406,9 @@ function CatalogContent() {
     })
     .map(f => f.episode_id);
   const uniqueEpisodeIds = Array.from(new Set(episodeIdsFromFichas)).filter((ep): ep is string => !!ep);
+  
+  // Mapear episode IDs para nomes formatados
+  const episodeNames = uniqueEpisodeIds.map(id => episodeMap[id] || `Episódio ${id}`);
 
   if (isLoading) {
     return <Loading fullScreen text={t.common.loading} />;
@@ -546,7 +560,7 @@ onDelete={(id, name) => {
               Episódios
             </label>
             <EpisodesDropdown
-              episodes={uniqueEpisodeIds}
+              episodes={episodeNames}
               selectedEpisodes={selectedEpisodes}
               onToggle={toggleEpisodeSelection}
             />
