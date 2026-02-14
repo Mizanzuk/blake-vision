@@ -25,18 +25,31 @@ export function CategoryDropdown({
   const [buttonRect, setButtonRect] = useState<DOMRect | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
+      const target = event.target as Node;
+      
+      // Não fechar se clicar no botão ou no menu
+      if (buttonRef.current?.contains(target) || menuRef.current?.contains(target)) {
+        return;
       }
+      
+      setIsOpen(false);
     }
 
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+      // Usar setTimeout para evitar que o click que abriu o dropdown o feche imediatamente
+      const timer = setTimeout(() => {
+        document.addEventListener("mousedown", handleClickOutside);
+      }, 0);
+      
+      return () => {
+        clearTimeout(timer);
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
     }
   }, [isOpen]);
 
@@ -100,6 +113,7 @@ export function CategoryDropdown({
       {/* Dropdown Menu - Using fixed positioning to escape modal overflow */}
       {isOpen && buttonRect && (
         <div 
+          ref={menuRef}
           className="fixed z-[9999] bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg max-h-64 overflow-y-auto"
           style={{
             top: `${buttonRect.bottom + 8}px`,
