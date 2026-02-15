@@ -421,12 +421,12 @@ export function NewFichaModal({
           setEditingEpisodeId(null);
           setEditingEpisodeName("");
         }}
-        onSave={async (episodeId, newName) => {
+        onSave={async (episodeId, newNumber, newTitle) => {
           try {
             const response = await fetch(`/api/episodes/${episodeId}`, {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ titulo: newName }),
+              body: JSON.stringify({ numero: newNumber, titulo: newTitle }),
             });
             if (!response.ok) throw new Error("Erro ao salvar episodio");
             
