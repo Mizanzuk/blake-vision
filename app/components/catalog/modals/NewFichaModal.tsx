@@ -279,12 +279,9 @@ export function NewFichaModal({
               });
             }}
             onCreate={onOpenCreateEpisode}
-            onEdit={(episodeId) => {
-              const episode = availableEpisodes.find(ep => ep.id === episodeId);
-              if (episode) {
-                setEditingEpisodeId(episodeId);
-                setEditingEpisodeName(`Episodio ${episode.numero}: ${episode.titulo}`);
-              }
+            onEdit={(episodeId, episodeName) => {
+              setEditingEpisodeId(episodeId);
+              setEditingEpisodeName(episodeName);
             }}
             onDelete={onDeleteEpisode}
           />
