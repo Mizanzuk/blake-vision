@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Modal } from '@/app/components/ui/Modal';
+import { Input } from '@/app/components/ui/Input';
+import { Button } from '@/app/components/ui/Button';
 
 interface EditEpisodeModalProps {
   isOpen: boolean;
@@ -43,27 +46,40 @@ export default function EditEpisodeModal({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-96 max-w-full">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Editar Episódio</h2>
-          <button
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Editar Episódio"
+      size="sm"
+      footer={
+        <>
+          <Button
+            variant="ghost"
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-2xl"
             disabled={loading}
+            size="sm"
           >
-            ×
-          </button>
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Cancelar
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSave}
+            disabled={loading}
+            loading={loading}
+            size="sm"
+          >
+            Salvar
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <div>
+          <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
             Nome do Episódio
           </label>
-          <input
+          <Input
             type="text"
             value={name}
             onChange={(e) => {
@@ -71,34 +87,16 @@ export default function EditEpisodeModal({
               setError(null);
             }}
             placeholder="Digite o nome do episódio"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
             disabled={loading}
           />
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
+          <div className="p-3 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg text-sm">
             {error}
           </div>
         )}
-
-        <div className="flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
-            disabled={loading}
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={handleSave}
-            className="px-4 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-600 disabled:opacity-50"
-            disabled={loading}
-          >
-            {loading ? 'Salvando...' : 'Salvar'}
-          </button>
-        </div>
       </div>
-    </div>
+    </Modal>
   );
 }
