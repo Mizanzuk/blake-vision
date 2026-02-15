@@ -738,6 +738,25 @@ export default function UploadPage() {
                 onCreate={() => {
                   setShowNewEpisodeModal(true);
                 }}
+                onEdit={(episodeId, episodeName) => {
+                  console.log('Edit episode:', episodeId, episodeName);
+                }}
+                onDelete={async (episodeId) => {
+                  try {
+                    const response = await fetch(`/api/episodes/${episodeId}`, {
+                      method: 'DELETE',
+                    });
+                    if (!response.ok) {
+                      const error = await response.json();
+                      throw new Error(error.error || 'Failed to delete episode');
+                    }
+                    await loadEpisodes();
+                    toast.success('Episodio deletado com sucesso');
+                  } catch (error) {
+                    toast.error(error instanceof Error ? error.message : 'Erro ao deletar episodio');
+                    throw error;
+                  }
+                }}
               />
             )}
 

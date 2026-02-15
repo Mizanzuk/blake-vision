@@ -576,9 +576,31 @@ onDelete={(id, name) => {
             </label>
             <EpisodesDropdown
               episodes={episodeNames}
+              episodeIds={episodeNameToIdMap}
               selectedEpisodes={selectedEpisodes}
               onToggle={toggleEpisodeSelection}
               onCreate={() => setShowEpisodeModal(true)}
+              onEdit={(episodeId, episodeName) => {
+                // TODO: Implement edit episode
+                console.log('Edit episode:', episodeId, episodeName);
+              }}
+              onDelete={async (episodeId) => {
+                try {
+                  const response = await fetch(`/api/episodes/${episodeId}`, {
+                    method: 'DELETE',
+                  });
+                  if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to delete episode');
+                  }
+                  // Reload episodes
+                  await loadCatalogData();
+                  toast.success('Episódio deletado com sucesso');
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : 'Erro ao deletar episódio');
+                  throw error;
+                }
+              }}
             />
           </div>
         </div>
