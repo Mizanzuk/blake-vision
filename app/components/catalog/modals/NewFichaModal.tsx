@@ -425,10 +425,10 @@ export function NewFichaModal({
         }}
         onSave={async (episodeId, newNumber, newTitle) => {
           try {
-            const response = await fetch(`/api/episodes/${episodeId}`, {
+            const response = await fetch(`/api/episodes`, {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ numero: newNumber, titulo: newTitle }),
+              body: JSON.stringify({ id: episodeId, titulo: newTitle }),
             });
             if (!response.ok) throw new Error("Erro ao salvar episodio");
             
