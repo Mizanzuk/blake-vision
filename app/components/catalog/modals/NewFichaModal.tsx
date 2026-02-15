@@ -87,6 +87,8 @@ export function NewFichaModal({
   useEffect(() => {
     if (!isOpen) {
       setSelectedCategorySlug("");
+      setEditingEpisodeId(null);
+      setEditingEpisodeName("");
       setFormData({
         universe_id: universeId,
         world_id: "",
