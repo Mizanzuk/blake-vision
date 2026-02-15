@@ -277,13 +277,7 @@ export function NewFichaModal({
               });
             }}
             onCreate={onOpenCreateEpisode}
-            onEdit={(episodeId) => {
-              const episode = availableEpisodes.find(ep => ep.id === episodeId);
-              if (episode) {
-                setEditingEpisodeId(episodeId);
-                setEditingEpisodeName(`Episodio ${episode.numero}: ${episode.titulo}`);
-              }
-            }}
+            onEdit={onEditEpisode}
             onDelete={onDeleteEpisode}
           />
         )}
@@ -412,39 +406,6 @@ export function NewFichaModal({
           </Button>
         </div>
       </form>
-
-      <EditEpisodeModal
-        isOpen={editingEpisodeId !== null}
-        episodeId={editingEpisodeId || ""}
-        episodeName={editingEpisodeName}
-        onClose={() => {
-          setEditingEpisodeId(null);
-          setEditingEpisodeName("");
-        }}
-        onSave={async (episodeId, newName) => {
-          try {
-            const response = await fetch(`/api/episodes/${episodeId}`, {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ titulo: newName }),
-            });
-            if (!response.ok) throw new Error("Erro ao salvar episodio");
-            
-            if (formData.world_id) {
-              const episodesResponse = await fetch(
-                `/api/episodes?worldId=${formData.world_id}`
-              );
-              if (episodesResponse.ok) {
-                const episodes = await episodesResponse.json();
-                setAvailableEpisodes(episodes);
-              }
-            }
-          } catch (error) {
-            console.error("Erro ao salvar episodio:", error);
-            throw error;
-          }
-        }}
-      />
     </Modal>
   );
 }
