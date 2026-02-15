@@ -28,8 +28,8 @@ export default function EditEpisodeModal({
   useEffect(() => {
     setError(null);
     if (isOpen && episodeName) {
-      // Try to extract number and title from the format "Episódio X: Título"
-      const match = episodeName.match(/Episódio\s+(\d+):\s*(.*)/i);
+      // Try to extract number and title from the format "Episódio X: Título" or "Episodio X: Título"
+      const match = episodeName.match(/Episódio?\s+(\d+):\s*(.*)/i);
       if (match) {
         setNumero(match[1]);
         setTitulo(match[2]);
