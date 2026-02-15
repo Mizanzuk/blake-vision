@@ -815,10 +815,10 @@ export default function ProjetosPage() {
         worlds={allWorlds}
         categories={categories.filter(c => ["sinopse", "conceito", "regra"].includes(c.slug))}
         onSave={handleSaveFicha}
+        onOpenCreateEpisode={() => setShowEpisodeModal(true)}
         mode={selectedFicha ? "edit" : "create"}
         ficha={selectedFicha}
         preSelectedCategory={preSelectedCategory}
-        onOpenCreateEpisode={() => setShowEpisodeModal(true)}
       />
 
       {/* World Modal */}
