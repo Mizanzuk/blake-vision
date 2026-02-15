@@ -33,11 +33,11 @@ export default function EditEpisodeModal({
       const match = episodeName.match(/Epis[óo]dios?\s+(\d+):\s*(.*)/i);
       if (match) {
         setNumero(match[1]);
-        let title = match[2];
+        let title = match[2].trim();
         // Remove any duplicate "Episódio X: " prefix from the title
-        const duplicateMatch = title.match(/Epis[óo]dios?\s+\d+:\s*(.*)/i);
+        const duplicateMatch = title.match(/^Epis[óo]dios?\s+\d+:\s*(.*)/i);
         if (duplicateMatch) {
-          title = duplicateMatch[1];
+          title = duplicateMatch[1].trim();
         }
         setTitulo(title);
       } else {
@@ -45,7 +45,12 @@ export default function EditEpisodeModal({
         const numberMatch = episodeName.match(/^(\d+)/);
         if (numberMatch) {
           setNumero(numberMatch[1]);
-          setTitulo(episodeName.substring(numberMatch[1].length).trim());
+          let remainingText = episodeName.substring(numberMatch[1].length).trim();
+          // Remove leading colon if present
+          if (remainingText.startsWith(':')) {
+            remainingText = remainingText.substring(1).trim();
+          }
+          setTitulo(remainingText);
         } else {
           setNumero("");
           setTitulo(episodeName);
