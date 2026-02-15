@@ -432,7 +432,7 @@ export function NewFichaModal({
             
             if (formData.world_id) {
               const episodesResponse = await fetch(
-                `/api/episodes?worldId=${formData.world_id}`
+                `/api/episodes?world_id=${formData.world_id}`
               );
               if (episodesResponse.ok) {
                 const episodes = await episodesResponse.json();
