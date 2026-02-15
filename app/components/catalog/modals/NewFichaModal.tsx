@@ -201,7 +201,7 @@ export function NewFichaModal({
 
   const selectedCategory = categories.find(c => c.slug === selectedCategorySlug);
   const selectedWorld = worlds.find(w => w.id === formData.world_id);
-  const selectedEpisode = availableEpisodes.find(e => e.id === formData.episode_id);
+  const selectedEpisode = Array.isArray(availableEpisodes) ? availableEpisodes.find(e => e.id === formData.episode_id) : undefined;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
