@@ -1,9 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Modal } from '@/app/components/ui/Modal';
-import { Input } from '@/app/components/ui/Input';
-import { Button } from '@/app/components/ui/Button';
+import { clsx } from 'clsx';
 
 interface EditEpisodeModalProps {
   isOpen: boolean;
@@ -20,85 +18,101 @@ export default function EditEpisodeModal({
   onClose,
   onSave,
 }: EditEpisodeModalProps) {
-  const [number, setNumber] = useState<string>('');
-  const [title, setTitle] = useState<string>('');
-  const [loading, setLoading] = useState(false);
+  const [numero, setNumero] = useState<string>('');
+  const [titulo, setTitulo] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Parse episodeName to extract number and title
   // Format: "Episódio 1: Título do Episódio"
   useEffect(() => {
     setError(null);
-    if (episodeName) {
+    if (isOpen && episodeName) {
       // Try to extract number and title from the format "Episódio X: Título"
       const match = episodeName.match(/Episódio\s+(\d+):\s*(.*)/i);
       if (match) {
-        setNumber(match[1]);
-        setTitle(match[2]);
+        setNumero(match[1]);
+        setTitulo(match[2]);
       } else {
         // Fallback: try to extract just the number from the beginning
         const numberMatch = episodeName.match(/^(\d+)/);
         if (numberMatch) {
-          setNumber(numberMatch[1]);
-          setTitle(episodeName.substring(numberMatch[1].length).trim());
+          setNumero(numberMatch[1]);
+          setTitulo(episodeName.substring(numberMatch[1].length).trim());
         } else {
-          setNumber('');
-          setTitle(episodeName);
+          setNumero('');
+          setTitulo(episodeName);
         }
       }
     }
   }, [episodeName, isOpen]);
 
   const handleSave = async () => {
-    if (!number.trim()) {
-      setError('O número do episódio não pode estar vazio');
+    setError(null);
+
+    // Validações
+    if (!numero.trim()) {
+      setError('Número do episódio é obrigatório');
       return;
     }
 
-    if (!title.trim()) {
-      setError('O título do episódio não pode estar vazio');
-      return;
-    }
-
-    const episodeNumber = parseInt(number.trim(), 10);
+    const episodeNumber = parseInt(numero.trim(), 10);
     if (isNaN(episodeNumber) || episodeNumber <= 0) {
-      setError('O número do episódio deve ser um número válido');
+      setError('Número deve ser um valor positivo');
       return;
     }
 
-    setLoading(true);
+    if (!titulo.trim()) {
+      setError('Título do episódio é obrigatório');
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      await onSave(episodeId, episodeNumber, title.trim());
+      await onSave(episodeId, episodeNumber, titulo.trim());
       onClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao salvar episódio');
+    } catch (err: any) {
+      setError(err.message || 'Erro ao salvar episódio');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !isLoading) {
+      e.preventDefault();
+      handleSave();
+    } else if (e.key === 'Escape') {
+      onClose();
+    }
+  };
+
+  if (!isOpen) return null;
+
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
       role="dialog"
       aria-modal="true"
     >
       <div
-        className="relative w-full max-w-md bg-light-raised dark:bg-dark-raised rounded-2xl shadow-soft-xl animate-slide-up border border-border-light-default dark:border-border-dark-default"
+        className="bg-light-raised dark:bg-dark-raised rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-start justify-between p-6 border-b border-border-light-default dark:border-border-dark-default">
-          <h3 className="text-xl font-bold text-text-light-primary dark:text-dark-primary">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border-light-default dark:border-border-dark-default">
+          <h2 className="text-lg font-semibold text-text-light-primary dark:text-dark-primary">
             Editar Episódio
-          </h3>
+          </h2>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-text-light-tertiary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-tertiary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
+            disabled={isLoading}
+            className="p-1 rounded-lg hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors disabled:opacity-50"
             aria-label="Fechar modal"
           >
             <svg
-              className="w-5 h-5"
+              className="w-5 h-5 text-text-light-tertiary dark:text-dark-tertiary"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -114,69 +128,75 @@ export default function EditEpisodeModal({
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-4">
-          {/* Número do Episódio */}
-          <div>
-            <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
+        <div className="px-6 py-6 space-y-4">
+          {/* Número */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-text-light-secondary dark:text-dark-secondary">
               Número do Episódio
             </label>
-            <Input
+            <input
               type="number"
-              value={number}
+              value={numero}
               onChange={(e) => {
-                setNumber(e.target.value);
+                setNumero(e.target.value);
                 setError(null);
               }}
-              placeholder="Ex: 1"
-              disabled={loading}
-              min="1"
+              onKeyDown={handleKeyDown}
+              placeholder="Ex: 1, 2, 3..."
+              autoFocus
+              disabled={isLoading}
+              className="w-full px-4 py-2.5 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 transition-all disabled:opacity-50"
             />
           </div>
 
-          {/* Título do Episódio */}
-          <div>
-            <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
+          {/* Título */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-text-light-secondary dark:text-dark-secondary">
               Título do Episódio
             </label>
-            <Input
+            <input
               type="text"
-              value={title}
+              value={titulo}
               onChange={(e) => {
-                setTitle(e.target.value);
+                setTitulo(e.target.value);
                 setError(null);
               }}
-              placeholder="Digite o título do episódio"
-              disabled={loading}
+              onKeyDown={handleKeyDown}
+              placeholder="Ex: O Começo, A Volta..."
+              disabled={isLoading}
+              className="w-full px-4 py-2.5 rounded-lg border border-border-light-default dark:border-border-dark-default bg-light-base dark:bg-dark-base text-text-light-primary dark:text-dark-primary placeholder-text-light-tertiary dark:placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 transition-all disabled:opacity-50"
             />
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="p-3 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg text-sm">
-              {error}
+            <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-border-light-default dark:border-border-dark-default bg-light-overlay dark:bg-dark-overlay">
-          <Button
-            variant="ghost"
+        <div className="flex items-center justify-end gap-3 px-6 py-4 bg-light-overlay/50 dark:bg-dark-overlay/50 border-t border-border-light-default dark:border-border-dark-default">
+          <button
             onClick={onClose}
-            disabled={loading}
-            size="sm"
+            disabled={isLoading}
+            className="px-4 py-2 rounded-lg text-sm font-medium text-text-light-secondary dark:text-dark-secondary hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors disabled:opacity-50"
           >
             Cancelar
-          </Button>
-          <Button
-            variant="primary"
+          </button>
+          <button
             onClick={handleSave}
-            disabled={loading}
-            loading={loading}
-            size="sm"
+            disabled={isLoading || !numero.trim() || !titulo.trim()}
+            className={clsx(
+              'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+              numero.trim() && titulo.trim() && !isLoading
+                ? 'bg-primary-600 hover:bg-primary-700 text-white shadow-sm hover:shadow-md'
+                : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+            )}
           >
-            Salvar
-          </Button>
+            {isLoading ? 'Salvando...' : 'Salvar'}
+          </button>
         </div>
       </div>
     </div>
