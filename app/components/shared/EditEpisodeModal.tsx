@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
 
 interface EditEpisodeModalProps {
   isOpen: boolean;
@@ -53,10 +52,10 @@ export default function EditEpisodeModal({
           <h2 className="text-xl font-semibold">Editar Episódio</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-500 hover:text-gray-700 text-2xl"
             disabled={loading}
           >
-            <X size={24} />
+            ×
           </button>
         </div>
 
