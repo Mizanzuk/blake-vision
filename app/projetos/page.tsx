@@ -816,6 +816,25 @@ export default function ProjetosPage() {
         categories={categories.filter(c => ["sinopse", "conceito", "regra"].includes(c.slug))}
         onSave={handleSaveFicha}
         onOpenCreateEpisode={() => setShowEpisodeModal(true)}
+        onEditEpisode={(episodeId, episodeName) => {
+          console.log('Edit episode:', episodeId, episodeName);
+        }}
+        onDeleteEpisode={async (episodeId) => {
+          try {
+            const response = await fetch(`/api/episodes?id=${episodeId}`, {
+              method: 'DELETE',
+            });
+            if (response.ok) {
+              await loadFichas();
+            } else {
+              const data = await response.json();
+              throw new Error(data.error || 'Failed to delete episode');
+            }
+          } catch (error) {
+            console.error('Error deleting episode:', error);
+            throw error;
+          }
+        }}
         mode={selectedFicha ? "edit" : "create"}
         ficha={selectedFicha}
         preSelectedCategory={preSelectedCategory}
