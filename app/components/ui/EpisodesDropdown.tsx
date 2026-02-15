@@ -21,10 +21,7 @@ export function EpisodesDropdown({
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
-  // Debug
-  useEffect(() => {
-    console.log('EpisodesDropdown props:', { episodes, selectedEpisodes, hasOnCreate: !!onCreate });
-  }, [episodes, selectedEpisodes, onCreate]);
+
 
   // Close dropdown when clicking outside
   useEffect(() => {
