@@ -434,8 +434,8 @@ export function NewFichaModal({
                 `/api/episodes?world_id=${formData.world_id}`
               );
               if (episodesResponse.ok) {
-                const episodes = await episodesResponse.json();
-                setAvailableEpisodes(episodes);
+                const data = await episodesResponse.json();
+                setAvailableEpisodes(data.episodes || []);
               }
             }
           } catch (error) {
