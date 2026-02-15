@@ -145,7 +145,9 @@ export function EpisodioDropdown({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
+                          e.preventDefault();
                           onEdit(episode.id, `Episódio ${episode.numero}: ${episode.titulo}`);
+                          // NÃO fechar o dropdown - deixar aberto para o usuário continuar
                         }}
                         className="p-1 hover:bg-primary-100 dark:hover:bg-primary-900/30 rounded transition-colors"
                         title="Editar episódio"
