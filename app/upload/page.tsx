@@ -750,7 +750,9 @@ export default function UploadPage() {
                       const error = await response.json();
                       throw new Error(error.error || 'Failed to delete episode');
                     }
-                    await loadEpisodes();
+                    if (selectedWorldId) {
+                      await fetchExistingEpisodes(selectedWorldId);
+                    }
                     toast.success('Episodio deletado com sucesso');
                   } catch (error) {
                     toast.error(error instanceof Error ? error.message : 'Erro ao deletar episodio');
