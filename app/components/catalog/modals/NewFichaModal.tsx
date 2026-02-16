@@ -323,7 +323,7 @@ export function NewFichaModal({
         </div>
 
         {/* Episódio (novo sistema com UUID) */}
-        {availableEpisodes.length > 0 && (
+        {formData.world_id && (
           <EpisodioDropdown
             label="EPISÓDIO"
             episodes={availableEpisodes.map(ep => ({
