@@ -35,10 +35,10 @@ export function Modal({
   noBorder = false,
 }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const isClickingInteractiveRef = useRef(false);
   const [isResizing, setIsResizing] = useState(false);
   const [modalSize, setModalSize] = useState({ width: 0, height: 0 });
   const [justFinishedResizing, setJustFinishedResizing] = useState(false);
-  const [isClickingInteractive, setIsClickingInteractive] = useState(false);
 
   // Reset modal size when modal closes
   useEffect(() => {
@@ -109,7 +109,7 @@ export function Modal({
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     // Don't close if clicking on interactive elements or if the click target is not the backdrop itself
-    if (closeOnBackdrop && !isResizing && !justFinishedResizing && !isClickingInteractive && e.target === e.currentTarget) {
+    if (closeOnBackdrop && !isResizing && !justFinishedResizing && !isClickingInteractiveRef.current && e.target === e.currentTarget) {
       // Check if the click target is an interactive element
       const target = e.target as HTMLElement;
       if (target.closest('button, input, textarea, select, [role="button"], [role="dialog"]')) {
@@ -119,9 +119,16 @@ export function Modal({
     }
   };
 
-  const handleInteractiveMouseDown = () => {
-    setIsClickingInteractive(true);
-    setTimeout(() => setIsClickingInteractive(false), 100);
+  const handleInteractiveMouseDown = (e: React.MouseEvent) => {
+    // Check if the click is on an interactive element
+    const target = e.target as HTMLElement;
+    if (target.closest('button, input, textarea, select, [role="button"]')) {
+      isClickingInteractiveRef.current = true;
+      // Reset after a short delay
+      setTimeout(() => {
+        isClickingInteractiveRef.current = false;
+      }, 50);
+    }
   };
 
   return (
@@ -143,7 +150,6 @@ export function Modal({
         )}
         style={modalSize.width > 0 ? { width: `${modalSize.width}px`, height: `${modalSize.height}px`, maxWidth: "90vw", maxHeight: "90vh", overflow: "visible" } : { overflow: "visible" }}
         onClick={(e) => e.stopPropagation()}
-        onMouseDown={handleInteractiveMouseDown}
       >
         {/* Header */}
         {(title || showCloseButton || headerActions) && (
