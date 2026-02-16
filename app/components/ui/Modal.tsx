@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useEffect, useRef, ReactNode, useState } from "react";
 import { clsx } from "clsx";
@@ -35,7 +35,7 @@ export function Modal({
   noBorder = false,
 }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
-  const isClickingInteractiveRef = useRef(false);
+  const backdropRef = useRef<HTMLDivElement>(null);
   const [isResizing, setIsResizing] = useState(false);
   const [modalSize, setModalSize] = useState({ width: 0, height: 0 });
   const [justFinishedResizing, setJustFinishedResizing] = useState(false);
@@ -79,23 +79,55 @@ export function Modal({
       setModalSize({ width: newWidth, height: newHeight });
     };
 
-    const handleMouseUp = (e: MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
+    const handleMouseUp = () => {
       setIsResizing(false);
       setJustFinishedResizing(true);
-      // Reset the flag after a short delay to allow backdrop clicks again
       setTimeout(() => setJustFinishedResizing(false), 100);
     };
 
-    document.addEventListener("mousemove", handleMouseMove, { capture: true });
-    document.addEventListener("mouseup", handleMouseUp, { capture: true });
+    if (isResizing) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+    }
 
     return () => {
-      document.removeEventListener("mousemove", handleMouseMove, { capture: true });
-      document.removeEventListener("mouseup", handleMouseUp, { capture: true });
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [isOpen, isResizing]);
+  }, [isResizing]);
+
+  // Handle backdrop click with document listener
+  useEffect(() => {
+    if (!isOpen || !closeOnBackdrop) return;
+
+    const handleDocumentClick = (e: MouseEvent) => {
+      if (isResizing || justFinishedResizing) return;
+
+      const target = e.target as HTMLElement;
+
+      // Check if the click is on an element that should be ignored (like dropdowns)
+      if (target.closest('[data-modal-ignore="true"]')) {
+        return;
+      }
+
+      // Check if the click is on the modal content
+      if (modalRef.current && modalRef.current.contains(target)) {
+        return;
+      }
+
+      // Check if the click is on the backdrop
+      if (backdropRef.current && backdropRef.current === target) {
+        onClose();
+      }
+    };
+
+    // Use capture phase to intercept clicks before they bubble
+    document.addEventListener("click", handleDocumentClick, true);
+
+    return () => {
+      document.removeEventListener("click", handleDocumentClick, true);
+    };
+  }, [isOpen, closeOnBackdrop, isResizing, justFinishedResizing, onClose]);
 
   if (!isOpen) return null;
 
@@ -107,50 +139,14 @@ export function Modal({
     full: "max-w-7xl",
   };
 
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    // Only close if clicking directly on the backdrop (not on modal content)
-    if (closeOnBackdrop && !isResizing && !justFinishedResizing) {
-      // Check if the click target is the backdrop itself
-      if (e.target === e.currentTarget) {
-        onClose();
-        return;
-      }
-      
-      // Check if the click is on an element that should be ignored (like dropdowns)
-      const target = e.target as HTMLElement;
-      if (target.closest('[data-modal-ignore="true"]')) {
-        return;
-      }
-      
-      // Check if the click is outside the modal content
-      if (modalRef.current && !modalRef.current.contains(target)) {
-        onClose();
-      }
-    }
-  };
-
-  const handleInteractiveMouseDown = (e: React.MouseEvent) => {
-    // Check if the click is on an interactive element
-    const target = e.target as HTMLElement;
-    if (target.closest('button, input, textarea, select, [role="button"]')) {
-      isClickingInteractiveRef.current = true;
-      // Reset after a short delay
-      setTimeout(() => {
-        isClickingInteractiveRef.current = false;
-      }, 50);
-    }
-  };
-
   return (
     <div
+      ref={backdropRef}
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in"
-      onClick={handleBackdropClick}
-      onMouseDown={handleInteractiveMouseDown}
       role="dialog"
       aria-modal="true"
       aria-labelledby={title ? "modal-title" : undefined}
       aria-describedby={description ? "modal-description" : undefined}
-      style={{ pointerEvents: 'auto' }}
     >
       <div
         ref={modalRef}
@@ -159,7 +155,7 @@ export function Modal({
           "border border-border-light-default dark:border-border-dark-default",
           sizes[size]
         )}
-        style={modalSize.width > 0 ? { width: `${modalSize.width}px`, height: `${modalSize.height}px`, maxWidth: "90vw", maxHeight: "90vh", overflow: "visible", pointerEvents: 'auto' } : { overflow: "visible", pointerEvents: 'auto' }}
+        style={modalSize.width > 0 ? { width: `${modalSize.width}px`, height: `${modalSize.height}px`, maxWidth: "90vw", maxHeight: "90vh", overflow: "visible" } : { overflow: "visible" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -180,125 +176,50 @@ export function Modal({
               {description && (
                 <p
                   id="modal-description"
-                  className="mt-1 text-sm text-text-light-tertiary dark:text-dark-tertiary"
+                  className="mt-2 text-sm text-text-light-secondary dark:text-dark-secondary"
                 >
                   {description}
                 </p>
               )}
             </div>
-            
-            <div className="flex items-center gap-2 ml-4">
-              {headerActions}
-              {showCloseButton && (
-                <button
-                  onClick={onClose}
-                  className="p-1 rounded-lg text-text-light-tertiary hover:text-text-light-primary hover:bg-light-overlay dark:text-dark-tertiary dark:hover:text-dark-primary dark:hover:bg-dark-overlay transition-colors"
-                  aria-label="Fechar modal"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              )}
-            </div>
+
+            {headerActions && (
+              <div className="ml-4 flex items-center gap-2">
+                {headerActions}
+              </div>
+            )}
+
+            {showCloseButton && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="ml-4"
+                title="Fechar modal"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </Button>
+            )}
           </div>
         )}
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(100% - 140px)' }}>
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-3 p-6 border-t border-border-light-default dark:border-border-dark-default bg-light-overlay dark:bg-dark-overlay">
+          <div className={clsx(
+            "flex items-center justify-end gap-3 p-6",
+            !noBorder && "border-t border-border-light-default dark:border-border-dark-default"
+          )}>
             {footer}
           </div>
         )}
-
-        {/* Resize Handle */}
-        <div
-          className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize group z-10"
-          onMouseDown={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setIsResizing(true);
-          }}
-        >
-          <svg
-            className="absolute bottom-1 right-1 w-3 h-3 text-gray-400 group-hover:text-gray-600 transition-colors pointer-events-none"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          >
-            <line x1="14" y1="14" x2="14" y2="10" />
-            <line x1="14" y1="14" x2="10" y2="14" />
-            <line x1="14" y1="8" x2="8" y2="14" />
-          </svg>
-        </div>
       </div>
     </div>
-  );
-}
-
-// Componente auxiliar para confirmação
-export interface ConfirmDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  title: string;
-  description: string;
-  confirmText?: string;
-  cancelText?: string;
-  confirmVariant?: "primary" | "danger";
-  isLoading?: boolean;
-}
-
-export function ConfirmDialog({
-  isOpen,
-  onClose,
-  onConfirm,
-  title,
-  description,
-  confirmText = "Confirmar",
-  cancelText = "Cancelar",
-  confirmVariant = "primary",
-  isLoading = false,
-}: ConfirmDialogProps) {
-  return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={title}
-      description={description}
-      size="sm"
-      footer={
-        <>
-          <Button variant="ghost" onClick={onClose} disabled={isLoading} size="sm">
-            {cancelText}
-          </Button>
-          <Button
-            variant={confirmVariant}
-            onClick={onConfirm}
-            loading={isLoading}
-            size="sm"
-          >
-            {confirmText}
-          </Button>
-        </>
-      }
-    />
   );
 }
