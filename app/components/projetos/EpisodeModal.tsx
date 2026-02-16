@@ -140,19 +140,23 @@ export default function EpisodeModal({
   }
 
   async function handleSave() {
+    // Use pre-selected values if not already set
+    const finalUniverseId = selectedUniverseId || universeId;
+    const finalWorldId = selectedWorldId || worldId;
+
     // Validation - Universe and World are required
-    if (!selectedUniverseId) {
+    if (!finalUniverseId) {
       toast.error("Selecione um universo");
       return;
     }
 
-    if (!selectedWorldId) {
+    if (!finalWorldId) {
       toast.error("Selecione um mundo");
       return;
     }
 
     // Check if world has episodes enabled
-    const world = worlds.find(w => w.id === selectedWorldId);
+    const world = worlds.find(w => w.id === finalWorldId);
     if (world && !world.has_episodes && !world.tem_episodios) {
       toast.error("Este mundo não permite episódios. Edite o mundo para habilitar.");
       return;
@@ -179,7 +183,7 @@ export default function EpisodeModal({
 
     // Verificar se já existe episódio com esse número no mesmo mundo
     try {
-      const response = await fetch(`/api/episodes?world_id=${selectedWorldId}`);
+      const response = await fetch(`/api/episodes?world_id=${finalWorldId}`);
       const data = await response.json();
       
       if (response.ok && data.episodes) {
@@ -200,7 +204,7 @@ export default function EpisodeModal({
 
     const episodeData = {
       id: episode?.id,
-      world_id: selectedWorldId,
+      world_id: finalWorldId,
       numero: episodeNumber,
       titulo: titulo.trim(),
     };
