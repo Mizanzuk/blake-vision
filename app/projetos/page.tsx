@@ -835,6 +835,8 @@ export default function ProjetosPage() {
         onEditEpisode={(episodeId, episodeName) => {
           console.log('Edit episode:', episodeId, episodeName);
         }}
+        lastCreatedEpisodeId={lastCreatedEpisodeId}
+        episodeCreationTrigger={episodeCreationTrigger}
         onDeleteEpisode={async (episodeId) => {
           try {
             const response = await fetch(`/api/episodes?id=${episodeId}`, {
