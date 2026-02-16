@@ -96,27 +96,40 @@ export function Modal({
     };
   }, [isResizing]);
 
-  // Handle backdrop click - only close if clicking directly on backdrop
+  // Handle backdrop click using capture phase to intercept before React
   useEffect(() => {
     if (!isOpen || !closeOnBackdrop) return;
 
-    const handleBackdropClick = (e: MouseEvent) => {
+    const handleBackdropClick = (e: Event) => {
       if (isResizing || justFinishedResizing) return;
 
-      // Only close if the click target is the backdrop itself
-      if (e.target === backdropRef.current) {
+      const target = e.target as HTMLElement;
+
+      // Check if click is on an element that should be ignored
+      if (target.closest('[data-modal-ignore="true"]')) {
+        return;
+      }
+
+      // Check if click is on the modal content
+      if (modalRef.current && modalRef.current.contains(target)) {
+        return;
+      }
+
+      // Only close if clicking directly on the backdrop
+      if (target === backdropRef.current) {
         onClose();
       }
     };
 
+    // Use capture phase to intercept clicks before they bubble
     const backdrop = backdropRef.current;
     if (backdrop) {
-      backdrop.addEventListener("click", handleBackdropClick);
+      backdrop.addEventListener("click", handleBackdropClick, true);
     }
 
     return () => {
       if (backdrop) {
-        backdrop.removeEventListener("click", handleBackdropClick);
+        backdrop.removeEventListener("click", handleBackdropClick, true);
       }
     };
   }, [isOpen, closeOnBackdrop, isResizing, justFinishedResizing, onClose]);
