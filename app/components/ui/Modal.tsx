@@ -55,11 +55,21 @@ export function Modal({
       }
     };
 
+    // Intercept clicks on data-modal-ignore elements to prevent modal close
+    const handleDocumentClick = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (target.closest('[data-modal-ignore="true"]')) {
+        e.stopPropagation();
+      }
+    };
+
     document.addEventListener("keydown", handleEscape);
+    document.addEventListener("click", handleDocumentClick, { capture: true });
     document.body.style.overflow = "hidden";
 
     return () => {
       document.removeEventListener("keydown", handleEscape);
+      document.removeEventListener("click", handleDocumentClick, { capture: true });
       document.body.style.overflow = "unset";
     };
   }, [isOpen, closeOnEscape, onClose]);
