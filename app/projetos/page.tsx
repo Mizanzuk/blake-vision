@@ -543,7 +543,10 @@ export default function ProjetosPage() {
         toast.success(episodeData.id ? "Episódio atualizado" : "Episódio criado");
         
         // Get the episode number from the response (use numero, not id)
+        console.log("DEBUG: data.episode:", data.episode);
+        console.log("DEBUG: episodeData:", episodeData);
         const episodeNumber = data.episode?.numero || episodeData.numero;
+        console.log("DEBUG: episodeNumber:", episodeNumber);
         
         // Notify that a new episode was created (only if it's a new episode)
         if (!episodeData.id && episodeNumber) {
