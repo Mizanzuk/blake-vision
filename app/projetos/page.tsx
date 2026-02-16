@@ -815,11 +815,7 @@ export default function ProjetosPage() {
         worlds={allWorlds}
         categories={categories.filter(c => ["sinopse", "conceito", "regra"].includes(c.slug))}
         onSave={handleSaveFicha}
-        onOpenCreateEpisode={(worldId, universeId) => {
-          setSelectedWorldId(worldId);
-          setSelectedUniverseId(universeId);
-          setShowEpisodeModal(true);
-        }}
+        onOpenCreateEpisode={() => setShowEpisodeModal(true)}
         onEditEpisode={(episodeId, episodeName) => {
           console.log('Edit episode:', episodeId, episodeName);
         }}
@@ -863,7 +859,6 @@ export default function ProjetosPage() {
         <EpisodeModal
           episode={selectedEpisode}
           worldId={selectedWorldId!}
-          universeId={selectedUniverseId!}
           onSave={handleSaveEpisode}
           onDelete={handleDeleteEpisode}
           onClose={() => {
