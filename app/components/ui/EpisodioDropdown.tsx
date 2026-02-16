@@ -168,6 +168,7 @@ export function EpisodioDropdown({
                     {onDelete && (
                       <button
                         onClick={async (e) => {
+                          e.preventDefault();
                           e.stopPropagation();
                           const confirmed = window.confirm(
                             `Tem certeza que deseja deletar o Episódio ${episode.numero}: ${episode.titulo}?\n\nEsta ação não pode ser desfeita.`
