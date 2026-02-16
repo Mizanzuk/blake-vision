@@ -56,10 +56,10 @@ export default function EpisodeModal({
       setTitulo("");
       
       // Use pre-selected values if provided
-      if (universeId) {
+      if (universeId && universeId.length > 0) {
         setSelectedUniverseId(universeId);
       }
-      if (worldId) {
+      if (worldId && worldId.length > 0) {
         setSelectedWorldId(worldId);
       }
     }
@@ -234,32 +234,34 @@ export default function EpisodeModal({
       size="lg"
     >
       <div className="space-y-4">
-        {/* Universo e Mundo */}
-        <div className="grid grid-cols-2 gap-4">
-          <UniverseDropdown
-            label="UNIVERSO"
-            universes={universes}
-            selectedId={selectedUniverseId}
-            onSelect={(id) => {
-              setSelectedUniverseId(id);
-              handleChange();
-            }}
-          />
+        {/* Universo e Mundo - Apenas mostrar se não foram pré-selecionados */}
+        {!worldId && !universeId && (
+          <div className="grid grid-cols-2 gap-4">
+            <UniverseDropdown
+              label="UNIVERSO"
+              universes={universes}
+              selectedId={selectedUniverseId}
+              onSelect={(id) => {
+                setSelectedUniverseId(id);
+                handleChange();
+              }}
+            />
 
-          <WorldsDropdownSingle
-            label="MUNDOS"
-            worlds={worlds}
-            selectedId={selectedWorldId}
-            onSelect={(id) => {
-              setSelectedWorldId(id);
-              handleChange();
-            }}
-            onEdit={() => {}} // No modal, não permitimos editar mundos
-            onDelete={() => {}} // No modal, não permitimos deletar mundos
-            onCreate={() => {}} // No modal, não permitimos criar mundos
-            disabled={!selectedUniverseId}
-          />
-        </div>
+            <WorldsDropdownSingle
+              label="MUNDOS"
+              worlds={worlds}
+              selectedId={selectedWorldId}
+              onSelect={(id) => {
+                setSelectedWorldId(id);
+                handleChange();
+              }}
+              onEdit={() => {}} // No modal, não permitimos editar mundos
+              onDelete={() => {}} // No modal, não permitimos deletar mundos
+              onCreate={() => {}} // No modal, não permitimos criar mundos
+              disabled={!selectedUniverseId}
+            />
+          </div>
+        )}
 
         {/* Número do Episódio */}
         <Input
