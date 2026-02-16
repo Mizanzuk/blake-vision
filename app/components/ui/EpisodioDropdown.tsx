@@ -169,10 +169,12 @@ export function EpisodioDropdown({
                     {onDelete && (
                       <button
                         onClick={async (e) => {
+                          console.log('Delete button clicked for episode:', episode.numero);
                           e.stopPropagation();
                           const confirmed = window.confirm(
                             `Tem certeza que deseja deletar o Episódio ${episode.numero}: ${episode.titulo}?`
                           );
+                          console.log('Confirmation result:', confirmed);
                           if (confirmed) {
                             await onDelete(episode.id);
                           }
