@@ -104,6 +104,7 @@ export function EpisodioDropdown({
       {isOpen && buttonRect && (
         <div
           ref={menuRef}
+          data-modal-ignore="true"
           className="fixed z-[9999] bg-light-raised dark:bg-dark-raised border border-border-light-default dark:border-border-dark-default rounded-lg shadow-lg max-h-64 overflow-y-auto"
           style={{
             top: `${buttonRect.bottom + 8}px`,

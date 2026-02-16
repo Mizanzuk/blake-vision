@@ -116,8 +116,13 @@ export function Modal({
         return;
       }
       
-      // Check if the click is outside the modal content
+      // Check if the click is on an element that should be ignored (like dropdowns)
       const target = e.target as HTMLElement;
+      if (target.closest('[data-modal-ignore="true"]')) {
+        return;
+      }
+      
+      // Check if the click is outside the modal content
       if (modalRef.current && !modalRef.current.contains(target)) {
         onClose();
       }
