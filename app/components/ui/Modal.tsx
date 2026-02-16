@@ -134,7 +134,7 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in pointer-events-none"
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
@@ -144,7 +144,7 @@ export function Modal({
       <div
         ref={modalRef}
         className={clsx(
-          "relative w-full bg-light-raised dark:bg-dark-raised rounded-2xl shadow-soft-xl animate-slide-up",
+          "relative w-full bg-light-raised dark:bg-dark-raised rounded-2xl shadow-soft-xl animate-slide-up pointer-events-auto",
           "border border-border-light-default dark:border-border-dark-default",
           sizes[size]
         )}
