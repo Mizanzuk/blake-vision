@@ -40,6 +40,14 @@ export default function EpisodeModal({
     loadUniverses();
   }, []);
 
+  // Load worlds when universeId prop is provided
+  useEffect(() => {
+    if (universeId && !selectedUniverseId) {
+      setSelectedUniverseId(universeId);
+      loadWorlds(universeId);
+    }
+  }, [universeId]);
+
   useEffect(() => {
     if (episode) {
       setNumeroEpisodio(episode.episodio?.toString() || "");
