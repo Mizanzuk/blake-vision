@@ -107,7 +107,13 @@ export function Modal({
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
+    // Don't close if clicking on interactive elements or if the click target is not the backdrop itself
     if (closeOnBackdrop && !isResizing && !justFinishedResizing && e.target === e.currentTarget) {
+      // Check if the click target is an interactive element
+      const target = e.target as HTMLElement;
+      if (target.closest('button, input, textarea, select, [role="button"], [role="dialog"]')) {
+        return;
+      }
       onClose();
     }
   };
