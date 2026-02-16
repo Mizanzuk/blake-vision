@@ -33,6 +33,7 @@ interface NewFichaModalProps {
   onOpenCreateEpisode?: (worldId: string, universeId: string) => void;
   onEditEpisode?: (episodeId: string, episodeName: string) => void;
   onDeleteEpisode?: (episodeId: string) => Promise<void>;
+  onEpisodeCreated?: (newEpisodeId: string) => void;
   mode?: "create" | "edit";
   ficha?: Partial<Ficha> | null;
   preSelectedCategory?: string | null;
@@ -50,6 +51,7 @@ export function NewFichaModal({
   onOpenCreateEpisode,
   onEditEpisode,
   onDeleteEpisode,
+  onEpisodeCreated,
   mode = "create",
   ficha,
   preSelectedCategory,
@@ -199,6 +201,32 @@ export function NewFichaModal({
     loadEpisodes();
   }, [formData.world_id, isOpen]);
 
+  const handleEpisodeCreated = async (newEpisodeId: string) => {
+    if (formData.world_id) {
+      try {
+        const response = await fetch(`/api/episodes?world_id=${formData.world_id}`);
+        if (response.ok) {
+          const data = await response.json();
+          const episodes = data.episodes || [];
+          episodes.sort((a: Episode, b: Episode) => a.numero - b.numero);
+          setAvailableEpisodes(episodes);
+          
+          setSelectedEpisodeId(newEpisodeId);
+          setFormData(prev => ({
+            ...prev,
+            episode_id: newEpisodeId,
+          }));
+        }
+      } catch (error) {
+        console.error("Error reloading episodes:", error);
+      }
+    }
+    
+    if (onEpisodeCreated) {
+      onEpisodeCreated(newEpisodeId);
+    }
+  };
+
   const selectedCategory = categories.find(c => c.slug === selectedCategorySlug);
   const selectedWorld = worlds.find(w => w.id === formData.world_id);
   const selectedEpisode = Array.isArray(availableEpisodes) ? availableEpisodes.find(e => e.id === formData.episode_id) : undefined;
@@ -278,7 +306,10 @@ export function NewFichaModal({
                 episode_id: episodeId || null,
               });
             }}
-            onCreate={onOpenCreateEpisode}
+            onCreate={(worldId, universeId) => {
+              onOpenCreateEpisode?.(worldId, universeId);
+            }}
+            onEpisodeCreated={handleEpisodeCreated}
             worldId={formData.world_id}
             universeId={formData.universe_id}
             onEdit={(episodeId, episodeName) => {

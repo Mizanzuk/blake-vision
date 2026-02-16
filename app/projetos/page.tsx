@@ -839,6 +839,10 @@ export default function ProjetosPage() {
             throw error;
           }
         }}
+        onEpisodeCreated={(newEpisodeId) => {
+          // Episode was created and selected, no additional action needed
+          // The NewFichaModal will handle the selection
+        }}
         mode={selectedFicha ? "edit" : "create"}
         ficha={selectedFicha}
         preSelectedCategory={preSelectedCategory}

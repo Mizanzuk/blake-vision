@@ -15,6 +15,7 @@ interface EpisodioDropdownProps {
   universeId?: string;
   onEdit?: (episodeId: string, episodeName: string) => void;
   onDelete?: (episodeId: string) => Promise<void>;
+  onEpisodeCreated?: (newEpisodeId: string) => void;
 }
 
 export function EpisodioDropdown({
@@ -28,6 +29,7 @@ export function EpisodioDropdown({
   universeId,
   onEdit,
   onDelete,
+  onEpisodeCreated,
 }: EpisodioDropdownProps) {
   const actualValue = selectedId !== undefined ? selectedId : value;
   const [isOpen, setIsOpen] = useState(false);
