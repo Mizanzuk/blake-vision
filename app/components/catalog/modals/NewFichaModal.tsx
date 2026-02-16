@@ -232,7 +232,7 @@ export function NewFichaModal({
       
       loadAndSelect();
     }
-  }, [lastCreatedEpisodeId, episodeCreationTrigger, formData.world_id];
+  }, [lastCreatedEpisodeId, episodeCreationTrigger, formData.world_id]);
 
   const handleEpisodeCreated = async (newEpisodeId: string) => {
     if (formData.world_id) {

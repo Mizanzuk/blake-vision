@@ -859,8 +859,6 @@ export default function ProjetosPage() {
           setEpisodeCreationTrigger(prev => prev + 1);
           loadFichas();
         }}
-        lastCreatedEpisodeId={lastCreatedEpisodeId}
-        episodeCreationTrigger={episodeCreationTrigger}
         mode={selectedFicha ? "edit" : "create"}
         ficha={selectedFicha}
         preSelectedCategory={preSelectedCategory}
