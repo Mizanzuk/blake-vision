@@ -49,6 +49,8 @@ export default function ProjetosPage() {
   const [selectedWorld, setSelectedWorld] = useState<World | null>(null);
   const [showEpisodeModal, setShowEpisodeModal] = useState(false);
   const [selectedEpisode, setSelectedEpisode] = useState<any | null>(null);
+  const [lastCreatedEpisodeId, setLastCreatedEpisodeId] = useState<string | null>(null);
+  const [episodeCreationTrigger, setEpisodeCreationTrigger] = useState<number>(0);
   const [showViewModal, setShowViewModal] = useState(false);
   const [confirmationModal, setConfirmationModal] = useState<{
     isOpen: boolean;
@@ -840,9 +842,13 @@ export default function ProjetosPage() {
           }
         }}
         onEpisodeCreated={(newEpisodeId) => {
-          // Episode was created and selected, no additional action needed
-          // The NewFichaModal will handle the selection
+          // Episode was created, notify NewFichaModal to refresh episodes
+          setLastCreatedEpisodeId(newEpisodeId);
+          setEpisodeCreationTrigger(prev => prev + 1);
+          loadFichas();
         }}
+        lastCreatedEpisodeId={lastCreatedEpisodeId}
+        episodeCreationTrigger={episodeCreationTrigger}
         mode={selectedFicha ? "edit" : "create"}
         ficha={selectedFicha}
         preSelectedCategory={preSelectedCategory}

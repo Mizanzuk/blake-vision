@@ -34,6 +34,8 @@ interface NewFichaModalProps {
   onEditEpisode?: (episodeId: string, episodeName: string) => void;
   onDeleteEpisode?: (episodeId: string) => Promise<void>;
   onEpisodeCreated?: (newEpisodeId: string) => void;
+  lastCreatedEpisodeId?: string | null;
+  episodeCreationTrigger?: number;
   mode?: "create" | "edit";
   ficha?: Partial<Ficha> | null;
   preSelectedCategory?: string | null;
@@ -52,6 +54,8 @@ export function NewFichaModal({
   onEditEpisode,
   onDeleteEpisode,
   onEpisodeCreated,
+  lastCreatedEpisodeId,
+  episodeCreationTrigger,
   mode = "create",
   ficha,
   preSelectedCategory,
@@ -199,7 +203,18 @@ export function NewFichaModal({
     }
 
     loadEpisodes();
-  }, [formData.world_id, isOpen]);
+  }, [formData.world_id, isOpen, episodeCreationTrigger]);
+
+  // Handle newly created episode
+  useEffect(() => {
+    if (lastCreatedEpisodeId && formData.world_id) {
+      setSelectedEpisodeId(lastCreatedEpisodeId);
+      setFormData((prev: any) => ({
+        ...prev,
+        episode_id: lastCreatedEpisodeId,
+      }));
+    }
+  }, [lastCreatedEpisodeId, episodeCreationTrigger]);
 
   const handleEpisodeCreated = async (newEpisodeId: string) => {
     if (formData.world_id) {
