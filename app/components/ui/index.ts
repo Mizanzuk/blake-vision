@@ -13,8 +13,8 @@ export type { SelectProps, SelectOption } from "./Select";
 export { Badge } from "./Badge";
 export type { BadgeProps } from "./Badge";
 
-export { Modal, ConfirmDialog } from "./Modal";
-export type { ModalProps, ConfirmDialogProps } from "./Modal";
+export { Modal } from "./Modal";
+export type { ModalProps } from "./Modal";
 
 export { Card, CardHeader, CardFooter } from "./Card";
 export type { CardProps, CardHeaderProps, CardFooterProps } from "./Card";
