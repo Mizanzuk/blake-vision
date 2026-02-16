@@ -353,7 +353,7 @@ export function NewFichaModal({
               setEditingEpisodeId(episodeId);
               setEditingEpisodeName(episodeName);
             }}
-            onDelete={(episodeId) => {
+            onDelete={async (episodeId) => {
               const episode = availableEpisodes.find(ep => ep.id === episodeId);
               if (episode) {
                 console.log('Setting deletingEpisodeId:', episodeId);
