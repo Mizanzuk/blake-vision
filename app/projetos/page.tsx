@@ -542,12 +542,12 @@ export default function ProjetosPage() {
       if (response.ok) {
         toast.success(episodeData.id ? "Episódio atualizado" : "Episódio criado");
         
-        // Get the real episode ID from the response
-        const realEpisodeId = data.id || episodeData.id;
+        // Get the episode number from the response (use numero, not id)
+        const episodeNumber = data.episode?.numero || episodeData.numero;
         
         // Notify that a new episode was created (only if it's a new episode)
-        if (!episodeData.id && realEpisodeId) {
-          setLastCreatedEpisodeId(realEpisodeId);
+        if (!episodeData.id && episodeNumber) {
+          setLastCreatedEpisodeId(episodeNumber.toString());
           setEpisodeCreationTrigger(prev => prev + 1);
         }
         
