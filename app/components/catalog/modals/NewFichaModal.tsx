@@ -519,32 +519,32 @@ export function NewFichaModal({
           }
         }}
       />
+    </Modal>
 
-      <DeleteEpisodeConfirmationModal
-        isOpen={deletingEpisodeId !== null}
-        episodeName={deletingEpisodeName}
-        onClose={() => {
+    <DeleteEpisodeConfirmationModal
+      isOpen={deletingEpisodeId !== null}
+      episodeName={deletingEpisodeName}
+      onClose={() => {
+        setDeletingEpisodeId(null);
+        setDeletingEpisodeName("");
+      }}
+      onConfirm={async () => {
+        if (deletingEpisodeId && onDeleteEpisode) {
+          await onDeleteEpisode(deletingEpisodeId);
           setDeletingEpisodeId(null);
           setDeletingEpisodeName("");
-        }}
-        onConfirm={async () => {
-          if (deletingEpisodeId && onDeleteEpisode) {
-            await onDeleteEpisode(deletingEpisodeId);
-            setDeletingEpisodeId(null);
-            setDeletingEpisodeName("");
-            
-            if (formData.world_id) {
-              const episodesResponse = await fetch(
-                `/api/episodes?world_id=${formData.world_id}`
-              );
-              if (episodesResponse.ok) {
-                const data = await episodesResponse.json();
-                setAvailableEpisodes(data.episodes || []);
-              }
+          
+          if (formData.world_id) {
+            const episodesResponse = await fetch(
+              `/api/episodes?world_id=${formData.world_id}`
+            );
+            if (episodesResponse.ok) {
+              const data = await episodesResponse.json();
+              setAvailableEpisodes(data.episodes || []);
             }
           }
-        }}
-      />
-    </Modal>
+        }
+      }}
+    />
   );
 }
