@@ -207,14 +207,32 @@ export function NewFichaModal({
 
   // Handle newly created episode
   useEffect(() => {
-    if (lastCreatedEpisodeId && formData.world_id) {
-      setSelectedEpisodeId(lastCreatedEpisodeId);
-      setFormData((prev: any) => ({
-        ...prev,
-        episode_id: lastCreatedEpisodeId,
-      }));
+    if (lastCreatedEpisodeId && formData.world_id && episodeCreationTrigger) {
+      // Reload episodes first
+      const loadAndSelect = async () => {
+        try {
+          const response = await fetch(`/api/episodes?world_id=${formData.world_id}`);
+          if (response.ok) {
+            const data = await response.json();
+            const episodes = data.episodes || [];
+            episodes.sort((a: Episode, b: Episode) => a.numero - b.numero);
+            setAvailableEpisodes(episodes);
+          }
+        } catch (error) {
+          console.error("Error reloading episodes:", error);
+        }
+        
+        // Then select the new episode
+        setSelectedEpisodeId(lastCreatedEpisodeId);
+        setFormData((prev: any) => ({
+          ...prev,
+          episode_id: lastCreatedEpisodeId,
+        }));
+      };
+      
+      loadAndSelect();
     }
-  }, [lastCreatedEpisodeId, episodeCreationTrigger]);
+  }, [lastCreatedEpisodeId, episodeCreationTrigger, formData.world_id];
 
   const handleEpisodeCreated = async (newEpisodeId: string) => {
     if (formData.world_id) {
