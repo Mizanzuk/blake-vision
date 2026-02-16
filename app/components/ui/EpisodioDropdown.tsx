@@ -168,10 +168,14 @@ export function EpisodioDropdown({
                     )}
                     {onDelete && (
                       <button
-                        onClick={(e) => {
+                        onClick={async (e) => {
                           e.stopPropagation();
-                          setDeletingEpisodeId(episode.id);
-                          setDeletingEpisodeName(`Episódio ${episode.numero}: ${episode.titulo}`);
+                          const confirmed = window.confirm(
+                            `Tem certeza que deseja deletar o Episódio ${episode.numero}: ${episode.titulo}?`
+                          );
+                          if (confirmed) {
+                            await onDelete(episode.id);
+                          }
                         }}
                         className="p-1 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors"
                         title="Deletar episódio"
