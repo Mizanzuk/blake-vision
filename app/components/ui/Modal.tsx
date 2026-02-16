@@ -109,8 +109,18 @@ export function Modal({
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     // Only close if clicking directly on the backdrop (not on modal content)
-    if (closeOnBackdrop && !isResizing && !justFinishedResizing && e.target === e.currentTarget) {
-      onClose();
+    if (closeOnBackdrop && !isResizing && !justFinishedResizing) {
+      // Check if the click target is the backdrop itself
+      if (e.target === e.currentTarget) {
+        onClose();
+        return;
+      }
+      
+      // Check if the click is outside the modal content
+      const target = e.target as HTMLElement;
+      if (modalRef.current && !modalRef.current.contains(target)) {
+        onClose();
+      }
     }
   };
 
@@ -135,7 +145,7 @@ export function Modal({
       aria-modal="true"
       aria-labelledby={title ? "modal-title" : undefined}
       aria-describedby={description ? "modal-description" : undefined}
-      style={{ pointerEvents: 'none' }}
+      style={{ pointerEvents: 'auto' }}
     >
       <div
         ref={modalRef}
