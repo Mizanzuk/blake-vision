@@ -156,15 +156,26 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
       }
-      if (!episode_id) {
-        return NextResponse.json(
-          { error: "Sinopse deve ter um episódio obrigatório" },
-          { status: 400 }
-        );
-      }
       
-      // Nota: Sinopses podem ser criadas múltiplas vezes para o mesmo episódio
-      // (a última versão será exibida no catálogo)
+      // Nota: Episódio é opcional - sinopses podem ser criadas para o mundo sem episódio específico
+      // ou para um episódio específico. Se houver episódio, verificar se já existe sinopse
+      if (episode_id) {
+        const { data: existingSinopse } = await supabase
+          .from("fichas")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("world_id", world_id)
+          .eq("tipo", "sinopse")
+          .eq("episode_id", episode_id)
+          .maybeSingle();
+        
+        if (existingSinopse) {
+          return NextResponse.json(
+            { error: "Já existe uma sinopse para este episódio" },
+            { status: 400 }
+          );
+        }
+      }
     }
     
     if (!tipo || !titulo) {
@@ -310,14 +321,8 @@ export async function PUT(req: NextRequest) {
           { status: 400 }
         );
       }
-      if (updateData.episode_id === null || updateData.episode_id === '') {
-        return NextResponse.json(
-          { error: "Sinopse deve ter um episódio obrigatório" },
-          { status: 400 }
-        );
-      }
       
-      // Se está mudando o episódio, verificar se já existe sinopse para o novo episódio
+      // Episódio é opcional - se estiver sendo definido, verificar se já existe sinopse
       if (updateData.episode_id && updateData.world_id) {
         const { data: existingSinopse } = await supabase
           .from("fichas")
