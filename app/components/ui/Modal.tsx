@@ -96,36 +96,28 @@ export function Modal({
     };
   }, [isResizing]);
 
-  // Handle backdrop click with document listener
+  // Handle backdrop click - only close if clicking directly on backdrop
   useEffect(() => {
     if (!isOpen || !closeOnBackdrop) return;
 
-    const handleDocumentClick = (e: MouseEvent) => {
+    const handleBackdropClick = (e: MouseEvent) => {
       if (isResizing || justFinishedResizing) return;
 
-      const target = e.target as HTMLElement;
-
-      // Check if the click is on an element that should be ignored (like dropdowns)
-      if (target.closest('[data-modal-ignore="true"]')) {
-        return;
-      }
-
-      // Check if the click is on the modal content
-      if (modalRef.current && modalRef.current.contains(target)) {
-        return;
-      }
-
-      // Check if the click is on the backdrop
-      if (backdropRef.current && backdropRef.current === target) {
+      // Only close if the click target is the backdrop itself
+      if (e.target === backdropRef.current) {
         onClose();
       }
     };
 
-    // Use bubbling phase to allow stopPropagation to work
-    document.addEventListener("click", handleDocumentClick, false);
+    const backdrop = backdropRef.current;
+    if (backdrop) {
+      backdrop.addEventListener("click", handleBackdropClick);
+    }
 
     return () => {
-      document.removeEventListener("click", handleDocumentClick, false);
+      if (backdrop) {
+        backdrop.removeEventListener("click", handleBackdropClick);
+      }
     };
   }, [isOpen, closeOnBackdrop, isResizing, justFinishedResizing, onClose]);
 
