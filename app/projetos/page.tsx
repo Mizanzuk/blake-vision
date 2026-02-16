@@ -870,6 +870,9 @@ export default function ProjetosPage() {
           universeId={selectedUniverseId!}
           onSave={handleSaveEpisode}
           onDelete={handleDeleteEpisode}
+          onEpisodeCreated={(episodeId) => {
+            // Episode was created, the NewFichaModal will handle the refresh
+          }}
           onClose={() => {
             setShowEpisodeModal(false);
             setSelectedEpisode(null);

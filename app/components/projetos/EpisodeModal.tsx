@@ -15,6 +15,7 @@ interface EpisodeModalProps {
   onSave: (data: any) => void;
   onDelete: (id: string) => void;
   onClose: () => void;
+  onEpisodeCreated?: (episodeId: string) => void;
 }
 
 export default function EpisodeModal({
@@ -24,6 +25,7 @@ export default function EpisodeModal({
   onSave,
   onDelete,
   onClose,
+  onEpisodeCreated,
 }: EpisodeModalProps) {
   const { confirm, ConfirmDialog } = useConfirm();
   const [hasChanges, setHasChanges] = useState(false);
@@ -219,6 +221,14 @@ export default function EpisodeModal({
 
     onSave(episodeData);
     setHasChanges(false);
+    
+    // Se for um novo episódio (sem ID), chamar o callback onEpisodeCreated
+    if (!episode?.id && onEpisodeCreated) {
+      // Gerar um ID temporário ou esperar pela resposta do servidor
+      // Por enquanto, usaremos um ID baseado no número do episódio
+      const tempId = `episode-${finalWorldId}-${episodeNumber}-${Date.now()}`;
+      onEpisodeCreated(tempId);
+    }
   }
 
   async function handleDelete() {
