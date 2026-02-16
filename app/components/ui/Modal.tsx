@@ -108,13 +108,8 @@ export function Modal({
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
-    // Don't close if clicking on interactive elements or if the click target is not the backdrop itself
-    if (closeOnBackdrop && !isResizing && !justFinishedResizing && !isClickingInteractiveRef.current && e.target === e.currentTarget) {
-      // Check if the click target is an interactive element
-      const target = e.target as HTMLElement;
-      if (target.closest('button, input, textarea, select, [role="button"], [role="dialog"]')) {
-        return;
-      }
+    // Only close if clicking directly on the backdrop (not on modal content)
+    if (closeOnBackdrop && !isResizing && !justFinishedResizing && e.target === e.currentTarget) {
       onClose();
     }
   };
@@ -140,6 +135,7 @@ export function Modal({
       aria-modal="true"
       aria-labelledby={title ? "modal-title" : undefined}
       aria-describedby={description ? "modal-description" : undefined}
+      style={{ pointerEvents: 'auto' }}
     >
       <div
         ref={modalRef}
@@ -148,7 +144,7 @@ export function Modal({
           "border border-border-light-default dark:border-border-dark-default",
           sizes[size]
         )}
-        style={modalSize.width > 0 ? { width: `${modalSize.width}px`, height: `${modalSize.height}px`, maxWidth: "90vw", maxHeight: "90vh", overflow: "visible" } : { overflow: "visible" }}
+        style={modalSize.width > 0 ? { width: `${modalSize.width}px`, height: `${modalSize.height}px`, maxWidth: "90vw", maxHeight: "90vh", overflow: "visible", pointerEvents: 'auto' } : { overflow: "visible", pointerEvents: 'auto' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
