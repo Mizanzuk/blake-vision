@@ -212,7 +212,7 @@ export function NewFichaModal({
           setAvailableEpisodes(episodes);
           
           setSelectedEpisodeId(newEpisodeId);
-          setFormData(prev => ({
+          setFormData((prev: any) => ({
             ...prev,
             episode_id: newEpisodeId,
           }));
