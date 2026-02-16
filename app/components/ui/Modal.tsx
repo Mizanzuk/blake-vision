@@ -96,40 +96,27 @@ export function Modal({
     };
   }, [isResizing]);
 
-  // Handle backdrop click using capture phase to intercept before React
+  // Handle backdrop click - only close if clicking on the backdrop area
   useEffect(() => {
     if (!isOpen || !closeOnBackdrop) return;
 
-    const handleBackdropClick = (e: Event) => {
+    const handleBackdropClick = (e: MouseEvent) => {
       if (isResizing || justFinishedResizing) return;
 
-      const target = e.target as HTMLElement;
-
-      // Check if click is on an element that should be ignored
-      if (target.closest('[data-modal-ignore="true"]')) {
-        return;
-      }
-
-      // Check if click is on the modal content
-      if (modalRef.current && modalRef.current.contains(target)) {
-        return;
-      }
-
-      // Only close if clicking directly on the backdrop
-      if (target === backdropRef.current) {
+      // Only close if clicking on the backdrop itself (not on modal or ignored elements)
+      if (e.target === backdropRef.current) {
         onClose();
       }
     };
 
-    // Use capture phase to intercept clicks before they bubble
     const backdrop = backdropRef.current;
     if (backdrop) {
-      backdrop.addEventListener("click", handleBackdropClick, true);
+      backdrop.addEventListener("click", handleBackdropClick);
     }
 
     return () => {
       if (backdrop) {
-        backdrop.removeEventListener("click", handleBackdropClick, true);
+        backdrop.removeEventListener("click", handleBackdropClick);
       }
     };
   }, [isOpen, closeOnBackdrop, isResizing, justFinishedResizing, onClose]);
@@ -148,6 +135,7 @@ export function Modal({
     <div
       ref={backdropRef}
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in"
+      style={{ pointerEvents: closeOnBackdrop ? "auto" : "none" }}
       role="dialog"
       aria-modal="true"
       aria-labelledby={title ? "modal-title" : undefined}
@@ -160,7 +148,7 @@ export function Modal({
           "border border-border-light-default dark:border-border-dark-default",
           sizes[size]
         )}
-        style={modalSize.width > 0 ? { width: `${modalSize.width}px`, height: `${modalSize.height}px`, maxWidth: "90vw", maxHeight: "90vh", overflow: "visible" } : { overflow: "visible" }}
+        style={modalSize.width > 0 ? { width: `${modalSize.width}px`, height: `${modalSize.height}px`, maxWidth: "90vw", maxHeight: "90vh", overflow: "visible", pointerEvents: "auto" } : { overflow: "visible", pointerEvents: "auto" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
