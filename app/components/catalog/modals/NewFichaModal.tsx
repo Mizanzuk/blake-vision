@@ -30,7 +30,7 @@ interface NewFichaModalProps {
   categories: Category[];
   onSave: (ficha: Partial<Ficha>) => Promise<void>;
   onOpenCreateCategory?: () => void;
-  onOpenCreateEpisode?: () => void;
+  onOpenCreateEpisode?: (worldId: string, universeId: string) => void;
   onEditEpisode?: (episodeId: string, episodeName: string) => void;
   onDeleteEpisode?: (episodeId: string) => Promise<void>;
   mode?: "create" | "edit";
@@ -279,6 +279,8 @@ export function NewFichaModal({
               });
             }}
             onCreate={onOpenCreateEpisode}
+            worldId={formData.world_id}
+            universeId={formData.universe_id}
             onEdit={(episodeId, episodeName) => {
               setEditingEpisodeId(episodeId);
               setEditingEpisodeName(episodeName);

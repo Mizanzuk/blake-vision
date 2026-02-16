@@ -10,7 +10,9 @@ interface EpisodioDropdownProps {
   episodes: Episode[] | Array<{ id: string; numero: number; titulo: string }>;
   onSelect: (id: string | null) => void;
   label?: string;
-  onCreate?: () => void;
+  onCreate?: (worldId: string, universeId: string) => void;
+  worldId?: string;
+  universeId?: string;
   onEdit?: (episodeId: string, episodeName: string) => void;
   onDelete?: (episodeId: string) => Promise<void>;
 }
@@ -22,6 +24,8 @@ export function EpisodioDropdown({
   onSelect,
   label = 'Episódio',
   onCreate,
+  worldId,
+  universeId,
   onEdit,
   onDelete,
 }: EpisodioDropdownProps) {
@@ -184,7 +188,9 @@ export function EpisodioDropdown({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onCreate();
+                  if (onCreate && worldId && universeId) {
+                    onCreate(worldId, universeId);
+                  }
                   setIsOpen(false);
                 }}
                 className="w-full px-3 py-2 text-left text-sm text-primary-600 dark:text-primary-400 hover:bg-light-overlay dark:hover:bg-dark-overlay transition-colors flex items-center gap-2"
