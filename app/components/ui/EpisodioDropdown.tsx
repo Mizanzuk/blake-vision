@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { ChevronDownIcon } from '@heroicons/react/24/solid';
 import type { Episode } from '@/app/types';
-import { ConfirmDialog } from './Modal';
+
 
 interface EpisodioDropdownProps {
   value?: string | null;
@@ -35,8 +35,7 @@ export function EpisodioDropdown({
   const actualValue = selectedId !== undefined ? selectedId : value;
   const [isOpen, setIsOpen] = useState(false);
   const [buttonRect, setButtonRect] = useState<DOMRect | null>(null);
-  const [deletingEpisodeId, setDeletingEpisodeId] = useState<string | null>(null);
-  const [deletingEpisodeName, setDeletingEpisodeName] = useState("");
+
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -169,12 +168,10 @@ export function EpisodioDropdown({
                     {onDelete && (
                       <button
                         onClick={async (e) => {
-                          console.log('Delete button clicked for episode:', episode.numero);
                           e.stopPropagation();
                           const confirmed = window.confirm(
-                            `Tem certeza que deseja deletar o Episódio ${episode.numero}: ${episode.titulo}?`
+                            `Tem certeza que deseja deletar o Episódio ${episode.numero}: ${episode.titulo}?\n\nEsta ação não pode ser desfeita.`
                           );
-                          console.log('Confirmation result:', confirmed);
                           if (confirmed) {
                             await onDelete(episode.id);
                           }
@@ -216,28 +213,7 @@ export function EpisodioDropdown({
           )}
         </div>
       )}
-      
-      {onDelete && (
-        <ConfirmDialog
-          isOpen={deletingEpisodeId !== null}
-          onClose={() => {
-            setDeletingEpisodeId(null);
-            setDeletingEpisodeName("");
-          }}
-          onConfirm={async () => {
-            if (deletingEpisodeId) {
-              await onDelete(deletingEpisodeId);
-              setDeletingEpisodeId(null);
-              setDeletingEpisodeName("");
-            }
-          }}
-          title="Deletar Episódio"
-          description={`Tem certeza que deseja deletar ${deletingEpisodeName}? Esta ação não pode ser desfeita.`}
-          confirmText="Deletar"
-          cancelText="Cancelar"
-          confirmVariant="danger"
-        />
-      )}
+
     </div>
   );
 }
