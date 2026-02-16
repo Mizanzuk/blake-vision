@@ -121,11 +121,11 @@ export function Modal({
       }
     };
 
-    // Use capture phase to intercept clicks before they bubble
-    document.addEventListener("click", handleDocumentClick, true);
+    // Use bubbling phase to allow stopPropagation to work
+    document.addEventListener("click", handleDocumentClick, false);
 
     return () => {
-      document.removeEventListener("click", handleDocumentClick, true);
+      document.removeEventListener("click", handleDocumentClick, false);
     };
   }, [isOpen, closeOnBackdrop, isResizing, justFinishedResizing, onClose]);
 
