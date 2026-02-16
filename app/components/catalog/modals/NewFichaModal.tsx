@@ -288,6 +288,7 @@ export function NewFichaModal({
   if (!isOpen) return null;
 
   return (
+    <>
     <Modal isOpen={isOpen} onClose={onClose} title={mode === "create" ? "Nova Ficha" : "Editar Ficha"}>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Categoria */}
@@ -521,7 +522,7 @@ export function NewFichaModal({
       />
     </Modal>
 
-    <DeleteEpisodeConfirmationModal
+      <DeleteEpisodeConfirmationModal
       isOpen={deletingEpisodeId !== null}
       episodeName={deletingEpisodeName}
       onClose={() => {
@@ -545,6 +546,7 @@ export function NewFichaModal({
           }
         }
       }}
-    />
+      />
+    </>
   );
 }
