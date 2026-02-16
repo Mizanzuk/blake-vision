@@ -221,14 +221,7 @@ export default function EpisodeModal({
 
     onSave(episodeData);
     setHasChanges(false);
-    
-    // Se for um novo episódio (sem ID), chamar o callback onEpisodeCreated
-    if (!episode?.id && onEpisodeCreated) {
-      // Gerar um ID temporário ou esperar pela resposta do servidor
-      // Por enquanto, usaremos um ID baseado no número do episódio
-      const tempId = `episode-${finalWorldId}-${episodeNumber}-${Date.now()}`;
-      onEpisodeCreated(tempId);
-    }
+    // onEpisodeCreated will be called from handleSaveEpisode after the episode is saved
   }
 
   async function handleDelete() {
