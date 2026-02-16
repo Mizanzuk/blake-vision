@@ -10,7 +10,7 @@ import { Button } from "@/app/components/ui/Button";
 import { CategoryDropdown } from "@/app/components/ui/CategoryDropdown";
 import { GranularidadeDropdown } from "@/app/components/ui/GranularidadeDropdown";
 import { EpisodioDropdown } from "@/app/components/ui/EpisodioDropdown";
-import { DeleteEpisodeConfirmationModal } from "@/app/components/ui/DeleteEpisodeConfirmationModal";
+
 import EditEpisodeModal from "@/app/components/shared/EditEpisodeModal";
 import type { World, Ficha, Category } from "@/app/types";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
@@ -82,8 +82,6 @@ export function NewFichaModal({
   const [localCategories, setLocalCategories] = useState<Category[]>(categories);
   const [editingEpisodeId, setEditingEpisodeId] = useState<string | null>(null);
   const [editingEpisodeName, setEditingEpisodeName] = useState<string>("");
-  const [deletingEpisodeId, setDeletingEpisodeId] = useState<string | null>(null);
-  const [deletingEpisodeName, setDeletingEpisodeName] = useState<string>("");
 
   // Atualizar categorias locais quando as props mudam
   useEffect(() => {
@@ -522,33 +520,6 @@ export function NewFichaModal({
         }}
       />
     </Modal>
-
-      <DeleteEpisodeConfirmationModal
-      isOpen={deletingEpisodeId !== null}
-      episodeName={deletingEpisodeName}
-      onClose={() => {
-        console.log('Closing DeleteEpisodeConfirmationModal');
-        setDeletingEpisodeId(null);
-        setDeletingEpisodeName("");
-      }}
-      onConfirm={async () => {
-        if (deletingEpisodeId && onDeleteEpisode) {
-          await onDeleteEpisode(deletingEpisodeId);
-          setDeletingEpisodeId(null);
-          setDeletingEpisodeName("");
-          
-          if (formData.world_id) {
-            const episodesResponse = await fetch(
-              `/api/episodes?world_id=${formData.world_id}`
-            );
-            if (episodesResponse.ok) {
-              const data = await episodesResponse.json();
-              setAvailableEpisodes(data.episodes || []);
-            }
-          }
-        }
-      }}
-      />
     </>
   );
 }
