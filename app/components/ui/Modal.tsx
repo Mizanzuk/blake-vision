@@ -12,11 +12,34 @@ interface ModalProps {
 
 export function Modal({ isOpen, onClose, children, size = 'md' }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const isConfirmOpenRef = useRef(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Interceptar window.confirm para rastrear quando está aberto
+    const originalConfirm = window.confirm;
+    window.confirm = function(message: string) {
+      isConfirmOpenRef.current = true;
+      const result = originalConfirm.call(window, message);
+      isConfirmOpenRef.current = false;
+      return result;
+    };
+
+    return () => {
+      window.confirm = originalConfirm;
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
 
     const handleMouseDown = (event: MouseEvent) => {
+      // Não fechar se o confirm está aberto
+      if (isConfirmOpenRef.current) {
+        return;
+      }
+
       const targetElement = event.target as HTMLElement;
 
       // Ignorar cliques dentro de menus do Headless UI
