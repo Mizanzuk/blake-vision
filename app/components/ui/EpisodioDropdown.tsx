@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { ChevronDownIcon } from '@heroicons/react/24/solid';
 import type { Episode } from '@/app/types';
+import { ConfirmDialog } from './Modal';
 
 interface EpisodioDropdownProps {
   value?: string | null;
@@ -34,6 +35,8 @@ export function EpisodioDropdown({
   const actualValue = selectedId !== undefined ? selectedId : value;
   const [isOpen, setIsOpen] = useState(false);
   const [buttonRect, setButtonRect] = useState<DOMRect | null>(null);
+  const [deletingEpisodeId, setDeletingEpisodeId] = useState<string | null>(null);
+  const [deletingEpisodeName, setDeletingEpisodeName] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -165,9 +168,10 @@ export function EpisodioDropdown({
                     )}
                     {onDelete && (
                       <button
-                        onClick={async (e) => {
+                        onClick={(e) => {
                           e.stopPropagation();
-                          await onDelete(episode.id);
+                          setDeletingEpisodeId(episode.id);
+                          setDeletingEpisodeName(`Episódio ${episode.numero}: ${episode.titulo}`);
                         }}
                         className="p-1 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors"
                         title="Deletar episódio"
@@ -205,6 +209,28 @@ export function EpisodioDropdown({
             </>
           )}
         </div>
+      )}
+      
+      {onDelete && (
+        <ConfirmDialog
+          isOpen={deletingEpisodeId !== null}
+          onClose={() => {
+            setDeletingEpisodeId(null);
+            setDeletingEpisodeName("");
+          }}
+          onConfirm={async () => {
+            if (deletingEpisodeId) {
+              await onDelete(deletingEpisodeId);
+              setDeletingEpisodeId(null);
+              setDeletingEpisodeName("");
+            }
+          }}
+          title="Deletar Episódio"
+          description={`Tem certeza que deseja deletar ${deletingEpisodeName}? Esta ação não pode ser desfeita.`}
+          confirmText="Deletar"
+          cancelText="Cancelar"
+          confirmVariant="danger"
+        />
       )}
     </div>
   );
