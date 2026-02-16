@@ -135,7 +135,7 @@ export function Modal({
       aria-modal="true"
       aria-labelledby={title ? "modal-title" : undefined}
       aria-describedby={description ? "modal-description" : undefined}
-      style={{ pointerEvents: 'auto' }}
+      style={{ pointerEvents: 'none' }}
     >
       <div
         ref={modalRef}
