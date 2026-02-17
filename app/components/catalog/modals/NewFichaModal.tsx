@@ -13,6 +13,7 @@ import { CustomDropdown } from "@/app/components/ui/CustomDropdown";
 
 import EditEpisodeModal from "@/app/components/shared/EditEpisodeModal";
 import NewEpisodeModal from "@/app/components/shared/NewEpisodeModal";
+import { SimpleModal } from "@/app/components/shared/SimpleModal";
 import type { World, Ficha, Category } from "@/app/types";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
 
