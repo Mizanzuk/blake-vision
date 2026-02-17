@@ -121,9 +121,12 @@ export default function NewFichaModal({
 
   // Auto-select episode after it's been added to the list
   useEffect(() => {
+    console.log('Auto-select useEffect triggered:', { episodeToAutoSelect, availableEpisodesLength: availableEpisodes.length });
     if (episodeToAutoSelect && availableEpisodes.length > 0) {
       const episodeExists = availableEpisodes.some(ep => ep.id === episodeToAutoSelect);
+      console.log('Episode exists:', episodeExists, 'ID:', episodeToAutoSelect);
       if (episodeExists) {
+        console.log('Setting selected episode to:', episodeToAutoSelect);
         setSelectedEpisodeId(episodeToAutoSelect);
         setFormData(prev => ({
           ...prev,
