@@ -972,23 +972,7 @@ export default function UploadPage() {
         }}
         universeId={selectedUniverseId}
         universeName={universes.find(u => u.id === selectedUniverseId)?.nome || ""}
-        worlds={worlds}
-        categories={allCategories}
-        onSave={handleSaveEditFicha}
-        mode="edit"
-        ficha={editingFichaData ? {
-          tipo: editingFichaData.tipo,
-          titulo: editingFichaData.titulo,
-          resumo: editingFichaData.resumo,
-          conteudo: editingFichaData.conteudo,
-          tags: editingFichaData.tags,
-          world_id: editingFichaData.world_id || selectedWorldId,
-          episode_id: editingFichaData.episode_id || null,
-          data_inicio: editingFichaData.data_inicio || "",
-          data_fim: editingFichaData.data_fim || "",
-          granularidade_data: editingFichaData.granularidade_data || "",
-          camada_temporal: editingFichaData.camada_temporal || "",
-        } : null}
+        onFichaCreated={() => {}}
       />
       
 
