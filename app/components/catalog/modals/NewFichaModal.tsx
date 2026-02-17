@@ -364,7 +364,7 @@ export default function NewFichaModal({
       />
 
       {/* Edit Episode Modal */}
-      {isEditingEpisode && (
+      {isEditingEpisode && editingEpisodeId && (
         <EditEpisodeModal
           isOpen={isEditingEpisode}
           onClose={() => setIsEditingEpisode(false)}
