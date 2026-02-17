@@ -108,6 +108,7 @@ export function Modal({
       <Dialog 
         as="div" 
         className="relative z-50" 
+        static
         onClose={closeOnEscape ? onClose : () => {}}
       >
         <Transition.Child
