@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Modal } from "@/app/components/ui/Modal";
+import { SimpleModal } from "@/app/components/shared/SimpleModal";
 import { Input } from "@/app/components/ui/Input";
 import { Button } from "@/app/components/ui/Button";
 
@@ -79,7 +79,7 @@ export default function NewEpisodeModal({
   }
 
   return (
-    <Modal
+    <SimpleModal
       isOpen={isOpen}
       onClose={onClose}
       title="Novo Episódio"
@@ -138,6 +138,6 @@ export default function NewEpisodeModal({
           disabled={loading}
         />
       </div>
-    </Modal>
+    </SimpleModal>
   );
 }
