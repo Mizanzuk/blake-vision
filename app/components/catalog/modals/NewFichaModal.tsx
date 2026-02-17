@@ -135,7 +135,23 @@ export default function NewFichaModal({
         setEpisodeToAutoSelect(null);
       }
     }
-  }, [episodeToAutoSelect, availableEpisodes]);
+  }, [episodeToAutoSelect]);
+
+  // Monitor availableEpisodes changes to trigger auto-select
+  useEffect(() => {
+    if (episodeToAutoSelect && availableEpisodes.length > 0) {
+      const episodeExists = availableEpisodes.some(ep => ep.id === episodeToAutoSelect);
+      if (episodeExists) {
+        console.log('Auto-selecting episode from availability change:', episodeToAutoSelect);
+        setSelectedEpisodeId(episodeToAutoSelect);
+        setFormData(prev => ({
+          ...prev,
+          episode_id: episodeToAutoSelect,
+        }));
+        setEpisodeToAutoSelect(null);
+      }
+    }
+  }, [availableEpisodes]);
 
   const handleCreateFicha = async () => {
     if (!formData.titulo.trim()) {
