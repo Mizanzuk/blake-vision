@@ -139,8 +139,11 @@ export default function NewFichaModal({
 
   // Monitor availableEpisodes changes to trigger auto-select
   useEffect(() => {
+    console.log('Availability change detected:', { episodeToAutoSelect, availableEpisodesLength: availableEpisodes.length });
     if (episodeToAutoSelect && availableEpisodes.length > 0) {
+      console.log('Checking if episode exists...');
       const episodeExists = availableEpisodes.some(ep => ep.id === episodeToAutoSelect);
+      console.log('Episode exists:', episodeExists, 'Episodes:', availableEpisodes.map(ep => ep.id));
       if (episodeExists) {
         console.log('Auto-selecting episode from availability change:', episodeToAutoSelect);
         setSelectedEpisodeId(episodeToAutoSelect);
