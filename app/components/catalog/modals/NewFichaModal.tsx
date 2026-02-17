@@ -426,3 +426,6 @@ export default function NewFichaModal({
     </>
   );
 }
+
+export { NewFichaModal };
+export default NewFichaModal;
