@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState, useEffect } from "react";
 import { CustomModal as Modal } from "@/app/components/ui/CustomModal";
@@ -29,303 +29,218 @@ interface NewFichaModalProps {
   onClose: () => void;
   universeId: string;
   universeName: string;
-  worlds: World[];
-  categories: Category[];
-  onSave: (ficha: Partial<Ficha>) => Promise<void>;
-  onOpenCreateCategory?: () => void;
-  onOpenCreateEpisode?: (worldId: string, universeId: string) => void;
-  onEditEpisode?: (episodeId: string, episodeName: string) => void;
-  onDeleteEpisode?: (episodeId: string) => Promise<void>;
-  onEpisodeCreated?: (newEpisodeId: string) => void;
-  lastCreatedEpisodeId?: string | null;
-  episodeCreationTrigger?: number;
   mode?: "create" | "edit";
-  ficha?: Partial<Ficha> | null;
-  preSelectedCategory?: string | null;
+  fichaId?: string;
+  onFichaCreated?: () => void;
 }
 
-export function NewFichaModal({
+export default function NewFichaModal({
   isOpen,
   onClose,
   universeId,
   universeName,
-  worlds,
-  categories,
-  onSave,
-  onOpenCreateCategory,
-  onOpenCreateEpisode,
-  onEditEpisode,
-  onDeleteEpisode,
-  onEpisodeCreated,
-  lastCreatedEpisodeId,
-  episodeCreationTrigger,
   mode = "create",
-  ficha,
-  preSelectedCategory,
+  fichaId,
+  onFichaCreated,
 }: NewFichaModalProps) {
-  const [selectedCategorySlug, setSelectedCategorySlug] = useState<string>("");
-  const [formData, setFormData] = useState<any>({
+  const [formData, setFormData] = useState({
+    categoria: "Sinopse",
     universe_id: universeId,
     world_id: "",
-    episode_id: null, // Changed from episodio (string) to episode_id (UUID)
     titulo: "",
     resumo: "",
-    descricao: "",
     conteudo: "",
-    // Campos de diegese para Evento
-    data_inicio: "",
-    data_fim: "",
-    granularidade: "",
-    camada: "",
+    granularidade: "Crescente",
+    episode_id: null as string | null,
   });
+
+  const [worlds, setWorlds] = useState<World[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [availableEpisodes, setAvailableEpisodes] = useState<Episode[]>([]);
-  const [loading, setLoading] = useState(false);
   const [selectedEpisodeId, setSelectedEpisodeId] = useState<string | null>(null);
-  const [localCategories, setLocalCategories] = useState<Category[]>(categories);
-  const [editingEpisodeId, setEditingEpisodeId] = useState<string | null>(null);
-  const [editingEpisodeName, setEditingEpisodeName] = useState<string>("");
   const [isCreatingEpisode, setIsCreatingEpisode] = useState(false);
-  const [deletingEpisodeId, setDeletingEpisodeId] = useState<string | null>(null);
+  const [isEditingEpisode, setIsEditingEpisode] = useState(false);
+  const [editingEpisodeId, setEditingEpisodeId] = useState<string | null>(null);
+  const [editingEpisodeName, setEditingEpisodeName] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingEpisodeId, setDeletingEpisodeId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  // Atualizar categorias locais quando as props mudam
-  useEffect(() => {
-    if (categories && categories.length > 0) {
-      setLocalCategories(categories);
-    }
-  }, [categories]);
+  const supabase = getSupabaseClient();
 
-  // Reset form when modal opens/closes
+  // Fetch worlds on mount
   useEffect(() => {
-    if (!isOpen) {
-      setSelectedCategorySlug("");
-      setEditingEpisodeId(null);
-      setEditingEpisodeName("");
-      setFormData({
-        universe_id: universeId,
-        world_id: "",
-        episode_id: null,
-        titulo: "",
-        resumo: "",
-        descricao: "",
-        conteudo: "",
-        data_inicio: "",
-        data_fim: "",
-        granularidade: "",
-        camada: "",
-      });
-    } else if (isOpen && mode === "create" && preSelectedCategory) {
-      // Pré-selecionar categoria em modo criação
-      setSelectedCategorySlug(preSelectedCategory);
-    } else if (isOpen && mode === "edit" && ficha) {
-      // Preencher formulário com dados da ficha em modo edição
-      // Encontrar o slug da categoria que corresponde ao tipo
-      const matchingCategory = categories.find(
-        c => c.slug === ficha.tipo || c.label?.toLowerCase() === ficha.tipo?.toLowerCase()
-      );
-      // Se encontrou a categoria, use o slug; senão, use o tipo como fallback
-      // O tipo vem em minúsculas da IA (ex: "personagem", "conceito", "local", etc)
-      const categorySlug = matchingCategory?.slug || ficha.tipo || "";
-      setSelectedCategorySlug(categorySlug);
-      setSelectedEpisodeId(ficha.episode_id || null);
-      setFormData({
-        universe_id: universeId,
-        world_id: ficha.world_id || "",
-        episode_id: ficha.episode_id || null, // Changed from episodio
-        titulo: ficha.titulo || "",
-        resumo: ficha.resumo || "",
-        descricao: ficha.descricao || "",
-        conteudo: ficha.conteudo || "",
-        data_inicio: ficha.data_inicio || "",
-        data_fim: ficha.data_fim || "",
-        granularidade: ficha.granularidade_data || "",
-        camada: ficha.camada_temporal || "",
-      });
-    }
-  }, [isOpen, universeId, mode, ficha, preSelectedCategory, categories, isOpen]);
-  
-  // Carregar categorias quando o modal é aberto
-  useEffect(() => {
-    async function loadCategoriesIfNeeded() {
-      if (isOpen && universeId && categories.length === 0) {
-        try {
-          const response = await fetch(`/api/categories?universeId=${universeId}`);
-          if (response.ok) {
-            const data = await response.json();
-            // As categorias serão passadas via props, então não precisamos fazer nada aqui
-            // Este useEffect é apenas para garantir que as categorias sejam carregadas
-          }
-        } catch (error) {
-          console.error('Error loading categories:', error);
-        }
+    const fetchWorlds = async () => {
+      try {
+        const { data } = await supabase
+          .from("worlds")
+          .select("*")
+          .eq("universe_id", universeId);
+        if (data) setWorlds(data);
+      } catch (err) {
+        console.error("Erro ao buscar mundos:", err);
       }
-    }
-    loadCategoriesIfNeeded();
+    };
+    if (isOpen) fetchWorlds();
   }, [isOpen, universeId]);
-  
-  // Quando as categorias são carregadas após o modal ser aberto, atualizar o selectedCategorySlug
+
+  // Fetch categories on mount
   useEffect(() => {
-    if (isOpen && mode === "edit" && ficha && categories.length > 0) {
-      const matchingCategory = categories.find(
-        c => c.slug === ficha.tipo || c.label?.toLowerCase() === ficha.tipo?.toLowerCase()
-      );
-      if (matchingCategory) {
-        setSelectedCategorySlug(matchingCategory.slug);
-      } else if (ficha.tipo) {
-        // Se nao encontrou, use o tipo como fallback
-        setSelectedCategorySlug(ficha.tipo);
+    const fetchCategories = async () => {
+      try {
+        const { data } = await supabase.from("categories").select("*");
+        if (data) setCategories(data);
+      } catch (err) {
+        console.error("Erro ao buscar categorias:", err);
       }
-    }
-  }, [categories, isOpen, mode, ficha]);
-  
+    };
+    if (isOpen) fetchCategories();
+  }, [isOpen]);
 
-
-  // Load episodes when world changes
+  // Fetch episodes when world changes
   useEffect(() => {
-    if (!formData.world_id) {
-      setAvailableEpisodes([]);
+    const fetchEpisodes = async () => {
+      if (!formData.world_id) {
+        setAvailableEpisodes([]);
+        return;
+      }
+      try {
+        const { data } = await supabase
+          .from("episodes")
+          .select("*")
+          .eq("world_id", formData.world_id)
+          .order("numero", { ascending: true });
+        if (data) setAvailableEpisodes(data);
+      } catch (err) {
+        console.error("Erro ao buscar episódios:", err);
+      }
+    };
+    fetchEpisodes();
+  }, [formData.world_id]);
+
+  const handleCreateFicha = async () => {
+    if (!formData.titulo.trim()) {
+      alert("Por favor, preencha o título");
       return;
     }
 
-    async function loadEpisodes() {
-      try {
-        const response = await fetch(`/api/episodes?world_id=${formData.world_id}`);
-        
-        if (!response.ok) {
-          console.error("Error loading episodes:", response.statusText);
-          return;
-        }
-
-        const data = await response.json();
-        const episodes = data.episodes || [];
-        
-        // Sort by numero (ascending)
-        episodes.sort((a: Episode, b: Episode) => a.numero - b.numero);
-        
-        setAvailableEpisodes(episodes);
-      } catch (error) {
-        console.error("Error loading episodes:", error);
-      }
-    }
-
-    loadEpisodes();
-  }, [formData.world_id, isOpen, episodeCreationTrigger]);
-
-  // Handle newly created episode
-  useEffect(() => {
-    if (lastCreatedEpisodeId && formData.world_id && episodeCreationTrigger) {
-      // Reload episodes first
-      const loadAndSelect = async () => {
-        try {
-          const response = await fetch(`/api/episodes?world_id=${formData.world_id}`);
-          if (response.ok) {
-            const data = await response.json();
-            const episodes = data.episodes || [];
-            episodes.sort((a: Episode, b: Episode) => a.numero - b.numero);
-            setAvailableEpisodes(episodes);
-          }
-        } catch (error) {
-          console.error("Error reloading episodes:", error);
-        }
-        
-        // Then select the new episode
-        setSelectedEpisodeId(lastCreatedEpisodeId);
-        setFormData((prev: any) => ({
-          ...prev,
-          episode_id: lastCreatedEpisodeId,
-        }));
-      };
-      
-      loadAndSelect();
-    }
-  }, [lastCreatedEpisodeId, episodeCreationTrigger, formData.world_id]);
-
-  const handleEpisodeCreated = async (newEpisodeId: string) => {
-    if (formData.world_id) {
-      try {
-        const response = await fetch(`/api/episodes?world_id=${formData.world_id}`);
-        if (response.ok) {
-          const data = await response.json();
-          const episodes = data.episodes || [];
-          episodes.sort((a: Episode, b: Episode) => a.numero - b.numero);
-          setAvailableEpisodes(episodes);
-          
-          setSelectedEpisodeId(newEpisodeId);
-          setFormData((prev: any) => ({
-            ...prev,
-            episode_id: newEpisodeId,
-          }));
-        }
-      } catch (error) {
-        console.error("Error reloading episodes:", error);
-      }
-    }
-    
-    if (onEpisodeCreated) {
-      onEpisodeCreated(newEpisodeId);
-    }
-  };
-
-  const selectedCategory = categories.find(c => c.slug === selectedCategorySlug);
-  const selectedWorld = worlds.find(w => w.id === formData.world_id);
-  const selectedEpisode = Array.isArray(availableEpisodes) ? availableEpisodes.find(e => e.id === formData.episode_id) : undefined;
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
     setLoading(true);
-
     try {
-      await onSave({
-        ...formData,
-        tipo: selectedCategorySlug,
-      });
-      onClose();
-    } catch (error) {
-      console.error("Error saving ficha:", error);
-      alert("Erro ao salvar ficha. Tente novamente.");
+      if (mode === "create") {
+        const { error } = await supabase.from("fichas").insert([
+          {
+            categoria: formData.categoria,
+            universe_id: formData.universe_id,
+            world_id: formData.world_id,
+            titulo: formData.titulo,
+            resumo: formData.resumo,
+            conteudo: formData.conteudo,
+            granularidade: formData.granularidade,
+            episode_id: formData.episode_id,
+          },
+        ]);
+
+        if (error) throw error;
+        onFichaCreated?.();
+        onClose();
+      }
+    } catch (err) {
+      console.error("Erro ao criar ficha:", err);
+      alert("Erro ao criar ficha");
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  if (!isOpen) return null;
+  const handleDeleteEpisode = async () => {
+    if (!deletingEpisodeId) return;
+
+    try {
+      const { error } = await supabase
+        .from("episodes")
+        .delete()
+        .eq("id", deletingEpisodeId);
+
+      if (error) throw error;
+
+      // Update the available episodes list
+      setAvailableEpisodes(
+        availableEpisodes.filter((ep) => ep.id !== deletingEpisodeId)
+      );
+
+      // Clear selection if the deleted episode was selected
+      if (selectedEpisodeId === deletingEpisodeId) {
+        setSelectedEpisodeId(null);
+        setFormData({
+          ...formData,
+          episode_id: null,
+        });
+      }
+
+      setShowDeleteConfirm(false);
+      setDeletingEpisodeId(null);
+    } catch (err) {
+      console.error("Erro ao deletar episódio:", err);
+      alert("Erro ao deletar episódio");
+    }
+  };
 
   return (
     <>
-    <Modal isOpen={isOpen} onClose={onClose} title={mode === "create" ? "Nova Ficha" : "Editar Ficha"} closeOnEscape={!isCreatingEpisode} closeOnBackdrop={!isCreatingEpisode}>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={mode === "create" ? "Nova Ficha" : "Editar Ficha"}
+        closeOnEscape={!isCreatingEpisode}
+        closeOnBackdrop={!isCreatingEpisode}
+      >
         {/* Categoria */}
-        <div>
-          <CategoryDropdown
-            label="CATEGORIA"
-            categories={localCategories}
-            selectedSlug={selectedCategorySlug}
-            onSelect={setSelectedCategorySlug}
-            onCreateNew={onOpenCreateCategory}
+        <div className="w-full">
+          <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
+            CATEGORIA
+          </label>
+          <Select
+            value={formData.categoria}
+            onChange={(value) =>
+              setFormData({ ...formData, categoria: value })
+            }
+            options={categories.map((cat) => ({
+              label: cat.nome,
+              value: cat.nome,
+            }))}
           />
         </div>
 
-        {/* Universo (read-only) */}
-        <div>
+        {/* Universo */}
+        <div className="w-full">
           <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
             UNIVERSO
           </label>
-          <div className="px-4 py-2 bg-light-raised dark:bg-dark-raised rounded-lg border border-border-light-default dark:border-border-dark-default text-sm text-text-light-primary dark:text-dark-primary">
-            {universeName}
-          </div>
+          <Input
+            type="text"
+            value={universeName}
+            disabled
+            placeholder="Universo"
+          />
         </div>
 
         {/* Mundo */}
-        <div>
+        <div className="w-full">
           <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
             MUNDO
           </label>
-          <WorldsDropdownSingle
-            worlds={worlds}
-            selectedId={formData.world_id}
-            onSelect={(worldId) =>
-              setFormData({ ...formData, world_id: worldId, episode_id: null })
-            }
+          <Select
+            value={formData.world_id}
+            onChange={(value) => {
+              setFormData({ ...formData, world_id: value });
+              setSelectedEpisodeId(null);
+              setFormData((prev) => ({ ...prev, episode_id: null }));
+            }}
+            options={worlds.map((world) => ({
+              label: world.nome,
+              value: world.id,
+            }))}
+            placeholder="Selecione um Mundo"
           />
         </div>
 
@@ -333,20 +248,17 @@ export function NewFichaModal({
         {formData.world_id && (
           <CustomDropdown
             label="EPISÓDIO"
-            options={availableEpisodes.map(ep => ({
+            options={availableEpisodes.map((ep) => ({
               id: ep.id,
               label: `Episódio ${ep.numero}: ${ep.titulo}`,
               onEdit: () => {
                 setEditingEpisodeId(ep.id);
                 setEditingEpisodeName(`${ep.numero}: ${ep.titulo}`);
+                setIsEditingEpisode(true);
               },
               onDelete: () => {
                 setDeletingEpisodeId(ep.id);
                 setShowDeleteConfirm(true);
-              }
-                      .catch(err => console.error('Erro ao atualizar episódios:', err));
-                  }
-                }
               },
             }))}
             value={selectedEpisodeId || ""}
@@ -376,12 +288,11 @@ export function NewFichaModal({
             onChange={(e) =>
               setFormData({ ...formData, titulo: e.target.value })
             }
-            className="w-full"
           />
         </div>
 
         {/* Resumo */}
-        <div>
+        <div className="w-full">
           <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
             RESUMO
           </label>
@@ -391,12 +302,11 @@ export function NewFichaModal({
             onChange={(e) =>
               setFormData({ ...formData, resumo: e.target.value })
             }
-            rows={2}
           />
         </div>
 
         {/* Conteúdo */}
-        <div>
+        <div className="w-full">
           <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
             CONTEÚDO
           </label>
@@ -406,178 +316,113 @@ export function NewFichaModal({
             onChange={(e) =>
               setFormData({ ...formData, conteudo: e.target.value })
             }
-            rows={4}
           />
         </div>
 
-        {/* Campos de Diegese para Evento */}
-        {selectedCategory?.slug === "evento" && (
-          <>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
-                  DATA INÍCIO
-                </label>
-                <Input
-                  type="date"
-                  value={formData.data_inicio}
-                  onChange={(e) =>
-                    setFormData({ ...formData, data_inicio: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
-                  DATA FIM
-                </label>
-                <Input
-                  type="date"
-                  value={formData.data_fim}
-                  onChange={(e) =>
-                    setFormData({ ...formData, data_fim: e.target.value })
-                  }
-                />
-              </div>
-            </div>
+        {/* Granularidade */}
+        <div className="w-full">
+          <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
+            GRANULARIDADE
+          </label>
+          <GranularidadeDropdown
+            value={formData.granularidade}
+            onChange={(value) =>
+              setFormData({ ...formData, granularidade: value })
+            }
+          />
+        </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
-                  GRANULARIDADE
-                </label>
-                <GranularidadeDropdown
-                  value={formData.granularidade}
-                  onSelect={(granularidade) =>
-                    setFormData({ ...formData, granularidade })
-                  }
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-text-light-secondary dark:text-dark-secondary uppercase tracking-wide mb-1.5">
-                  CAMADA TEMPORAL
-                </label>
-                <Input
-                  type="text"
-                  placeholder="Ex: Passado, Presente, Futuro"
-                  value={formData.camada}
-                  onChange={(e) =>
-                    setFormData({ ...formData, camada: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Botões */}
-        <div className="flex gap-2 justify-end pt-4">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={onClose}
-            disabled={loading}
-          >
+        {/* Buttons */}
+        <div className="flex gap-3 justify-end">
+          <Button variant="secondary" onClick={onClose}>
             Cancelar
           </Button>
           <Button
-            type="submit"
-            variant="primary"
-            disabled={loading || !selectedCategorySlug || !formData.titulo}
+            onClick={handleCreateFicha}
+            disabled={loading}
+            className="bg-primary-500 hover:bg-primary-600"
           >
-            {loading ? "Salvando..." : mode === "create" ? "Criar Ficha" : "Atualizar Ficha"}
+            {mode === "create" ? "Criar Ficha" : "Salvar Alterações"}
           </Button>
         </div>
-      </form>
+      </Modal>
 
-      {/* Nested Episode Modal */}
+      {/* New Episode Modal */}
       <NewEpisodeModal
         isOpen={isCreatingEpisode}
         onClose={() => setIsCreatingEpisode(false)}
         worldId={formData.world_id}
-        universeId={universeId}
-        onSave={async (newEpisodeId) => {
-          await handleEpisodeCreated(newEpisodeId);
+        onEpisodeCreated={(newEpisode) => {
+          setAvailableEpisodes([...availableEpisodes, newEpisode]);
+          setSelectedEpisodeId(newEpisode.id);
+          setFormData({
+            ...formData,
+            episode_id: newEpisode.id,
+          });
           setIsCreatingEpisode(false);
         }}
       />
-    </Modal>
 
-    {/* Edit Episode Modal - Outside Main Modal */}
-    <EditEpisodeModal
-      isOpen={editingEpisodeId !== null}
-      episodeId={editingEpisodeId || ""}
-      episodeName={editingEpisodeName}
-      onClose={() => {
-        setEditingEpisodeId(null);
-        setEditingEpisodeName("");
-      }}
-      onSave={async (episodeId, newNumber, newTitle) => {
-        try {
-          const response = await fetch(`/api/episodes`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: episodeId, titulo: newTitle }),
-          });
-          if (!response.ok) throw new Error("Erro ao salvar episodio");
-          
-          if (formData.world_id) {
-            const episodesResponse = await fetch(
-              `/api/episodes?world_id=${formData.world_id}`
-            );
-            if (episodesResponse.ok) {
-              const data = await episodesResponse.json();
-              setAvailableEpisodes(data.episodes || []);
-            }
-          }
-        } catch (error) {
-          console.error("Erro ao salvar episodio:", error);
-          throw error;
-        }
-      }}
-    />
-    {showDeleteConfirm && (
-      <SimpleModal isOpen={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)}>
-        <div className="bg-white dark:bg-dark-raised rounded-lg p-6 max-w-sm">
-          <h3 className="text-lg font-semibold mb-4">Confirmar Deleção</h3>
-          <p className="text-text-light-secondary dark:text-text-dark-secondary mb-6">
-            Tem certeza que deseja deletar este episódio? Esta ação não pode ser desfeita.
+      {/* Edit Episode Modal */}
+      {isEditingEpisode && (
+        <EditEpisodeModal
+          isOpen={isEditingEpisode}
+          onClose={() => setIsEditingEpisode(false)}
+          episodeId={editingEpisodeId}
+          episodeName={editingEpisodeName}
+          onEpisodeUpdated={() => {
+            // Refresh episodes
+            const fetchEpisodes = async () => {
+              if (!formData.world_id) return;
+              try {
+                const { data } = await supabase
+                  .from("episodes")
+                  .select("*")
+                  .eq("world_id", formData.world_id)
+                  .order("numero", { ascending: true });
+                if (data) setAvailableEpisodes(data);
+              } catch (err) {
+                console.error("Erro ao buscar episódios:", err);
+              }
+            };
+            fetchEpisodes();
+            setIsEditingEpisode(false);
+          }}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      <SimpleModal
+        isOpen={showDeleteConfirm}
+        onClose={() => {
+          setShowDeleteConfirm(false);
+          setDeletingEpisodeId(null);
+        }}
+        title="Confirmar Deleção"
+      >
+        <div className="space-y-4">
+          <p className="text-text-light-primary dark:text-dark-primary">
+            Tem certeza que deseja deletar este episódio?
           </p>
           <div className="flex gap-3 justify-end">
-            <button
-              onClick={() => setShowDeleteConfirm(false)}
-              className="px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay"
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setShowDeleteConfirm(false);
+                setDeletingEpisodeId(null);
+              }}
             >
               Cancelar
-            </button>
-            <button
-              onClick={async () => {
-                if (deletingEpisodeId && onDeleteEpisode) {
-                  try {
-                    await onDeleteEpisode(deletingEpisodeId);
-                    if (formData.world_id) {
-                      const episodesResponse = await fetch(
-                        `/api/episodes?world_id=${formData.world_id}`
-                      );
-                      if (episodesResponse.ok) {
-                        const data = await episodesResponse.json();
-                        setAvailableEpisodes(data.episodes || []);
-                      }
-                    }
-                    setShowDeleteConfirm(false);
-                    setDeletingEpisodeId(null);
-                  } catch (error) {
-                    console.error('Erro ao deletar episódio:', error);
-                  }
-                }
-              }}
-              className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600"
+            </Button>
+            <Button
+              onClick={handleDeleteEpisode}
+              className="bg-red-500 hover:bg-red-600"
             >
               Deletar
-            </button>
+            </Button>
           </div>
         </div>
       </SimpleModal>
-    )}
     </>
   );
 }
