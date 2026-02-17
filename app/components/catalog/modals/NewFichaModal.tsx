@@ -84,6 +84,8 @@ export function NewFichaModal({
   const [editingEpisodeId, setEditingEpisodeId] = useState<string | null>(null);
   const [editingEpisodeName, setEditingEpisodeName] = useState<string>("");
   const [isCreatingEpisode, setIsCreatingEpisode] = useState(false);
+  const [deletingEpisodeId, setDeletingEpisodeId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Atualizar categorias locais quando as props mudam
   useEffect(() => {
@@ -337,17 +339,10 @@ export function NewFichaModal({
                 setEditingEpisodeId(ep.id);
                 setEditingEpisodeName(`${ep.numero}: ${ep.titulo}`);
               },
-              onDelete: async () => {
-                if (onDeleteEpisode) {
-                  await onDeleteEpisode(ep.id);
-                  if (formData.world_id) {
-                    fetch(`/api/episodes?world_id=${formData.world_id}`)
-                      .then(res => res.ok ? res.json() : null)
-                      .then(data => {
-                        if (data?.episodes) {
-                          setAvailableEpisodes(data.episodes);
-                        }
-                      })
+              onDelete: () => {
+                setDeletingEpisodeId(ep.id);
+                setShowDeleteConfirm(true);
+              }
                       .catch(err => console.error('Erro ao atualizar episódios:', err));
                   }
                 }
@@ -539,6 +534,49 @@ export function NewFichaModal({
         }
       }}
     />
+    {showDeleteConfirm && (
+      <SimpleModal isOpen={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)}>
+        <div className="bg-white dark:bg-dark-raised rounded-lg p-6 max-w-sm">
+          <h3 className="text-lg font-semibold mb-4">Confirmar Deleção</h3>
+          <p className="text-text-light-secondary dark:text-text-dark-secondary mb-6">
+            Tem certeza que deseja deletar este episódio? Esta ação não pode ser desfeita.
+          </p>
+          <div className="flex gap-3 justify-end">
+            <button
+              onClick={() => setShowDeleteConfirm(false)}
+              className="px-4 py-2 rounded-lg border border-border-light-default dark:border-border-dark-default hover:bg-light-overlay dark:hover:bg-dark-overlay"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={async () => {
+                if (deletingEpisodeId && onDeleteEpisode) {
+                  try {
+                    await onDeleteEpisode(deletingEpisodeId);
+                    if (formData.world_id) {
+                      const episodesResponse = await fetch(
+                        `/api/episodes?world_id=${formData.world_id}`
+                      );
+                      if (episodesResponse.ok) {
+                        const data = await episodesResponse.json();
+                        setAvailableEpisodes(data.episodes || []);
+                      }
+                    }
+                    setShowDeleteConfirm(false);
+                    setDeletingEpisodeId(null);
+                  } catch (error) {
+                    console.error('Erro ao deletar episódio:', error);
+                  }
+                }
+              }}
+              className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600"
+            >
+              Deletar
+            </button>
+          </div>
+        </div>
+      </SimpleModal>
+    )}
     </>
   );
 }
