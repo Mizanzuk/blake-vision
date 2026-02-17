@@ -62,8 +62,12 @@ export function CustomModal({
   }, [isOpen, closeOnEscape, onClose]);
 
   const handleBackdropClick = (e: React.MouseEvent) => {
+    // Only close if clicking directly on the backdrop, not on elements inside the modal
     if (closeOnBackdrop && e.target === backdropRef.current) {
-      onClose();
+      // Check if the click is actually on the backdrop and not bubbling from the modal
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        onClose();
+      }
     }
   };
 
