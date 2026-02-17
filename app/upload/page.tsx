@@ -21,7 +21,7 @@ import { EpisodeCreationModal } from "@/app/components/ui/EpisodeCreationModal";
 import WorldModal from "@/app/components/projetos/WorldModal";
 import TipoDropdown from "@/app/components/projetos/TipoDropdown";
 import { useTranslation } from "@/app/lib/hooks/useTranslation";
-import { NewFichaModal } from "@/app/components/catalog/modals/NewFichaModal";
+import NewFichaModal from "@/app/components/catalog/modals/NewFichaModal";
 import FichaViewModal from "@/app/components/shared/FichaViewModal";
 import { toast } from "sonner";
 import type { Universe, World, Category } from "@/app/types";

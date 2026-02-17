@@ -12,7 +12,7 @@ import { UniverseDeleteModal } from "@/app/components/ui/UniverseDeleteModal";
 import { useConfirm } from "@/hooks/useConfirm";
 import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
 
-import { NewFichaModal } from "@/app/components/catalog/modals/NewFichaModal";
+import NewFichaModal from "@/app/components/catalog/modals/NewFichaModal";
 import WorldModal from "@/app/components/projetos/WorldModal";
 import EpisodeModal from "@/app/components/projetos/EpisodeModal";
 import FichaCard from "@/app/components/shared/FichaCard";

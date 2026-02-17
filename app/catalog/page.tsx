@@ -23,7 +23,7 @@ import { EpisodesDropdown } from "@/app/components/ui/EpisodesDropdown";
 import WorldModal from "@/app/components/projetos/WorldModal";
 import CategoryModal from "@/app/components/catalog/CategoryModal";
 import ManageCategoriesModal from "@/app/components/catalog/ManageCategoriesModal";
-import { NewFichaModal } from "@/app/components/catalog/modals/NewFichaModal";
+import NewFichaModal from "@/app/components/catalog/modals/NewFichaModal";
 import FichaCard from "@/app/components/shared/FichaCard";
 import FichaViewModal from "@/app/components/shared/FichaViewModal";
 import NewConceptRuleModal from "@/app/components/shared/NewConceptRuleModal";
