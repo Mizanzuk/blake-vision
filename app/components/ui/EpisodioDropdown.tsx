@@ -183,7 +183,10 @@ export function EpisodioDropdown({
                   <Menu.Item>
                     {({ active }) => (
                       <button
-                        onClick={() => onCreate(worldId, universeId)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onCreate(worldId, universeId);
+                        }}
                         className={clsx(
                           'group flex w-full items-center rounded-md px-2 py-2 text-sm',
                           active ? 'bg-primary-500 text-white' : 'text-primary-600 dark:text-primary-400',
