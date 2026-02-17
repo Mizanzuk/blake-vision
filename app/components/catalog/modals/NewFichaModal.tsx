@@ -12,6 +12,7 @@ import { GranularidadeDropdown } from "@/app/components/ui/GranularidadeDropdown
 import { EpisodioDropdown } from "@/app/components/ui/EpisodioDropdown";
 
 import EditEpisodeModal from "@/app/components/shared/EditEpisodeModal";
+import NewEpisodeModal from "@/app/components/shared/NewEpisodeModal";
 import type { World, Ficha, Category } from "@/app/types";
 import { getSupabaseClient } from "@/app/lib/supabase/client";
 
@@ -82,6 +83,7 @@ export function NewFichaModal({
   const [localCategories, setLocalCategories] = useState<Category[]>(categories);
   const [editingEpisodeId, setEditingEpisodeId] = useState<string | null>(null);
   const [editingEpisodeName, setEditingEpisodeName] = useState<string>("");
+  const [isCreatingEpisode, setIsCreatingEpisode] = useState(false);
 
   // Atualizar categorias locais quando as props mudam
   useEffect(() => {
@@ -342,7 +344,7 @@ export function NewFichaModal({
               });
             }}
             onCreate={(worldId, universeId) => {
-              onOpenCreateEpisode?.(worldId, universeId);
+              setIsCreatingEpisode(true);
             }}
             onEpisodeCreated={handleEpisodeCreated}
             worldId={formData.world_id}
@@ -352,6 +354,18 @@ export function NewFichaModal({
               setEditingEpisodeName(episodeName);
             }}
               onDelete={onDeleteEpisode}
+            onEpisodeDeleted={(deletedId) => {
+              if (formData.world_id) {
+                fetch(`/api/episodes?world_id=${formData.world_id}`)
+                  .then(res => res.ok ? res.json() : null)
+                  .then(data => {
+                    if (data?.episodes) {
+                      setAvailableEpisodes(data.episodes);
+                    }
+                  })
+                  .catch(err => console.error('Erro ao atualizar episódios:', err));
+              }
+            }}
           />
         )}
 
@@ -479,6 +493,17 @@ export function NewFichaModal({
           </Button>
         </div>
       </form>
+
+      <NewEpisodeModal
+        isOpen={isCreatingEpisode}
+        onClose={() => setIsCreatingEpisode(false)}
+        worldId={formData.world_id}
+        universeId={universeId}
+        onSave={async (newEpisodeId) => {
+          await handleEpisodeCreated(newEpisodeId);
+          setIsCreatingEpisode(false);
+        }}
+      />
 
       <EditEpisodeModal
         isOpen={editingEpisodeId !== null}
