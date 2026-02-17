@@ -59,6 +59,7 @@ export default function NewFichaModal({
   const [availableEpisodes, setAvailableEpisodes] = useState<Episode[]>([]);
   const [selectedEpisodeId, setSelectedEpisodeId] = useState<string | null>(null);
   const [isCreatingEpisode, setIsCreatingEpisode] = useState(false);
+  const [episodeToAutoSelect, setEpisodeToAutoSelect] = useState<string | null>(null);
   const [isEditingEpisode, setIsEditingEpisode] = useState(false);
   const [editingEpisodeId, setEditingEpisodeId] = useState<string | null>(null);
   const [editingEpisodeName, setEditingEpisodeName] = useState("");
@@ -117,6 +118,21 @@ export default function NewFichaModal({
     };
     fetchEpisodes();
   }, [formData.world_id]);
+
+  // Auto-select episode after it's been added to the list
+  useEffect(() => {
+    if (episodeToAutoSelect && availableEpisodes.length > 0) {
+      const episodeExists = availableEpisodes.some(ep => ep.id === episodeToAutoSelect);
+      if (episodeExists) {
+        setSelectedEpisodeId(episodeToAutoSelect);
+        setFormData(prev => ({
+          ...prev,
+          episode_id: episodeToAutoSelect,
+        }));
+        setEpisodeToAutoSelect(null);
+      }
+    }
+  }, [episodeToAutoSelect, availableEpisodes]);
 
   const handleCreateFicha = async () => {
     if (!formData.titulo.trim()) {
@@ -362,17 +378,14 @@ export default function NewFichaModal({
                 .select("*")
                 .eq("world_id", formData.world_id)
                 .order("numero", { ascending: true });
-              if (data) setAvailableEpisodes(data);
+              if (data) {
+                setAvailableEpisodes(data);
+                setEpisodeToAutoSelect(episodeId);
+              }
             } catch (err) {
               console.error("Erro ao buscar episódios:", err);
             }
           }
-          
-          setSelectedEpisodeId(episodeId);
-          setFormData({
-            ...formData,
-            episode_id: episodeId,
-          });
           setIsCreatingEpisode(false);
         }}
       />
