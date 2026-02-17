@@ -63,7 +63,10 @@ export function CustomDropdown({
       <div className="relative w-full">
         <button
           data-modal-ignore="true"
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsOpen(!isOpen);
+          }}
           className="inline-flex justify-between w-full rounded-lg border border-border-light-default dark:border-border-dark-default px-4 py-2 bg-light-raised dark:bg-dark-raised text-sm font-medium text-text-light-primary dark:text-dark-primary hover:bg-light-overlay dark:hover:bg-dark-overlay focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75"
         >
           <span>
