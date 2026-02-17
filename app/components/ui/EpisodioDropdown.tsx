@@ -183,6 +183,7 @@ export function EpisodioDropdown({
                   <Menu.Item>
                     {({ active }) => (
                       <button
+                        data-modal-ignore="true"
                         onClick={(e) => {
                           e.stopPropagation();
                           onCreate(worldId, universeId);
