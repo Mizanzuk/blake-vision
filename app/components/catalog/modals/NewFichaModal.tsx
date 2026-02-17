@@ -352,12 +352,12 @@ export default function NewFichaModal({
         isOpen={isCreatingEpisode}
         onClose={() => setIsCreatingEpisode(false)}
         worldId={formData.world_id}
-        onEpisodeCreated={(newEpisode) => {
-          setAvailableEpisodes([...availableEpisodes, newEpisode]);
-          setSelectedEpisodeId(newEpisode.id);
+        universeId={universeId}
+        onSave={async (episodeId) => {
+          setSelectedEpisodeId(episodeId);
           setFormData({
             ...formData,
-            episode_id: newEpisode.id,
+            episode_id: episodeId,
           });
           setIsCreatingEpisode(false);
         }}
