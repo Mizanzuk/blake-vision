@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { Modal } from "@/app/components/ui/Modal";
+import { CustomModal as Modal } from "@/app/components/ui/CustomModal";
 import { Input } from "@/app/components/ui/Input";
 import { Select } from "@/app/components/ui/Select";
 import { WorldsDropdownSingle } from "@/app/components/ui/WorldsDropdownSingle";
