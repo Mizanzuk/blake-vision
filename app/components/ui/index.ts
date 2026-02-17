@@ -14,7 +14,6 @@ export { Badge } from "./Badge";
 export type { BadgeProps } from "./Badge";
 
 export { Modal } from "./Modal";
-export type { ModalProps } from "./Modal";
 
 export { Card, CardHeader, CardFooter } from "./Card";
 export type { CardProps, CardHeaderProps, CardFooterProps } from "./Card";

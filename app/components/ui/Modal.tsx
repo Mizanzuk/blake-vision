@@ -5,7 +5,7 @@ import { clsx } from "clsx";
 import type { ModalSize } from "@/app/types";
 import { Button } from "./Button";
 
-export interface ModalProps {
+export type ModalProps = {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
