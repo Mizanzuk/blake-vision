@@ -824,44 +824,7 @@ export default function ProjetosPage() {
         }}
         universeId={selectedUniverseId}
         universeName={universes.find(u => u.id === selectedUniverseId)?.nome || ""}
-        worlds={allWorlds}
-        categories={categories.filter(c => ["sinopse", "conceito", "regra"].includes(c.slug))}
-        onSave={handleSaveFicha}
-        onOpenCreateEpisode={(worldId, universeId) => {
-          setSelectedWorldId(worldId);
-          setSelectedUniverseId(universeId);
-          setShowEpisodeModal(true);
-        }}
-        onEditEpisode={(episodeId, episodeName) => {
-          console.log('Edit episode:', episodeId, episodeName);
-        }}
-        lastCreatedEpisodeId={lastCreatedEpisodeId}
-        episodeCreationTrigger={episodeCreationTrigger}
-        onDeleteEpisode={async (episodeId) => {
-          try {
-            const response = await fetch(`/api/episodes?id=${episodeId}`, {
-              method: 'DELETE',
-            });
-            if (response.ok) {
-              await loadFichas();
-            } else {
-              const data = await response.json();
-              throw new Error(data.error || 'Failed to delete episode');
-            }
-          } catch (error) {
-            console.error('Error deleting episode:', error);
-            throw error;
-          }
-        }}
-        onEpisodeCreated={(newEpisodeId) => {
-          // Episode was created, notify NewFichaModal to refresh episodes
-          setLastCreatedEpisodeId(newEpisodeId);
-          setEpisodeCreationTrigger(prev => prev + 1);
-          loadFichas();
-        }}
-        mode={selectedFicha ? "edit" : "create"}
-        ficha={selectedFicha}
-        preSelectedCategory={preSelectedCategory}
+        onFichaCreated={() => loadFichas()}
       />
 
       {/* World Modal */}
