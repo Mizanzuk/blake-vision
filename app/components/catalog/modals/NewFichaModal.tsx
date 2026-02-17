@@ -528,7 +528,7 @@ export function NewFichaModal({
               `/api/episodes?world_id=${formData.world_id}`
             );
             if (episodesResponse.ok) {
-              const data = episodesResponse.json();
+              const data = await episodesResponse.json();
               setAvailableEpisodes(data.episodes || []);
             }
           }
