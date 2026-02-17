@@ -231,8 +231,8 @@ export default function NewFichaModal({
           </label>
           <Select
             value={formData.world_id}
-            onChange={(value) => {
-              setFormData({ ...formData, world_id: value });
+            onChange={(e) => {
+              setFormData({ ...formData, world_id: e.target.value });
               setSelectedEpisodeId(null);
               setFormData((prev) => ({ ...prev, episode_id: null }));
             }}
@@ -326,7 +326,7 @@ export default function NewFichaModal({
           </label>
           <GranularidadeDropdown
             value={formData.granularidade}
-            onChange={(value) =>
+            onSelect={(value) =>
               setFormData({ ...formData, granularidade: value })
             }
           />
