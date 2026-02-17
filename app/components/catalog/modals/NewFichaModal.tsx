@@ -201,8 +201,8 @@ export default function NewFichaModal({
           </label>
           <Select
             value={formData.categoria}
-            onChange={(value) =>
-              setFormData({ ...formData, categoria: value })
+            onChange={(e) =>
+              setFormData({ ...formData, categoria: e.target.value })
             }
             options={categories.map((cat) => ({
               label: cat.nome,
