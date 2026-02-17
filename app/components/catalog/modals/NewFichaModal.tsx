@@ -205,8 +205,8 @@ export default function NewFichaModal({
               setFormData({ ...formData, categoria: e.target.value })
             }
             options={categories.map((cat) => ({
-              label: cat.nome,
-              value: cat.nome,
+              label: cat.label,
+              value: cat.label,
             }))}
           />
         </div>
