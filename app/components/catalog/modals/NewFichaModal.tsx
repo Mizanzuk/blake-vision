@@ -370,7 +370,7 @@ export default function NewFichaModal({
           onClose={() => setIsEditingEpisode(false)}
           episodeId={editingEpisodeId}
           episodeName={editingEpisodeName}
-          onEpisodeUpdated={() => {
+          onSave={async (episodeId, numero, titulo) => {
             // Refresh episodes
             const fetchEpisodes = async () => {
               if (!formData.world_id) return;
@@ -385,7 +385,7 @@ export default function NewFichaModal({
                 console.error("Erro ao buscar episódios:", err);
               }
             };
-            fetchEpisodes();
+            await fetchEpisodes();
             setIsEditingEpisode(false);
           }}
         />
