@@ -674,19 +674,9 @@ onDelete={(id, name) => {
       <NewFichaModal
         isOpen={showNewFichaModal}
         onClose={() => setShowNewFichaModal(false)}
-        onSave={async () => {
-          loadCatalogData();
-          setShowNewFichaModal(false);
-        }}
         universeId={selectedUniverseId}
         universeName={universes.find(u => u.id === selectedUniverseId)?.nome || ''}
-        worlds={worlds}
-        categories={categories}
-        onOpenCreateCategory={openCreateCategoryDirectly}
-        onOpenCreateEpisode={() => {
-          // TODO: Implementar criação de episódio em Catálogo
-          console.log('Criar novo episódio');
-        }}
+        onFichaCreated={() => loadCatalogData()}
       />
 
       <NewFichaModal
@@ -696,37 +686,14 @@ onDelete={(id, name) => {
           setSelectedFicha(null);
         }}
         mode="edit"
-        ficha={selectedFicha}
-        onOpenCreateEpisode={() => {
-          // TODO: Implementar criação de episódio em Catálogo
-          console.log('Criar novo episódio');
-        }}
+        fichaId={selectedFicha?.id}
         universeId={selectedUniverseId}
         universeName={universes.find(u => u.id === selectedUniverseId)?.nome || ''}
-        worlds={worlds}
-        categories={categories}
-        onSave={async (fichaData) => {
-          try {
-            const response = await fetch(`/api/fichas/${selectedFicha?.id}`, {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(fichaData),
-            });
-            if (response.ok) {
-              toast.success("Ficha atualizada com sucesso");
-              loadCatalogData();
-              setShowFichaModal(false);
-              setSelectedFicha(null);
-            } else {
-              const data = await response.json();
-              toast.error(data.error || "Erro ao atualizar ficha");
-            }
-          } catch (error) {
-            console.error("Error saving ficha:", error);
-            toast.error("Erro de rede ao atualizar ficha");
-          }
+        onFichaCreated={() => {
+          loadCatalogData();
+          setShowFichaModal(false);
+          setSelectedFicha(null);
         }}
-        onOpenCreateCategory={() => setShowCategoryModal(true)}
       />
 
       {showWorldModal && (
