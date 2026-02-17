@@ -289,7 +289,7 @@ export function NewFichaModal({
 
   return (
     <>
-    <Modal isOpen={isOpen} onClose={onClose} title={mode === "create" ? "Nova Ficha" : "Editar Ficha"}>
+    <Modal isOpen={isOpen} onClose={onClose} title={mode === "create" ? "Nova Ficha" : "Editar Ficha"} closeOnEscape={!isCreatingEpisode} closeOnBackdrop={!isCreatingEpisode}>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Categoria */}
         <div>
@@ -493,19 +493,21 @@ export function NewFichaModal({
           </Button>
         </div>
       </form>
+
+      {/* Nested Episode Modal */}
+      <NewEpisodeModal
+        isOpen={isCreatingEpisode}
+        onClose={() => setIsCreatingEpisode(false)}
+        worldId={formData.world_id}
+        universeId={universeId}
+        onSave={async (newEpisodeId) => {
+          await handleEpisodeCreated(newEpisodeId);
+          setIsCreatingEpisode(false);
+        }}
+      />
     </Modal>
 
-    <NewEpisodeModal
-      isOpen={isCreatingEpisode}
-      onClose={() => setIsCreatingEpisode(false)}
-      worldId={formData.world_id}
-      universeId={universeId}
-      onSave={async (newEpisodeId) => {
-        await handleEpisodeCreated(newEpisodeId);
-        setIsCreatingEpisode(false);
-      }}
-    />
-
+    {/* Edit Episode Modal - Outside Main Modal */}
     <EditEpisodeModal
       isOpen={editingEpisodeId !== null}
       episodeId={editingEpisodeId || ""}

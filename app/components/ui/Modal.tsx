@@ -109,7 +109,6 @@ export function Modal({
         as="div" 
         className="relative z-50" 
         onClose={closeOnEscape ? onClose : () => {}}
-        static
       >
         <Transition.Child
           as={Fragment}
