@@ -143,6 +143,7 @@ export function CustomDropdown({
                             onClick={(e) => {
                               e.stopPropagation();
                               option.onDelete?.();
+                              setIsOpen(false);
                             }}
                             className="p-1 rounded hover:bg-red-500/20"
                             title="Deletar"

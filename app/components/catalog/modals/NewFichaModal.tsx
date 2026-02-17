@@ -347,13 +347,27 @@ export default function NewFichaModal({
         </div>
       </Modal>
 
-      {/* New Episode Modal */}
+        {/* New Episode Modal */}
       <NewEpisodeModal
         isOpen={isCreatingEpisode}
         onClose={() => setIsCreatingEpisode(false)}
         worldId={formData.world_id}
         universeId={universeId}
         onSave={async (episodeId) => {
+          // Refetch episodes to include the newly created one
+          if (formData.world_id) {
+            try {
+              const { data } = await supabase
+                .from("episodes")
+                .select("*")
+                .eq("world_id", formData.world_id)
+                .order("numero", { ascending: true });
+              if (data) setAvailableEpisodes(data);
+            } catch (err) {
+              console.error("Erro ao buscar episódios:", err);
+            }
+          }
+          
           setSelectedEpisodeId(episodeId);
           setFormData({
             ...formData,
