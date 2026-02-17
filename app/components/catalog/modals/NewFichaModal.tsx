@@ -9,7 +9,7 @@ import { Textarea } from "@/app/components/ui/Textarea";
 import { Button } from "@/app/components/ui/Button";
 import { CategoryDropdown } from "@/app/components/ui/CategoryDropdown";
 import { GranularidadeDropdown } from "@/app/components/ui/GranularidadeDropdown";
-import { EpisodioDropdown } from "@/app/components/ui/EpisodioDropdown";
+import { CustomDropdown } from "@/app/components/ui/CustomDropdown";
 
 import EditEpisodeModal from "@/app/components/shared/EditEpisodeModal";
 import NewEpisodeModal from "@/app/components/shared/NewEpisodeModal";
@@ -328,14 +328,32 @@ export function NewFichaModal({
 
         {/* Episódio (novo sistema com UUID) */}
         {formData.world_id && (
-          <EpisodioDropdown
+          <CustomDropdown
             label="EPISÓDIO"
-            episodes={availableEpisodes.map(ep => ({
+            options={availableEpisodes.map(ep => ({
               id: ep.id,
-              numero: ep.numero,
-              titulo: ep.titulo,
+              label: `Episódio ${ep.numero}: ${ep.titulo}`,
+              onEdit: () => {
+                setEditingEpisodeId(ep.id);
+                setEditingEpisodeName(`${ep.numero}: ${ep.titulo}`);
+              },
+              onDelete: async () => {
+                if (onDeleteEpisode) {
+                  await onDeleteEpisode(ep.id);
+                  if (formData.world_id) {
+                    fetch(`/api/episodes?world_id=${formData.world_id}`)
+                      .then(res => res.ok ? res.json() : null)
+                      .then(data => {
+                        if (data?.episodes) {
+                          setAvailableEpisodes(data.episodes);
+                        }
+                      })
+                      .catch(err => console.error('Erro ao atualizar episódios:', err));
+                  }
+                }
+              },
             }))}
-            selectedId={selectedEpisodeId || ""}
+            value={selectedEpisodeId || ""}
             onSelect={(episodeId) => {
               setSelectedEpisodeId(episodeId || null);
               setFormData({
@@ -343,29 +361,10 @@ export function NewFichaModal({
                 episode_id: episodeId || null,
               });
             }}
-            onCreate={(worldId, universeId) => {
+            onCreateNew={() => {
               setIsCreatingEpisode(true);
             }}
-            onEpisodeCreated={handleEpisodeCreated}
-            worldId={formData.world_id}
-            universeId={formData.universe_id}
-            onEdit={(episodeId, episodeName) => {
-              setEditingEpisodeId(episodeId);
-              setEditingEpisodeName(episodeName);
-            }}
-              onDelete={onDeleteEpisode}
-            onEpisodeDeleted={(deletedId) => {
-              if (formData.world_id) {
-                fetch(`/api/episodes?world_id=${formData.world_id}`)
-                  .then(res => res.ok ? res.json() : null)
-                  .then(data => {
-                    if (data?.episodes) {
-                      setAvailableEpisodes(data.episodes);
-                    }
-                  })
-                  .catch(err => console.error('Erro ao atualizar episódios:', err));
-              }
-            }}
+            placeholder="Nenhum episódio"
           />
         )}
 
