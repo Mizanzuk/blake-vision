@@ -64,6 +64,7 @@ export function CustomDropdown({
         <button
           data-modal-ignore="true"
           onClick={(e) => {
+            e.preventDefault();
             e.stopPropagation();
             setIsOpen(!isOpen);
           }}
