@@ -102,7 +102,7 @@ export function CustomDropdown({
             </div>
 
             {options.length > 0 && (
-              <div className="px-1 py-1">
+              <div className="px-1 py-1 overflow-visible">
                 {options.map((option) => (
                   <div
                     key={option.id}
@@ -123,7 +123,7 @@ export function CustomDropdown({
                     </button>
 
                     {hoveredId === option.id && (option.onEdit || option.onDelete) && (
-                      <div className="absolute right-0 top-0 flex gap-1 pr-2">
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1 z-50">
                         {option.onEdit && (
                           <button
                             onClick={(e) => {
