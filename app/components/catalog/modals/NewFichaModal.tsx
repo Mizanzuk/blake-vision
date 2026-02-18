@@ -9,7 +9,7 @@ import { Textarea } from "@/app/components/ui/Textarea";
 import { Button } from "@/app/components/ui/Button";
 import { CategoryDropdown } from "@/app/components/ui/CategoryDropdown";
 import { GranularidadeDropdown } from "@/app/components/ui/GranularidadeDropdown";
-import { EpisodioDropdown } from "@/app/components/ui/EpisodioDropdown";
+import { CustomDropdown } from "@/app/components/ui/CustomDropdown";
 
 import EditEpisodeModal from "@/app/components/shared/EditEpisodeModal";
 import NewEpisodeModal from "@/app/components/shared/NewEpisodeModal";
@@ -242,9 +242,21 @@ export default function NewFichaModal({
 
         {/* Episódio (novo sistema com UUID) */}
         {formData.world_id && (
-          <EpisodioDropdown
+          <CustomDropdown
             label="EPISÓDIO"
-            episodes={availableEpisodes}
+            options={availableEpisodes.map((ep) => ({
+              id: ep.id,
+              label: `Episódio ${ep.numero}: ${ep.titulo}`,
+              onEdit: () => {
+                setEditingEpisodeId(ep.id);
+                setEditingEpisodeName(`${ep.numero}: ${ep.titulo}`);
+                setIsEditingEpisode(true);
+              },
+              onDelete: () => {
+                setDeletingEpisodeId(ep.id);
+                setShowDeleteConfirm(true);
+              },
+            }))}
             value={formData.episode_id || ""}
             onSelect={(episodeId) => {
               setFormData({
@@ -252,35 +264,10 @@ export default function NewFichaModal({
                 episode_id: episodeId || null,
               });
             }}
-            onCreate={() => {
+            onCreateNew={() => {
               setIsCreatingEpisode(true);
             }}
-            worldId={formData.world_id}
-            universeId={universeId}
-            onEdit={(episodeId, episodeName) => {
-              setEditingEpisodeId(episodeId);
-              setEditingEpisodeName(episodeName);
-              setIsEditingEpisode(true);
-            }}
-            onDelete={async (episodeId) => {
-              const supabase = getSupabaseClient();
-              await supabase.from("episodes").delete().eq("id", episodeId);
-              // Refetch episodes
-              const { data: episodes } = await supabase
-                .from("episodes")
-                .select("*")
-                .eq("world_id", formData.world_id);
-              setAvailableEpisodes(episodes || []);
-              // Clear selection if deleted episode was selected
-              if (formData.episode_id === episodeId) {
-                setFormData({ ...formData, episode_id: null });
-              }
-            }}
-            onEpisodeDeleted={(deletedEpisodeId) => {
-              if (formData.episode_id === deletedEpisodeId) {
-                setFormData({ ...formData, episode_id: null });
-              }
-            }}
+            placeholder="Nenhum episódio"
           />
         )}
 
