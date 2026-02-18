@@ -57,9 +57,7 @@ export default function NewFichaModal({
   const [worlds, setWorlds] = useState<World[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [availableEpisodes, setAvailableEpisodes] = useState<Episode[]>([]);
-  const [selectedEpisodeId, setSelectedEpisodeId] = useState<string | null>(null);
   const [isCreatingEpisode, setIsCreatingEpisode] = useState(false);
-  const [episodeToAutoSelect, setEpisodeToAutoSelect] = useState<string | null>(null);
   const [isEditingEpisode, setIsEditingEpisode] = useState(false);
   const [editingEpisodeId, setEditingEpisodeId] = useState<string | null>(null);
   const [editingEpisodeName, setEditingEpisodeName] = useState("");
@@ -120,41 +118,7 @@ export default function NewFichaModal({
   }, [formData.world_id]);
 
   // Auto-select episode after it's been added to the list
-  useEffect(() => {
-    console.log('Auto-select useEffect triggered:', { episodeToAutoSelect, availableEpisodesLength: availableEpisodes.length });
-    if (episodeToAutoSelect && availableEpisodes.length > 0) {
-      const episodeExists = availableEpisodes.some(ep => ep.id === episodeToAutoSelect);
-      console.log('Episode exists:', episodeExists, 'ID:', episodeToAutoSelect);
-      if (episodeExists) {
-        console.log('Setting selected episode to:', episodeToAutoSelect);
-        setSelectedEpisodeId(episodeToAutoSelect);
-        setFormData(prev => ({
-          ...prev,
-          episode_id: episodeToAutoSelect,
-        }));
-        setEpisodeToAutoSelect(null);
-      }
-    }
-  }, [episodeToAutoSelect]);
 
-  // Monitor availableEpisodes changes to trigger auto-select
-  useEffect(() => {
-    console.log('Availability change detected:', { episodeToAutoSelect, availableEpisodesLength: availableEpisodes.length });
-    if (episodeToAutoSelect && availableEpisodes.length > 0) {
-      console.log('Checking if episode exists...');
-      const episodeExists = availableEpisodes.some(ep => ep.id === episodeToAutoSelect);
-      console.log('Episode exists:', episodeExists, 'Episodes:', availableEpisodes.map(ep => ep.id));
-      if (episodeExists) {
-        console.log('Auto-selecting episode from availability change:', episodeToAutoSelect);
-        setSelectedEpisodeId(episodeToAutoSelect);
-        setFormData(prev => ({
-          ...prev,
-          episode_id: episodeToAutoSelect,
-        }));
-        setEpisodeToAutoSelect(null);
-      }
-    }
-  }, [availableEpisodes]);
 
   const handleCreateFicha = async () => {
     if (!formData.titulo.trim()) {
@@ -270,9 +234,7 @@ export default function NewFichaModal({
           <Select
             value={formData.world_id}
             onChange={(e) => {
-              setFormData({ ...formData, world_id: e.target.value });
-              setSelectedEpisodeId(null);
-              setFormData((prev) => ({ ...prev, episode_id: null }));
+              setFormData({ ...formData, world_id: e.target.value, episode_id: null });
             }}
             options={worlds.map((world) => ({
               label: world.nome,
@@ -299,9 +261,8 @@ export default function NewFichaModal({
                 setShowDeleteConfirm(true);
               },
             }))}
-            value={selectedEpisodeId || ""}
+            value={formData.episode_id || ""}
             onSelect={(episodeId) => {
-              setSelectedEpisodeId(episodeId || null);
               setFormData({
                 ...formData,
                 episode_id: episodeId || null,
@@ -401,15 +362,13 @@ export default function NewFichaModal({
                 .eq("world_id", formData.world_id)
                 .order("numero", { ascending: true });
               if (data) {
-                console.log('Refetched episodes:', data.map(ep => ep.id));
+                // Update the available episodes list
+                setAvailableEpisodes(data);
                 // Auto-select the newly created episode
-                setSelectedEpisodeId(episodeId);
                 setFormData(prev => ({
                   ...prev,
                   episode_id: episodeId,
                 }));
-                // Then update the available episodes list
-                setAvailableEpisodes(data);
               }
             } catch (err) {
               console.error("Erro ao buscar episódios:", err);
