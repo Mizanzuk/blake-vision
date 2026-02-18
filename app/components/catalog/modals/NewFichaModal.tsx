@@ -253,10 +253,8 @@ export default function NewFichaModal({
                 setIsEditingEpisode(true);
               },
               onDelete: () => {
-                console.log('onDelete called for episode:', ep.id, ep.titulo);
                 setDeletingEpisodeId(ep.id);
                 setShowDeleteConfirm(true);
-                console.log('showDeleteConfirm set to true');
               },
             }))}
             value={formData.episode_id || ""}
@@ -405,7 +403,6 @@ export default function NewFichaModal({
       )}
 
       {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && console.log('SimpleModal should be visible, showDeleteConfirm:', showDeleteConfirm, 'deletingEpisodeId:', deletingEpisodeId)}
       <SimpleModal
         isOpen={showDeleteConfirm}
         onClose={() => {
