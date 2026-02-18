@@ -168,8 +168,7 @@ export default function NewFichaModal({
       );
 
       // Clear selection if the deleted episode was selected
-      if (selectedEpisodeId === deletingEpisodeId) {
-        setSelectedEpisodeId(null);
+      if (formData.episode_id === deletingEpisodeId) {
         setFormData({
           ...formData,
           episode_id: null,
