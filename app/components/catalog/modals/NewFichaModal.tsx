@@ -401,8 +401,15 @@ export default function NewFichaModal({
                 .eq("world_id", formData.world_id)
                 .order("numero", { ascending: true });
               if (data) {
+                console.log('Refetched episodes:', data.map(ep => ep.id));
+                // Auto-select the newly created episode
+                setSelectedEpisodeId(episodeId);
+                setFormData(prev => ({
+                  ...prev,
+                  episode_id: episodeId,
+                }));
+                // Then update the available episodes list
                 setAvailableEpisodes(data);
-                setEpisodeToAutoSelect(episodeId);
               }
             } catch (err) {
               console.error("Erro ao buscar episódios:", err);
