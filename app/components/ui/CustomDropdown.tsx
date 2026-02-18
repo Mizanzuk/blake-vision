@@ -106,15 +106,9 @@ export function CustomDropdown({
                 {options.map((option) => (
                   <div
                     key={option.id}
-                    onMouseEnter={() => {
-                      console.log('Mouse enter on episode:', option.label, 'ID:', option.id, 'Has onDelete:', !!option.onDelete);
-                      setHoveredId(option.id);
-                    }}
-                    onMouseLeave={() => {
-                      console.log('Mouse leave from:', option.label);
-                      setHoveredId(null);
-                    }}
-                    className="relative"
+                    onMouseEnter={() => setHoveredId(option.id)}
+                    onMouseLeave={() => setHoveredId(null)}
+                    className="relative overflow-visible"
                   >
                     <button
                       onClick={() => handleSelect(option.id)}
