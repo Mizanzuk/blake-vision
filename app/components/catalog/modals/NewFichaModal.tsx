@@ -117,9 +117,6 @@ export default function NewFichaModal({
     fetchEpisodes();
   }, [formData.world_id]);
 
-  // Auto-select episode after it's been added to the list
-
-
   const handleCreateFicha = async () => {
     if (!formData.titulo.trim()) {
       alert("Por favor, preencha o título");
